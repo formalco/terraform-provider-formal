@@ -1,0 +1,135 @@
+package api
+
+import (
+	"encoding/json"
+	"net/http"
+	"strings"
+)
+
+type GetAndCreateDataStoreResponse struct {
+	DataStoreId string `json:"data_store_id"`
+	DataStore DataStoreInfra `json:"data_store"`
+}
+
+// CreateDatastore - Create new datastore
+func (c *Client) CreateDatastore(payload DataStoreInfra) (*DataStoreInfra, error) {
+	rb, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", c.HostURL+"/admin/stores", strings.NewReader(string(rb)))
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	datastore := GetAndCreateDataStoreResponse{}
+	err = json.Unmarshal(body, &datastore)
+	if err != nil {
+		return nil, err
+	}
+
+	return &datastore.DataStore, nil
+}
+
+
+// GetDatastore - Returns a specifc datastore
+func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
+	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId + "/infra", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	dsInfra := GetAndCreateDataStoreResponse{}
+	err = json.Unmarshal(body, &dsInfra)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dsInfra.DataStore, nil
+}
+
+
+
+// UpdateDatastore - Updates an datastore
+// func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreInfra) error {
+// 	rb, err := json.Marshal(datastoreUpdate)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId, strings.NewReader(string(rb)))
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	body, err := c.doRequest(req)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var res Message
+// 	err = json.Unmarshal(body, &res)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
+// DeleteDatastore - Deletes a datastore
+func (c *Client) DeleteDatastore(datastoreId string) error {
+	req, err := http.NewRequest("DELETE", c.HostURL+"/admin/stores/"+datastoreId, nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+type GetDataStoreStatusResponse  struct {
+	DataStore DataStore `json:"data_store"`
+}
+
+// GetDatastore - Returns a specifc datastore
+func (c *Client) GetDatastoreStatus(datastoreId string) (*DataStore, error) {
+	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	dsStatusRes := GetDataStoreStatusResponse{}
+	err = json.Unmarshal(body, &dsStatusRes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &dsStatusRes.DataStore, nil
+}
