@@ -12,7 +12,6 @@ import (
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
-	AuthToken  string
 	ClientId   string
 	SecretKey  string
 }
@@ -20,15 +19,12 @@ type Client struct {
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 
 // NewClient -
-func NewClient(client_id, secret_key, api_url_override string) (*Client, error) {
+func NewClient(client_id, secret_key string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 10 * time.Second},
 		ClientId:   client_id,
 		SecretKey:  secret_key,
 		HostURL:   FORMAL_HOST_URL,
-	}
-	if api_url_override != "" {
-		c.HostURL = api_url_override
 	}
 
 	return &c, nil

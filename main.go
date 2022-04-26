@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 
-	provider "github.com/formalco/terraform-provider-formal/formal"
+	"github.com/formalco/terraform-provider-formal/formal"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/plugin"
 )
 
@@ -36,7 +36,7 @@ func main() {
 		Debug: debugMode,
 
 		// TODO: update this string with the full name of your provider as used in your configs
-		ProviderAddr: "registry.terraform.io/formal/formal",
+		ProviderAddr: "registry.terraform.io/formalco/formal",
 
 		ProviderFunc: provider.New(version),
 	}

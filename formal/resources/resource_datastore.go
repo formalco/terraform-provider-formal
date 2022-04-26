@@ -2,9 +2,11 @@ package resource
 
 import (
 	"context"
+	"strconv"
 	"time"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -180,13 +182,21 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
+	const ERROR_TOLERANCE = 2
+	currentErrors := 0
 	for {
+		// Retrieve status
 		createdDatastore, err := client.GetDatastoreStatus(res.DsId)
-
-
 		if err != nil {
-			return diag.FromErr(err)
+			if currentErrors >= ERROR_TOLERANCE {
+				return diag.FromErr(err)
+			} else {
+				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
+				currentErrors += 1
+			}
 		}
+
+		// Check status
 		if createdDatastore.ProxyStatus == "healthy" {
 			break
 		} else {

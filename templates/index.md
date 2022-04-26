@@ -21,7 +21,7 @@ Use the navigation to the left to read about the available resources.
 terraform {
   required_providers {
     formal = {
-      source  = "joinformal.com/local/formal"
+      source  = "formalco/formal"
       version = "~> 1.0.0"
     }
   }

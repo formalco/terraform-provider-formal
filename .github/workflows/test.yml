@@ -26,7 +26,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: '1.16'
+        go-version: '1.18'
       id: go
 
     - name: Check out code into the Go module directory
@@ -40,18 +40,18 @@ jobs:
       run: |
         go build -v .
 
-  generate:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.16'
-      - uses: actions/checkout@v3
-      - run: go generate ./...
-      - name: git diff
-        run: |
-          git diff --compact-summary --exit-code || \
-            (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+  # generate:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/setup-go@v3
+  #       with:
+  #         go-version: '1.18'
+  #     - uses: actions/checkout@v3
+  #     - run: go generate ./...
+  #     - name: git diff
+  #       run: |
+  #         git diff --compact-summary --exit-code || \
+  #           (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
 
   # run acceptance tests in a matrix with Terraform core versions
   test:
@@ -75,7 +75,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v3
       with:
-        go-version: '1.17'
+        go-version: '1.18'
       id: go
 
     - uses: hashicorp/setup-terraform@v1
@@ -101,4 +101,4 @@ jobs:
         # SOME_VAR: ${{ secrets.SOME_VAR }}
 
       run: |
-        go test -v -cover ./internal/provider/
+        go test -v -cover ./formal/

@@ -2,11 +2,12 @@ terraform {
   required_version = ">=1.1.8"
   required_providers {
     formal = {
-      version = "~> 1.0.0"
-      source  = "joinformal.com/local/formal"
+      source  = "formalco/formal"
+      version = "1.0.0"
     }
   }
 }
+
 
 provider "formal" {
   client_id  = var.client_id
@@ -30,56 +31,71 @@ resource "formal_datastore" "my_datastore" {
   password         = var.datastore_password
 }
 
-
-
 # Role
-# resource "formal_role" "dior_the_data_scientist" {
-#   type       = "human"
-#   email      = "dior@acme.com"
-#   first_name = "dior"
-#   last_name  = "scientist"
-# }
+resource "formal_role" "dior_the_data_scientist" {
+  type       = "human"
+  email      = "dior@acme.com"
+  first_name = "dior"
+  last_name  = "scientist"
+}
 
 
 # Key
-# resource "formal_key" "encrypt_email_field_key" {
-#   name             = "email field encrypting key"
-#   cloud_region     = "eu-west-1"
-#   key_type         = "aws_kms"
-#   managed_by       = "managed_cloud"
-#   cloud_account_id = var.cloud_account_id
-# }
+resource "formal_key" "encrypt_email_field_key" {
+  name             = "email field encrypting key"
+  cloud_region     = "eu-west-1"
+  key_type         = "aws_kms"
+  managed_by       = "managed_cloud"
+  cloud_account_id = var.cloud_account_id
+}
 
 
 # Field encryption 
-# resource "formal_field_encryption" "encrypt_email_field" {
-#   datastore_id = formal_datastore.my_datastore.datastore_id
-#   path         = "main.public.customers.email"
-#   key_storage  = "control_plane_only"
-#   key_id       = formal_key.encrypt_email_field_key.id
-# }
+resource "formal_field_encryption" "encrypt_email_field" {
+  datastore_id = formal_datastore.my_datastore.datastore_id
+  path         = "main.public.customers.email"
+  key_storage  = "control_plane_only"
+  key_id       = formal_key.encrypt_email_field_key.id
+}
 
 
 
-# Decrypt emails Policy
-# resource "formal_policy" "decrypt_emails_policy" {
-#   name        = "authorize emails"
-#   description = "this policy, when linked to a role or group, allows them to decrypt emails."
-#   module      = <<-EOF
-# package formal.validator
-# tags := {}
+# An "Allow Role to Decrypt emails" Policy
+resource "formal_policy" "decrypt_emails_policy" {
+  name        = "authorize emails"
+  description = "this policy, when linked to a role or group, allows them to decrypt emails."
+  module      = <<-EOF
+package formal.validator
+tags := {}
 
-# decrypt { 
-#     type := "column_name_equal"
-#     input.path = "postgres.public.customers.email" 
-# }	
-# EOF
-# }
+decrypt { 
+    type := "column_name_equal"
+    input.path = "postgres.public.customers.email" 
+}	
+EOF
+}
 
 
 # Link Policy to Role
-# resource "formal_policy_link" "allow_decrypt_emails_for_user" {
-#   type      = "role"
-#   item_id   = formal_role.dior_the_data_scientist.id
-#   policy_id = formal_policy.decrypt_emails_policy.id
-# }
+resource "formal_policy_link" "allow_decrypt_emails_for_user" {
+  type      = "role"
+  item_id   = formal_role.dior_the_data_scientist.id
+  policy_id = formal_policy.decrypt_emails_policy.id
+}
+
+
+
+# A "Mask email usernames" Policy. Note this is different from a Field Encryption applied to a specific datastore's 'email' field.
+resource "formal_policy" "mask_email_policy" {
+  name        = "mask emails"
+  description = "this policy masks email usernames"
+  module      = <<-EOF
+package formal.validator
+tags := {"email_address"}
+
+mask[action] {
+    type := "tag_detected"
+    tags[input.tag]
+    action := "email_mask_username"
+EOF
+}

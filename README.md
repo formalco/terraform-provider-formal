@@ -10,7 +10,7 @@ The Terraform Formal provider is a plugin for Terraform that allows for the full
 
 ## Quick Starts
 
-Get started [using the Formal provider](https://registry.terraform.io/providers/formal/formal/latest/docs).
+Get started [using the Formal provider](https://registry.terraform.io/providers/formalco/formal/latest/docs).
 
 ## Documentation
 
