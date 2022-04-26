@@ -33,5 +33,7 @@ website/vendor
 
 # Keep windows files with windows line endings
 *.winfile eol=crlf
+.terraform.tfstate.lock.info
+.terraform.lock.hcl
 secret_test_configs
-buildFormalProviderLocal.sh
+build.sh

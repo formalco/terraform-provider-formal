@@ -38,10 +38,6 @@ func New(version string) func() *schema.Provider {
 					Type:     schema.TypeString,
 					Optional: true,
 				},
-				"api_url_override": &schema.Schema{
-					Type:     schema.TypeString,
-					Optional: true,
-				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				// "policy_data_source": dataSourcePolicy(),
@@ -68,9 +64,8 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		client_id := d.Get("client_id").(string)
 		secret_key := d.Get("secret_key").(string)
-		api_url_override := d.Get("api_url_override").(string)
 
-		c, err := api.NewClient(client_id, secret_key, api_url_override)
+		c, err := api.NewClient(client_id, secret_key)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
