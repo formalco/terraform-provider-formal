@@ -35,5 +35,5 @@ website/vendor
 *.winfile eol=crlf
 .terraform.tfstate.lock.info
 .terraform.lock.hcl
-secret_test_configs
 build.sh
+dev
