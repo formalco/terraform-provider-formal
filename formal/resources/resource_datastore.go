@@ -2,7 +2,9 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -221,6 +223,12 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	datastore, err := client.GetDatastore(datastoreId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Datastore was deleted
+			tflog.Warn(ctx, "The datastore was not found, which means someone may have deleted this sidecar without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 
@@ -279,17 +287,42 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	orderID := d.Id()
+	dsId := d.Id()
 
-	err := client.DeleteDatastore(orderID)
+	err := client.DeleteDatastore(dsId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// TODO: Parse for mark as deleted? check render
+	const ERROR_TOLERANCE = 2
+	currentErrors := 0
+	deleteTimeStart := time.Now()
+	for {
+		// Retrieve status
+		_, err := client.GetDatastoreStatus(dsId)
+		if err != nil {
+			if strings.Contains(fmt.Sprint(err), "status: 404") {
+				// Datastore was deleted
+				break
+			}
 
-	// d.SetId("") is automatically called assuming delete returns no errors, but
-	// it is added here for explicitness.
+			// Handle other errors
+			if currentErrors >= ERROR_TOLERANCE {
+				return diag.FromErr(err)
+			} else {
+				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
+				currentErrors += 1
+			}
+		}
+
+		if time.Since(deleteTimeStart) > time.Minute*10 {
+			tflog.Info(ctx, "Deletion has taken more than 10m. The sidecar may be unheatlhy. Exiting and marking as deleted.")
+			break
+		}
+
+		time.Sleep(15 * time.Second)
+	}
+
 	d.SetId("")
 	return diags
 }
