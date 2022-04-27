@@ -22,7 +22,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 1.0.1"
+      version = "~> 1.0.3"
     }
   }
 }
@@ -43,7 +43,7 @@ resource "formal_role" "dior_the_data_scientist" {
 
 # Create a Field encryption 
 resource "formal_field_encryption" "encrypt_email_field" {
-  datastore_id = formal_datastore.my_snowflake_datastore_.datastore_id
+  datastore_id = formal_datastore.my_snowflake_datastore.datastore_id
   path         = "main.public.customers.email"
   key_storage  = "control_plane_only"
   key_id       = formal_key.my_email_encryption_key.id
