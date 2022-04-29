@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.1"
+      version = "~>1.0.3"
     }
   }
 }
@@ -43,7 +43,7 @@ resource "formal_role" "dior_the_data_scientist" {
 # Key
 resource "formal_key" "encrypt_email_field_key" {
   name             = "email field encrypting key"
-  cloud_region     = "eu-west-1"
+  cloud_region     = "us-east-1"
   key_type         = "aws_kms"
   managed_by       = "managed_cloud"
   cloud_account_id = var.cloud_account_id
@@ -70,7 +70,7 @@ tags := {}
 
 decrypt { 
     type := "column_name_equal"
-    input.path = "postgres.public.customers.email" 
+    input.path = "main.public.customers.email" 
 }	
 EOF
 }
