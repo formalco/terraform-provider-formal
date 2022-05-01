@@ -22,7 +22,7 @@ const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 // NewClient -
 func NewClient(client_id, secret_key string) (*Client, error) {
 	c := Client{
-		HTTPClient: &http.Client{Timeout: 10 * time.Second},
+		HTTPClient: &http.Client{Timeout: 100 * time.Second},
 		ClientId:   client_id,
 		SecretKey:  secret_key,
 		HostURL:    FORMAL_HOST_URL,
