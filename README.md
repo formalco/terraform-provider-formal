@@ -14,7 +14,7 @@ Get started [using the Formal provider](https://registry.terraform.io/providers/
 
 ## Documentation
 
-Full, comprehensive documentation is available on the [Terraform website](https://terraform.io/docs/providers/formal/index.html)
+Full, comprehensive documentation is available on the [Terraform website](https://registry.terraform.io/providers/formalco/formal/latest/docs)
 
 
 
