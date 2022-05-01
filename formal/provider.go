@@ -32,11 +32,11 @@ func New(version string) func() *schema.Provider {
 			Schema: map[string]*schema.Schema{
 				"client_id": &schema.Schema{
 					Type:     schema.TypeString,
-					Optional: true,
+					Required: true,
 				},
 				"secret_key": &schema.Schema{
 					Type:     schema.TypeString,
-					Optional: true,
+					Required: true,
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
@@ -69,10 +69,6 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-
-		// Setup a User-Agent for your API client (replace the provider name for yours):
-		// userAgent := p.UserAgent("github.com/formalco/terraform-provider-formal", version)
-		// TODO: myClient.UserAgent = userAgent
 
 		return c, nil
 	}

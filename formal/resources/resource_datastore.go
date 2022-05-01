@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -195,7 +196,13 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
 				currentErrors += 1
+				continue
 			}
+		}
+
+		if createdDatastore == nil {
+			err = errors.New("datastore with the given ID not found. It may have been deleted")
+			return diag.FromErr(err)
 		}
 
 		// Check status
