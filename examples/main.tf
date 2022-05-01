@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.3"
+      version = "~>1.0.4"
     }
   }
 }
@@ -40,7 +40,7 @@ resource "formal_role" "dior_the_data_scientist" {
 }
 
 
-# Key
+# Key to be used for Field Encryption
 resource "formal_key" "encrypt_email_field_key" {
   name             = "email field encrypting key"
   cloud_region     = "us-east-1"
@@ -50,7 +50,7 @@ resource "formal_key" "encrypt_email_field_key" {
 }
 
 
-# Field encryption 
+# Specify a Field Encryption 
 resource "formal_field_encryption" "encrypt_email_field" {
   datastore_id = formal_datastore.my_datastore.datastore_id
   path         = "main.public.customers.email"
@@ -60,7 +60,7 @@ resource "formal_field_encryption" "encrypt_email_field" {
 
 
 
-# An "Allow Role to Decrypt emails" Policy
+# An "Allow Decrypt emails" Policy
 resource "formal_policy" "decrypt_emails_policy" {
   name        = "authorize emails"
   description = "this policy, when linked to a role or group, allows them to decrypt emails."
@@ -76,7 +76,7 @@ EOF
 }
 
 
-# Link Policy to Role
+# Link above Policy to a Role
 resource "formal_policy_link" "allow_decrypt_emails_for_user" {
   type      = "role"
   item_id   = formal_role.dior_the_data_scientist.id
@@ -85,7 +85,7 @@ resource "formal_policy_link" "allow_decrypt_emails_for_user" {
 
 
 
-# A "Mask email usernames" Policy. Note this is different from a Field Encryption applied to a specific datastore's 'email' field.
+# A sample "Mask email usernames" Policy. Note this is different from a Field Encryption. This is applied to a specific datastore's 'email' field.
 resource "formal_policy" "mask_email_policy" {
   name        = "mask emails"
   description = "this policy masks email usernames"
