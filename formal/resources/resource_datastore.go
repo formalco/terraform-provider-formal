@@ -85,7 +85,7 @@ func ResourceDatastore() *schema.Resource {
 			},
 			"cloud_region": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The cloud region the sidecar should be deployed in. Supported values are `eu-west-1`, `eu-west-2`, `eu-west-3`,`eu-central-1`, `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`, `ap-southeast-1`",
+				Description: "The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -189,12 +189,12 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdDatastore, err := client.GetDatastoreStatus(res.DsId)
+		createdDatastore, err := client.GetDatastoreForStatus(res.DsId)
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
 			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
+				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors + 1)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
 				currentErrors += 1
 				continue
 			}
@@ -205,8 +205,9 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 
+		tflog.Info(ctx, "Deployed is " + fmt.Sprint(createdDatastore.Deployed))
 		// Check status
-		if createdDatastore.ProxyStatus == "healthy" {
+		if createdDatastore.Deployed {
 			break
 		} else {
 			time.Sleep(15 * time.Second)
@@ -306,7 +307,7 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := client.GetDatastoreStatus(dsId)
+		_, err := client.GetDatastore(dsId)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "status: 404") {
 				// Datastore was deleted

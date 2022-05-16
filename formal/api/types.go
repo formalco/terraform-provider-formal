@@ -7,6 +7,7 @@ type FieldEncryptionStruct struct {
 	Path       string `json:"path"`
 	KeyStorage string `json:"key_storage"`
 	KeyId      string `json:"key_id"`
+	Alg        string `json:"alg"`
 }
 
 // Used for datastore creation status
@@ -22,6 +23,7 @@ type DataStore struct {
 	DeploymentType   string                       `json:"deployment_type,omitempty"`
 	Policies         []PolicyOrgItem              `json:"linked_policies"`
 	CloudAccountId   string                       `json:"cloud_account_id"`
+	Deployed 	   bool   `json:"deployed"`
 }
 
 

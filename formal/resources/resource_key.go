@@ -2,8 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -124,6 +127,12 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 
 	key, err := client.GetKey(d.Id())
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Key not found
+			tflog.Warn(ctx, "The key was not found. Someone may have deleted this key without it being tracked in this Terraform state.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if key == nil {
