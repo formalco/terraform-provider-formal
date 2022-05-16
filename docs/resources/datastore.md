@@ -29,7 +29,7 @@ Registering a Datastore with Formal.
 ### Optional
 
 - `cloud_account_id` (String) Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.
-- `cloud_region` (String) The cloud region the sidecar should be deployed in. Supported values are `eu-west-1`, `eu-west-2`, `eu-west-3`,`eu-central-1`, `us-east-1`, `us-east-2`, `us-west-1`, `us-west-2`, `ap-southeast-1`
+- `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `customer_vpc_id` (String) Required for managed cloud -- the VPC ID of the datastore.
 - `id` (String) The ID of this resource.
 - `port` (Number) The port your datastore is listening on. Required if your `technology` is `postgres` or `redshift`.

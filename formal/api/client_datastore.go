@@ -114,7 +114,7 @@ type GetDataStoreStatusResponse  struct {
 }
 
 // GetDatastore - Returns a specifc datastore
-func (c *Client) GetDatastoreStatus(datastoreId string) (*DataStore, error) {
+func (c *Client) GetDatastoreForStatus(datastoreId string) (*DataStore, error) {
 	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId, nil)
 	if err != nil {
 		return nil, err

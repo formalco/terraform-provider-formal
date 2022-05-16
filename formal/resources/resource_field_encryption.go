@@ -44,6 +44,12 @@ func ResourceFieldEncryption() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"alg": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Encryption Algorithm to use. Supported values are `aes_random` and `aes_deterministic`. For highest security, `aes_random` is recommended, but `aes_deterministic` is required to enable search (WHERE clauses) over underlying data in encrypted fields.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 		},
 	}
 }
@@ -63,6 +69,7 @@ func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, 
 		Path:       d.Get("path").(string),
 		KeyStorage: d.Get("key_storage").(string),
 		KeyId:      d.Get("key_id").(string),
+		Alg:        d.Get("alg").(string),
 	}
 
 	fieldEncryption, err := client.CreateFieldEncryption(newFieldEncryption)
@@ -72,7 +79,6 @@ func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, 
 	if fieldEncryption == nil {
 		return diag.FromErr(err)
 	}
-
 
 	d.SetId(fieldEncryption.DsId + fieldEncryptionTerraformIdDelimiter + fieldEncryption.Path)
 
@@ -109,6 +115,7 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 	// d.Set("name", fieldEncryption.FieldName)
 	d.Set("key_storage", fieldEncryption.KeyStorage)
 	d.Set("key_id", fieldEncryption.KeyId)
+	d.Set("alg", fieldEncryption.Alg)
 
 	d.SetId(terraformFieldEncryptionId)
 
