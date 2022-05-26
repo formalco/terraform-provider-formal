@@ -21,7 +21,7 @@ Creating a Role in formal.
 
 ### Optional
 
-- `app_type` (String) If machine, app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.
+- `app_type` (String) If the role is of type `machine`, this is the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.
 - `email` (String) For human users, their email.
 - `first_name` (String) For human users, their first name.
 - `last_name` (String) For human users, their last name.
@@ -31,5 +31,6 @@ Creating a Role in formal.
 
 - `db_username` (String) The username that the user will use to access the sidecar.
 - `id` (String) Role ID
+- `machine_role_access_token` (String) If the role is of type `machine`, this is the accesss token (database password) of this role.
 
 

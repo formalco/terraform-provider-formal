@@ -23,8 +23,8 @@ Creating Field Encryptions in Formal.
 - `key_storage` (String) How the encrypted data key that encrypts the data should be stored. Use `control_plane_and_with_data` if the encrypted data key should be stored in the database alongside the encrypted data. Use `control_plane_only` if the encrypted data key should only be stored in the Formal Control Plane. In both cases, the data key is encrypted by the encryption key.
 - `path` (String) The full path of the field that should be encrypted, separated by `.` (eg `{databaseName}.{schemaName}.{tableName}.{columnName}`)
 
-### Optional
+### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) Formal ID for this resource.
 
 

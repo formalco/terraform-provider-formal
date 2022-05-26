@@ -8,7 +8,7 @@ description: |-
   
 ---
 
-# Formal Provider
+# Formal Terraform Provider
 
 Use the Formal Terraform Provider to interact with the
 many resources supported by Formal.
