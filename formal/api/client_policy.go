@@ -31,13 +31,6 @@ func (c *Client) CreatePolicy(ctx context.Context, payload CreatePolicyPayload) 
 	}
 
 	return &createdPolicy, nil
-
-	// createdPolicyRes := GetAndCreatePolicyEndpointRes{}
-	// err = json.Unmarshal(body, &createdPolicyRes)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// return &createdPolicyRes.Policy, nil
 }
 
 // At the moment, only GET is shaped such. Create needs to be updated (is just struct atm)
@@ -69,31 +62,31 @@ func (c *Client) GetPolicy(policyId string) (*PolicyOrgItem, error) {
 }
 
 // UpdatePolicy - Updates an policy
-// func (c *Client) UpdatePolicy(policyId string, policyUpdate PolicyOrgItem) error {
-// 	rb, err := json.Marshal(policyUpdate)
-// 	if err != nil {
-// 		return err
-// 	}
+func (c *Client) UpdatePolicy(policyId string, policyUpdate PolicyOrgItem) error {
+	rb, err := json.Marshal(policyUpdate)
+	if err != nil {
+		return err
+	}
 
-// 	req, err := http.NewRequest("PUT", c.HostURL+"/admin/policies/"+policyId, strings.NewReader(string(rb)))
-// 	if err != nil {
-// 		return err
-// 	}
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/policies/"+policyId, strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
 
-// 	// TODO: Though the api restricts fields, best to restrict here as well
-// 	body, err := c.doRequest(req)
-// 	if err != nil {
-// 		return err
-// 	}
+	// TODO: Though the api restricts fields, best to restrict here as well
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
 
-// 	var res Message
-// 	err = json.Unmarshal(body, &res)
-// 	if err != nil {
-// 		return err
-// 	}
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
 
 // DeletePolicy - Deletes a policy
 func (c *Client) DeletePolicy(policyId string) error {
