@@ -2,8 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -72,6 +75,12 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	group, err := client.GetGroup(groupId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Group was deleted
+			tflog.Warn(ctx, "The Group was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if group == nil {

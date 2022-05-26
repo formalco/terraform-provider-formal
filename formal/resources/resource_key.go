@@ -129,7 +129,7 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Key not found
-			tflog.Warn(ctx, "The key was not found. Someone may have deleted this key without it being tracked in this Terraform state.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The key was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}

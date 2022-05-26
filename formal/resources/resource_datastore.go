@@ -233,7 +233,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Datastore was deleted
-			tflog.Warn(ctx, "The datastore was not found, which means someone may have deleted this sidecar without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The datastore was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}

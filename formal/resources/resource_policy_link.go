@@ -2,8 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -91,6 +94,12 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	policyLink, err := client.GetPolicyLink(policyLinkId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Link was deleted
+			tflog.Warn(ctx, "The Policy-Item link with ID "+policyLink.ID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if policyLink == nil {

@@ -2,7 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
+
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -99,6 +103,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		Module:      d.Get("module").(string),
+		SourceType:  "terraform",
 	}
 
 	policy, err := client.CreatePolicy(ctx, newPolicy)
@@ -120,6 +125,12 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	policy, err := client.GetPolicy(policyId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Policy was deleted
+			tflog.Warn(ctx, "The Policy with ID "+policyId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if policy == nil {
@@ -145,20 +156,23 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Policies are immutable. Please create a new policy.")
+	client := meta.(*api.Client)
 
-	// client := meta.(*Client)
+	policyId := d.Id()
 
-	// policyId := d.Id()
+	policyUpdate := api.PolicyOrgItem{
+		Name:        d.Get("name").(string),
+		Description: d.Get("description").(string),
+		Module:      d.Get("module").(string),
+		SourceType:  "terraform",
+	}
 
-	// policyUpdate := PolicyOrgItem{
-	// 	Name:        d.Get("name").(string),
-	// 	Description: d.Get("description").(string),
-	// 	Module:      d.Get("module").(string),
-	// }
+	err := client.UpdatePolicy(policyId, policyUpdate)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	// client.UpdatePolicy(policyId, policyUpdate)
-	// return resourcePolicyRead(ctx, d, meta)
+	return resourcePolicyRead(ctx, d, meta)
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
