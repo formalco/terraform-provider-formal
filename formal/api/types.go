@@ -12,20 +12,19 @@ type FieldEncryptionStruct struct {
 
 // Used for datastore creation status
 type DataStore struct {
-	ID               string                       `json:"id,omitempty"`
-	Name             string                       `json:"name,omitempty"`
-	OriginalHostname string                       `json:"original_hostname,omitempty"`
-	FormalHostname   string                       `json:"formal_hostname,omitempty"`
-	Username         string                       `json:"username"`
-	CloudRegion      string                       `json:"cloud_region"`
-	Created          string                       `json:"created_at,omitempty"`
-	ProxyStatus      string                       `json:"proxy_status,omitempty"`
-	DeploymentType   string                       `json:"deployment_type,omitempty"`
-	Policies         []PolicyOrgItem              `json:"linked_policies"`
-	CloudAccountId   string                       `json:"cloud_account_id"`
-	Deployed 	   bool   `json:"deployed"`
+	ID               string          `json:"id,omitempty"`
+	Name             string          `json:"name,omitempty"`
+	OriginalHostname string          `json:"original_hostname,omitempty"`
+	FormalHostname   string          `json:"formal_hostname,omitempty"`
+	Username         string          `json:"username"`
+	CloudRegion      string          `json:"cloud_region"`
+	Created          string          `json:"created_at,omitempty"`
+	ProxyStatus      string          `json:"proxy_status,omitempty"`
+	DeploymentType   string          `json:"deployment_type,omitempty"`
+	Policies         []PolicyOrgItem `json:"linked_policies"`
+	CloudAccountId   string          `json:"cloud_account_id"`
+	Deployed         bool            `json:"deployed"`
 }
-
 
 type DataStoreInfra struct {
 	Id             string `json:"id"`
@@ -59,6 +58,7 @@ type CreatePolicyPayload struct {
 	Module         string `json:"module"`
 	Active         bool   `json:"active"`
 	OrganisationID string `json:"org_id"`
+	SourceType     string `json:"source_type"`
 }
 
 type PolicyOrgItem struct {
@@ -71,6 +71,7 @@ type PolicyOrgItem struct {
 	Module         string `json:"module"`
 	Active         bool   `json:"active"`
 	OrganisationID string `json:"org_id"`
+	SourceType     string `json:"source_type"`
 
 	// below is diff vs payload
 	ExpireAt string `json:"expire_at"`
@@ -131,8 +132,9 @@ type Role struct {
 	// IdpUserID  string          `json:"idp_user_id"`
 
 	// Machine
-	Name    string `json:"name"`
-	AppType string `json:"app_type"`
+	Name                   string `json:"name"`
+	AppType                string `json:"app_type"`
+	MachineRoleAccessToken string `json:"machine_role_access_token"` // returned in CREATE and GET routes. added for terraform
 
 	// Status     string          `json:"status"`
 	// Expire     int64           `json:"expire_at"`

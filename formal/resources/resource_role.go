@@ -2,8 +2,11 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -63,9 +66,15 @@ func ResourceRole() *schema.Resource {
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If machine, app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Description: "If the role is of type `machine`, this is the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
 				Type:        schema.TypeString,
 				Optional:    true,
+			},
+			"machine_role_access_token": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If the role is of type `machine`, this is the accesss token (database password) of this role.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}
@@ -111,6 +120,12 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	role, err := client.GetRole(roleId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Policy was deleted
+			tflog.Warn(ctx, "The Role with ID "+ roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if role == nil {
@@ -127,6 +142,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("email", role.Email)
 	d.Set("name", role.Name)
 	d.Set("app_type", role.AppType)
+	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 
 	d.SetId(roleId)
 

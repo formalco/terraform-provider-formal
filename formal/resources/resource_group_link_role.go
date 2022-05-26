@@ -3,9 +3,11 @@ package resource
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -82,6 +84,12 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 
 	roleLinkGroup, err := client.GetGroupLinkRole(roleId, groupId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Link was deleted
+			tflog.Warn(ctx, "The Group-User link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if roleLinkGroup == "" {
@@ -99,7 +107,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 }
 
 func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Policy Links are immutable. Please create a new roleLinkGroup.")
+	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
 }
 
 func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

@@ -3,9 +3,11 @@ package resource
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -20,6 +22,12 @@ func ResourceFieldEncryption() *schema.Resource {
 		DeleteContext: resourceFieldEncryptionDelete,
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Formal ID for this resource.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"datastore_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Formal ID of the datastore that this Field Encryption should be applied to.",
@@ -103,6 +111,12 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 
 	fieldEncryption, err := client.GetFieldEncryption(dsId, path)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// Was deleted
+			tflog.Warn(ctx, "The Field Encryption was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 	if fieldEncryption == nil {

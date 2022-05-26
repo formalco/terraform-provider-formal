@@ -3,14 +3,14 @@ layout: ""
 page_title: "Provider: Formal"
 subcategory: ""
 description: |-
-  Use the Formal provider to interact with the many resources supported by Formal. 
+  Use the Formal Terraform Provider to interact with the many resources supported by Formal. 
 
   
 ---
 
 # Formal Provider
 
-Use the Formal provider to interact with the
+Use the Formal Terraform Provider to interact with the
 many resources supported by Formal.
 
 Use the navigation to the left to read about the available resources.
@@ -22,7 +22,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 1.0.6"
+      version = "~> 1.0.7"
     }
   }
 }
