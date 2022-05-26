@@ -66,7 +66,7 @@ func ResourceRole() *schema.Resource {
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the role is of type `machine`, this is the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Description: "If the role is of type `machine`, this is an optional designation for the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -75,6 +75,7 @@ func ResourceRole() *schema.Resource {
 				Description: "If the role is of type `machine`, this is the accesss token (database password) of this role.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -143,7 +144,6 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("name", role.Name)
 	d.Set("app_type", role.AppType)
 	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
-
 	d.SetId(roleId)
 
 	return diags
