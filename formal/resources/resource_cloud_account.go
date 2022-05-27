@@ -35,6 +35,12 @@ func ResourceCloudAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"aws_cloud_region": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The AWS Region you would like to deploy the CloudFormation stack in. Supported values are us-east-1, us-east-2, and eu-west-1.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 			"cloud_provider": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Cloud Provider you are connecting the cloud account from. The only currently supported value is `aws`.",
@@ -90,12 +96,13 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 	// Maps to user-defined fields
 	cloudAccountName := d.Get("cloud_account_name").(string)
 	cloudProvider := d.Get("cloud_provider").(string)
+	awsCloudRegion := d.Get("aws_cloud_region").(string)
 
 	if cloudProvider != "aws" {
 		return diag.FromErr(errors.New("cloud_provider must be 'aws'"))
 	}
 
-	createdAccount, err := client.CreateCloudAccount(cloudAccountName)
+	createdAccount, err := client.CreateCloudAccount(cloudAccountName, awsCloudRegion)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,6 +136,7 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	// Read AWS fields
 	d.Set("cloud_account_name", cloudAccount.CloudAccountName)
 	d.Set("cloud_provider", cloudAccount.CloudProvider)
+	d.Set("aws_cloud_region", cloudAccount.AwsCloudRegion)
 	d.Set("aws_formal_id", cloudAccount.AwsFormalId)
 	d.Set("aws_formal_iam_role", cloudAccount.AwsFormalIamRole)
 	d.Set("aws_formal_handshake_id", cloudAccount.AwsFormalHandshakeID)
