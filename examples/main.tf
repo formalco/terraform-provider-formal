@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.8"
+      version = "~>1.0.9"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -52,7 +52,7 @@ resource "formal_datastore" "my_datastore" {
   deployment_type  = "managed"
   cloud_provider   = "aws"
   cloud_region     = var.datastore_region
-  cloud_account_id = var.cloud_account_id
+  cloud_account_id = formal_cloud_account.integrated_aws_account.id
   customer_vpc_id  = var.customer_vpc_id
   fail_open        = false
   username         = var.datastore_username
@@ -74,7 +74,7 @@ resource "formal_key" "encrypt_email_field_key" {
   cloud_region     = "us-east-1"
   key_type         = "aws_kms"
   managed_by       = "managed_cloud"
-  cloud_account_id = var.cloud_account_id
+  cloud_account_id = formal_cloud_account.integrated_aws_account.id
 }
 
 
