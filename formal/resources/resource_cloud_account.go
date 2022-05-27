@@ -23,6 +23,12 @@ func ResourceCloudAccount() *schema.Resource {
 		DeleteContext: resourceCloudAccountDelete,
 
 		Schema: map[string]*schema.Schema{
+			"id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Use this value as the cloud_account_id for formal managed resources.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"cloud_account_name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "A friendly name to refer to this Cloud Account when using Formal.",
@@ -95,7 +101,7 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	d.SetId(createdAccount.Id)
-	tflog.Info(ctx, "id created is"+createdAccount.Id)
+
 	resourceCloudAccountRead(ctx, d, meta)
 	return diags
 }
@@ -129,6 +135,8 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("aws_formal_pingback_arn", cloudAccount.AwsFormalPingbackArn)
 	d.Set("aws_formal_stack_name", cloudAccount.AwsFormalStackName)
 	d.Set("aws_formal_template_body", cloudAccount.TemplateBody)
+	d.Set("id", cloudAccount.Id)
+
 
 	// d.Set("gcp_project_id", cloudAccount.GCPProjectID)
 
