@@ -3,19 +3,47 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.7"
+      version = "~>1.0.8"
+    }
+    aws = {
+      source  = "hashicorp/aws"
+      version = "4.15.1"
     }
   }
 }
-
 
 provider "formal" {
   client_id  = var.client_id
   secret_key = var.secret_key
 }
 
+# Cloud Account Integration (for Managed Cloud)
+provider "aws" {
+  region     = "eu-west-1"
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
+}
 
-# Datastore
+resource "formal_cloud_account" "integrated_aws_account" {
+  cloud_account_name = "our aws account"
+  cloud_provider     = "aws"
+}
+
+# NOTE: this stack must be deployed with an aws provider setup
+resource "aws_cloudformation_stack" "integrate_with_formal" {
+  name = formal_cloud_account.integrated_aws_account.aws_formal_stack_name
+  parameters = {
+    FormalID          = formal_cloud_account.integrated_aws_account.aws_formal_id
+    FormalIamRole     = formal_cloud_account.integrated_aws_account.aws_formal_iam_role
+    FormalHandshakeID = formal_cloud_account.integrated_aws_account.aws_formal_handshake_id
+    FormalPingbackArn = formal_cloud_account.integrated_aws_account.aws_formal_pingback_arn
+  }
+  template_body = formal_cloud_account.integrated_aws_account.aws_formal_template_body
+  capabilities  = ["CAPABILITY_NAMED_IAM"]
+}
+
+
+# Datastore Sidecar
 resource "formal_datastore" "my_datastore" {
   technology       = var.datastore_technology # postgres, redshift, snowflake
   name             = var.datastore_name
