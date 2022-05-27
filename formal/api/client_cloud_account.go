@@ -17,12 +17,14 @@ type CloudIntegration struct {
 	TemplateBody         string `json:"aws_template_body,omitempty"`
 	AwsFormalPingbackArn string `json:"aws_formal_pingback_arn,omitempty"`
 	AwsFormalStackName   string `json:"aws_formal_stack_name,omitempty"`
+	AwsCloudRegion       string `json:"aws_cloud_region,omitempty"`
 }
 
-func (c *Client) CreateCloudAccount(cloudAccountName string) (*CloudIntegration, error) {
+func (c *Client) CreateCloudAccount(cloudAccountName, awsCloudRegion string) (*CloudIntegration, error) {
 	// Compile
 	p := CloudIntegration{
 		CloudAccountName: cloudAccountName,
+		AwsCloudRegion: awsCloudRegion,
 	}
 
 	// Send
@@ -67,6 +69,6 @@ func (c *Client) GetCloudAccount(cloudAccountFormalId string) (*CloudIntegration
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return &cloudIntegrationRes.Integration, nil
 }

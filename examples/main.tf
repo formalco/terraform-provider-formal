@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.10"
+      version = "~>1.0.11"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -18,19 +18,21 @@ provider "formal" {
 }
 
 # Cloud Account Integration (for Managed Cloud)
+
+# NOTE: the specified region must match the region the CloudFormation stack will be deployed in.
+resource "formal_cloud_account" "integrated_aws_account" {
+  cloud_account_name = "our aws account"
+  cloud_provider     = "aws"
+  aws_cloud_region   = "us-east-1"
+}
+
 provider "aws" {
-  region     = "eu-west-1"
+  region     = "us-east-1"
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
 }
 
-# NOTE: the CloudFormation stack must be deployed with an aws provider setup for eu-west-1
-resource "formal_cloud_account" "integrated_aws_account" {
-  cloud_account_name = "our aws account"
-  cloud_provider     = "aws"
-}
-
-# NOTE: this CloudFormation stack must be deployed with an aws provider setup for eu-west-1
+# NOTE: this CloudFormation stack must be deployed with an aws provider setup for eu-west-1, us-east-1, or us-east-2.
 resource "aws_cloudformation_stack" "integrate_with_formal" {
   name = formal_cloud_account.integrated_aws_account.aws_formal_stack_name
   parameters = {
