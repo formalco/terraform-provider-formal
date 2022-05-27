@@ -146,18 +146,20 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceCloudAccountUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
+	return diag.Errorf("Cloud Account links are not updateable at the moment. Please create a new one.")
 }
 
 func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return diag.Errorf("Cloud Account links are not deletable at the moment. Please reach out to the Formal team so we can be sure resourc cleanup is accounted for.")
+
 	// Deletion is handled by a received webhoook when a CloudFormation stack is deleted
 	// Note that if a user create this resource, does not link it to CloudFormation, then tries to delete this resource, it wouldn't be removed from our DB.
 	// However this does not cause problems with terraform --
-	var diags diag.Diagnostics
+	// var diags diag.Diagnostics
 
-	tflog.Warn(ctx, "Please delete the CloudFormation stack to complete the delete process.")
+	// tflog.Warn(ctx, "Please delete the CloudFormation stack to complete the delete process.")
 
-	d.SetId("")
+	// d.SetId("")
 
-	return diags
+	// return diags
 }
