@@ -17,6 +17,7 @@ Integrate a Cloud Account with Formal to deploy Managed Cloud resources. Note th
 
 ### Required
 
+- `aws_cloud_region` (String) The AWS Region you would like to deploy the CloudFormation stack in. Supported values are us-east-1, us-east-2, and eu-west-1.
 - `cloud_provider` (String) The Cloud Provider you are connecting the cloud account from. The only currently supported value is `aws`.
 
 ### Optional
