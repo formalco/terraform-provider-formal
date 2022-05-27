@@ -22,7 +22,6 @@ Integrate a Cloud Account with Formal to deploy Managed Cloud resources. Note th
 ### Optional
 
 - `cloud_account_name` (String) A friendly name to refer to this Cloud Account when using Formal.
-- `id` (String) The ID of this resource.
 
 ### Read-Only
 
@@ -32,5 +31,6 @@ Integrate a Cloud Account with Formal to deploy Managed Cloud resources. Note th
 - `aws_formal_pingback_arn` (String) Use this value for the parameters.FormalPingbackArn field for your aws_cloudformation_stack resource.
 - `aws_formal_stack_name` (String) Use this value for the name field for your aws_cloudformation_stack resource.
 - `aws_formal_template_body` (String) Use this value for the template_body field for your aws_cloudformation_stack resource.
+- `id` (String) Use this value as the cloud_account_id for formal managed resources.
 
 
