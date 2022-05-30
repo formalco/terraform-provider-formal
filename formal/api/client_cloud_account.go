@@ -32,7 +32,7 @@ func (c *Client) CreateCloudAccount(cloudAccountName, awsCloudRegion string) (*C
 	if err != nil {
 		return nil, err
 	}
-	req, err := http.NewRequest("POST", c.HostURL+"/admin/integrations/cloud/aws/new", strings.NewReader(string(rb)))
+	req, err := http.NewRequest("POST", c.HostURL+"/admin/integrations/cloud/aws", strings.NewReader(string(rb)))
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ type GetIntegrationsCloudAccountByIDRes struct {
 }
 
 func (c *Client) GetCloudAccount(cloudAccountFormalId string) (*CloudIntegration, error) {
-	req, err := http.NewRequest("GET", c.HostURL+"/admin/integrations/cloud/aws/"+cloudAccountFormalId, nil)
+	req, err := http.NewRequest("GET", c.HostURL+"/admin/integrations/cloud/"+cloudAccountFormalId, nil)
 	if err != nil {
 		return nil, err
 	}
