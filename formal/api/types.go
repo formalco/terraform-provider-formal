@@ -27,25 +27,26 @@ type DataStore struct {
 }
 
 type DataStoreInfra struct {
-	Id             string `json:"id"`
-	DsId           string `json:"datastore_id"`
-	OrganisationID string `json:"org_id"`
-	StackName      string `json:"stack_name"`
-	Name           string `json:"name"`
-	Hostname       string `json:"hostname"`
-	Port           int    `json:"port"`
-	Username       string `json:"username"`
-	Password       string `json:"password"`
-	FormalHostname string `json:"formal_hostname"`
-	Technology     string `json:"technology"`
-	CloudProvider  string `json:"cloud_provider"`
-	CloudRegion    string `json:"cloud_region"`
-	DeploymentType string `json:"deployment_type"`
-	CloudAccountID string `json:"cloud_account_id"`
-	CustomerVpcId  string `json:"customer_vpc_id"`
-	NetStackId     string `json:"net_stack_id"`
-	FailOpen       bool   `json:"fail_open"`
-	CreatedAt      int    `json:"created_at"`
+	Id                string `json:"id"`
+	DsId              string `json:"datastore_id"`
+	OrganisationID    string `json:"org_id"`
+	StackName         string `json:"stack_name"`
+	Name              string `json:"name"`
+	Hostname          string `json:"hostname"`
+	Port              int    `json:"port"`
+	Username          string `json:"username"`
+	Password          string `json:"password"`
+	FormalHostname    string `json:"formal_hostname"`
+	Technology        string `json:"technology"`
+	CloudProvider     string `json:"cloud_provider"`
+	CloudRegion       string `json:"cloud_region"`
+	DeploymentType    string `json:"deployment_type"`
+	CloudAccountID    string `json:"cloud_account_id"`
+	CustomerVpcId     string `json:"customer_vpc_id"`
+	NetStackId        string `json:"net_stack_id"`
+	FailOpen          bool   `json:"fail_open"`
+	CreatedAt         int    `json:"created_at"`
+	FullKMSDecryption bool   `json:"global_kms_decrypt"`
 }
 
 type CreatePolicyPayload struct {

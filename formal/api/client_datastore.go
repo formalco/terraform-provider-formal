@@ -7,8 +7,8 @@ import (
 )
 
 type GetAndCreateDataStoreResponse struct {
-	DataStoreId string `json:"data_store_id"`
-	DataStore DataStoreInfra `json:"data_store"`
+	DataStoreId string         `json:"data_store_id"`
+	DataStore   DataStoreInfra `json:"data_store"`
 }
 
 // CreateDatastore - Create new datastore
@@ -37,10 +37,9 @@ func (c *Client) CreateDatastore(payload DataStoreInfra) (*DataStoreInfra, error
 	return &datastore.DataStore, nil
 }
 
-
 // GetDatastore - Returns a specifc datastore
 func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
-	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId + "/infra", nil)
+	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId+"/infra", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -59,33 +58,32 @@ func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
 	return &dsInfra.DataStore, nil
 }
 
-
-
 // UpdateDatastore - Updates an datastore
-// func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreInfra) error {
-// 	rb, err := json.Marshal(datastoreUpdate)
-// 	if err != nil {
-// 		return err
-// 	}
+func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreInfra) error {
+	// rb, err := json.Marshal(datastoreUpdate)
+	// if err != nil {
+	// 	return err
+	// }
+	if datastoreUpdate.FullKMSDecryption {
+		req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/kms-decrypt-policy?enable=true", nil)
+		if err != nil {
+			return err
+		}
 
-// 	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId, strings.NewReader(string(rb)))
-// 	if err != nil {
-// 		return err
-// 	}
+		body, err := c.doRequest(req)
+		if err != nil {
+			return err
+		}
 
-// 	body, err := c.doRequest(req)
-// 	if err != nil {
-// 		return err
-// 	}
+		var res Message
+		err = json.Unmarshal(body, &res)
+		if err != nil {
+			return err
+		}
+	}
 
-// 	var res Message
-// 	err = json.Unmarshal(body, &res)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	return nil
-// }
+	return nil
+}
 
 // DeleteDatastore - Deletes a datastore
 func (c *Client) DeleteDatastore(datastoreId string) error {
@@ -108,8 +106,7 @@ func (c *Client) DeleteDatastore(datastoreId string) error {
 	return nil
 }
 
-
-type GetDataStoreStatusResponse  struct {
+type GetDataStoreStatusResponse struct {
 	DataStore DataStore `json:"data_store"`
 }
 

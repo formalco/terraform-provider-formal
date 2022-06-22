@@ -145,6 +145,12 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
+			"global_kms_decrypt": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -180,6 +186,11 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		// CreateAt
 	}
 
+	fullKMSDecryption := d.Get("global_kms_decrypt").(bool)
+	if fullKMSDecryption{
+		return diag.Errorf("At the moment you cannot create a sidecar with global_kms_decrypt enabled. Please create the sidecar first.")
+	}
+
 	res, err := client.CreateDatastore(newDatastore)
 	if err != nil {
 		return diag.FromErr(err)
@@ -194,7 +205,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
 			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors + 1)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
+				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
 				currentErrors += 1
 				continue
 			}
@@ -205,7 +216,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 
-		tflog.Info(ctx, "Deployed is " + fmt.Sprint(createdDatastore.Deployed))
+		tflog.Info(ctx, "Deployed is "+fmt.Sprint(createdDatastore.Deployed))
 		// Check status
 		if createdDatastore.Deployed {
 			break
@@ -259,6 +270,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("net_stack_id", datastore.NetStackId)
 	d.Set("fail_open", datastore.FailOpen)
 	d.Set("created_at", datastore.CreatedAt)
+	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(datastore.DsId)
@@ -267,25 +279,27 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Datastores are immutable. Please register a new datastore.")
-	// TODO: implement fully, handle changes
+	client := meta.(*api.Client)
 
-	// client := meta.(*Client)
-	// var diags diag.Diagnostics
+	var diags diag.Diagnostics
 
-	// datastoreId := d.Id()
+	datastoreId := d.Id()
 
-	// if d.HasChange("hostname") {
-	// d.Set("last_updated", time.Now().Format(time.RFC850))
-	// /sidecar-hostname
-	// }
+	fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
+	if d.HasChange("global_kms_decrypt") {
+		if fullKmsDecryption {
+			client.UpdateDatastore(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
+		} else {
+			return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. Please message the Formal team and we're happy to help.")
+		}
+	} else {
+		return diag.Errorf("At the moment you can only update a sidecar to enable global_kms_decrypt. Please message the Formal team and we're happy to help.")
 
-	// if d.HasChange("username") || d.HasChange("password") {
-	// 	d.Set("last_updated", time.Now().Format(time.RFC850))
-	// 	// /credentials
-	// }
+	}
 
-	// return resourceDatastoreRead(ctx, d, meta)
+	resourceDatastoreRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
