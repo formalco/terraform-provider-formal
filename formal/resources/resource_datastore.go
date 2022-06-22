@@ -186,11 +186,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		// CreateAt
 	}
 
-	fullKMSDecryption := d.Get("global_kms_decrypt").(bool)
-	if fullKMSDecryption{
-		return diag.Errorf("At the moment you cannot create a sidecar with global_kms_decrypt enabled. Please create the sidecar first.")
-	}
-
 	res, err := client.CreateDatastore(newDatastore)
 	if err != nil {
 		return diag.FromErr(err)
@@ -223,6 +218,11 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		} else {
 			time.Sleep(15 * time.Second)
 		}
+	}
+
+	fullKMSDecryption := d.Get("global_kms_decrypt").(bool)
+	if fullKMSDecryption {
+		client.UpdateDatastore(res.DsId, api.DataStoreInfra{FullKMSDecryption: true})
 	}
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
