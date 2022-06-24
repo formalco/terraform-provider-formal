@@ -27,10 +27,10 @@ func NewClient(client_id, secret_key string) (*Client, error) {
 		SecretKey:  secret_key,
 		HostURL:    FORMAL_HOST_URL,
 	}
-	
-	if DEV_URL != "" {
-		c.HostURL = DEV_URL
-	}
+
+	// if DEV_URL != "" {
+	// 	c.HostURL = DEV_URL
+	// }
 
 	return &c, nil
 }
