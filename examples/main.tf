@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.16"
+      version = "~>1.0.18"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -17,22 +17,23 @@ provider "formal" {
   secret_key = var.secret_key
 }
 
-# Cloud Account Integration (for Managed Cloud)
-
-# NOTE: the specified region must match the region the CloudFormation stack will be deployed in.
-resource "formal_cloud_account" "integrated_aws_account" {
-  cloud_account_name = "our aws account"
-  cloud_provider     = "aws"
-  aws_cloud_region   = "us-east-1"
-}
-
 provider "aws" {
   region     = "us-east-1"
   access_key = var.aws_access_key
   secret_key = var.aws_secret_key
 }
 
-# NOTE: this CloudFormation stack must be deployed with an aws provider setup for eu-west-1, us-east-1, or us-east-2.
+
+# Cloud Account Integration Demo (for Managed Cloud) 
+
+# Note the specified aws_cloud_region is the region the CloudFormation stack will be deployed in, which must be deployed with an aws provider setup for eu-west-1, us-east-1, or us-east-2.
+resource "formal_cloud_account" "integrated_aws_account" {
+  cloud_account_name = "our aws account"
+  cloud_provider     = "aws"
+  aws_cloud_region   = "us-east-1"
+}
+
+# Declare the CloudFormation stack
 resource "aws_cloudformation_stack" "integrate_with_formal" {
   name = formal_cloud_account.integrated_aws_account.aws_formal_stack_name
   parameters = {
@@ -44,6 +45,8 @@ resource "aws_cloudformation_stack" "integrate_with_formal" {
   template_body = formal_cloud_account.integrated_aws_account.aws_formal_template_body
   capabilities  = ["CAPABILITY_NAMED_IAM"]
 }
+
+# ==============================
 
 
 # Datastore Sidecar
@@ -60,6 +63,7 @@ resource "formal_datastore" "my_datastore" {
   fail_open        = false
   username         = var.datastore_username
   password         = var.datastore_password
+  dataplane_id     = var.dataplane_id
 }
 
 # Role

@@ -42,6 +42,7 @@ type DataStoreInfra struct {
 	CloudRegion       string `json:"cloud_region"`
 	DeploymentType    string `json:"deployment_type"`
 	CloudAccountID    string `json:"cloud_account_id"`
+	DataplaneID       string `json:"dataplane_id"`
 	CustomerVpcId     string `json:"customer_vpc_id"`
 	NetStackId        string `json:"net_stack_id"`
 	FailOpen          bool   `json:"fail_open"`
