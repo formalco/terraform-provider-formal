@@ -183,3 +183,32 @@ type GroupStruct struct {
 	// Created string `json:"created_at"`
 	RolesIDs []string `json:"user_ids"`
 }
+
+type FlatDataplane struct {
+	Id                            string      `json:"id"`
+	OrgId                         string      `json:"org_id"`
+	StackName                     string      `json:"name"`
+	Region                        string      `json:"region"`
+	CustomerVpcId                 string      `json:"customer_vpc_id"`
+	OriginalCustomerVpcId         string      `json:"original_customer_vpc_id"`
+	CloudAccountId                string      `json:"cloud_account_id"`
+	AvailabilityZone              int         `json:"availability_zone"`
+	VpcPeeringConnectionId        string      `json:"vpc_peering_connection_id"`
+	FormalVpcFlowLogsGroupArn     string      `json:"formal_vpc_flow_logs_group_arn"`
+	FormalVpcFlowLogGroupName     string      `json:"formal_vpc_flow_logs_group_name"`
+	FormalVpcFlowLogsIamRoleArn   string      `json:"formal_vpc_flow_logs_iam_role_arn"`
+	FormalVpcFlowLogsIamPolicyArn string      `json:"formal_vpc_flow_logs_iam_policy_arn"`
+	InternetGateway               string      `json:"formal_vpc_igw_id"`
+	EgressOnlyInternetGateway     string      `json:"egress_only_igw"`
+	FormalVpcPrivateSubnetsIds    interface{} `json:"formal_vpc_private_subnets_ids"`
+	FormalVpcPublicSubnetsIds     interface{} `json:"formal_vpc_public_subnets_ids"`
+	FormalVpcPublicRouteTableId   string      `json:"formal_vpc_public_route_table_id"`
+	CustomerVpcRouteTables        interface{} `json:"customer_vpc_route_tables"`
+	FormalNatGatewayIds           interface{} `json:"formal_vpc_natg_ids"`
+	FormalVpcNatGatewayEips       interface{} `json:"formal_vpc_natg_eips"`
+	FormalVpcPublicRouteTables    string      `json:"formal_vpc_public_route_tables"`
+	FormalVpcId                   string      `json:"formal_vpc_id"`
+	EcsClusterName                string      `json:"ecs_cluster_name"`
+	EcsClusterArn                 string      `json:"ecs_cluster_arn"`
+	Status                        string      `json:"status"`
+}

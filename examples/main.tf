@@ -48,6 +48,15 @@ resource "aws_cloudformation_stack" "integrate_with_formal" {
 
 # ==============================
 
+# Dataplane
+resource "formal_dataplane" "my_dataplane" {
+  name               = "my_dataplane"
+  cloud_region       = var.datastore_region
+  cloud_account_id   = var.cloud_account_id
+  customer_vpc_id    = var.customer_vpc_id
+  availability_zones = 3
+}
+
 
 # Datastore Sidecar
 resource "formal_datastore" "my_datastore" {
