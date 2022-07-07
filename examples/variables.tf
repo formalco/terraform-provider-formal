@@ -44,3 +44,7 @@ variable "datastore_port" {
   type = number
 }
 
+variable "dataplane_id" {
+  type = string
+}
+

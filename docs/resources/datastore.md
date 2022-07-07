@@ -31,6 +31,7 @@ Registering a Datastore with Formal.
 - `cloud_account_id` (String) Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.
 - `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `customer_vpc_id` (String) Required for managed cloud -- the VPC ID of the datastore.
+- `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
 - `global_kms_decrypt` (Boolean) Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.
 - `id` (String) The ID of this resource.
 - `port` (Number) The port your datastore is listening on. Required if your `technology` is `postgres` or `redshift`.

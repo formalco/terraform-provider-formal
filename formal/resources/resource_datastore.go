@@ -151,6 +151,12 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"dataplane_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If deployment_type is managed, this is the ID of the Dataplane",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -182,7 +188,8 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		CustomerVpcId:  d.Get("customer_vpc_id").(string),
 		// NetStackId:
-		FailOpen: d.Get("fail_open").(bool),
+		FailOpen:    d.Get("fail_open").(bool),
+		DataplaneID: d.Get("dataplane_id").(string),
 		// CreateAt
 	}
 
@@ -271,6 +278,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("fail_open", datastore.FailOpen)
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
+	d.Set("dataplane_id", datastore.DataplaneID)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(datastore.DsId)
