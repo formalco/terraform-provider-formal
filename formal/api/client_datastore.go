@@ -60,11 +60,7 @@ func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
 
 // UpdateDatastore - Updates an datastore
 func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreInfra) error {
-	// rb, err := json.Marshal(datastoreUpdate)
-	// if err != nil {
-	// 	return err
-	// }
-	if datastoreUpdate.FullKMSDecryption {
+	if datastoreUpdate.GlobalKMSDecryption {
 		req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/kms-decrypt-policy?enable=true", nil)
 		if err != nil {
 			return err

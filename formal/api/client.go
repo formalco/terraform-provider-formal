@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,9 +18,8 @@ type Client struct {
 }
 
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
-// const DEV_URL string = "http://localhost:4000"
 
-// NewClient -
+
 func NewClient(client_id, secret_key string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 100 * time.Second},
@@ -27,10 +27,11 @@ func NewClient(client_id, secret_key string) (*Client, error) {
 		SecretKey:  secret_key,
 		HostURL:    FORMAL_HOST_URL,
 	}
-	
-	// if DEV_URL != "" {
-	// 	c.HostURL = DEV_URL
-	// }
+
+	providerEnv := os.Getenv("TF_PROVIDER_ENV")
+	if providerEnv == "dev" {
+		c.HostURL = "http://localhost:4000"
+	}
 
 	return &c, nil
 }

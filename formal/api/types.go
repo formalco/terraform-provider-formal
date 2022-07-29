@@ -47,7 +47,7 @@ type DataStoreInfra struct {
 	NetStackId        string `json:"net_stack_id"`
 	FailOpen          bool   `json:"fail_open"`
 	CreatedAt         int    `json:"created_at"`
-	FullKMSDecryption bool   `json:"global_kms_decrypt"`
+	GlobalKMSDecryption bool   `json:"global_kms_decrypt"`
 }
 
 type CreatePolicyPayload struct {

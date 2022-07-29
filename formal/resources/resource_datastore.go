@@ -188,9 +188,9 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		CustomerVpcId:  d.Get("customer_vpc_id").(string),
 		// NetStackId:
-		FailOpen:    d.Get("fail_open").(bool),
-		DataplaneID: d.Get("dataplane_id").(string),
-		// CreateAt
+		FailOpen:          d.Get("fail_open").(bool),
+		DataplaneID:       d.Get("dataplane_id").(string),
+		GlobalKMSDecryption: d.Get("global_kms_decrypt").(bool),
 	}
 
 	res, err := client.CreateDatastore(newDatastore)
@@ -225,11 +225,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		} else {
 			time.Sleep(15 * time.Second)
 		}
-	}
-
-	fullKMSDecryption := d.Get("global_kms_decrypt").(bool)
-	if fullKMSDecryption {
-		client.UpdateDatastore(res.DsId, api.DataStoreInfra{FullKMSDecryption: true})
 	}
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
@@ -277,7 +272,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("net_stack_id", datastore.NetStackId)
 	d.Set("fail_open", datastore.FailOpen)
 	d.Set("created_at", datastore.CreatedAt)
-	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
+	d.Set("global_kms_decrypt", datastore.GlobalKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
@@ -293,10 +288,10 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	datastoreId := d.Id()
 
-	fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
 	if d.HasChange("global_kms_decrypt") {
-		if fullKmsDecryption {
-			client.UpdateDatastore(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
+		globalKmsDecryption := d.Get("global_kms_decrypt").(bool)
+		if globalKmsDecryption {
+			client.UpdateDatastore(datastoreId, api.DataStoreInfra{GlobalKMSDecryption: globalKmsDecryption})
 		} else {
 			return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. Please message the Formal team and we're happy to help.")
 		}

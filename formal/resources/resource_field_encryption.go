@@ -126,7 +126,6 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 	// Should map to all tracked fields of FieldEncryptionOrgItem
 	d.Set("datastore_id", fieldEncryption.DsId)
 	d.Set("path", fieldEncryption.Path)
-	// d.Set("name", fieldEncryption.FieldName)
 	d.Set("key_storage", fieldEncryption.KeyStorage)
 	d.Set("key_id", fieldEncryption.KeyId)
 	d.Set("alg", fieldEncryption.Alg)
@@ -138,19 +137,7 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 
 // Doesn't exist
 func resourceFieldEncryptionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("FieldEncryptions are immutable. Please create a new fieldEncryption. Thank you!")
-	// client := meta.(*Client)
-
-	// fieldEncryptionId := d.Id()
-
-	// fieldEncryptionUpdate := FieldEncryption{
-	// 	Name:        d.Get("name").(string),
-	// 	Description: d.Get("description").(string),
-	// 	Module:      d.Get("module").(string),
-	// }
-
-	// client.UpdateFieldEncryption(fieldEncryptionId, fieldEncryptionUpdate)
-	// return resourceFieldEncryptionRead(ctx, d, meta)
+	return diag.Errorf("Field Encryptions are immutable. Please create a new Field Encryption.")
 }
 
 // DONE

@@ -106,7 +106,6 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diags
 	}
 
-	// Should map to all fields of
 	d.Set("id", policyLink.ID)
 	d.Set("policy_id", policyLink.PolicyID)
 	d.Set("item_id", policyLink.ItemID)
