@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -107,6 +108,9 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	// Delay before creating CloudFormation Stack
+	time.Sleep(10 * time.Second)
+
 	d.SetId(createdAccount.Id)
 
 	resourceCloudAccountRead(ctx, d, meta)
@@ -158,16 +162,12 @@ func resourceCloudAccountUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Cloud Account links are not deletable at the moment. Please reach out to the Formal team so we can be sure resourc cleanup is accounted for.")
+	var diags diag.Diagnostics
 
-	// Deletion is handled by a received webhoook when a CloudFormation stack is deleted
+	// Deletion of the DB record is handled by a received webhoook when a CloudFormation stack is deleted
 	// Note that if a user create this resource, does not link it to CloudFormation, then tries to delete this resource, it wouldn't be removed from our DB.
-	// However this does not cause problems with terraform --
-	// var diags diag.Diagnostics
 
-	// tflog.Warn(ctx, "Please delete the CloudFormation stack to complete the delete process.")
+	d.SetId("")
 
-	// d.SetId("")
-
-	// return diags
+	return diags
 }
