@@ -92,7 +92,7 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	if newDataPlaneId == "" {
 		return diag.FromErr(errors.New("returned dataplaneID is nil"))
 	}
-	time.Sleep(15 * time.Second)
+	time.Sleep(90 * time.Second)
 
 	tflog.Info(ctx, newDataPlaneId)
 

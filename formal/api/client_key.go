@@ -61,3 +61,25 @@ func (c *Client) GetKey(formalKeyId string) (*KeyStruct, error) {
 
 	return &getKeyRes.Key, nil
 }
+
+
+func (c *Client) DeleteKey(formalKeyId string) error {
+	req, err := http.NewRequest("DELETE", c.HostURL+keyApiPath + "/" + formalKeyId, nil)
+
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

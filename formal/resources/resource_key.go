@@ -175,10 +175,19 @@ func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 	// return resourceKeyRead(ctx, d, meta)
 }
 
-// TODO delete
+
 func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*api.Client)
+
 	var diags diag.Diagnostics
 
-	return diags
-	// return diag.Errorf("Keys are not deleteable at the moment to ensure data recovery.")
-}
+	keyId := d.Id()
+
+	err := client.DeleteKey(keyId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.SetId("")
+
+	return diags}
