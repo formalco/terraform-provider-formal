@@ -90,12 +90,8 @@ func ResourceKey() *schema.Resource {
 // Done
 func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*api.Client)
-
-	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// Right: field names according to KeyStruct. Using these for consistency
-	// with KeyStruct, after phasing out createkeypayload struct on both here and admin api
 	newKey := api.KeyStruct{
 		KeyName:        d.Get("name").(string),
 		KeyId:          d.Get("key_id").(string),
@@ -113,7 +109,6 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		return diag.FromErr(err)
 	}
 
-	// we use our own terraform key instead of real id bc it helps us encode values when READing by this terraformid
 	d.SetId(key.Id)
 
 	resourceKeyRead(ctx, d, meta)
