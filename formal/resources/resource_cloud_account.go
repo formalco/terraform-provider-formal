@@ -162,10 +162,16 @@ func resourceCloudAccountUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	client := meta.(*api.Client)
+
 	var diags diag.Diagnostics
 
-	// Deletion of the DB record is handled by a received webhoook when a CloudFormation stack is deleted
-	// Note that if a user create this resource, does not link it to CloudFormation, then tries to delete this resource, it wouldn't be removed from our DB.
+	accountId := d.Id()
+
+	err := client.DeleteCloudAccount(accountId)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId("")
 
