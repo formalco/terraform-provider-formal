@@ -80,4 +80,3 @@ func (c *Client) DeleteDataplane(dataplaneId string) error {
 	return nil
 }
 
-// TODO: status

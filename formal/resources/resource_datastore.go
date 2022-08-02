@@ -209,6 +209,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" checking on DatastoreStatus: ", map[string]interface{}{"err": err})
 				currentErrors += 1
+				time.Sleep(15 * time.Second)
 				continue
 			}
 		}

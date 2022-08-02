@@ -88,15 +88,13 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 	newDataPlaneId := res.Id
-
-	if newDataPlaneId == "" {
-		return diag.FromErr(errors.New("returned dataplaneID is nil"))
-	}
-	time.Sleep(90 * time.Second)
-
 	tflog.Info(ctx, newDataPlaneId)
+	if newDataPlaneId == "" {
+		return diag.FromErr(errors.New("created dataplane ID is empty, please try again later"))
+	}
+	time.Sleep(60 * time.Second)
 
-	const ERROR_TOLERANCE = 2
+	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	for {
 		// Retrieve status
@@ -107,15 +105,17 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 			} else {
 				tflog.Warn(ctx, "Experienced error #"+strconv.Itoa(currentErrors+1)+" checking on DataplaneStatus: ", map[string]interface{}{"err": err})
 				currentErrors += 1
+				time.Sleep(15 * time.Second)
 				continue
 			}
 		}
+
+		// Found
 
 		if existingDp == nil {
 			err = errors.New("dataplane with the given ID not found. It may have been deleted")
 			return diag.FromErr(err)
 		}
-
 		if existingDp.Status == "healthy" {
 			break
 		} else {

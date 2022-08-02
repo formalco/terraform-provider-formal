@@ -72,3 +72,25 @@ func (c *Client) GetCloudAccount(cloudAccountFormalId string) (*CloudIntegration
 
 	return &cloudIntegrationRes.Integration, nil
 }
+
+
+// DeleteGroup - Deletes a group
+func (c *Client) DeleteCloudAccount(cloudAccountFormalId string) error {
+	req, err := http.NewRequest("DELETE", c.HostURL+"/admin/integrations/cloud/"+cloudAccountFormalId, nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
