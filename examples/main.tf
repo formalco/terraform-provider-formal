@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.25"
+      version = "~>1.0.26"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -58,7 +58,8 @@ resource "formal_dataplane" "my_dataplane" {
 }
 
 
-# Datastore Sidecar
+# Datastore Sidecar, Managed Example
+# For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_datastore.my_onprem_datastore.formal_control_plane_tls_certificate
 resource "formal_datastore" "my_datastore" {
   technology       = var.datastore_technology # postgres, redshift, snowflake
   name             = var.datastore_name
@@ -74,6 +75,7 @@ resource "formal_datastore" "my_datastore" {
   password         = var.datastore_password
   dataplane_id     = var.dataplane_id
 }
+
 
 # Role
 resource "formal_role" "dior_the_data_scientist" {

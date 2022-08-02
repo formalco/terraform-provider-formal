@@ -157,6 +157,13 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"formal_control_plane_tls_certificate": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Sensitive:   true,
+			},
 		},
 	}
 }
@@ -280,6 +287,20 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
+
+	if datastore.DeploymentType == "onprem" {
+		tlsCert, err := client.GetDatastoreTlsCert(datastoreId)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if *tlsCert == "" {
+			return diag.Errorf("At the moment you can only update a sidecar to enable global_kms_decrypt. Please message the Formal team and we're happy to help.")
+		}
+		tflog.Info(ctx, "TLS CERT HERE==")
+		tflog.Info(ctx, *tlsCert)
+	
+		d.Set("formal_control_plane_tls_certificate", *tlsCert)
+	}
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(datastore.DsId)

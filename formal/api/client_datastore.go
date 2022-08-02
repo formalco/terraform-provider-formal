@@ -130,3 +130,28 @@ func (c *Client) GetDatastoreForStatus(datastoreId string) (*DataStore, error) {
 
 	return &dsStatusRes.DataStore, nil
 }
+
+type GetDataStoreTlsCertResponse struct {
+	Secret string `json:"secret"`
+}
+
+// GetDatastoreTlsCert - Returns a specifc datastore
+func (c *Client) GetDatastoreTlsCert(datastoreId string) (*string, error) {
+	req, err := http.NewRequest("GET", c.HostURL+"/admin/stores/"+datastoreId+"/tlscert", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	tlsCertRes := GetDataStoreTlsCertResponse{}
+	err = json.Unmarshal(body, &tlsCertRes)
+	if err != nil {
+		return nil, err
+	}
+
+	return &tlsCertRes.Secret, nil
+}
