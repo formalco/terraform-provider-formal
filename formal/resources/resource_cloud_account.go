@@ -125,7 +125,7 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// CloudAccount was deleted
-			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted or the integration was deleted without using this Terraform config,.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted or the integration was deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -149,7 +149,6 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("aws_formal_template_body", cloudAccount.TemplateBody)
 	d.Set("id", cloudAccount.Id)
 
-
 	// d.Set("gcp_project_id", cloudAccount.GCPProjectID)
 
 	d.SetId(cloudAccount.Id)
@@ -170,6 +169,12 @@ func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, met
 
 	err := client.DeleteCloudAccount(accountId)
 	if err != nil {
+		if strings.Contains(fmt.Sprint(err), "status: 404") {
+			// 404 means Cloud account is deleted, likely by CloudFormation
+			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted, likely by CloudFormation.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 
