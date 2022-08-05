@@ -73,7 +73,10 @@ func ResourceDataplane() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "The private route table IDs created with this dataplane.",
 				Type:        schema.TypeList,
-				Computed:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
 			},
 			"formal_vpc_id": {
 				// This description is used by the documentation generator and the language server.
@@ -112,10 +115,6 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	time.Sleep(60 * time.Second)
 
-	var formalPublicRouteTableId string
-	var formalPrivateRouteTableIds []string
-	var formalVpcId string
-
 	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	for {
@@ -139,9 +138,6 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 		if existingDp.Status == "healthy" {
-			formalPublicRouteTableId = existingDp.FormalPublicRouteTableId
-			formalPrivateRouteTableIds = existingDp.FormalVpcPrivateRouteTables
-			formalVpcId = existingDp.FormalVpcId
 			break
 		} else {
 			time.Sleep(15 * time.Second)
@@ -150,9 +146,6 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details
 	d.SetId(newDataPlaneId)
-	d.Set("formal_public_route_table_id", formalPublicRouteTableId)
-	d.Set("formal_private_route_table_ids", formalPrivateRouteTableIds)
-	d.Set("formal_vpc_id", formalVpcId)
 
 	resourceDataplaneRead(ctx, d, meta)
 
