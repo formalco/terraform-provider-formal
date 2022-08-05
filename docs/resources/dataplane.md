@@ -29,7 +29,7 @@ Creating a Dataplane with Formal.
 
 ### Read-Only
 
-- `formal_private_route_table_ids` (Set of String) The private route table IDs created with this dataplane.
+- `formal_private_route_table_ids` (List of String) The private route table IDs created with this dataplane.
 - `formal_public_route_table_id` (String) The public route table ID for the dataplane.
 - `formal_vpc_id` (String) The VPC ID created with this dataplane.
 - `id` (String) ID of this dataplane.
