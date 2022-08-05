@@ -72,7 +72,7 @@ func ResourceDataplane() *schema.Resource {
 			"formal_private_route_table_ids": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The private route table IDs created with this dataplane.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Computed:    true,
 			},
 			"formal_vpc_id": {
