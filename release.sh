@@ -1,0 +1,1 @@
+go generate ./... || exit 1
