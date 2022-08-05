@@ -63,6 +63,24 @@ func ResourceDataplane() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"formal_public_route_table_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The public route table ID for the dataplane.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"formal_private_route_table_ids": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The private route table IDs created with this dataplane.",
+				Type:        schema.TypeSet,
+				Computed:    true,
+			},
+			"formal_vpc_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The VPC ID created with this dataplane.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -94,6 +112,10 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 	time.Sleep(60 * time.Second)
 
+	var formalPublicRouteTableId string
+	var formalPrivateRouteTableIds []string
+	var formalVpcId string
+
 	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	for {
@@ -117,6 +139,9 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 		if existingDp.Status == "healthy" {
+			formalPublicRouteTableId = existingDp.FormalPublicRouteTableId
+			formalPrivateRouteTableIds = existingDp.FormalVpcPrivateRouteTables
+			formalVpcId = existingDp.FormalVpcId
 			break
 		} else {
 			time.Sleep(15 * time.Second)
@@ -125,6 +150,9 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details
 	d.SetId(newDataPlaneId)
+	d.Set("formal_public_route_table_id", formalPublicRouteTableId)
+	d.Set("formal_private_route_table_ids", formalPrivateRouteTableIds)
+	d.Set("formal_vpc_id", formalVpcId)
 
 	resourceDataplaneRead(ctx, d, meta)
 
@@ -154,6 +182,9 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("cloud_account_id", foundDataplane.CloudAccountId)
 	d.Set("cloud_region", foundDataplane.Region)
 	d.Set("availability_zones", foundDataplane.AvailabilityZone)
+	d.Set("formal_public_route_table_id", foundDataplane.FormalPublicRouteTableId)
+	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
+	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
 	d.Set("id", foundDataplane.Id)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details

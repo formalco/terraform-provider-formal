@@ -206,7 +206,8 @@ type FlatDataplane struct {
 	CustomerVpcRouteTables        interface{} `json:"customer_vpc_route_tables"`
 	FormalNatGatewayIds           interface{} `json:"formal_vpc_natg_ids"`
 	FormalVpcNatGatewayEips       interface{} `json:"formal_vpc_natg_eips"`
-	FormalVpcPublicRouteTables    string      `json:"formal_vpc_public_route_tables"`
+	FormalPublicRouteTableId      string      `json:"formal_vpc_public_route_tables"`
+	FormalVpcPrivateRouteTables   []string    `json:"formal_vpc_private_route_table_routes"`
 	FormalVpcId                   string      `json:"formal_vpc_id"`
 	EcsClusterName                string      `json:"ecs_cluster_name"`
 	EcsClusterArn                 string      `json:"ecs_cluster_arn"`
