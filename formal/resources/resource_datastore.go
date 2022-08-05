@@ -294,7 +294,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 			return diag.FromErr(err)
 		}
 		if *tlsCert == "" {
-			return diag.Errorf("At the moment you can only update a sidecar to enable global_kms_decrypt. Please message the Formal team and we're happy to help.")
+			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
 		}
 	
 		d.Set("formal_control_plane_tls_certificate", *tlsCert)
