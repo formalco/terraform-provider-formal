@@ -84,6 +84,24 @@ func ResourceDataplane() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"formal_private_subnets": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The private subnet IDs created with this dataplane.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
+			"formal_public_subnets": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The public subnet IDs created with this dataplane.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Computed: true,
+			},
 		},
 	}
 }
@@ -178,6 +196,8 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("formal_public_route_table_id", foundDataplane.FormalPublicRouteTableId)
 	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
 	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
+	d.Set("formal_private_subnets", foundDataplane.FormalVpcPrivateSubnetsIds)
+	d.Set("formal_public_subnets", foundDataplane.FormalVpcPublicSubnetsIds)
 	d.Set("id", foundDataplane.Id)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details

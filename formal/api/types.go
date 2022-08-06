@@ -200,8 +200,8 @@ type FlatDataplane struct {
 	FormalVpcFlowLogsIamPolicyArn string      `json:"formal_vpc_flow_logs_iam_policy_arn"`
 	InternetGateway               string      `json:"formal_vpc_igw_id"`
 	EgressOnlyInternetGateway     string      `json:"egress_only_igw"`
-	FormalVpcPrivateSubnetsIds    interface{} `json:"formal_vpc_private_subnets_ids"`
-	FormalVpcPublicSubnetsIds     interface{} `json:"formal_vpc_public_subnets_ids"`
+	FormalVpcPrivateSubnetsIds    []string    `json:"formal_private_subnets"`
+	FormalVpcPublicSubnetsIds     []string    `json:"formal_public_subnets"`
 	FormalVpcPublicRouteTableId   string      `json:"formal_vpc_public_route_table_id"`
 	CustomerVpcRouteTables        interface{} `json:"customer_vpc_route_tables"`
 	FormalNatGatewayIds           interface{} `json:"formal_vpc_natg_ids"`
