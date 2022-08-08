@@ -30,11 +30,11 @@ func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
-				"client_id": &schema.Schema{
+				"client_id": {
 					Type:     schema.TypeString,
 					Required: true,
 				},
-				"secret_key": &schema.Schema{
+				"secret_key": {
 					Type:     schema.TypeString,
 					Required: true,
 				},
