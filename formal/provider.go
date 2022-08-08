@@ -53,6 +53,7 @@ func New(version string) func() *schema.Provider {
 				"formal_field_encryption": resource.ResourceFieldEncryption(),
 				"formal_cloud_account":    resource.ResourceCloudAccount(),
 				"formal_dataplane":        resource.ResourceDataplane(),
+				"formal_dataplane_routes": resource.ResourceDataplaneRoutes(),
 			},
 		}
 

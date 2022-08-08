@@ -213,3 +213,12 @@ type FlatDataplane struct {
 	EcsClusterArn                 string      `json:"ecs_cluster_arn"`
 	Status                        string      `json:"status"`
 }
+
+type DataplaneRoutes struct {
+	Id                   string `json:"id"`
+	OrgId                string `json:"org_id"`
+	DataplaneId          string `json:"dataplane_id"`
+	DestinationCidrBlock string `json:"destination_cidr_block"`
+	TransitGatewayId     string `json:"transit_gateway_id"`
+	Deployed             bool   `json:"deployed"`
+}
