@@ -42,7 +42,7 @@ func ResourceDataplaneRoutes() *schema.Resource {
 			"transit_gateway_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the transit gateway.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"destination_cidr_block": {
