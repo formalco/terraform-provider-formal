@@ -14,17 +14,17 @@ data "aws_availability_zones" "azs" {
 
 variable "edge_sg_vpc_cidr" {
   description = "Edge VPC CIDR"
-  default = "10.7.0.0/16"
+  default     = "10.7.0.0/16"
 }
 
 variable "spoke_1_sg_vpc_cidr" {
   description = "Spoke VPC 1 CIDR"
-  default = "10.10.0.0/16"
+  default     = "10.10.0.0/16"
 }
 
 variable "key_name" {
   description = "SSH Key Pair"
-  default = "test"
+  default     = "test"
 }
 
 variable "formal_client_id" {}
