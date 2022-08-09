@@ -13,19 +13,19 @@ terraform {
 }
 
 provider "formal" {
-  client_id = var.formal_client_id
+  client_id  = var.formal_client_id
   secret_key = var.formal_secret_key
 }
 
 provider "aws" {
-  region  = "${var.region}"
-  alias   = "account1"
+  region     = var.region
+  alias      = "account1"
   access_key = var.aws_access_key_account_1
   secret_key = var.aws_secret_key_account_1
 }
 
 provider "aws" {
-  region     = "${var.region}"
+  region     = var.region
   alias      = "account2"
   access_key = var.aws_access_key_account_2
   secret_key = var.aws_secret_key_account_2
@@ -33,7 +33,7 @@ provider "aws" {
 
 resource "aws_vpc" "vpc_account_1" {
   cidr_block = "10.10.0.0/16"
-  provider = aws.account1
+  provider   = aws.account1
 }
 
 resource "aws_subnet" "vpc_account_1_private_subnet" {
@@ -83,7 +83,7 @@ resource "aws_route" "vpc1_edge_tgw_access" {
   transit_gateway_id     = aws_ec2_transit_gateway.tgw.id
 
   provider = aws.account1
-  }
+}
 
 # Route Table Associations
 resource "aws_route_table_association" "spoke_1_prv_sub_1a_association" {
@@ -191,18 +191,18 @@ resource "aws_db_instance" "demo" {
 }
 
 resource "formal_datastore" "demo" {
-  technology       = "postgres" # postgres, redshift, snowflake
-  name             = var.name
-  hostname         = aws_db_instance.demo.address
-  port             = aws_db_instance.demo.port
-  deployment_type  = "managed"
-  cloud_provider   = "aws"
-  cloud_region     = var.region
-  cloud_account_id = var.cloud_account_id
-  customer_vpc_id  = var.customer_vpc_id
-  fail_open        = false
-  username         = var.postgres_username
-  password         = var.postgres_password
-  dataplane_id     = formal_dataplane.tgw.id
+  technology         = "postgres" # postgres, redshift, snowflake
+  name               = var.name
+  hostname           = aws_db_instance.demo.address
+  port               = aws_db_instance.demo.port
+  deployment_type    = "managed"
+  cloud_provider     = "aws"
+  cloud_region       = var.region
+  cloud_account_id   = var.cloud_account_id
+  customer_vpc_id    = var.customer_vpc_id
+  fail_open          = false
+  username           = var.postgres_username
+  password           = var.postgres_password
+  dataplane_id       = formal_dataplane.tgw.id
   global_kms_decrypt = true
 }

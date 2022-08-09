@@ -113,6 +113,10 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	// Wait in case this apply also included creating the cloud acc integration, but the dataplane resource does 
+	// not have a dependency on the aws_cloudformation resource, so we need to wait for that to be complete before doing dataplane elements.
+	time.Sleep(60 * time.Second)
+
 	newDataplane := api.FlatDataplane{
 		StackName:             d.Get("name").(string),
 		CustomerVpcId:         d.Get("customer_vpc_id").(string),
@@ -129,9 +133,10 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	newDataPlaneId := res.Id
 	tflog.Info(ctx, newDataPlaneId)
 	if newDataPlaneId == "" {
-		return diag.FromErr(errors.New("created dataplane ID is empty, please try again later"))
+		return diag.FromErr(errors.New("could not initiate a dataplane creation at this time. Please try again later"))
 	}
-	time.Sleep(60 * time.Second)
+
+	time.Sleep(30 * time.Second)
 
 	const ERROR_TOLERANCE = 5
 	currentErrors := 0
