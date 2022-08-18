@@ -184,6 +184,12 @@ type GroupStruct struct {
 	RolesIDs []string `json:"user_ids"`
 }
 
+/*
+
+	8/18 Sync with database.shared
+	- Changed terraform `formal_public_route_table_id` param from being assigned FormalVpcPublicRouteTables. It is now assigned FormalVpcPublicRouteTableId
+
+*/
 type FlatDataplane struct {
 	Id                            string      `json:"id"`
 	OrgId                         string      `json:"org_id"`
@@ -200,18 +206,21 @@ type FlatDataplane struct {
 	FormalVpcFlowLogsIamPolicyArn string      `json:"formal_vpc_flow_logs_iam_policy_arn"`
 	InternetGateway               string      `json:"formal_vpc_igw_id"`
 	EgressOnlyInternetGateway     string      `json:"egress_only_igw"`
-	FormalVpcPrivateSubnetsIds    []string    `json:"formal_private_subnets"`
-	FormalVpcPublicSubnetsIds     []string    `json:"formal_public_subnets"`
-	FormalVpcPublicRouteTableId   string      `json:"formal_vpc_public_route_table_id"`
+	FormalVpcPrivateSubnetsIds    interface{} `json:"formal_vpc_private_subnets_ids"`
+	FormalVpcPublicSubnetsIds     interface{} `json:"formal_vpc_public_subnets_ids"`
+	FormalPublicSubnets           []string    `json:"formal_public_subnets"`
+	FormalPrivateSubnets          []string    `json:"formal_private_subnets"`
 	CustomerVpcRouteTables        interface{} `json:"customer_vpc_route_tables"`
 	FormalNatGatewayIds           interface{} `json:"formal_vpc_natg_ids"`
 	FormalVpcNatGatewayEips       interface{} `json:"formal_vpc_natg_eips"`
-	FormalPublicRouteTableId      string      `json:"formal_vpc_public_route_tables"`
+	FormalVpcPublicRouteTableId   string      `json:"formal_vpc_public_route_table_id"`
+	FormalVpcPublicRouteTables    string      `json:"formal_vpc_public_route_tables"`
 	FormalVpcPrivateRouteTables   []string    `json:"formal_vpc_private_route_table_routes"`
 	FormalVpcId                   string      `json:"formal_vpc_id"`
 	EcsClusterName                string      `json:"ecs_cluster_name"`
 	EcsClusterArn                 string      `json:"ecs_cluster_arn"`
 	Status                        string      `json:"status"`
+	VpcPeering                    bool        `json:"vpc_peering"`
 }
 
 type DataplaneRoutes struct {

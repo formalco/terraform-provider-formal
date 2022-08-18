@@ -26,6 +26,7 @@ Creating a Dataplane with Formal.
 ### Optional
 
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `vpc_peering` (Boolean) Set to true to enable VPC peering.
 
 ### Read-Only
 
