@@ -102,6 +102,12 @@ func ResourceDataplane() *schema.Resource {
 				},
 				Computed: true,
 			},
+			"vpc_peering": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Set to true to enable VPC peering.",
+				Type:        schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -113,7 +119,7 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// Wait in case this apply also included creating the cloud acc integration, but the dataplane resource does 
+	// Wait, just in case the apply that triggered this resource creation also included creating the cloud acc integration, but the dataplane resource does
 	// not have a dependency on the aws_cloudformation resource, so we need to wait for that to be complete before doing dataplane elements.
 	time.Sleep(60 * time.Second)
 
@@ -124,6 +130,7 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 		CloudAccountId:        d.Get("cloud_account_id").(string),
 		Region:                d.Get("cloud_region").(string),
 		AvailabilityZone:      d.Get("availability_zones").(int),
+		VpcPeering:            d.Get("vpc_peering").(bool),
 	}
 
 	res, err := client.CreateDataplane(newDataplane)
@@ -198,7 +205,7 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("cloud_account_id", foundDataplane.CloudAccountId)
 	d.Set("cloud_region", foundDataplane.Region)
 	d.Set("availability_zones", foundDataplane.AvailabilityZone)
-	d.Set("formal_public_route_table_id", foundDataplane.FormalPublicRouteTableId)
+	d.Set("formal_public_route_table_id", foundDataplane.FormalVpcPublicRouteTableId)
 	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
 	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
 	d.Set("formal_private_subnets", foundDataplane.FormalVpcPrivateSubnetsIds)
