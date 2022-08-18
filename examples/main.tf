@@ -55,6 +55,7 @@ resource "formal_dataplane" "my_dataplane" {
   cloud_account_id   = var.cloud_account_id
   customer_vpc_id    = var.customer_vpc_id
   availability_zones = 3
+  vpc_peering        = true
 }
 
 

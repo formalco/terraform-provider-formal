@@ -67,8 +67,8 @@ Usage:
 
 ```terraform
 provider "formal" {
-  client_id = "my-client-id"
-  secret_key = "my-secret-key"
+  client_id = var.client_id
+  secret_key = var.secret_key
 }
 ```
 
