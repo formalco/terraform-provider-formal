@@ -106,7 +106,7 @@ func ResourceDataplane() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Set to true to enable VPC peering.",
 				Type:        schema.TypeBool,
-				Optional: true,
+				Optional:    true,
 			},
 		},
 	}
@@ -208,8 +208,8 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("formal_public_route_table_id", foundDataplane.FormalVpcPublicRouteTableId)
 	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
 	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
-	d.Set("formal_private_subnets", foundDataplane.FormalVpcPrivateSubnetsIds)
-	d.Set("formal_public_subnets", foundDataplane.FormalVpcPublicSubnetsIds)
+	d.Set("formal_private_subnets", foundDataplane.FormalPrivateSubnets)
+	d.Set("formal_public_subnets", foundDataplane.FormalPublicSubnets)
 	d.Set("id", foundDataplane.Id)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details
