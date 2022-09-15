@@ -84,6 +84,12 @@ func ResourceCloudAccount() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"aws_formal_r53_private_hosted_zone_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "This is the id of the AWS Route 53 Private Zone Formal creates in your account.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -147,9 +153,8 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	d.Set("aws_formal_pingback_arn", cloudAccount.AwsFormalPingbackArn)
 	d.Set("aws_formal_stack_name", cloudAccount.AwsFormalStackName)
 	d.Set("aws_formal_template_body", cloudAccount.TemplateBody)
+	d.Set("aws_formal_r53_private_hosted_zone_id", cloudAccount.AwsFormalR53PrivateHostedZoneId)
 	d.Set("id", cloudAccount.Id)
-
-	// d.Set("gcp_project_id", cloudAccount.GCPProjectID)
 
 	d.SetId(cloudAccount.Id)
 
