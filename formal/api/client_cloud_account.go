@@ -7,24 +7,25 @@ import (
 )
 
 type CloudIntegration struct {
-	Id                   string `json:"id,omitempty"`
-	AwsFormalId          string `json:"aws_formal_id,omitempty"`
-	CloudAccountName     string `json:"cloud_account_name,omitempty"`
-	CloudProvider        string `json:"cloud_provider,omitempty"`
-	AwsFormalIamRole     string `json:"aws_formal_iam_role,omitempty"`
-	AwsFormalHandshakeID string `json:"aws_formal_handshake_id,omitempty"`
-	GCPProjectID         string `json:"gcp_project_id,omitempty"`
-	TemplateBody         string `json:"aws_template_body,omitempty"`
-	AwsFormalPingbackArn string `json:"aws_formal_pingback_arn,omitempty"`
-	AwsFormalStackName   string `json:"aws_formal_stack_name,omitempty"`
-	AwsCloudRegion       string `json:"aws_cloud_region,omitempty"`
+	Id                              string `json:"id,omitempty"`
+	AwsFormalId                     string `json:"aws_formal_id,omitempty"`
+	CloudAccountName                string `json:"cloud_account_name,omitempty"`
+	CloudProvider                   string `json:"cloud_provider,omitempty"`
+	AwsFormalIamRole                string `json:"aws_formal_iam_role,omitempty"`
+	AwsFormalHandshakeID            string `json:"aws_formal_handshake_id,omitempty"`
+	GCPProjectID                    string `json:"gcp_project_id,omitempty"`
+	TemplateBody                    string `json:"aws_template_body,omitempty"`
+	AwsFormalPingbackArn            string `json:"aws_formal_pingback_arn,omitempty"`
+	AwsFormalStackName              string `json:"aws_formal_stack_name,omitempty"`
+	AwsCloudRegion                  string `json:"aws_cloud_region,omitempty"`
+	AwsFormalR53PrivateHostedZoneId string `json:"aws_formal_r53_private_hosted_zone_id,omitempty"`
 }
 
 func (c *Client) CreateCloudAccount(cloudAccountName, awsCloudRegion string) (*CloudIntegration, error) {
 	// Compile
 	p := CloudIntegration{
 		CloudAccountName: cloudAccountName,
-		AwsCloudRegion: awsCloudRegion,
+		AwsCloudRegion:   awsCloudRegion,
 	}
 
 	// Send
@@ -72,7 +73,6 @@ func (c *Client) GetCloudAccount(cloudAccountFormalId string) (*CloudIntegration
 
 	return &cloudIntegrationRes.Integration, nil
 }
-
 
 // DeleteGroup - Deletes a group
 func (c *Client) DeleteCloudAccount(cloudAccountFormalId string) error {
