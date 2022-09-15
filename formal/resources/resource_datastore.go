@@ -57,6 +57,12 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeBool,
 				Required:    true,
 			},
+			"internet_facing": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Configure the sidecar to be internet facing. Default `false`.",
+				Type:        schema.TypeBool,
+				Required:    true,
+			},
 			"username": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Username for the original datastore that the sidecar should use. Please be sure to set this secret via Terraform environment variables.",
@@ -195,8 +201,9 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		CustomerVpcId:  d.Get("customer_vpc_id").(string),
 		// NetStackId:
-		FailOpen:    d.Get("fail_open").(bool),
-		DataplaneID: d.Get("dataplane_id").(string),
+		FailOpen:       d.Get("fail_open").(bool),
+		InternetFacing: d.Get("internet_facing").(bool),
+		DataplaneID:    d.Get("dataplane_id").(string),
 		// CreateAt
 	}
 
@@ -205,7 +212,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 2
+	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	for {
 		// Retrieve status
@@ -284,6 +291,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("customer_vpc_id", datastore.CustomerVpcId)
 	d.Set("net_stack_id", datastore.NetStackId)
 	d.Set("fail_open", datastore.FailOpen)
+	d.Set("internet_facing", datastore.InternetFacing)
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
@@ -296,7 +304,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 		if *tlsCert == "" {
 			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
 		}
-	
+
 		d.Set("formal_control_plane_tls_certificate", *tlsCert)
 	}
 
@@ -344,7 +352,7 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 2
+	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	deleteTimeStart := time.Now()
 	for {
