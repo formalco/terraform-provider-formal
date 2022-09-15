@@ -170,7 +170,7 @@ func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 2
+	const ERROR_TOLERANCE = 5
 	currentErrors := 0
 	deleteTimeStart := time.Now()
 	for {
