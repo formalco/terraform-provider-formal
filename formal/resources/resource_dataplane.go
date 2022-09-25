@@ -102,6 +102,12 @@ func ResourceDataplane() *schema.Resource {
 				},
 				Computed: true,
 			},
+			"formal_r53_private_hosted_zone_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The id of the AWS Route 53 Private Zone Formal creates in your account.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"vpc_peering": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Set to true to enable VPC peering.",
@@ -210,6 +216,7 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
 	d.Set("formal_private_subnets", foundDataplane.FormalPrivateSubnets)
 	d.Set("formal_public_subnets", foundDataplane.FormalPublicSubnets)
+	d.Set("formal_r53_private_hosted_zone_id", foundDataplane.FormalR53PrivateHostedZoneId)
 	d.Set("id", foundDataplane.Id)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details

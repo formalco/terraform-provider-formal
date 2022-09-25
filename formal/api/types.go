@@ -36,6 +36,7 @@ type DataStoreInfra struct {
 	Port              int    `json:"port"`
 	Username          string `json:"username"`
 	Password          string `json:"password"`
+	HealthCheckDbName string `json:"health_check_db_name"`
 	FormalHostname    string `json:"formal_hostname"`
 	Technology        string `json:"technology"`
 	CloudProvider     string `json:"cloud_provider"`
@@ -199,6 +200,7 @@ type FlatDataplane struct {
 	CloudAccountId                string      `json:"cloud_account_id"`
 	AvailabilityZone              int         `json:"availability_zone"`
 	VpcPeeringConnectionId        string      `json:"vpc_peering_connection_id"`
+	FormalR53PrivateHostedZoneId  string      `json:"formal_r53_private_hosted_zone_id"`
 	FormalVpcFlowLogsGroupArn     string      `json:"formal_vpc_flow_logs_group_arn"`
 	FormalVpcFlowLogGroupName     string      `json:"formal_vpc_flow_logs_group_name"`
 	FormalVpcFlowLogsIamRoleArn   string      `json:"formal_vpc_flow_logs_iam_role_arn"`

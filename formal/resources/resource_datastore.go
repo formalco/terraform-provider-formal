@@ -77,6 +77,12 @@ func ResourceDatastore() *schema.Resource {
 				Required:    true,
 				Sensitive:   true,
 			},
+			"health_check_db_name": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Database name to use for health checks. Default `postgres`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"cloud_provider": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Cloud Provider that the sidecar sholud deploy in. Supported values at the moment are `aws`.",
