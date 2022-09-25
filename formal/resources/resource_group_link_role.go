@@ -21,7 +21,9 @@ func ResourceGroupLinkRole() *schema.Resource {
 		ReadContext:   resourceGroupLinkRoleRead,
 		UpdateContext: resourceGroupLinkRoleUpdate,
 		DeleteContext: resourceGroupLinkRoleDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
