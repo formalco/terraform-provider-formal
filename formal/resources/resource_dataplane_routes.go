@@ -22,7 +22,9 @@ func ResourceDataplaneRoutes() *schema.Resource {
 		ReadContext:   resourceDataplaneRoutesRead,
 		UpdateContext: resourceDataplaneRoutesUpdate,
 		DeleteContext: resourceDataplaneRoutesDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
 		},

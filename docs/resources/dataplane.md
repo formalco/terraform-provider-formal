@@ -34,6 +34,8 @@ Creating a Dataplane with Formal.
 - `formal_private_subnets` (List of String) The private subnet IDs created with this dataplane.
 - `formal_public_route_table_id` (String) The public route table ID for the dataplane.
 - `formal_public_subnets` (List of String) The public subnet IDs created with this dataplane.
+- `formal_r53_private_hosted_zone_id` (String) The id of the AWS Route 53 Private Zone Formal creates in your account.
+- `formal_vpc_cidr_block` (String) The VPC CIDR block created with this dataplane.
 - `formal_vpc_id` (String) The VPC ID created with this dataplane.
 - `id` (String) ID of this dataplane.
 
