@@ -72,6 +72,7 @@ resource "formal_datastore" "my_datastore" {
   cloud_account_id = formal_cloud_account.integrated_aws_account.id
   customer_vpc_id  = var.customer_vpc_id
   fail_open        = false
+  internet_facing  = true
   username         = var.datastore_username
   password         = var.datastore_password
   dataplane_id     = var.dataplane_id
