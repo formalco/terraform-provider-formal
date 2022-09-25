@@ -194,11 +194,12 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		// DsId
 		// OrgId
 		// StackName
-		Name:     d.Get("name").(string),
-		Hostname: d.Get("hostname").(string),
-		Port:     portInt,
-		Username: d.Get("username").(string),
-		Password: d.Get("password").(string),
+		Name:              d.Get("name").(string),
+		Hostname:          d.Get("hostname").(string),
+		Port:              portInt,
+		Username:          d.Get("username").(string),
+		Password:          d.Get("password").(string),
+		HealthCheckDbName: d.Get("health_check_db_name").(string),
 		// FormalHostName
 		Technology:     d.Get("technology").(string),
 		CloudProvider:  d.Get("cloud_provider").(string),
