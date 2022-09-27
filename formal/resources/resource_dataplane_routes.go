@@ -43,7 +43,13 @@ func ResourceDataplaneRoutes() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the transit gateway.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Required:    false,
+			},
+			"vpc_peering_connection_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "ID of the vpc peering connection.",
+				Type:        schema.TypeString,
+				Required:    false,
 			},
 			"destination_cidr_block": {
 				// This description is used by the documentation generator and the language server.
@@ -69,11 +75,11 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 
 	newDataplaneRoutes := api.DataplaneRoutes{
-		DataplaneId:          d.Get("dataplane_id").(string),
-		DestinationCidrBlock: d.Get("destination_cidr_block").(string),
-		TransitGatewayId:     d.Get("transit_gateway_id").(string),
+		DataplaneId:            d.Get("dataplane_id").(string),
+		DestinationCidrBlock:   d.Get("destination_cidr_block").(string),
+		TransitGatewayId:       d.Get("transit_gateway_id").(string),
+		VpcPeeringConnectionId: d.Get("vpc_peering_connection_id").(string),
 	}
-
 	res, err := client.CreateDataplaneRoutes(newDataplaneRoutes)
 	if err != nil {
 		return diag.FromErr(err)
@@ -144,6 +150,7 @@ func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, me
 	d.Set("dataplane_id", foundDataplaneRoutes.DataplaneId)
 	d.Set("destination_cidr_block", foundDataplaneRoutes.DestinationCidrBlock)
 	d.Set("transit_gateway_id", foundDataplaneRoutes.TransitGatewayId)
+	d.Set("vpc_peering_connection_id", foundDataplaneRoutes.VpcPeeringConnectionId)
 	d.Set("deployed", foundDataplaneRoutes.Deployed)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details

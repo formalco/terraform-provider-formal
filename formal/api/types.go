@@ -225,10 +225,11 @@ type FlatDataplane struct {
 }
 
 type DataplaneRoutes struct {
-	Id                   string `json:"id"`
-	OrgId                string `json:"org_id"`
-	DataplaneId          string `json:"dataplane_id"`
-	DestinationCidrBlock string `json:"destination_cidr_block"`
-	TransitGatewayId     string `json:"transit_gateway_id"`
-	Deployed             bool   `json:"deployed"`
+	Id                     string `json:"id"`
+	OrgId                  string `json:"org_id"`
+	DataplaneId            string `json:"dataplane_id"`
+	DestinationCidrBlock   string `json:"destination_cidr_block"`
+	TransitGatewayId       string `json:"transit_gateway_id"`
+	VpcPeeringConnectionId string `json:"vpc_peering_connection_id"`
+	Deployed               bool   `json:"deployed"`
 }
