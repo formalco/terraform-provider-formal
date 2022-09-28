@@ -43,13 +43,13 @@ func ResourceDataplaneRoutes() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the transit gateway.",
 				Type:        schema.TypeString,
-				Optional:    false,
+				Optional:    true,
 			},
 			"vpc_peering_connection_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the vpc peering connection.",
 				Type:        schema.TypeString,
-				Optional:    false,
+				Optional:    true,
 			},
 			"destination_cidr_block": {
 				// This description is used by the documentation generator and the language server.
