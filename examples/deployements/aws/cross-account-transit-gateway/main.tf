@@ -262,7 +262,6 @@ resource "formal_datastore" "demo" {
   cloud_provider   = "aws"
   cloud_region     = var.region
   cloud_account_id = formal_cloud_account.integrated_aws_account.id
-  customer_vpc_id  = aws_vpc.vpc_accountB.id
   fail_open        = false
   internet_facing  = true
   username         = var.postgres_username

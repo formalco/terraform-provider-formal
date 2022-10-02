@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.45"
+      version = "~>1.0.46"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -63,7 +63,7 @@ resource "formal_dataplane" "main" {
 }
 
 resource "aws_security_group" "rds" {
-  name   = "rds"
+  name   = "rds-1"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -84,8 +84,8 @@ resource "aws_security_group" "rds" {
 }
 
 // AWS RDS Instance
-resource "aws_db_instance" "managed_cloud" {
-  identifier             = "${var.name}-managed-cloud"
+resource "aws_db_instance" "main" {
+  identifier             = var.name
   allocated_storage      = 10
   engine                 = "postgres"
   engine_version         = "13.4"
@@ -100,16 +100,15 @@ resource "aws_db_instance" "managed_cloud" {
   vpc_security_group_ids = [ aws_security_group.rds.id ]
 }
 
-resource "formal_datastore" "managed_cloud" {
+resource "formal_datastore" "main" {
   technology       = "postgres" # postgres, redshift, snowflake
   name             = var.name
-  hostname         = aws_db_instance.managed_cloud.address
-  port             = aws_db_instance.managed_cloud.port
+  hostname         = aws_db_instance.main.address
+  port             = aws_db_instance.main.port
   deployment_type  = "managed"
   cloud_provider   = "aws"
   cloud_region     = var.region
   cloud_account_id = formal_cloud_account.integrated_aws_account.id
-  customer_vpc_id  = aws_vpc.main.id
   fail_open        = false
   internet_facing  = false
   username         = var.postgres_username
@@ -119,7 +118,7 @@ resource "formal_datastore" "managed_cloud" {
 }
 
 resource "aws_route53_zone_association" "secondary" {
-  zone_id = formal_dataplane.test.formal_r53_private_hosted_zone_id
+  zone_id = formal_dataplane.main.formal_r53_private_hosted_zone_id
   vpc_id  = aws_vpc.main.id
 }
 
@@ -129,9 +128,17 @@ resource "aws_vpc_peering_connection" "main" {
   auto_accept   = true
 }
 
-resource "aws_route" "vpc_peering" {
-  route_table_id            = aws_route_table.private.id
+resource "aws_route" "vpc_peering_private" {
+  count = length(aws_route_table.private)
+
+  route_table_id            = aws_route_table.private[count.index].id
   destination_cidr_block    = formal_dataplane.main.formal_vpc_cidr_block
+  vpc_peering_connection_id = aws_vpc_peering_connection.main.id
+}
+
+resource "aws_route" "vpc_peering_public" {
+  route_table_id         = aws_route_table.public.id
+  destination_cidr_block = formal_dataplane.main.formal_vpc_cidr_block
   vpc_peering_connection_id = aws_vpc_peering_connection.main.id
 }
 
