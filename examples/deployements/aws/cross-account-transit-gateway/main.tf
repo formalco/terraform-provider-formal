@@ -13,7 +13,7 @@ terraform {
 }
 
 provider "formal" {
-  client_id = var.formal_client_id
+  client_id  = var.formal_client_id
   secret_key = var.formal_secret_key
 }
 
@@ -22,8 +22,8 @@ provider "formal" {
  */
 
 provider "aws" {
-  region  = "${var.region}"
-  alias   = "accountA"
+  region     = var.region
+  alias      = "accountA"
   access_key = var.aws_access_key_account_1
   secret_key = var.aws_secret_key_account_1
 }
@@ -54,7 +54,7 @@ resource "aws_subnet" "accountA_priv_subnet_2" {
 
 resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_attach" {
   provider = aws.accountA
-  
+
   subnet_ids         = [aws_subnet.accountA_priv_subnet_1.id, aws_subnet.accountA_priv_subnet_2.id]
   transit_gateway_id = aws_ec2_transit_gateway.tgw.id
   vpc_id             = aws_vpc.vpc_accountA.id
@@ -77,14 +77,14 @@ resource "aws_route" "vpc1_edge_tgw_access" {
 # Route Table Associations
 resource "aws_route_table_association" "prv_sub_1a_association" {
   provider = aws.accountA
-  
+
   subnet_id      = aws_subnet.accountA_priv_subnet_1.id
   route_table_id = aws_route_table.tgw.id
 }
 
 resource "aws_route_table_association" "prv_sub_1c_association" {
   provider = aws.accountA
-  
+
   subnet_id      = aws_subnet.accountA_priv_subnet_2.id
   route_table_id = aws_route_table.tgw.id
 }
@@ -139,10 +139,10 @@ resource "aws_security_group" "allow_ingress_traffic_to_redshift" {
   vpc_id      = aws_vpc.vpc_accountA.id
 
   ingress {
-    from_port        = 5439
-    to_port          = 5439
-    protocol         = "tcp"
-    cidr_blocks      = ["10.0.0.0/8"]
+    from_port   = 5439
+    to_port     = 5439
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
   }
 
   egress {
@@ -157,16 +157,16 @@ resource "aws_security_group" "allow_ingress_traffic_to_redshift" {
 resource "aws_redshift_cluster" "demo" {
   provider = aws.accountA
 
-  cluster_identifier  = "tf-redshift-cluster"
-  database_name       = "mydb"
-  master_username     = var.postgres_username
-  master_password     = var.postgres_password
-  node_type           = "dc2.large"
-  cluster_type        = "single-node"
-  publicly_accessible = false
+  cluster_identifier        = "tf-redshift-cluster"
+  database_name             = "mydb"
+  master_username           = var.postgres_username
+  master_password           = var.postgres_password
+  node_type                 = "dc2.large"
+  cluster_type              = "single-node"
+  publicly_accessible       = false
   cluster_subnet_group_name = aws_redshift_subnet_group.main.name
-  skip_final_snapshot = true
-  vpc_security_group_ids = [aws_security_group.allow_ingress_traffic_to_redshift.id]
+  skip_final_snapshot       = true
+  vpc_security_group_ids    = [aws_security_group.allow_ingress_traffic_to_redshift.id]
 }
 /*
  * END OF AWS ACCOUNT A
@@ -177,7 +177,7 @@ resource "aws_redshift_cluster" "demo" {
  * AWS ACCOUNT B - TGW ATTACHMENT AND FORMAL DATAPLANE AND SIDECAR
  */
 provider "aws" {
-  region     = "${var.region}"
+  region     = var.region
   alias      = "accountB"
   access_key = var.aws_access_key_account_2
   secret_key = var.aws_secret_key_account_2
@@ -254,18 +254,18 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_attach_formal" {
 }
 
 resource "formal_datastore" "demo" {
-  technology       = "redshift"
-  name             = var.name
-  hostname         = aws_redshift_cluster.demo.dns_name
-  port             = aws_redshift_cluster.demo.port
-  deployment_type  = "managed"
-  cloud_provider   = "aws"
-  cloud_region     = var.region
-  cloud_account_id = formal_cloud_account.integrated_aws_account.id
-  fail_open        = false
-  internet_facing  = true
-  username         = var.postgres_username
-  password         = var.postgres_password
-  dataplane_id     = formal_dataplane.tgw.id
+  technology         = "redshift"
+  name               = var.name
+  hostname           = aws_redshift_cluster.demo.dns_name
+  port               = aws_redshift_cluster.demo.port
+  deployment_type    = "managed"
+  cloud_provider     = "aws"
+  cloud_region       = var.region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  fail_open          = false
+  internet_facing    = true
+  username           = var.postgres_username
+  password           = var.postgres_password
+  dataplane_id       = formal_dataplane.tgw.id
   global_kms_decrypt = true
 }

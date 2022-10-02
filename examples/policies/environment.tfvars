@@ -1,3 +1,3 @@
-formal_client_id = ""
+formal_client_id  = ""
 formal_secret_key = ""
-group_id = ""
+group_id          = ""
