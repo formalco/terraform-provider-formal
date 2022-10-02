@@ -70,7 +70,6 @@ resource "formal_datastore" "my_datastore" {
   cloud_provider       = "aws"
   cloud_region         = var.datastore_region
   cloud_account_id     = formal_cloud_account.integrated_aws_account.id
-  customer_vpc_id      = var.customer_vpc_id
   fail_open            = false
   internet_facing      = true
   health_check_db_name = "postgres"

@@ -107,12 +107,6 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"customer_vpc_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Required for managed cloud -- the VPC ID of the datastore.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
 			// "id": {
 			// 	// This description is used by the documentation generator and the language server.
 			// 	Description: "Formal ID for this record.",
@@ -206,7 +200,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		CloudRegion:    d.Get("cloud_region").(string),
 		DeploymentType: d.Get("deployment_type").(string),
 		CloudAccountID: d.Get("cloud_account_id").(string),
-		CustomerVpcId:  d.Get("customer_vpc_id").(string),
 		// NetStackId:
 		FailOpen:       d.Get("fail_open").(bool),
 		InternetFacing: d.Get("internet_facing").(bool),
@@ -295,7 +288,6 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("cloud_region", datastore.CloudRegion)
 	d.Set("deployment_type", datastore.DeploymentType)
 	d.Set("cloud_account_id", datastore.CloudAccountID)
-	d.Set("customer_vpc_id", datastore.CustomerVpcId)
 	d.Set("net_stack_id", datastore.NetStackId)
 	d.Set("fail_open", datastore.FailOpen)
 	d.Set("internet_facing", datastore.InternetFacing)
