@@ -218,6 +218,7 @@ type FlatDataplane struct {
 	FormalVpcPublicRouteTables    string      `json:"formal_vpc_public_route_tables"`
 	FormalVpcPrivateRouteTables   []string    `json:"formal_vpc_private_route_table_routes"`
 	FormalVpcId                   string      `json:"formal_vpc_id"`
+	FormalVpcCidrBlock            string      `json:"formal_vpc_cidr_block"`
 	EcsClusterName                string      `json:"ecs_cluster_name"`
 	EcsClusterArn                 string      `json:"ecs_cluster_arn"`
 	Status                        string      `json:"status"`

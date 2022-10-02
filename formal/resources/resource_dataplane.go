@@ -84,6 +84,12 @@ func ResourceDataplane() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"formal_vpc_cidr_block": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The VPC CIDR block created with this dataplane.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"formal_private_subnets": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The private subnet IDs created with this dataplane.",
@@ -214,6 +220,7 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("formal_public_route_table_id", foundDataplane.FormalVpcPublicRouteTableId)
 	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
 	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
+	d.Set("formal_vpc_cidr_block", foundDataplane.FormalVpcCidrBlock)
 	d.Set("formal_private_subnets", foundDataplane.FormalPrivateSubnets)
 	d.Set("formal_public_subnets", foundDataplane.FormalPublicSubnets)
 	d.Set("formal_r53_private_hosted_zone_id", foundDataplane.FormalR53PrivateHostedZoneId)
