@@ -20,7 +20,9 @@ func ResourceFieldEncryption() *schema.Resource {
 		ReadContext:   resourceFieldEncryptionRead,
 		UpdateContext: resourceFieldEncryptionUpdate,
 		DeleteContext: resourceFieldEncryptionDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.

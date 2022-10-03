@@ -96,7 +96,7 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Link was deleted
-			tflog.Warn(ctx, "The Policy-Item link with ID "+policyLink.ID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Policy-Item link with ID "+policyLinkId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}

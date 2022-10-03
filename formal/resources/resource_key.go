@@ -20,7 +20,9 @@ func ResourceKey() *schema.Resource {
 		ReadContext:   resourceKeyRead,
 		UpdateContext: resourceKeyUpdate,
 		DeleteContext: resourceKeyDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.

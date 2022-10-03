@@ -20,7 +20,9 @@ func ResourcePolicy() *schema.Resource {
 		ReadContext:   resourcePolicyRead,
 		UpdateContext: resourcePolicyUpdate,
 		DeleteContext: resourcePolicyDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				// This description is used by the documentation generator and the language server.

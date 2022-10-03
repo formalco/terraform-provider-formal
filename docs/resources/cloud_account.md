@@ -30,6 +30,7 @@ Integrate a Cloud Account with Formal to deploy Managed Cloud resources. Note th
 - `aws_formal_iam_role` (String) Use this value for the parameters.FormalIamRole field for your aws_cloudformation_stack resource.
 - `aws_formal_id` (String) Use this value for the parameters.FormalID field for your aws_cloudformation_stack resource.
 - `aws_formal_pingback_arn` (String) Use this value for the parameters.FormalPingbackArn field for your aws_cloudformation_stack resource.
+- `aws_formal_r53_private_hosted_zone_id` (String) This is the id of the AWS Route 53 Private Zone Formal creates in your account.
 - `aws_formal_stack_name` (String) Use this value for the name field for your aws_cloudformation_stack resource.
 - `aws_formal_template_body` (String) Use this value for the template_body field for your aws_cloudformation_stack resource.
 - `id` (String) Use this value as the cloud_account_id for formal managed resources.
