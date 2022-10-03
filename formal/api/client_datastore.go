@@ -58,12 +58,8 @@ func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
 	return &dsInfra.DataStore, nil
 }
 
-// UpdateDatastore - Updates an datastore
-func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreInfra) error {
-	// rb, err := json.Marshal(datastoreUpdate)
-	// if err != nil {
-	// 	return err
-	// }
+
+func (c *Client) UpdateDatastoreGlobalKMSEncrypt(datastoreId string, datastoreUpdate DataStoreInfra) error {
 	if datastoreUpdate.FullKMSDecryption {
 		req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/kms-decrypt-policy?enable=true", nil)
 		if err != nil {
@@ -84,6 +80,85 @@ func (c *Client) UpdateDatastore(datastoreId string, datastoreUpdate DataStoreIn
 
 	return nil
 }
+
+func (c *Client) UpdateDatastoreUsernamePassword(datastoreId string, datastoreUpdate DataStoreInfra) error {
+	rb, err := json.Marshal(datastoreUpdate)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/credentials", strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+
+// UpdateDatastoreName
+func (c *Client) UpdateDatastoreName(datastoreId string, datastoreUpdate DataStoreInfra) error {
+	rb, err := json.Marshal(datastoreUpdate)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/name", strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// UpdateDatastoreName
+func (c *Client) UpdateDatastoreHealthCheckDbName(datastoreId string, datastoreUpdate DataStoreInfra) error {
+	rb, err := json.Marshal(datastoreUpdate)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/health-check-db-name", strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 
 // DeleteDatastore - Deletes a datastore
 func (c *Client) DeleteDatastore(datastoreId string) error {

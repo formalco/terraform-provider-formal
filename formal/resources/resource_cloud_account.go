@@ -22,7 +22,9 @@ func ResourceCloudAccount() *schema.Resource {
 		ReadContext:   resourceCloudAccountRead,
 		UpdateContext: resourceCloudAccountUpdate,
 		DeleteContext: resourceCloudAccountDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
