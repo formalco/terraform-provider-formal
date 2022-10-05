@@ -32,7 +32,7 @@ func ResourceKey() *schema.Resource {
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The friendly name for this key. NOTE: for data recovery purposes, we do not enable keys to be deleted or updated -- please consider this before applying your terraform configuration.",
+				Description: "The friendly name for this key.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -136,7 +136,6 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 		return diags
 	}
 
-
 	// Should map to all fields of KeyOrgItem
 	d.Set("id", key.Id)
 	d.Set("arn", key.KeyArn)
@@ -172,7 +171,6 @@ func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 	// return resourceKeyRead(ctx, d, meta)
 }
 
-
 func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*api.Client)
 
@@ -187,4 +185,5 @@ func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	d.SetId("")
 
-	return diags}
+	return diags
+}
