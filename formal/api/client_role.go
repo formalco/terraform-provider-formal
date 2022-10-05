@@ -71,32 +71,32 @@ func (c *Client) GetRole(roleId string) (*Role, error) {
 	return &role, nil
 }
 
-// UpdateRole - Updates an role
-// func (c *Client) UpdateRole(roleId string, roleUpdate RoleOrgItem) error {
-// 	rb, err := json.Marshal(roleUpdate)
-// 	if err != nil {
-// 		return err
-// 	}
+// UpdateGroup - Updates an group
+func (c *Client) UpdateRole(roleId string, roleData Role) error {
+	rb, err := json.Marshal(roleData)
+	if err != nil {
+		return err
+	}
 
-// 	req, err := http.NewRequest("PUT", c.HostURL+"/admin/policies/"+roleId, strings.NewReader(string(rb)))
-// 	if err != nil {
-// 		return err
-// 	}
+	req, err := http.NewRequest("PUT",  c.HostURL+"/admin/identities/roles/"+roleId, strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
 
-// 	// TODO: Though the api restricts fields, best to restrict here as well
-// 	body, err := c.doRequest(req)
-// 	if err != nil {
-// 		return err
-// 	}
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
 
-// 	var res Message
-// 	err = json.Unmarshal(body, &res)
-// 	if err != nil {
-// 		return err
-// 	}
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	return nil
+}
+
 
 // DeleteRole - Deletes a role
 func (c *Client) DeleteRole(roleId string) error {

@@ -20,7 +20,7 @@ Creating a key in Formal.
 - `cloud_region` (String) The cloud region that the key should be created in.
 - `key_type` (String) Type of key based on cloud provider. Supported values at the moment are `aws_kms`.
 - `managed_by` (String) How the key is managed. Supported values are `saas_managed`, `managed_cloud`, or `customer_managed`.
-- `name` (String) The friendly name for this key. NOTE: for data recovery purposes, we do not enable keys to be deleted or updated -- please consider this before applying your terraform configuration.
+- `name` (String) The friendly name for this key.
 
 ### Optional
 

@@ -19,7 +19,7 @@ func ResourceGroupLinkRole() *schema.Resource {
 
 		CreateContext: resourceGroupLinkRoleCreate,
 		ReadContext:   resourceGroupLinkRoleRead,
-		UpdateContext: resourceGroupLinkRoleUpdate,
+		// UpdateContext: resourceGroupLinkRoleUpdate,
 		DeleteContext: resourceGroupLinkRoleDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -36,12 +36,14 @@ func ResourceGroupLinkRole() *schema.Resource {
 				Description: "The Formal ID of the role to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew: true,
 			},
 			"group_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Formal ID for the group to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew: true,
 			},
 		},
 	}
@@ -108,9 +110,9 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
-}
+// func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// 	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
+// }
 
 func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*api.Client)
