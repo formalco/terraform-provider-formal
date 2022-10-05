@@ -140,7 +140,7 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 
 // Doesn't exist
 func resourceFieldEncryptionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("FieldEncryptions are immutable. Please create a new fieldEncryption. Thank you!")
+	return diag.Errorf("Field Encryptions are immutable. Please create a new Field Encryption. Thank you!")
 	// client := meta.(*Client)
 
 	// fieldEncryptionId := d.Id()
