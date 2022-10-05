@@ -20,7 +20,7 @@ func ResourceDataplane() *schema.Resource {
 		Description:   "Creating a Dataplane with Formal.",
 		CreateContext: resourceDataplaneCreate,
 		ReadContext:   resourceDataplaneRead,
-		UpdateContext: resourceDataplaneUpdate,
+		// UpdateContext: resourceDataplaneUpdate,
 		DeleteContext: resourceDataplaneDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -40,30 +40,35 @@ func ResourceDataplane() *schema.Resource {
 				Description: "Friendly name for this dataplane.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"customer_vpc_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The VPC ID that this dataplane should be deployed in.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"availability_zones": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Number of availability zones.",
 				Type:        schema.TypeInt,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"cloud_account_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Cloud account ID for deploying the dataplane.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"cloud_region": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The cloud region the dataplane should be deployed in.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"formal_public_route_table_id": {
 				// This description is used by the documentation generator and the language server.
@@ -121,6 +126,7 @@ func ResourceDataplane() *schema.Resource {
 				Description: "Set to true to enable VPC peering.",
 				Type:        schema.TypeBool,
 				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -234,9 +240,9 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceDataplaneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Dataplanes are immutable. Please delete and recreate this Dataplane.")
-}
+// func resourceDataplaneUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// 	return diag.Errorf("Dataplanes are immutable. You can contact the Formal team for assistance.")
+// }
 
 func resourceDataplaneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
