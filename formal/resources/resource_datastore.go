@@ -26,6 +26,9 @@ func ResourceDatastore() *schema.Resource {
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
 		},
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				// This description is used by the documentation generator and the language server.
@@ -38,24 +41,28 @@ func ResourceDatastore() *schema.Resource {
 				Description: "Hostname of the datastore.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Technology of the datastore: supported values are `snowflake`, `postgres`, and `redshift`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"deployment_type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "How the sidecar for this datastore should be deployed: `saas`, `managed`, or `onprem`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"fail_open": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is healthy, having this value of `true` will forward traffic to the original database. Default `false`.",
 				Type:        schema.TypeBool,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"internet_facing": {
 				// This description is used by the documentation generator and the language server.
@@ -88,24 +95,28 @@ func ResourceDatastore() *schema.Resource {
 				Description: "Cloud Provider that the sidecar sholud deploy in. Supported values at the moment are `aws`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The port your datastore is listening on. Required if your `technology` is `postgres` or `redshift`.",
 				Type:        schema.TypeInt,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"cloud_region": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"cloud_account_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			// "id": {
 			// 	// This description is used by the documentation generator and the language server.
@@ -162,6 +173,7 @@ func ResourceDatastore() *schema.Resource {
 				Description: "If deployment_type is managed, this is the ID of the Dataplane",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"formal_control_plane_tls_certificate": {
 				// This description is used by the documentation generator and the language server.
@@ -244,7 +256,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	fullKMSDecryption := d.Get("global_kms_decrypt").(bool)
 	if fullKMSDecryption {
-		client.UpdateDatastore(res.DsId, api.DataStoreInfra{FullKMSDecryption: true})
+		client.UpdateDatastoreGlobalKMSEncrypt(res.DsId, api.DataStoreInfra{FullKMSDecryption: true})
 	}
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
@@ -320,15 +332,44 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	datastoreId := d.Id()
 
-	fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
-	if d.HasChange("global_kms_decrypt") {
-		if fullKmsDecryption {
-			client.UpdateDatastore(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
-		} else {
-			return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. Please message the Formal team and we're happy to help.")
+	// Only enable updates to these fields, err otherwise
+	if d.HasChange("global_kms_decrypt") || d.HasChange("username") || d.HasChange("password") || d.HasChange("name") || d.HasChange("health_check_db_name") {
+		if d.HasChange("global_kms_decrypt") {
+			fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
+			if fullKmsDecryption {
+				err := client.UpdateDatastoreGlobalKMSEncrypt(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
+				if err != nil {
+					return diag.FromErr(err)
+				}
+			} else {
+				return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. You can message the Formal team for assistance.")
+			}
+		}
+		if d.HasChange("username") || d.HasChange("password") {
+			username := d.Get("username").(string)
+			password := d.Get("password").(string)
+			err := client.UpdateDatastoreUsernamePassword(datastoreId, api.DataStoreInfra{Username: username, Password: password})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+		if d.HasChange("name") {
+			name := d.Get("name").(string)
+			err := client.UpdateDatastoreName(datastoreId, api.DataStoreInfra{Name: name})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+		}
+
+		if d.HasChange("health_check_db_name") {
+			healthCheckName := d.Get("health_check_db_name").(string)
+			err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.DataStoreInfra{HealthCheckDbName: healthCheckName})
+			if err != nil {
+				return diag.FromErr(err)
+			}
 		}
 	} else {
-		return diag.Errorf("At the moment you can only update a sidecar to enable global_kms_decrypt. Please message the Formal team and we're happy to help.")
+		return diag.Errorf("At the moment you can only update a datastore's global_kms_decrypt, username, password, and name. Please message the Formal team and we're happy to help.")
 
 	}
 
@@ -372,9 +413,9 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 			}
 		}
 
-		if time.Since(deleteTimeStart) > time.Minute*10 {
-			tflog.Info(ctx, "Deletion has taken more than 10m. The sidecar may be unheatlhy. Exiting and marking as deleted.")
-			break
+		if time.Since(deleteTimeStart) > time.Minute*15 {
+			newErr := errors.New("deletion of this sidecar has taken more than 10m; the sidecar may be unhealthy")
+			return diag.FromErr(newErr)
 		}
 
 		time.Sleep(15 * time.Second)

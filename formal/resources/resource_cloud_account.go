@@ -22,7 +22,9 @@ func ResourceCloudAccount() *schema.Resource {
 		ReadContext:   resourceCloudAccountRead,
 		UpdateContext: resourceCloudAccountUpdate,
 		DeleteContext: resourceCloudAccountDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
@@ -35,18 +37,21 @@ func ResourceCloudAccount() *schema.Resource {
 				Description: "A friendly name to refer to this Cloud Account when using Formal.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				// ForceNew:    true,
 			},
 			"aws_cloud_region": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The AWS Region you would like to deploy the CloudFormation stack in. Supported values are us-east-1, us-east-2, and eu-west-1.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"cloud_provider": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Cloud Provider you are connecting the cloud account from. The only currently supported value is `aws`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"aws_formal_stack_name": {
 				// This description is used by the documentation generator and the language server.

@@ -73,7 +73,7 @@ func (c *Client) UpdateGroup(groupId string, groupUpdate GroupStruct) error {
 		return err
 	}
 
-	req, err := http.NewRequest("PUT", c.HostURL+"/admin/identities/group/"+groupId, strings.NewReader(string(rb)))
+	req, err := http.NewRequest("POST", c.HostURL+"/admin/identities/groups/"+groupId, strings.NewReader(string(rb)))
 	if err != nil {
 		return err
 	}

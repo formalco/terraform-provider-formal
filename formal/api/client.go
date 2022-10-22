@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"time"
+
 )
 
 // Client -
@@ -18,7 +19,7 @@ type Client struct {
 
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 
-// const DEV_URL string = "http://localhost:4000"
+const DEV_URL string = "http://localhost:4000"
 
 // NewClient -
 func NewClient(client_id, secret_key string) (*Client, error) {
@@ -29,9 +30,9 @@ func NewClient(client_id, secret_key string) (*Client, error) {
 		HostURL:    FORMAL_HOST_URL,
 	}
 
-	// if DEV_URL != "" {
-	// 	c.HostURL = DEV_URL
-	// }
+	if DEV_URL != "" {
+		c.HostURL = DEV_URL
+	}
 
 	return &c, nil
 }
