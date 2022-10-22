@@ -63,7 +63,7 @@ resource "formal_dataplane" "main" {
 }
 
 resource "aws_security_group" "rds" {
-  name   = "rds-1"
+  name   = "rds"
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -116,6 +116,64 @@ resource "formal_datastore" "main" {
   dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
 }
+
+
+resource "aws_redshift_subnet_group" "main" {
+  name       = "main"
+  subnet_ids = toset(aws_subnet.private.*.id)
+}
+
+resource "aws_security_group" "allow_ingress_traffic_to_redshift" {
+  name        = "allow_ingress_traffic_to_redshift"
+  description = "Allow inbound traffic to redshift"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 5439
+    to_port     = 5439
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+}
+
+resource "aws_redshift_cluster" "demo" {
+  cluster_identifier        = "tf-redshift-cluster"
+  database_name             = "mydb"
+  master_username           = var.postgres_username
+  master_password           = var.postgres_password
+  node_type                 = "dc2.large"
+  cluster_type              = "single-node"
+  publicly_accessible       = true
+  cluster_subnet_group_name = aws_redshift_subnet_group.main.name
+  skip_final_snapshot       = true
+  vpc_security_group_ids    = [aws_security_group.allow_ingress_traffic_to_redshift.id]
+}
+
+resource "formal_datastore" "demo" {
+  technology         = "redshift"
+  name               = var.name
+  hostname           = aws_redshift_cluster.demo.dns_name
+  port               = aws_redshift_cluster.demo.port
+  deployment_type    = "managed"
+  cloud_provider     = "aws"
+  cloud_region       = var.region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  fail_open          = false
+  internet_facing    = true
+  username           = var.postgres_username
+  password           = var.postgres_password
+  dataplane_id       = formal_dataplane.main.id
+  global_kms_decrypt = true
+}
+
 
 resource "aws_route53_zone_association" "secondary" {
   zone_id = formal_dataplane.main.formal_r53_private_hosted_zone_id
