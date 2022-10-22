@@ -17,7 +17,7 @@ Linking a Policy to a Role, Group, or Datastore in Formal.
 
 ### Required
 
-- `item_id` (String) User, Group, or Datastore ID that should be linked. NOTE: deleting one of these item types will delete all policy links between policies and that item. The policies are not deleted.
+- `item_id` (String) User, Group, or Datastore ID that should be linked. NOTE: deleting the item will delete all policy links created for that item.
 - `policy_id` (String) Policy ID to be linked.
 - `type` (String) Type of item that should be linked. Possible values are `role`, `group`, and `datastore`.
 

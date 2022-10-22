@@ -19,11 +19,12 @@ Attaching Routes with Formal Dataplane.
 
 - `dataplane_id` (String) ID of the dataplane.
 - `destination_cidr_block` (String) CIDR block of the destination.
-- `transit_gateway_id` (String) ID of the transit gateway.
 
 ### Optional
 
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `transit_gateway_id` (String) ID of the transit gateway.
+- `vpc_peering_connection_id` (String) ID of the vpc peering connection.
 
 ### Read-Only
 

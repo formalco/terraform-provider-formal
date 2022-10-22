@@ -14,13 +14,15 @@ import (
 func ResourceRole() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Creating a Role in formal.",
+		Description: "Creating a Role in Formal.",
 
 		CreateContext: resourceRoleCreate,
 		ReadContext:   resourceRoleRead,
 		UpdateContext: resourceRoleUpdate,
 		DeleteContext: resourceRoleDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
@@ -57,6 +59,7 @@ func ResourceRole() *schema.Resource {
 				Description: "For human users, their email.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
@@ -93,9 +96,8 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		FirstName: d.Get("first_name").(string),
 		LastName:  d.Get("last_name").(string),
 		Email:     d.Get("email").(string),
-		//
-		Name:    d.Get("name").(string),
-		AppType: d.Get("app_type").(string),
+		Name:      d.Get("name").(string),
+		AppType:   d.Get("app_type").(string),
 	}
 
 	role, err := client.CreateRole(newRole)
@@ -123,7 +125,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Role with ID "+ roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Role with ID "+roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -133,15 +135,14 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		return diags
 	}
 
-
 	// Should map to all fields of RoleOrgItem
 	d.Set("id", role.ID)
 	d.Set("type", role.Type)
 	d.Set("db_username", role.DBUsername)
+	d.Set("name", role.Name)
 	d.Set("first_name", role.FirstName)
 	d.Set("last_name", role.LastName)
 	d.Set("email", role.Email)
-	d.Set("name", role.Name)
 	d.Set("app_type", role.AppType)
 	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 	d.SetId(roleId)
@@ -150,20 +151,23 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Roles are immutable at the moment, but will be updateable soon. Please create a new role. Thank you!")
+	client := meta.(*api.Client)
 
-	// client := meta.(*Client)
+	var diags diag.Diagnostics
 
-	// roleId := d.Id()
+	roleId := d.Id()
+	name := d.Get("name").(string)
+	firstName := d.Get("first_name").(string)
+	lastName := d.Get("last_name").(string)
 
-	// roleUpdate := RoleOrgItem{
-	// 	Name:        d.Get("name").(string),
-	// 	Description: d.Get("description").(string),
-	// 	Module:      d.Get("module").(string),
-	// }
+	err := client.UpdateRole(roleId, api.Role{Name: name, FirstName: firstName, LastName: lastName})
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	// client.UpdateRole(roleId, roleUpdate)
-	// return resourceRoleRead(ctx, d, meta)
+	resourceRoleRead(ctx, d, meta)
+
+	return diags
 }
 
 func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

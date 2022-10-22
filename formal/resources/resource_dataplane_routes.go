@@ -20,9 +20,11 @@ func ResourceDataplaneRoutes() *schema.Resource {
 		Description:   "Attaching Routes with Formal Dataplane.",
 		CreateContext: resourceDataplaneRoutesCreate,
 		ReadContext:   resourceDataplaneRoutesRead,
-		UpdateContext: resourceDataplaneRoutesUpdate,
+		// UpdateContext: resourceDataplaneRoutesUpdate,
 		DeleteContext: resourceDataplaneRoutesDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
 		},
@@ -38,24 +40,28 @@ func ResourceDataplaneRoutes() *schema.Resource {
 				Description: "ID of the dataplane.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"transit_gateway_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the transit gateway.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"vpc_peering_connection_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "ID of the vpc peering connection.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"destination_cidr_block": {
 				// This description is used by the documentation generator and the language server.
 				Description: "CIDR block of the destination.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"deployed": {
 				// This description is used by the documentation generator and the language server.
@@ -159,9 +165,9 @@ func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceDataplaneRoutesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Dataplanes are immutable. Please delete and recreate this Dataplane.")
-}
+// func resourceDataplaneRoutesUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// 	return diag.Errorf("Dataplanes are immutable. Please delete and recreate this Dataplane.")
+// }
 
 func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method

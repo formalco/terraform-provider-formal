@@ -20,7 +20,9 @@ func ResourcePolicy() *schema.Resource {
 		ReadContext:   resourcePolicyRead,
 		UpdateContext: resourcePolicyUpdate,
 		DeleteContext: resourcePolicyDelete,
-
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 		Schema: map[string]*schema.Schema{
 			"name": {
 				// This description is used by the documentation generator and the language server.
@@ -160,19 +162,23 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	policyUpdate := api.PolicyOrgItem{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Module:      d.Get("module").(string),
-		SourceType:  "terraform",
-	}
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module")  {
+		policyUpdate := api.PolicyOrgItem{
+			Name:        d.Get("name").(string),
+			Description: d.Get("description").(string),
+			Module:      d.Get("module").(string),
+			SourceType:  "terraform",
+		}
 
-	err := client.UpdatePolicy(policyId, policyUpdate)
-	if err != nil {
-		return diag.FromErr(err)
-	}
+		err := client.UpdatePolicy(policyId, policyUpdate)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	return resourcePolicyRead(ctx, d, meta)
+		return resourcePolicyRead(ctx, d, meta)
+	} else {
+		return diag.Errorf("At the moment you can only update a policy's name, description, and module. Please delete and recreate the Policy")
+	}
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

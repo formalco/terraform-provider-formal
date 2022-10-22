@@ -37,3 +37,5 @@ website/vendor
 .terraform.lock.hcl
 build.sh
 dev
+
+set_local_env.sh

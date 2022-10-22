@@ -18,7 +18,7 @@ func ResourcePolicyLink() *schema.Resource {
 
 		CreateContext: resourcePolicyLinkCreate,
 		ReadContext:   resourcePolicyLinkRead,
-		UpdateContext: resourcePolicyLinkUpdate,
+		// UpdateContext: resourcePolicyLinkUpdate,
 		DeleteContext: resourcePolicyLinkDelete,
 
 		Schema: map[string]*schema.Schema{
@@ -33,18 +33,21 @@ func ResourcePolicyLink() *schema.Resource {
 				Description: "Policy ID to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"item_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "User, Group, or Datastore ID that should be linked. NOTE: deleting one of these item types will delete all policy links between policies and that item. The policies are not deleted.",
+				Description: "User, Group, or Datastore ID that should be linked. NOTE: deleting the item will delete all policy links created for that item.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of item that should be linked. Possible values are `role`, `group`, and `datastore`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			// "active": {
 			// 	// This description is used by the documentation generator and the language server.
@@ -96,7 +99,7 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Link was deleted
-			tflog.Warn(ctx, "The Policy-Item link with ID "+policyLink.ID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Policy-Item link with ID "+policyLinkId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -118,9 +121,9 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 	return diags
 }
 
-func resourcePolicyLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	return diag.Errorf("Policy Links are immutable. Please create a new policyLink.")
-}
+// func resourcePolicyLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+// 	return diag.Errorf("Policy Links are immutable. Please create a new policyLink.")
+// }
 
 func resourcePolicyLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	client := meta.(*api.Client)
