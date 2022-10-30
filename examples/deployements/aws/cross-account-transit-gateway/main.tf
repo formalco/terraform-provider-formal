@@ -263,7 +263,7 @@ resource "formal_datastore" "demo" {
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
   fail_open          = false
-  internet_facing    = true
+  network_type       = "internet-facing"
   username           = var.postgres_username
   password           = var.postgres_password
   dataplane_id       = formal_dataplane.tgw.id

@@ -64,11 +64,12 @@ func ResourceDatastore() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"internet_facing": {
+			"network_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Configure the sidecar to be internet facing. Default `false`.",
-				Type:        schema.TypeBool,
+				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
+				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"username": {
 				// This description is used by the documentation generator and the language server.
@@ -213,9 +214,9 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		DeploymentType: d.Get("deployment_type").(string),
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		// NetStackId:
-		FailOpen:       d.Get("fail_open").(bool),
-		InternetFacing: d.Get("internet_facing").(bool),
-		DataplaneID:    d.Get("dataplane_id").(string),
+		FailOpen:    d.Get("fail_open").(bool),
+		NetworkType: d.Get("network_type").(string),
+		DataplaneID: d.Get("dataplane_id").(string),
 		// CreateAt
 	}
 
@@ -302,7 +303,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("cloud_account_id", datastore.CloudAccountID)
 	d.Set("net_stack_id", datastore.NetStackId)
 	d.Set("fail_open", datastore.FailOpen)
-	d.Set("internet_facing", datastore.InternetFacing)
+	d.Set("network_type", datastore.NetworkType)
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
