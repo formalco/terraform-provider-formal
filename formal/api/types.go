@@ -46,7 +46,7 @@ type DataStoreInfra struct {
 	DataplaneID       string `json:"dataplane_id"`
 	NetStackId        string `json:"net_stack_id"`
 	FailOpen          bool   `json:"fail_open"`
-	InternetFacing    bool   `json:"internet_facing"`
+	NetworkType       string `json:"network_type"`
 	CreatedAt         int    `json:"created_at"`
 	FullKMSDecryption bool   `json:"global_kms_decrypt"`
 }
