@@ -71,7 +71,7 @@ resource "formal_datastore" "my_datastore" {
   cloud_region         = var.datastore_region
   cloud_account_id     = formal_cloud_account.integrated_aws_account.id
   fail_open            = false
-  internet_facing      = true
+  network_type         = "internet-facing"
   health_check_db_name = "postgres"
   username             = var.datastore_username
   password             = var.datastore_password
