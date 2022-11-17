@@ -194,8 +194,6 @@ type FlatDataplane struct {
 	OrgId                         string      `json:"org_id"`
 	StackName                     string      `json:"name"`
 	Region                        string      `json:"region"`
-	CustomerVpcId                 string      `json:"customer_vpc_id"`
-	OriginalCustomerVpcId         string      `json:"original_customer_vpc_id"`
 	CloudAccountId                string      `json:"cloud_account_id"`
 	AvailabilityZone              int         `json:"availability_zone"`
 	VpcPeeringConnectionId        string      `json:"vpc_peering_connection_id"`

@@ -42,14 +42,6 @@ func ResourceDataplane() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"customer_vpc_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The VPC ID that this dataplane should be deployed in.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-				Deprecated:  "Remove this attribute's configuration as it no longer is used and the attribute will be removed in the next major version of the provider.",
-			},
 			"availability_zones": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Number of availability zones.",
@@ -146,8 +138,6 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	newDataplane := api.FlatDataplane{
 		StackName:             d.Get("name").(string),
-		CustomerVpcId:         d.Get("customer_vpc_id").(string),
-		OriginalCustomerVpcId: d.Get("customer_vpc_id").(string),
 		CloudAccountId:        d.Get("cloud_account_id").(string),
 		Region:                d.Get("cloud_region").(string),
 		AvailabilityZone:      d.Get("availability_zones").(int),
@@ -222,7 +212,6 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.Set("name", foundDataplane.StackName)
-	d.Set("customer_vpc_id", foundDataplane.CustomerVpcId)
 	d.Set("cloud_account_id", foundDataplane.CloudAccountId)
 	d.Set("cloud_region", foundDataplane.Region)
 	d.Set("availability_zones", foundDataplane.AvailabilityZone)
