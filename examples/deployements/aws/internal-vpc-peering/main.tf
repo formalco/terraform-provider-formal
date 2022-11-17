@@ -53,7 +53,6 @@ resource "formal_dataplane" "main" {
   name               = var.name
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
-  customer_vpc_id    = aws_vpc.main.id
   availability_zones = 2
 
   depends_on = [
