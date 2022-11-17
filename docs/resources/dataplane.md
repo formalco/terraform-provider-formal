@@ -20,7 +20,7 @@ Creating a Dataplane with Formal.
 - `availability_zones` (Number) Number of availability zones.
 - `cloud_account_id` (String) Cloud account ID for deploying the dataplane.
 - `cloud_region` (String) The cloud region the dataplane should be deployed in.
-- `customer_vpc_id` (String) The VPC ID that this dataplane should be deployed in.
+- `customer_vpc_id` (String, Deprecated) The VPC ID that this dataplane should be deployed in.
 - `name` (String) Friendly name for this dataplane.
 
 ### Optional

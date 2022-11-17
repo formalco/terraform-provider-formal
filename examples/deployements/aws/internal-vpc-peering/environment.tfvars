@@ -1,4 +1,4 @@
-formal_client_id = ""
+formal_client_id  = ""
 formal_secret_key = ""
 
 aws_access_key = ""

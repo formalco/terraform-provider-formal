@@ -21,8 +21,8 @@ Registering a Datastore with Formal.
 - `deployment_type` (String) How the sidecar for this datastore should be deployed: `saas`, `managed`, or `onprem`.
 - `fail_open` (Boolean) Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is healthy, having this value of `true` will forward traffic to the original database. Default `false`.
 - `hostname` (String) Hostname of the datastore.
-- `network_type` (String) Configure the sidecar network type. Value can be `internet_facing`, `internal` or `internet-and-internal`.
 - `name` (String) Friendly name for this datastore.
+- `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
 - `password` (String, Sensitive) Password for the original datastore that the sidecar should use. Please be sure to set this secret via Terraform environment variables.
 - `technology` (String) Technology of the datastore: supported values are `snowflake`, `postgres`, and `redshift`.
 - `username` (String, Sensitive) Username for the original datastore that the sidecar should use. Please be sure to set this secret via Terraform environment variables.
