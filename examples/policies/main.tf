@@ -37,7 +37,7 @@ resource "formal_policy" "mask_emails" {
 package formal.validator
 
 mask[[action, typesafe]] {
-  input.tag := "email_address"  
+  input.tag = "email_address"  
   action := "email_mask_username"
   typesafe := ""
 }
@@ -51,7 +51,7 @@ resource "formal_policy" "mask_emails_typesafe_fallback_to_default" {
 package formal.validator
 
 mask[[action, typesafe]] {
-  input.tag := "email_address"  
+  input.tag = "email_address"  
   action := "email_mask_username"
   typesafe := "fallback_to_default"
 }
@@ -65,7 +65,7 @@ resource "formal_policy" "mask_emails_typesafe_fallback_to_null" {
 package formal.validator
 
 mask[[action, typesafe]] {
-  input.tag := "email_address"  
+  input.tag = "email_address"  
   action := "email_mask_username"
   typesafe := "fallback_to_null"
 }

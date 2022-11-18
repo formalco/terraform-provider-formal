@@ -48,6 +48,7 @@ func ResourceDataplane() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				Deprecated:  "Remove this attribute's configuration as it no longer is used and the attribute will be removed in the next major version of the provider.",
 			},
 			"availability_zones": {
 				// This description is used by the documentation generator and the language server.
