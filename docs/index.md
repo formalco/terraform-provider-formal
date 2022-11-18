@@ -22,7 +22,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 1.0.53"
+      version = "~> 2.0.0"
     }
   }
 }

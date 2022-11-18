@@ -3,11 +3,11 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.53"
+      version = "~> 2.0.0"
     }
     aws = {
       source  = "hashicorp/aws"
-      version = "~>3.0"
+      version = "~> 3.0"
     }
   }
 }
@@ -223,7 +223,6 @@ resource "formal_dataplane" "tgw" {
   name               = var.name
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
-  customer_vpc_id    = aws_vpc.vpc_accountB.id
   availability_zones = 2
 
   depends_on = [
