@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.53"
+      version = "~>2.0.0"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -53,7 +53,6 @@ resource "formal_dataplane" "my_dataplane" {
   name               = "my_dataplane"
   cloud_region       = var.datastore_region
   cloud_account_id   = var.cloud_account_id
-  customer_vpc_id    = var.customer_vpc_id
   availability_zones = 3
   vpc_peering        = true
 }

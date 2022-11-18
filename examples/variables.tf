@@ -24,10 +24,6 @@ variable "datastore_hostname" {
   type = string
 }
 
-variable "customer_vpc_id" {
-  type = string
-}
-
 variable "cloud_account_id" {
   type = string
 }
