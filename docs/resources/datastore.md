@@ -18,6 +18,7 @@ Registering a Datastore with Formal.
 ### Required
 
 - `cloud_provider` (String) Cloud Provider that the sidecar sholud deploy in. Supported values at the moment are `aws`.
+- `default_access_behavior` (String) The default access behavior of the sidecar. Possible values are `allow` and `block`.
 - `deployment_type` (String) How the sidecar for this datastore should be deployed: `saas`, `managed`, or `onprem`.
 - `fail_open` (Boolean) Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is healthy, having this value of `true` will forward traffic to the original database. Default `false`.
 - `hostname` (String) Hostname of the datastore.

@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 2.0.0"
+      version = "~> 2.0.1"
     }
     aws = {
       source  = "hashicorp/aws"
