@@ -183,6 +183,13 @@ func ResourceDatastore() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"default_access_behavior": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The default access behavior of the sidecar. Possible values are `allow` and `block`.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -214,9 +221,10 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		DeploymentType: d.Get("deployment_type").(string),
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		// NetStackId:
-		FailOpen:    d.Get("fail_open").(bool),
-		NetworkType: d.Get("network_type").(string),
-		DataplaneID: d.Get("dataplane_id").(string),
+		FailOpen:              d.Get("fail_open").(bool),
+		NetworkType:           d.Get("network_type").(string),
+		DataplaneID:           d.Get("dataplane_id").(string),
+		DefaultAccessBehavior: d.Get("default_access_behavior").(string),
 		// CreateAt
 	}
 
@@ -307,6 +315,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
+	d.Set("default_access_behavior", datastore.DefaultAccessBehavior)
 
 	if datastore.DeploymentType == "onprem" {
 		tlsCert, err := client.GetDatastoreTlsCert(datastoreId)
