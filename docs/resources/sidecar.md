@@ -41,7 +41,7 @@ Registering a Sidecar with Formal.
 
 - `created_at` (Number) Creation time of the sidecar.
 - `datastore_id` (String) Formal ID for the datastore.
-- `default_access_behavior` (String, Sensitive) If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.
+- `default_access_behavior` (String, Sensitive) The default access behavior of the sidecar. Possible values are `allow` and `block`
 - `formal_control_plane_tls_certificate` (String, Sensitive) If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.
 - `formal_hostname` (String) The hostname of the created sidcar.
 - `id` (String) The ID of this resource.

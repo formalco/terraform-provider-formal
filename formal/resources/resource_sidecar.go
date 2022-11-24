@@ -177,7 +177,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"default_access_behavior": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.",
+				Description: "The default access behavior of the sidecar. Possible values are `allow` and `block`",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
