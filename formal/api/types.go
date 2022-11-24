@@ -27,28 +27,29 @@ type DataStore struct {
 }
 
 type DataStoreInfra struct {
-	Id                string `json:"id"`
-	DsId              string `json:"datastore_id"`
-	OrganisationID    string `json:"org_id"`
-	StackName         string `json:"stack_name"`
-	Name              string `json:"name"`
-	Hostname          string `json:"hostname"`
-	Port              int    `json:"port"`
-	Username          string `json:"username"`
-	Password          string `json:"password"`
-	HealthCheckDbName string `json:"health_check_db_name"`
-	FormalHostname    string `json:"formal_hostname"`
-	Technology        string `json:"technology"`
-	CloudProvider     string `json:"cloud_provider"`
-	CloudRegion       string `json:"cloud_region"`
-	DeploymentType    string `json:"deployment_type"`
-	CloudAccountID    string `json:"cloud_account_id"`
-	DataplaneID       string `json:"dataplane_id"`
-	NetStackId        string `json:"net_stack_id"`
-	FailOpen          bool   `json:"fail_open"`
-	NetworkType       string `json:"network_type"`
-	CreatedAt         int    `json:"created_at"`
-	FullKMSDecryption bool   `json:"global_kms_decrypt"`
+	Id                    string `json:"id"`
+	DsId                  string `json:"datastore_id"`
+	OrganisationID        string `json:"org_id"`
+	StackName             string `json:"stack_name"`
+	Name                  string `json:"name"`
+	Hostname              string `json:"hostname"`
+	Port                  int    `json:"port"`
+	Username              string `json:"username"`
+	Password              string `json:"password"`
+	HealthCheckDbName     string `json:"health_check_db_name"`
+	FormalHostname        string `json:"formal_hostname"`
+	Technology            string `json:"technology"`
+	CloudProvider         string `json:"cloud_provider"`
+	CloudRegion           string `json:"cloud_region"`
+	DeploymentType        string `json:"deployment_type"`
+	CloudAccountID        string `json:"cloud_account_id"`
+	DataplaneID           string `json:"dataplane_id"`
+	NetStackId            string `json:"net_stack_id"`
+	FailOpen              bool   `json:"fail_open"`
+	NetworkType           string `json:"network_type"`
+	CreatedAt             int    `json:"created_at"`
+	FullKMSDecryption     bool   `json:"global_kms_decrypt"`
+	DefaultAccessBehavior string `json:"default_access_behavior"`
 }
 
 type CreatePolicyPayload struct {

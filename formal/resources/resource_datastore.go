@@ -29,6 +29,7 @@ func ResourceDatastore() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "Use the formal_sidecar resource instead of formal_datastore. The formal_datastore resource is being renamed to (and thus is deprecated) the formal_sidecar resource. The formal_datastore resource type will be removed in the next major version of the provider. To make this migration, replace the formal_datastore resource type in your configuration with formal_sidecar.",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				// This description is used by the documentation generator and the language server.
@@ -183,6 +184,13 @@ func ResourceDatastore() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"default_access_behavior": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The default access behavior of the sidecar. Possible values are `allow` and `block`.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -214,9 +222,10 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		DeploymentType: d.Get("deployment_type").(string),
 		CloudAccountID: d.Get("cloud_account_id").(string),
 		// NetStackId:
-		FailOpen:    d.Get("fail_open").(bool),
-		NetworkType: d.Get("network_type").(string),
-		DataplaneID: d.Get("dataplane_id").(string),
+		FailOpen:              d.Get("fail_open").(bool),
+		NetworkType:           d.Get("network_type").(string),
+		DataplaneID:           d.Get("dataplane_id").(string),
+		DefaultAccessBehavior: d.Get("default_access_behavior").(string),
 		// CreateAt
 	}
 
@@ -307,6 +316,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("created_at", datastore.CreatedAt)
 	d.Set("global_kms_decrypt", datastore.FullKMSDecryption)
 	d.Set("dataplane_id", datastore.DataplaneID)
+	d.Set("default_access_behavior", datastore.DefaultAccessBehavior)
 
 	if datastore.DeploymentType == "onprem" {
 		tlsCert, err := client.GetDatastoreTlsCert(datastoreId)
