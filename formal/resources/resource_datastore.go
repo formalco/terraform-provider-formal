@@ -29,6 +29,7 @@ func ResourceDatastore() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		DeprecationMessage: "Use the formal_sidecar resource instead of formal_datastore. The formal_datastore resource is being renamed to (and thus is deprecated) the formal_sidecar resource. The formal_datastore resource type will be removed in the next major version of the provider. To make this migration, replace the formal_datastore resource type in your configuration with formal_sidecar.",
 		Schema: map[string]*schema.Schema{
 			"name": {
 				// This description is used by the documentation generator and the language server.
