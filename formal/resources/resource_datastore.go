@@ -189,7 +189,6 @@ func ResourceDatastore() *schema.Resource {
 				Description: "The default access behavior of the sidecar. Possible values are `allow` and `block`.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -343,45 +342,56 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	datastoreId := d.Id()
 
+	fieldsThatCanChange := []string{"global_kms_decrypt", "username", "password", "name", "health_check_db_name", "default_access_behavior"}
+
+	if d.HasChangesExcept(fieldsThatCanChange...) {
+		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
+		return diag.Errorf(err)
+	}
+
 	// Only enable updates to these fields, err otherwise
-	if d.HasChange("global_kms_decrypt") || d.HasChange("username") || d.HasChange("password") || d.HasChange("name") || d.HasChange("health_check_db_name") {
-		if d.HasChange("global_kms_decrypt") {
-			fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
-			if fullKmsDecryption {
-				err := client.UpdateDatastoreGlobalKMSEncrypt(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
-				if err != nil {
-					return diag.FromErr(err)
-				}
-			} else {
-				return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. You can message the Formal team for assistance.")
-			}
-		}
-		if d.HasChange("username") || d.HasChange("password") {
-			username := d.Get("username").(string)
-			password := d.Get("password").(string)
-			err := client.UpdateDatastoreUsernamePassword(datastoreId, api.DataStoreInfra{Username: username, Password: password})
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
-		if d.HasChange("name") {
-			name := d.Get("name").(string)
-			err := client.UpdateDatastoreName(datastoreId, api.DataStoreInfra{Name: name})
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		}
 
-		if d.HasChange("health_check_db_name") {
-			healthCheckName := d.Get("health_check_db_name").(string)
-			err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.DataStoreInfra{HealthCheckDbName: healthCheckName})
+	if d.HasChange("global_kms_decrypt") {
+		fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
+		if fullKmsDecryption {
+			err := client.UpdateDatastoreGlobalKMSEncrypt(datastoreId, api.DataStoreInfra{FullKMSDecryption: fullKmsDecryption})
 			if err != nil {
 				return diag.FromErr(err)
 			}
+		} else {
+			return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. You can message the Formal team for assistance.")
 		}
-	} else {
-		return diag.Errorf("At the moment you can only update a datastore's global_kms_decrypt, username, password, and name. Please message the Formal team and we're happy to help.")
+	}
+	if d.HasChange("username") || d.HasChange("password") {
+		username := d.Get("username").(string)
+		password := d.Get("password").(string)
+		err := client.UpdateDatastoreUsernamePassword(datastoreId, api.DataStoreInfra{Username: username, Password: password})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		err := client.UpdateDatastoreName(datastoreId, api.DataStoreInfra{Name: name})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
 
+	if d.HasChange("health_check_db_name") {
+		healthCheckName := d.Get("health_check_db_name").(string)
+		err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.DataStoreInfra{HealthCheckDbName: healthCheckName})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("default_access_behavior") {
+		defaultAccessBehavior := d.Get("default_access_behavior").(string)
+		err := client.UpdateDatastoreDefaultAcccessBehavior(datastoreId, api.DataStoreInfra{DefaultAccessBehavior: defaultAccessBehavior})
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	resourceDatastoreRead(ctx, d, meta)

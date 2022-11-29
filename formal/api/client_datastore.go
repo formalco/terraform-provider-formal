@@ -58,7 +58,6 @@ func (c *Client) GetDatastore(datastoreId string) (*DataStoreInfra, error) {
 	return &dsInfra.DataStore, nil
 }
 
-
 func (c *Client) UpdateDatastoreGlobalKMSEncrypt(datastoreId string, datastoreUpdate DataStoreInfra) error {
 	if datastoreUpdate.FullKMSDecryption {
 		req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/kms-decrypt-policy?enable=true", nil)
@@ -105,7 +104,6 @@ func (c *Client) UpdateDatastoreUsernamePassword(datastoreId string, datastoreUp
 
 	return nil
 }
-
 
 // UpdateDatastoreName
 func (c *Client) UpdateDatastoreName(datastoreId string, datastoreUpdate DataStoreInfra) error {
@@ -159,6 +157,31 @@ func (c *Client) UpdateDatastoreHealthCheckDbName(datastoreId string, datastoreU
 	return nil
 }
 
+// To be used in the future with other fields too
+func (c *Client) UpdateDatastoreDefaultAcccessBehavior(datastoreId string, datastoreUpdate DataStoreInfra) error {
+	rb, err := json.Marshal(datastoreUpdate)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/stores/"+datastoreId+"/default-access-behavior", strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 // DeleteDatastore - Deletes a datastore
 func (c *Client) DeleteDatastore(datastoreId string) error {
