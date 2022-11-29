@@ -18,7 +18,7 @@ type DataStore struct {
 	FormalHostname   string          `json:"formal_hostname,omitempty"`
 	Username         string          `json:"username"`
 	CloudRegion      string          `json:"cloud_region"`
-	Created          string          `json:"created_at,omitempty"`
+	CreatedAt        int64           `json:"created_at,omitempty"`
 	ProxyStatus      string          `json:"proxy_status,omitempty"`
 	DeploymentType   string          `json:"deployment_type,omitempty"`
 	Policies         []PolicyOrgItem `json:"linked_policies"`
