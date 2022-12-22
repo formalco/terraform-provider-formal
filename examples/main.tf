@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>2.0.4"
+      version = "~>2.0.5"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -58,9 +58,9 @@ resource "formal_dataplane" "my_dataplane" {
 }
 
 
-# Datastore Sidecar, Managed Example
-# For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_datastore.my_onprem_datastore.formal_control_plane_tls_certificate
-resource "formal_datastore" "my_datastore" {
+# Sidecar, Managed Example
+# For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_sidecar.my_onprem_datastore.formal_control_plane_tls_certificate
+resource "formal_sidecar" "my_sidecar" {
   technology           = var.datastore_technology # postgres, redshift, snowflake
   name                 = var.datastore_name
   hostname             = var.datastore_hostname
@@ -77,6 +77,14 @@ resource "formal_datastore" "my_datastore" {
   dataplane_id         = var.dataplane_id
 }
 
+# Native Role
+resource "formal_native_role" "db_role" {
+  datastore_id       = formal_sidecar.my_sidecar.datastore_id
+  native_role_id     = "postgres"
+  native_role_secret = "hunter2"
+  use_as_default     = false // per sidecar, exactly one native role must be marked as the default.
+}
+
 
 # Role
 resource "formal_role" "dior_the_data_scientist" {
@@ -86,6 +94,14 @@ resource "formal_role" "dior_the_data_scientist" {
   last_name  = "scientist"
 }
 
+
+# Link Native Role to the above Role
+resource "formal_native_role_link" "dior_uses_db_role" {
+  datastore_id         = formal_native_role.db_role.datastore_id
+  native_role_id       = formal_native_role.db_role.native_role_id
+  formal_identity_id   = formal_role.dior_the_data_scientist.id
+  formal_identity_type = "role"
+}
 
 # Key to be used for Field Encryption
 resource "formal_key" "encrypt_email_field_key" {
@@ -99,7 +115,7 @@ resource "formal_key" "encrypt_email_field_key" {
 
 # Specify a Field Encryption 
 resource "formal_field_encryption" "encrypt_email_field" {
-  datastore_id = formal_datastore.my_datastore.datastore_id
+  datastore_id = formal_sidecar.my_datastore.datastore_id
   path         = "main.public.customers.email"
   key_storage  = "control_plane_only"
   key_id       = formal_key.encrypt_email_field_key.id
