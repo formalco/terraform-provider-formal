@@ -55,6 +55,8 @@ func New(version string) func() *schema.Provider {
 				"formal_cloud_account":    resource.ResourceCloudAccount(),
 				"formal_dataplane":        resource.ResourceDataplane(),
 				"formal_dataplane_routes": resource.ResourceDataplaneRoutes(),
+				"formal_native_role":      resource.ResourceNativeRole(),
+				"formal_native_role_link": resource.ResourceNativeRoleLink(),
 			},
 		}
 

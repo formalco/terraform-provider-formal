@@ -141,7 +141,7 @@ type Role struct {
 	MachineRoleAccessToken string `json:"machine_role_access_token"` // returned in CREATE and GET routes. added for terraform
 
 	// Status     string          `json:"status"`
-	// Expire     int64           `json:"expire_at"`
+	ExpireAt int `json:"expire_at"`
 	// Created    int64           `json:"created_at"`
 	// Policies   []PolicyOrgItem `json:"linked_policies"`
 }
@@ -231,4 +231,18 @@ type DataplaneRoutes struct {
 	TransitGatewayId       string `json:"transit_gateway_id"`
 	VpcPeeringConnectionId string `json:"vpc_peering_connection_id"`
 	Deployed               bool   `json:"deployed"`
+}
+
+type NativeRole struct {
+	DatastoreId      string `json:"datastore_id"`
+	NativeRoleId     string `json:"native_role_id"`
+	NativeRoleSecret string `json:"native_role_secret"`
+	UseAsDefault     bool   `json:"use_as_default"`
+}
+
+type NativeRoleLink struct {
+	DatastoreId        string `json:"datastore_id"`
+	FormalIdentityId   string `json:"formal_identity_id"`
+	FormalIdentityType string `json:"formal_identity_type"`
+	NativeRoleId       string `json:"native_role_id"`
 }

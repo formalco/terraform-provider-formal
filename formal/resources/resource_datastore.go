@@ -36,6 +36,7 @@ func ResourceDatastore() *schema.Resource {
 				Description: "Friendly name for this datastore.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"hostname": {
 				// This description is used by the documentation generator and the language server.

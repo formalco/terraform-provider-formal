@@ -23,6 +23,7 @@ Creating a Role in Formal.
 
 - `app_type` (String) If the role is of type `machine`, this is an optional designation for the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.
 - `email` (String) For human users, their email.
+- `expire_at` (Number) When the Role should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970.
 - `first_name` (String) For human users, their first name.
 - `last_name` (String) For human users, their last name.
 - `name` (String) For machine users, the name of the role.
