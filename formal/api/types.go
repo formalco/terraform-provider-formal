@@ -11,45 +11,40 @@ type FieldEncryptionStruct struct {
 }
 
 // Used for datastore creation status
-type DataStore struct {
-	ID               string          `json:"id,omitempty"`
-	Name             string          `json:"name,omitempty"`
-	OriginalHostname string          `json:"original_hostname,omitempty"`
-	FormalHostname   string          `json:"formal_hostname,omitempty"`
-	Username         string          `json:"username"`
-	CloudRegion      string          `json:"cloud_region"`
-	CreatedAt        int64           `json:"created_at,omitempty"`
-	ProxyStatus      string          `json:"proxy_status,omitempty"`
-	DeploymentType   string          `json:"deployment_type,omitempty"`
-	Policies         []PolicyOrgItem `json:"linked_policies"`
-	CloudAccountId   string          `json:"cloud_account_id"`
-	Deployed         bool            `json:"deployed"`
+type SidecarV2 struct {
+	Id                     string `json:"id"`
+	CloudAccountId         string `json:"cloud_account_id"`
+	CloudProvider          string `json:"cloud_provider"`
+	CloudRegion            string `json:"cloud_region"`
+	CreatedAt              int64  `json:"created_at"`
+	DataplaneId            string `json:"dataplane_id"`
+	DsId                   string `json:"datastore_id"`
+	Deployed               bool   `json:"deployed"`
+	DeploymentType         string `json:"deployment_type"` 
+	FailOpen               bool   `json:"fail_open"`
+	FormalHostname         string `json:"formal_hostname"`
+	FullKMSDecryption      bool   `json:"global_kms_decrypt"`
+	Name                   string `json:"name,omitempty"`
+	NetworkType            string `json:"network_type"`
+	OrgId                  string `json:"org_id"`
+	ProxyStatus            string `json:"proxy_status"`
+	ServerConnectionStatus string `json:"server_connection_status"`
+	ServerErrorMessage     string `json:"server_error_message"`
 }
 
-type DataStoreInfra struct {
-	Id                    string `json:"id"`
-	DsId                  string `json:"datastore_id"`
-	OrganisationID        string `json:"org_id"`
-	StackName             string `json:"stack_name"`
-	Name                  string `json:"name"`
-	Hostname              string `json:"hostname"`
-	Port                  int    `json:"port"`
-	Username              string `json:"username"`
-	Password              string `json:"password"`
-	HealthCheckDbName     string `json:"health_check_db_name"`
-	FormalHostname        string `json:"formal_hostname"`
-	Technology            string `json:"technology"`
-	CloudProvider         string `json:"cloud_provider"`
-	CloudRegion           string `json:"cloud_region"`
-	DeploymentType        string `json:"deployment_type"`
-	CloudAccountID        string `json:"cloud_account_id"`
-	DataplaneID           string `json:"dataplane_id"`
-	NetStackId            string `json:"net_stack_id"`
-	FailOpen              bool   `json:"fail_open"`
-	NetworkType           string `json:"network_type"`
-	CreatedAt             int    `json:"created_at"`
-	FullKMSDecryption     bool   `json:"global_kms_decrypt"`
-	DefaultAccessBehavior string `json:"default_access_behavior"`
+type DatastoreV2 struct {
+	Id                     string `json:"id"`
+	CreatedAt              int64  `json:"created_at"`
+	OrgId                  string `json:"org_id"`
+	DsId                   string `json:"datastore_id"`
+	Name                   string `json:"name,omitempty"`
+	OriginalHostname       string `json:"hostname"`
+	Port                   int    `json:"port"`
+	Technology             string `json:"technology"`
+	HealthCheckDbName      string `json:"health_check_db_name"`
+	DefaultAccessBehavior  string `json:"default_access_behavior"`
+	DbDiscoveryJobDBName   string `json:"db_discovery_job_db_name"`
+	DbDiscoveryJobWaitTime string `json:"db_discovery_job_wait_time"`
 }
 
 type CreatePolicyPayload struct {
