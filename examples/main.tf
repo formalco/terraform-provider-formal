@@ -61,20 +61,26 @@ resource "formal_dataplane" "my_dataplane" {
 # Sidecar, Managed Example
 # For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_sidecar.my_onprem_datastore.formal_control_plane_tls_certificate
 resource "formal_sidecar" "my_sidecar" {
-  technology           = var.datastore_technology # postgres, redshift, snowflake
-  name                 = var.datastore_name
-  hostname             = var.datastore_hostname
-  port                 = var.datastore_port
-  deployment_type      = "managed"
-  cloud_provider       = "aws"
-  cloud_region         = var.datastore_region
-  cloud_account_id     = formal_cloud_account.integrated_aws_account.id
-  fail_open            = false
-  network_type         = "internet-facing"
-  health_check_db_name = "postgres"
-  username             = var.datastore_username
-  password             = var.datastore_password
-  dataplane_id         = var.dataplane_id
+  name               = var.datastore_name
+  cloud_provider     = "aws"
+  cloud_region       = var.datastore_region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  deployment_type    = "managed"
+  fail_open          = false
+  network_type       = "internet-facing"
+  dataplane_id       = var.dataplane_id
+  global_kms_decrypt = false
+  datastore_id       = formal_datastore.pg_datastore.id
+}
+
+# Datastore
+resource "formal_datastore" "pg_datastore" {
+  name                    = var.datastore_name
+  hostname                = var.datastore_hostname
+  technology              = "postgres"
+  port                    = var.datastore_port
+  health_check_db_name    = "postgres"
+  default_access_behavior = "allow"
 }
 
 # Native Role
