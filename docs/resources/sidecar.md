@@ -24,6 +24,7 @@ Registering a Sidecar with Formal.
 - `global_kms_decrypt` (Boolean) Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.
 - `name` (String) Friendly name for this Sidecar.
 - `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
+- `version` (String) Version Tag for the Sidecar.
 
 ### Optional
 
