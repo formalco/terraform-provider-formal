@@ -71,6 +71,7 @@ resource "formal_sidecar" "my_sidecar" {
   dataplane_id       = var.dataplane_id
   global_kms_decrypt = false
   datastore_id       = formal_datastore.pg_datastore.id
+  version            = ""
 }
 
 # Datastore

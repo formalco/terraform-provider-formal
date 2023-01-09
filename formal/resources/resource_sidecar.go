@@ -125,6 +125,13 @@ func ResourceSidecar() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"version": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Version Tag for the Sidecar.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -147,6 +154,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		FailOpen:          d.Get("fail_open").(bool),
 		NetworkType:       d.Get("network_type").(string),
 		FullKMSDecryption: d.Get("global_kms_decrypt").(bool),
+		Version:           d.Get("version").(string),
 	}
 
 	sidecarId, err := client.CreateSidecar(newSidecar)
@@ -221,6 +229,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("created_at", sidecar.CreatedAt)
 	d.Set("global_kms_decrypt", sidecar.FullKMSDecryption)
 	d.Set("dataplane_id", sidecar.DataplaneId)
+	d.Set("version", sidecar.Version)
 
 	if sidecar.DeploymentType == "onprem" {
 		tlsCert, err := client.GetSidecarTlsCert(sidecarId)

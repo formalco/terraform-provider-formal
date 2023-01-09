@@ -20,7 +20,7 @@ type SidecarV2 struct {
 	DataplaneId            string `json:"dataplane_id"`
 	DsId                   string `json:"datastore_id"`
 	Deployed               bool   `json:"deployed"`
-	DeploymentType         string `json:"deployment_type"` 
+	DeploymentType         string `json:"deployment_type"`
 	FailOpen               bool   `json:"fail_open"`
 	FormalHostname         string `json:"formal_hostname"`
 	FullKMSDecryption      bool   `json:"global_kms_decrypt"`
@@ -30,6 +30,7 @@ type SidecarV2 struct {
 	ProxyStatus            string `json:"proxy_status"`
 	ServerConnectionStatus string `json:"server_connection_status"`
 	ServerErrorMessage     string `json:"server_error_message"`
+	Version                string `json:"version"`
 }
 
 type DatastoreV2 struct {
