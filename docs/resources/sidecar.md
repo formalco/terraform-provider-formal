@@ -24,7 +24,6 @@ Registering a Sidecar with Formal.
 - `global_kms_decrypt` (Boolean) Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.
 - `name` (String) Friendly name for this Sidecar.
 - `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
-- `version` (String) Version Tag for the Sidecar.
 
 ### Optional
 
@@ -32,6 +31,7 @@ Registering a Sidecar with Formal.
 - `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `version` (String) Version Tag for the Sidecar.
 
 ### Read-Only
 
