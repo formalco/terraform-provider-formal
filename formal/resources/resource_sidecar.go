@@ -127,9 +127,9 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"version": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Version Tag for the Sidecar.",
+				Description: "Version of the Sidecar.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 		},
