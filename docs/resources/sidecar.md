@@ -31,7 +31,7 @@ Registering a Sidecar with Formal.
 - `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `version` (String) Version Tag for the Sidecar.
+- `version` (String) Version of the Sidecar.
 
 ### Read-Only
 
