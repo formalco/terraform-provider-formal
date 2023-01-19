@@ -136,6 +136,31 @@ func (c *Client) UpdateDatastoreDefaultAcccessBehavior(datastoreId string, datas
 	return nil
 }
 
+func (c *Client) UpdateDatastoreDbDiscoveryConfig(datastoreId string, datastoreUpdate DatastoreV2) error {
+	rb, err := json.Marshal(datastoreUpdate)
+	if err != nil {
+		return nil
+	}
+
+	req, err := http.NewRequest("PUT", c.HostURL+"/admin/datastores/"+datastoreId+"/db-discovery-config", strings.NewReader(string(rb)))
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // DeleteDatastore - Deletes a datastore
 func (c *Client) DeleteDatastore(datastoreId string) error {
 	req, err := http.NewRequest("DELETE", c.HostURL+"/admin/datastores/"+datastoreId, nil)

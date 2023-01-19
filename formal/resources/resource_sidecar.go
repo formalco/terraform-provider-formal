@@ -255,7 +255,6 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	// TODO remove
 	fieldsThatCanChange := []string{"global_kms_decrypt", "name"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
