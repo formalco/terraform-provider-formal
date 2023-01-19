@@ -44,8 +44,8 @@ type DatastoreV2 struct {
 	Technology             string `json:"technology"`
 	HealthCheckDbName      string `json:"health_check_db_name"`
 	DefaultAccessBehavior  string `json:"default_access_behavior"`
-	DbDiscoveryJobDBName   string `json:"db_discovery_job_db_name"`
-	DbDiscoveryJobWaitTime string `json:"db_discovery_job_wait_time"`
+	DbDiscoveryJobWaitTime  string `json:"db_discovery_job_wait_time"`
+	DbDiscoveryNativeRoleID string `json:"db_discovery_native_role_id"`
 }
 
 type CreatePolicyPayload struct {

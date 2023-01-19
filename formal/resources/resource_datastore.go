@@ -62,7 +62,7 @@ func ResourceDatastore() *schema.Resource {
 			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The port your Datastore is listening on. Required if your `technology` is `postgres` or `redshift`.",
+				Description: "The port your Datastore is listening on.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
@@ -75,9 +75,21 @@ func ResourceDatastore() *schema.Resource {
 			},
 			"default_access_behavior": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The default access behavior of the datastore. Possible values are `allow` and `block`.",
+				Description: "The default access behavior of the datastore. Accepted values are `allow` and `block`.",
 				Type:        schema.TypeString,
 				Required:    true,
+			},
+			"db_discovery_native_role_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The `native_role_id` of the Native Role to be used for the discovery job.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"db_discovery_job_wait_time": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The wait time for the discovery job.",
+				Type:        schema.TypeString,
+				Optional:    true,
 			},
 		},
 	}
@@ -93,12 +105,14 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	portInt, _ := d.Get("port").(int)
 
 	newDatastore := api.DatastoreV2{
-		Name:                  d.Get("name").(string),
-		OriginalHostname:      d.Get("hostname").(string),
-		Port:                  portInt,
-		HealthCheckDbName:     d.Get("health_check_db_name").(string),
-		Technology:            d.Get("technology").(string),
-		DefaultAccessBehavior: d.Get("default_access_behavior").(string),
+		Name:                    d.Get("name").(string),
+		OriginalHostname:        d.Get("hostname").(string),
+		Port:                    portInt,
+		HealthCheckDbName:       d.Get("health_check_db_name").(string),
+		Technology:              d.Get("technology").(string),
+		DefaultAccessBehavior:   d.Get("default_access_behavior").(string),
+		DbDiscoveryJobWaitTime:  d.Get("db_discovery_job_wait_time").(string),
+		DbDiscoveryNativeRoleID: d.Get("db_discovery_native_role_id").(string),
 	}
 
 	datastoreId, err := client.CreateDatastore(newDatastore)
@@ -158,6 +172,12 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
+	fieldsThatCanChange := []string{"name", "health_check_db_name", "default_access_behavior", "db_discovery_job_wait_time", "db_discovery_native_role_id"}
+	if d.HasChangesExcept(fieldsThatCanChange...) {
+		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
+		return diag.Errorf(err)
+	}
+
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		err := client.UpdateDatastoreName(datastoreId, api.DatastoreV2{Name: name})
@@ -177,6 +197,15 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("default_access_behavior") {
 		defaultAccessBehavior := d.Get("default_access_behavior").(string)
 		err := client.UpdateDatastoreDefaultAcccessBehavior(datastoreId, api.DatastoreV2{DefaultAccessBehavior: defaultAccessBehavior})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("db_discovery_job_wait_time") || d.HasChange("db_discovery_native_role_id") {
+		dbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
+		dbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
+		err := client.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.DatastoreV2{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
 		if err != nil {
 			return diag.FromErr(err)
 		}
