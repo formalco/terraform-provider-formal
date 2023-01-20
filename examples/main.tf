@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.0.4"
+      version = "~>3.0.5"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -76,19 +76,21 @@ resource "formal_sidecar" "my_sidecar" {
 
 # Datastore
 resource "formal_datastore" "pg_datastore" {
-  name                    = var.datastore_name
-  hostname                = var.datastore_hostname
-  technology              = "postgres"
-  port                    = var.datastore_port
-  health_check_db_name    = "postgres"
-  default_access_behavior = "allow"
+  name                        = var.datastore_name
+  hostname                    = var.datastore_hostname
+  technology                  = "postgres"
+  port                        = var.datastore_port
+  health_check_db_name        = "postgres"
+  default_access_behavior     = "allow"
+  db_discovery_job_wait_time  = "3h"
+  db_discovery_native_role_id = "postgres"
 }
 
 # Native Role
 resource "formal_native_role" "db_role" {
-  datastore_id       = formal_sidecar.my_sidecar.datastore_id
+  datastore_id       = formal_datastore.pg_datastore.id
   native_role_id     = "postgres"
-  native_role_secret = "hunter2"
+  native_role_secret = var.native_role_secret
   use_as_default     = false // per sidecar, exactly one native role must be marked as the default.
 }
 
