@@ -17,15 +17,17 @@ Registering a Datastore with Formal.
 
 ### Required
 
-- `default_access_behavior` (String) The default access behavior of the datastore. Possible values are `allow` and `block`.
+- `default_access_behavior` (String) The default access behavior of the datastore. Accepted values are `allow` and `block`.
 - `hostname` (String) Hostname of the Datastore.
 - `name` (String) Friendly name for the Datastore.
 - `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, and `redshift`.
 
 ### Optional
 
+- `db_discovery_job_wait_time` (String) The wait time for the discovery job.
+- `db_discovery_native_role_id` (String) The `native_role_id` of the Native Role to be used for the discovery job.
 - `health_check_db_name` (String) Database name to use for health checks. Default `postgres`.
-- `port` (Number) The port your Datastore is listening on. Required if your `technology` is `postgres` or `redshift`.
+- `port` (Number) The port your Datastore is listening on.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
