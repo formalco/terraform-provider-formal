@@ -130,7 +130,6 @@ func ResourceSidecar() *schema.Resource {
 				Description: "Version of the Sidecar.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -255,7 +254,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -277,6 +276,14 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		err := client.UpdateSidecarName(sidecarId, api.SidecarV2{Name: name})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("version") {
+		version := d.Get("version").(string)
+		err := client.UpdateSidecarVersion(sidecarId, version)
 		if err != nil {
 			return diag.FromErr(err)
 		}
