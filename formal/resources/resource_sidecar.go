@@ -130,7 +130,6 @@ func ResourceSidecar() *schema.Resource {
 				Description: "Version of the Sidecar.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    false,
 			},
 		},
 	}
