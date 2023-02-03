@@ -10,6 +10,13 @@ type FieldEncryptionStruct struct {
 	Alg        string `json:"alg"`
 }
 
+type DefaultFieldEncryptionStruct struct {
+	KmsKeyID       string `json:"kms_key_id"`
+	EncryptionAlg  string `json:"encryption_alg"`
+	DataKeyStorage string `json:"data_key_storage"`
+	UpdatedAt      int    `json:"updated_at"`
+}
+
 // Used for datastore creation status
 type SidecarV2 struct {
 	Id                     string `json:"id"`
@@ -34,16 +41,16 @@ type SidecarV2 struct {
 }
 
 type DatastoreV2 struct {
-	Id                     string `json:"id"`
-	CreatedAt              int64  `json:"created_at"`
-	OrgId                  string `json:"org_id"`
-	DsId                   string `json:"datastore_id"`
-	Name                   string `json:"name,omitempty"`
-	OriginalHostname       string `json:"hostname"`
-	Port                   int    `json:"port"`
-	Technology             string `json:"technology"`
-	HealthCheckDbName      string `json:"health_check_db_name"`
-	DefaultAccessBehavior  string `json:"default_access_behavior"`
+	Id                      string `json:"id"`
+	CreatedAt               int64  `json:"created_at"`
+	OrgId                   string `json:"org_id"`
+	DsId                    string `json:"datastore_id"`
+	Name                    string `json:"name,omitempty"`
+	OriginalHostname        string `json:"hostname"`
+	Port                    int    `json:"port"`
+	Technology              string `json:"technology"`
+	HealthCheckDbName       string `json:"health_check_db_name"`
+	DefaultAccessBehavior   string `json:"default_access_behavior"`
 	DbDiscoveryJobWaitTime  string `json:"db_discovery_job_wait_time"`
 	DbDiscoveryNativeRoleID string `json:"db_discovery_native_role_id"`
 }
