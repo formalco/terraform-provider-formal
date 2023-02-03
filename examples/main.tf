@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.0.6"
+      version = "~>3.0.8"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -128,9 +128,15 @@ resource "formal_field_encryption" "encrypt_email_field" {
   path         = "main.public.customers.email"
   key_storage  = "control_plane_only"
   key_id       = formal_key.encrypt_email_field_key.id
+  alg          = "aes_random"
 }
 
-
+# Default Field Encryption
+resource "formal_default_field_encryption" "encrypt_email_field" {
+  data_key_storage = "control_plane_and_with_data"
+  kms_key_id       = formal_key.encrypt_email_field_key.id
+  encryption_alg   = "aes_random"
+}
 
 # An "Allow Decrypt emails" Policy
 resource "formal_policy" "decrypt_emails_policy" {
