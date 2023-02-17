@@ -80,6 +80,13 @@ func ResourceRole() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
+			"expire_at": {
+				// This description is used by the documentation generator and the language server.
+				Description: "When the Role should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+			},
 		},
 	}
 }
@@ -98,6 +105,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		Email:     d.Get("email").(string),
 		Name:      d.Get("name").(string),
 		AppType:   d.Get("app_type").(string),
+		ExpireAt:  d.Get("expire_at").(int),
 	}
 
 	role, err := client.CreateRole(newRole)
@@ -145,6 +153,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("email", role.Email)
 	d.Set("app_type", role.AppType)
 	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
+	d.Set("expire_at", role.ExpireAt)
 	d.SetId(roleId)
 
 	return diags

@@ -18,7 +18,7 @@ type Client struct {
 
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 
-// const DEV_URL string = "http://localhost:4000"
+// const DEV_URL string = "http://localhost:8080"
 
 // NewClient -
 func NewClient(client_id, secret_key string) (*Client, error) {

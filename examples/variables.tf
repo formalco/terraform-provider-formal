@@ -44,3 +44,7 @@ variable "dataplane_id" {
   type = string
 }
 
+variable "native_role_secret" {
+  type = string
+}
+
