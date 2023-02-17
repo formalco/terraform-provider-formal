@@ -90,6 +90,19 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"notification": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Notification settings for this policy.",
+				Type:        schema.TypeString,
+			},
+			"owners": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Owners of this policy.",
+				Type:        schema.TypeList,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -151,6 +164,8 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("org_id", policy.OrganisationID)
 	d.Set("expire_at", policy.ExpireAt)
 	d.Set("status", policy.Status)
+	d.Set("notification", policy.Notification)
+	d.Set("owners", policy.Owners)
 
 	d.SetId(policyId)
 
@@ -162,7 +177,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module")  {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") {
 		policyUpdate := api.PolicyOrgItem{
 			Name:        d.Get("name").(string),
 			Description: d.Get("description").(string),
