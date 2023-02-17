@@ -20,6 +20,8 @@ Creating a Policy in Formal.
 - `description` (String) Policy Description.
 - `module` (String) The module describing how the policy works. Create one in the Formal Console.
 - `name` (String) Policy Name
+- `notification` (String) Notification settings for this policy.
+- `owners` (List of String) Owners of this policy.
 
 ### Read-Only
 
