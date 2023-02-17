@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>2.0.1"
+      version = "~>3.0.8"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -58,23 +58,40 @@ resource "formal_dataplane" "my_dataplane" {
 }
 
 
-# Datastore Sidecar, Managed Example
-# For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_datastore.my_onprem_datastore.formal_control_plane_tls_certificate
-resource "formal_datastore" "my_datastore" {
-  technology           = var.datastore_technology # postgres, redshift, snowflake
-  name                 = var.datastore_name
-  hostname             = var.datastore_hostname
-  port                 = var.datastore_port
-  deployment_type      = "managed"
-  cloud_provider       = "aws"
-  cloud_region         = var.datastore_region
-  cloud_account_id     = formal_cloud_account.integrated_aws_account.id
-  fail_open            = false
-  network_type         = "internet-facing"
-  health_check_db_name = "postgres"
-  username             = var.datastore_username
-  password             = var.datastore_password
-  dataplane_id         = var.dataplane_id
+# Sidecar, Managed Example
+# For Onprem Sidecars, you can access the Control Plane TLS Certificate variable using: formal_sidecar.my_onprem_datastore.formal_control_plane_tls_certificate
+resource "formal_sidecar" "my_sidecar" {
+  name               = var.datastore_name
+  cloud_provider     = "aws"
+  cloud_region       = var.datastore_region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  deployment_type    = "managed"
+  fail_open          = false
+  network_type       = "internet-facing"
+  dataplane_id       = var.dataplane_id
+  global_kms_decrypt = false
+  datastore_id       = formal_datastore.pg_datastore.id
+  version            = ""
+}
+
+# Datastore
+resource "formal_datastore" "pg_datastore" {
+  name                        = var.datastore_name
+  hostname                    = var.datastore_hostname
+  technology                  = "postgres"
+  port                        = var.datastore_port
+  health_check_db_name        = "postgres"
+  default_access_behavior     = "allow"
+  db_discovery_job_wait_time  = "3h"
+  db_discovery_native_role_id = "postgres"
+}
+
+# Native Role
+resource "formal_native_role" "db_role" {
+  datastore_id       = formal_datastore.pg_datastore.id
+  native_role_id     = "postgres"
+  native_role_secret = var.native_role_secret
+  use_as_default     = false // per sidecar, exactly one native role must be marked as the default.
 }
 
 
@@ -86,6 +103,14 @@ resource "formal_role" "dior_the_data_scientist" {
   last_name  = "scientist"
 }
 
+
+# Link Native Role to the above Role
+resource "formal_native_role_link" "dior_uses_db_role" {
+  datastore_id         = formal_native_role.db_role.datastore_id
+  native_role_id       = formal_native_role.db_role.native_role_id
+  formal_identity_id   = formal_role.dior_the_data_scientist.id
+  formal_identity_type = "role"
+}
 
 # Key to be used for Field Encryption
 resource "formal_key" "encrypt_email_field_key" {
@@ -99,13 +124,19 @@ resource "formal_key" "encrypt_email_field_key" {
 
 # Specify a Field Encryption 
 resource "formal_field_encryption" "encrypt_email_field" {
-  datastore_id = formal_datastore.my_datastore.datastore_id
+  datastore_id = formal_sidecar.my_datastore.datastore_id
   path         = "main.public.customers.email"
   key_storage  = "control_plane_only"
   key_id       = formal_key.encrypt_email_field_key.id
+  alg          = "aes_random"
 }
 
-
+# Default Field Encryption
+resource "formal_default_field_encryption" "encrypt_email_field" {
+  data_key_storage = "control_plane_and_with_data"
+  kms_key_id       = formal_key.encrypt_email_field_key.id
+  encryption_alg   = "aes_random"
+}
 
 # An "Allow Decrypt emails" Policy
 resource "formal_policy" "decrypt_emails_policy" {

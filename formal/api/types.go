@@ -10,46 +10,49 @@ type FieldEncryptionStruct struct {
 	Alg        string `json:"alg"`
 }
 
-// Used for datastore creation status
-type DataStore struct {
-	ID               string          `json:"id,omitempty"`
-	Name             string          `json:"name,omitempty"`
-	OriginalHostname string          `json:"original_hostname,omitempty"`
-	FormalHostname   string          `json:"formal_hostname,omitempty"`
-	Username         string          `json:"username"`
-	CloudRegion      string          `json:"cloud_region"`
-	Created          string          `json:"created_at,omitempty"`
-	ProxyStatus      string          `json:"proxy_status,omitempty"`
-	DeploymentType   string          `json:"deployment_type,omitempty"`
-	Policies         []PolicyOrgItem `json:"linked_policies"`
-	CloudAccountId   string          `json:"cloud_account_id"`
-	Deployed         bool            `json:"deployed"`
+type DefaultFieldEncryptionStruct struct {
+	KmsKeyID       string `json:"kms_key_id"`
+	EncryptionAlg  string `json:"encryption_alg"`
+	DataKeyStorage string `json:"data_key_storage"`
+	UpdatedAt      int    `json:"updated_at"`
 }
 
-type DataStoreInfra struct {
-	Id                    string `json:"id"`
-	DsId                  string `json:"datastore_id"`
-	OrganisationID        string `json:"org_id"`
-	StackName             string `json:"stack_name"`
-	Name                  string `json:"name"`
-	Hostname              string `json:"hostname"`
-	Port                  int    `json:"port"`
-	Username              string `json:"username"`
-	Password              string `json:"password"`
-	HealthCheckDbName     string `json:"health_check_db_name"`
-	FormalHostname        string `json:"formal_hostname"`
-	Technology            string `json:"technology"`
-	CloudProvider         string `json:"cloud_provider"`
-	CloudRegion           string `json:"cloud_region"`
-	DeploymentType        string `json:"deployment_type"`
-	CloudAccountID        string `json:"cloud_account_id"`
-	DataplaneID           string `json:"dataplane_id"`
-	NetStackId            string `json:"net_stack_id"`
-	FailOpen              bool   `json:"fail_open"`
-	NetworkType           string `json:"network_type"`
-	CreatedAt             int    `json:"created_at"`
-	FullKMSDecryption     bool   `json:"global_kms_decrypt"`
-	DefaultAccessBehavior string `json:"default_access_behavior"`
+// Used for datastore creation status
+type SidecarV2 struct {
+	Id                     string `json:"id"`
+	CloudAccountId         string `json:"cloud_account_id"`
+	CloudProvider          string `json:"cloud_provider"`
+	CloudRegion            string `json:"cloud_region"`
+	CreatedAt              int64  `json:"created_at"`
+	DataplaneId            string `json:"dataplane_id"`
+	DsId                   string `json:"datastore_id"`
+	Deployed               bool   `json:"deployed"`
+	DeploymentType         string `json:"deployment_type"`
+	FailOpen               bool   `json:"fail_open"`
+	FormalHostname         string `json:"formal_hostname"`
+	FullKMSDecryption      bool   `json:"global_kms_decrypt"`
+	Name                   string `json:"name,omitempty"`
+	NetworkType            string `json:"network_type"`
+	OrgId                  string `json:"org_id"`
+	ProxyStatus            string `json:"proxy_status"`
+	ServerConnectionStatus string `json:"server_connection_status"`
+	ServerErrorMessage     string `json:"server_error_message"`
+	Version                string `json:"version"`
+}
+
+type DatastoreV2 struct {
+	Id                      string `json:"id"`
+	CreatedAt               int64  `json:"created_at"`
+	OrgId                   string `json:"org_id"`
+	DsId                    string `json:"datastore_id"`
+	Name                    string `json:"name,omitempty"`
+	OriginalHostname        string `json:"hostname"`
+	Port                    int    `json:"port"`
+	Technology              string `json:"technology"`
+	HealthCheckDbName       string `json:"health_check_db_name"`
+	DefaultAccessBehavior   string `json:"default_access_behavior"`
+	DbDiscoveryJobWaitTime  string `json:"db_discovery_job_wait_time"`
+	DbDiscoveryNativeRoleID string `json:"db_discovery_native_role_id"`
 }
 
 type CreatePolicyPayload struct {
@@ -66,16 +69,18 @@ type CreatePolicyPayload struct {
 }
 
 type PolicyOrgItem struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	CreatedBy      string `json:"created_by"`
-	CreatedAt      string `json:"created_at"`
-	UpdatedAt      string `json:"updated_at"`
-	Module         string `json:"module"`
-	Active         bool   `json:"active"`
-	OrganisationID string `json:"org_id"`
-	SourceType     string `json:"source_type"`
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	CreatedBy      string   `json:"created_by"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
+	Module         string   `json:"module"`
+	Active         bool     `json:"active"`
+	OrganisationID string   `json:"org_id"`
+	SourceType     string   `json:"source_type"`
+	Notification   string   `json:"notification"`
+	Owners         []string `json:"owners"`
 
 	// below is diff vs payload
 	ExpireAt string `json:"expire_at"`
@@ -141,7 +146,7 @@ type Role struct {
 	MachineRoleAccessToken string `json:"machine_role_access_token"` // returned in CREATE and GET routes. added for terraform
 
 	// Status     string          `json:"status"`
-	// Expire     int64           `json:"expire_at"`
+	ExpireAt int `json:"expire_at"`
 	// Created    int64           `json:"created_at"`
 	// Policies   []PolicyOrgItem `json:"linked_policies"`
 }
@@ -231,4 +236,18 @@ type DataplaneRoutes struct {
 	TransitGatewayId       string `json:"transit_gateway_id"`
 	VpcPeeringConnectionId string `json:"vpc_peering_connection_id"`
 	Deployed               bool   `json:"deployed"`
+}
+
+type NativeRole struct {
+	DatastoreId      string `json:"datastore_id"`
+	NativeRoleId     string `json:"native_role_id"`
+	NativeRoleSecret string `json:"native_role_secret"`
+	UseAsDefault     bool   `json:"use_as_default"`
+}
+
+type NativeRoleLink struct {
+	DatastoreId        string `json:"datastore_id"`
+	FormalIdentityId   string `json:"formal_identity_id"`
+	FormalIdentityType string `json:"formal_identity_type"`
+	NativeRoleId       string `json:"native_role_id"`
 }
