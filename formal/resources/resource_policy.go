@@ -94,11 +94,13 @@ func ResourcePolicy() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Notification settings for this policy.",
 				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"owners": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Owners of this policy.",
 				Type:        schema.TypeList,
+				Required:    true,
 				Elem: &schema.Schema{
 					Type: schema.TypeString,
 				},
