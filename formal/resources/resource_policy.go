@@ -117,10 +117,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	// Maps to user-defined fields
 	newPolicy := api.CreatePolicyPayload{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Module:      d.Get("module").(string),
-		SourceType:  "terraform",
+		Name:         d.Get("name").(string),
+		Description:  d.Get("description").(string),
+		Module:       d.Get("module").(string),
+		SourceType:   "terraform",
+		Owners:       d.Get("owners").([]string),
+		Notification: d.Get("notification").(string),
 	}
 
 	policy, err := client.CreatePolicy(ctx, newPolicy)
