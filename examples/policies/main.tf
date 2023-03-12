@@ -20,8 +20,8 @@ provider "formal" {
 resource "formal_policy" "decrypt" {
   name        = "decrypt"
   description = "this policy, when linked to a role or group, allows them to decrypt the demo table."
-  
-  module      = <<-EOF
+
+  module = <<-EOF
 package formal.validator
 
 decrypt { 
