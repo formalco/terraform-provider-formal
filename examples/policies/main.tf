@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 2.0.2"
+      version = "~> 3.0.9"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -20,7 +20,8 @@ provider "formal" {
 resource "formal_policy" "decrypt" {
   name        = "decrypt"
   description = "this policy, when linked to a role or group, allows them to decrypt the demo table."
-  module      = <<-EOF
+
+  module = <<-EOF
 package formal.validator
 
 decrypt { 
@@ -146,18 +147,6 @@ package formal.validator
 block[action] {
   input.ip_address = "127.0.0.1"
   action := "block_with_fake_error"
-}
-EOF
-}
-
-resource "formal_policy" "allow_for_ip_address" {
-  name        = "allow_for_ip_address"
-  description = "this policy allow connection to sidecar if the ip address is 127.0.0.1."
-  module      = <<-EOF
-package formal.validator
-
-allow {
-  input.ip_address = "127.0.0.1"
 }
 EOF
 }

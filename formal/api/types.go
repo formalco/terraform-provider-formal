@@ -56,16 +56,18 @@ type DatastoreV2 struct {
 }
 
 type CreatePolicyPayload struct {
-	ID             string `json:"id"`
-	Name           string `json:"name"`
-	Description    string `json:"description"`
-	CreatedBy      string `json:"created_by"`
-	CreatedAt      string `json:"created_at"`
-	UpdatedAt      string `json:"updated_at"`
-	Module         string `json:"module"`
-	Active         bool   `json:"active"`
-	OrganisationID string `json:"org_id"`
-	SourceType     string `json:"source_type"`
+	ID             string   `json:"id"`
+	Name           string   `json:"name"`
+	Description    string   `json:"description"`
+	CreatedBy      string   `json:"created_by"`
+	CreatedAt      string   `json:"created_at"`
+	UpdatedAt      string   `json:"updated_at"`
+	Module         string   `json:"module"`
+	Active         bool     `json:"active"`
+	OrganisationID string   `json:"org_id"`
+	SourceType     string   `json:"source_type"`
+	Notification   string   `json:"notification"`
+	Owners         []string `json:"owners"`
 }
 
 type PolicyOrgItem struct {
