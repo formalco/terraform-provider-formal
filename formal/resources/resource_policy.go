@@ -115,13 +115,18 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	var owners []string
+	for _, owner := range d.Get("owners").([]interface{}) {
+		owners = append(owners, owner.(string))
+	}
+
 	// Maps to user-defined fields
 	newPolicy := api.CreatePolicyPayload{
 		Name:         d.Get("name").(string),
 		Description:  d.Get("description").(string),
 		Module:       d.Get("module").(string),
 		SourceType:   "terraform",
-		Owners:       d.Get("owners").([]string),
+		Owners:       owners,
 		Notification: d.Get("notification").(string),
 	}
 
