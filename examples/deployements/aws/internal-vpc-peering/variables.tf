@@ -29,5 +29,7 @@ variable "availability_zones" {
 }
 
 variable "postgres_username" {}
-
 variable "postgres_password" {}
+
+variable "redshift_username" {}
+variable "redshift_password" {}

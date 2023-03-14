@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>1.0.46"
+      version = "~>3.0.11"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -97,23 +97,40 @@ resource "aws_db_instance" "main" {
   publicly_accessible    = false
   db_subnet_group_name   = aws_db_subnet_group.main.name
   vpc_security_group_ids = [aws_security_group.rds.id]
+
+  depends_on = [
+    aws_internet_gateway.main
+  ]
 }
 
 resource "formal_datastore" "main" {
-  technology         = "postgres" # postgres, redshift, snowflake
+  technology              = "postgres"
+  name                    = "${var.name}-postgres"
+  hostname                = aws_db_instance.main.address
+  port                    = aws_db_instance.main.port
+  default_access_behavior = "allow"
+}
+
+resource "formal_sidecar" "main" {
   name               = var.name
-  hostname           = aws_db_instance.main.address
-  port               = aws_db_instance.main.port
   deployment_type    = "managed"
   cloud_provider     = "aws"
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
   fail_open          = false
-  network_type       = "internal"
-  username           = var.postgres_username
-  password           = var.postgres_password
   dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
+  network_type       = "internet-facing" //internal, internet-and-internal
+  datastore_id       = formal_datastore.main.id
+  version            = "v1.4.5"
+}
+
+# Native Role
+resource "formal_native_role" "main_postgres" {
+  datastore_id       = formal_datastore.main.id
+  native_role_id     = var.postgres_username
+  native_role_secret = var.postgres_password
+  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
 
 
@@ -154,25 +171,40 @@ resource "aws_redshift_cluster" "demo" {
   cluster_subnet_group_name = aws_redshift_subnet_group.main.name
   skip_final_snapshot       = true
   vpc_security_group_ids    = [aws_security_group.allow_ingress_traffic_to_redshift.id]
+  depends_on = [
+    aws_internet_gateway.main
+  ]
 }
 
-resource "formal_datastore" "demo" {
-  technology         = "redshift"
-  name               = var.name
-  hostname           = aws_redshift_cluster.demo.dns_name
-  port               = aws_redshift_cluster.demo.port
+resource "formal_datastore" "main-redshift" {
+  technology              = "redshift"
+  name                    = "${var.name}-redshift"
+  hostname                = aws_redshift_cluster.demo.dns_name
+  port                    = aws_redshift_cluster.demo.port
+  default_access_behavior = "allow"
+}
+
+resource "formal_sidecar" "main-redshift" {
+  name               = "${var.name}-redshift"
   deployment_type    = "managed"
   cloud_provider     = "aws"
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
   fail_open          = false
-  network_type       = "internet-facing"
-  username           = var.postgres_username
-  password           = var.postgres_password
   dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
+  network_type       = "internet-facing" //internal, internet-and-internal
+  datastore_id       = formal_datastore.main-redshift.id
+  version            = "v1.4.7"
 }
 
+# Native Role
+resource "formal_native_role" "main_redshift" {
+  datastore_id       = formal_datastore.main-redshift.id
+  native_role_id     = var.redshift_username
+  native_role_secret = var.redshift_password
+  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+}
 
 resource "aws_route53_zone_association" "secondary" {
   zone_id = formal_dataplane.main.formal_r53_private_hosted_zone_id
