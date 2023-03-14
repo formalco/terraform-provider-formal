@@ -16,6 +16,6 @@ variable "aws_account_2_id" {}
 
 variable "name" {}
 
-variable "postgres_username" {}
+variable "redshift_username" {}
 
-variable "postgres_password" {}
+variable "redshift_password" {}
