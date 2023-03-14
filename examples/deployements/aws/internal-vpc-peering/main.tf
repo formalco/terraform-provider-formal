@@ -104,25 +104,25 @@ resource "aws_db_instance" "main" {
 }
 
 resource "formal_datastore" "main" {
-  technology       = "postgres"
-  name             = "${var.name}-postgres"
-  hostname         = aws_db_instance.main.address
-  port             = aws_db_instance.main.port
+  technology              = "postgres"
+  name                    = "${var.name}-postgres"
+  hostname                = aws_db_instance.main.address
+  port                    = aws_db_instance.main.port
   default_access_behavior = "allow"
 }
 
 resource "formal_sidecar" "main" {
-  name                = var.name
-  deployment_type     = "managed"
-  cloud_provider      = "aws"
-  cloud_region        = var.region
-  cloud_account_id    = formal_cloud_account.integrated_aws_account.id
-  fail_open           = false
-  dataplane_id        = formal_dataplane.main.id
-  global_kms_decrypt  = true
-  network_type        = "internet-facing" //internal, internet-and-internal
-  datastore_id        = formal_datastore.main.id
-  version             = "v1.4.5"
+  name               = var.name
+  deployment_type    = "managed"
+  cloud_provider     = "aws"
+  cloud_region       = var.region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  fail_open          = false
+  dataplane_id       = formal_dataplane.main.id
+  global_kms_decrypt = true
+  network_type       = "internet-facing" //internal, internet-and-internal
+  datastore_id       = formal_datastore.main.id
+  version            = "v1.4.5"
 }
 
 # Native Role
@@ -177,25 +177,25 @@ resource "aws_redshift_cluster" "demo" {
 }
 
 resource "formal_datastore" "main-redshift" {
-  technology       = "redshift"
-  name             = "${var.name}-redshift"
-  hostname         = aws_redshift_cluster.demo.dns_name
-  port             = aws_redshift_cluster.demo.port
+  technology              = "redshift"
+  name                    = "${var.name}-redshift"
+  hostname                = aws_redshift_cluster.demo.dns_name
+  port                    = aws_redshift_cluster.demo.port
   default_access_behavior = "allow"
 }
 
 resource "formal_sidecar" "main-redshift" {
-  name                = "${var.name}-redshift"
-  deployment_type     = "managed"
-  cloud_provider      = "aws"
-  cloud_region        = var.region
-  cloud_account_id    = formal_cloud_account.integrated_aws_account.id
-  fail_open           = false
-  dataplane_id        = formal_dataplane.main.id
-  global_kms_decrypt  = true
-  network_type        = "internet-facing" //internal, internet-and-internal
-  datastore_id        = formal_datastore.main-redshift.id
-  version             = "v1.4.7"
+  name               = "${var.name}-redshift"
+  deployment_type    = "managed"
+  cloud_provider     = "aws"
+  cloud_region       = var.region
+  cloud_account_id   = formal_cloud_account.integrated_aws_account.id
+  fail_open          = false
+  dataplane_id       = formal_dataplane.main.id
+  global_kms_decrypt = true
+  network_type       = "internet-facing" //internal, internet-and-internal
+  datastore_id       = formal_datastore.main-redshift.id
+  version            = "v1.4.7"
 }
 
 # Native Role

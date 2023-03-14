@@ -18,11 +18,11 @@ provider "formal" {
 }
 
 resource "formal_policy" "decrypt" {
-  name          = "decrypt"
-  description   = "this policy, when linked to a role or group, allows them to decrypt the demo table."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "decrypt"
+  description  = "this policy, when linked to a role or group, allows them to decrypt the demo table."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 decrypt { 
@@ -33,11 +33,11 @@ EOF
 
 
 resource "formal_policy" "mask_emails" {
-  name          = "mask-email"
-  description   = "this policy, when linked to a role or group, masks the emails' username."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "mask-email"
+  description  = "this policy, when linked to a role or group, masks the emails' username."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 mask[[action, typesafe]] {
@@ -49,11 +49,11 @@ EOF
 }
 
 resource "formal_policy" "mask_emails_typesafe_fallback_to_default" {
-  name          = "mask-email"
-  description   = "this policy, masks the emails' username is type safe and fallback to default."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "mask-email"
+  description  = "this policy, masks the emails' username is type safe and fallback to default."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 mask[[action, typesafe]] {
@@ -65,11 +65,11 @@ EOF
 }
 
 resource "formal_policy" "mask_emails_typesafe_fallback_to_null" {
-  name          = "mask-email"
-  description   = "this policy, masks the emails' username is type safe and fallback to null."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "mask-email"
+  description  = "this policy, masks the emails' username is type safe and fallback to null."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 mask[[action, typesafe]] {
@@ -87,11 +87,11 @@ resource "formal_policy_link" "masked_email" {
 }
 
 resource "formal_policy" "row_level_hashing" {
-  name          = "test-row-level-hashing-eu"
-  description   = "this policy, when linked to a role or group, hash the first name of any row that has an eu value."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "test-row-level-hashing-eu"
+  description  = "this policy, when linked to a role or group, hash the first name of any row that has an eu value."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 mask[action] {
@@ -109,11 +109,11 @@ resource "formal_policy_link" "row_level_hashing" {
 }
 
 resource "formal_policy" "block_db_with_formal_message" {
-  name          = "block_db_with_formal_message"
-  description   = "this policy block connection to sidecar based on the name of db and throw an error message about Formal."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_db_with_formal_message"
+  description  = "this policy block connection to sidecar based on the name of db and throw an error message about Formal."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
@@ -124,11 +124,11 @@ EOF
 }
 
 resource "formal_policy" "block_silently" {
-  name          = "block_db_with_formal_message"
-  description   = "this policy block connection to sidecar based on the name of db and drop the connection silently."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_db_with_formal_message"
+  description  = "this policy block connection to sidecar based on the name of db and drop the connection silently."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
@@ -139,11 +139,11 @@ EOF
 }
 
 resource "formal_policy" "block_with_fake_error" {
-  name          = "block_db_with_formal_message"
-  description   = "this policy block connection to sidecar based on the name of db and drop the connection with a fake error."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_db_with_formal_message"
+  description  = "this policy block connection to sidecar based on the name of db and drop the connection with a fake error."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
@@ -154,11 +154,11 @@ EOF
 }
 
 resource "formal_policy" "block_for_ip_address" {
-  name          = "block_db_with_formal_message"
-  description   = "this policy block connection to sidecar if the ip address is 127.0.0.1 and drop the connection with a fake error."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_db_with_formal_message"
+  description  = "this policy block connection to sidecar if the ip address is 127.0.0.1 and drop the connection with a fake error."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
@@ -169,11 +169,11 @@ EOF
 }
 
 resource "formal_policy" "allow_for_ip_address" {
-  name          = "allow_for_ip_address"
-  description   = "this policy allow connection to sidecar if the ip address is 127.0.0.1."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module      = <<-EOF
+  name         = "allow_for_ip_address"
+  description  = "this policy allow connection to sidecar if the ip address is 127.0.0.1."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 allow {
@@ -183,11 +183,11 @@ EOF
 }
 
 resource "formal_policy" "block_on_sunday" {
-  name          = "block_on_weekends"
-  description   = "this policy block connection to sidecar on sunday."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_on_weekends"
+  description  = "this policy block connection to sidecar on sunday."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
@@ -198,11 +198,11 @@ EOF
 }
 
 resource "formal_policy" "block_on_weekends" {
-  name          = "block_on_weekends"
-  description   = "this policy block connection to sidecar on weekends."
-  owners        = ["john@company.com"]
-  notification  = "all"
-  module        = <<-EOF
+  name         = "block_on_weekends"
+  description  = "this policy block connection to sidecar on weekends."
+  owners       = ["john@company.com"]
+  notification = "all"
+  module       = <<-EOF
 package formal.validator
 
 block[action] {
