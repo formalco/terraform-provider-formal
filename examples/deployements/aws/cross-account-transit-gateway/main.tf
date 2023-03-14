@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.8"
+      version = "~> 3.0.11"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -159,8 +159,8 @@ resource "aws_redshift_cluster" "demo" {
 
   cluster_identifier        = "tf-redshift-cluster"
   database_name             = "mydb"
-  master_username           = var.postgres_username
-  master_password           = var.postgres_password
+  master_username           = var.redshift_username
+  master_password           = var.redshift_password
   node_type                 = "dc2.large"
   cluster_type              = "single-node"
   publicly_accessible       = false
@@ -253,18 +253,30 @@ resource "aws_ec2_transit_gateway_vpc_attachment" "tgw_attach_formal" {
 }
 
 resource "formal_datastore" "demo" {
-  technology         = "redshift"
-  name               = var.name
-  hostname           = aws_redshift_cluster.demo.dns_name
-  port               = aws_redshift_cluster.demo.port
+  technology              = "redshift"
+  name                    = var.name
+  hostname                = aws_redshift_cluster.demo.dns_name
+  port                    = aws_redshift_cluster.demo.port
+  default_access_behavior = "allow"
+}
+
+resource "formal_sidecar" "main-redshift" {
+  name               = "${var.name}-sidecar"
   deployment_type    = "managed"
   cloud_provider     = "aws"
   cloud_region       = var.region
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
   fail_open          = false
-  network_type       = "internet-facing"
-  username           = var.postgres_username
-  password           = var.postgres_password
-  dataplane_id       = formal_dataplane.tgw.id
+  dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
+  network_type       = "internet-facing" //internal, internet-and-internal
+  datastore_id       = formal_datastore.main-redshift.id
+  version            = "v1.4.7"
+}
+
+resource "formal_native_role" "main_redshift" {
+  datastore_id       = formal_datastore.demo.id
+  native_role_id     = var.redshift_username
+  native_role_secret = var.redshift_password
+  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
