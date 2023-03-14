@@ -8,10 +8,11 @@ name = ""
 
 region = ""
 
-aws_account_2_id = ""
-
 postgres_username = ""
 postgres_password = ""
+
+redshift_username = ""
+redshift_password = ""
 
 availability_zones = ["eu-west-2a", "eu-west-2b", "eu-west-2c"]
 
