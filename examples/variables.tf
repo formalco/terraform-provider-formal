@@ -1,9 +1,4 @@
-variable "client_id" {
-  type      = string
-  sensitive = true
-}
-
-variable "secret_key" {
+variable "formal_api_key" {
   type      = string
   sensitive = true
 }

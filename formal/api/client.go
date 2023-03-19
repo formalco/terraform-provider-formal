@@ -8,41 +8,29 @@ import (
 	"time"
 )
 
-// Client -
 type Client struct {
 	HostURL    string
 	HTTPClient *http.Client
-	ClientId   string
-	SecretKey  string
+	APIKey     string
 }
 
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 
-// const DEV_URL string = "http://localhost:8080"
-
-// NewClient -
-func NewClient(client_id, secret_key string) (*Client, error) {
+func NewClient(apiKey string) (*Client, error) {
 	c := Client{
 		HTTPClient: &http.Client{Timeout: 100 * time.Second},
-		ClientId:   client_id,
-		SecretKey:  secret_key,
+		APIKey:     apiKey,
 		HostURL:    FORMAL_HOST_URL,
 	}
-
-	// if DEV_URL != "" {
-	// 	c.HostURL = DEV_URL
-	// }
 
 	return &c, nil
 }
 
 func (c *Client) doRequest(req *http.Request) ([]byte, error) {
-	if c.ClientId != "" && c.SecretKey != "" {
-		req.Header.Add("client_id", c.ClientId)
-		req.Header.Add("api_key", c.SecretKey)
-	} else {
-		return nil, errors.New("no client_id and api_key detected")
+	if c.APIKey == "" {
+		return nil, errors.New("client was not initialized with an api key")
 	}
+	req.Header.Add("X-Api-Key", c.APIKey)
 
 	res, err := c.HTTPClient.Do(req)
 	if err != nil {

@@ -30,11 +30,7 @@ func New(version string) func() *schema.Provider {
 	return func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
-				"client_id": {
-					Type:     schema.TypeString,
-					Required: true,
-				},
-				"secret_key": {
+				"api_key": {
 					Type:     schema.TypeString,
 					Required: true,
 				},
@@ -69,10 +65,9 @@ func New(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
-		client_id := d.Get("client_id").(string)
-		secret_key := d.Get("secret_key").(string)
+		apiKey := d.Get("api_key").(string)
 
-		c, err := api.NewClient(client_id, secret_key)
+		c, err := api.NewClient(apiKey)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
