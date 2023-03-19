@@ -2,13 +2,19 @@ variable "region" {
   default = "eu-west-2"
 }
 
-variable "formal_client_id" {}
+variable "formal_api_key" {
+  type      = string
+  sensitive = true
+}
 
-variable "formal_secret_key" {}
-
-variable "aws_access_key" {}
-
-variable "aws_secret_key" {}
+variable "aws_access_key" {
+  type     = string
+  sensitive = true
+}
+variable "aws_secret_key" {
+  type      = string
+  sensitive = true
+}
 
 variable "name" {}
 

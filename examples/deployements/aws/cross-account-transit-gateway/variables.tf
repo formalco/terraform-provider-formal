@@ -1,16 +1,27 @@
 variable "region" {}
 
-variable "formal_client_id" {}
+variable "formal_api_key" {
+  type      = string
+  sensitive = true
+}
 
-variable "formal_secret_key" {}
+variable "aws_access_key_account_1" {
+    type      = string
+    sensitive = true
+}
+variable "aws_secret_key_account_1" {
+    type      = string
+    sensitive = true
+}
 
-variable "aws_access_key_account_1" {}
-
-variable "aws_secret_key_account_1" {}
-
-variable "aws_access_key_account_2" {}
-
-variable "aws_secret_key_account_2" {}
+variable "aws_access_key_account_2" {
+    type      = string
+    sensitive = true
+}
+variable "aws_secret_key_account_2" {
+    type      = string
+    sensitive = true
+}
 
 variable "aws_account_2_id" {}
 

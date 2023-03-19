@@ -1,12 +1,8 @@
-variable "formal_client_id" {
+variable "formal_api_key" {
   type      = string
   sensitive = true
 }
 
-variable "formal_secret_key" {
-  type      = string
-  sensitive = true
-}
 
 variable "group_id" {
   type = string
