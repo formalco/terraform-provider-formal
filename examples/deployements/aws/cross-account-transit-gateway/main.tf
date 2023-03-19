@@ -270,7 +270,6 @@ resource "formal_sidecar" "main-redshift" {
   global_kms_decrypt = true
   network_type       = "internet-facing" //internal, internet-and-internal
   datastore_id       = formal_datastore.main-redshift.id
-  version            = "v1.4.7"
 }
 
 resource "formal_native_role" "main_redshift" {
