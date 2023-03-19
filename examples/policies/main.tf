@@ -48,7 +48,7 @@ EOF
 }
 
 resource "formal_policy" "mask_emails_typesafe_fallback_to_default" {
-  name         = "mask-email"
+  name         = "mask-email-fallback-to-default"
   description  = "this policy, masks the emails' username is type safe and fallback to default."
   owners       = ["john@company.com"]
   notification = "all"
@@ -64,7 +64,7 @@ EOF
 }
 
 resource "formal_policy" "mask_emails_typesafe_fallback_to_null" {
-  name         = "mask-email"
+  name         = "mask-email-fallback-to-null"
   description  = "this policy, masks the emails' username is type safe and fallback to null."
   owners       = ["john@company.com"]
   notification = "all"
@@ -123,7 +123,7 @@ EOF
 }
 
 resource "formal_policy" "block_silently" {
-  name         = "block_db_with_formal_message"
+  name         = "block_db_silently"
   description  = "this policy block connection to sidecar based on the name of db and drop the connection silently."
   owners       = ["john@company.com"]
   notification = "all"
@@ -138,7 +138,7 @@ EOF
 }
 
 resource "formal_policy" "block_with_fake_error" {
-  name         = "block_db_with_formal_message"
+  name         = "block_db_with_fake_error"
   description  = "this policy block connection to sidecar based on the name of db and drop the connection with a fake error."
   owners       = ["john@company.com"]
   notification = "all"
@@ -153,7 +153,7 @@ EOF
 }
 
 resource "formal_policy" "block_for_ip_address" {
-  name         = "block_db_with_formal_message"
+  name         = "block_for_ip_address"
   description  = "this policy block connection to sidecar if the ip address is 127.0.0.1 and drop the connection with a fake error."
   owners       = ["john@company.com"]
   notification = "all"
@@ -182,7 +182,7 @@ EOF
 }
 
 resource "formal_policy" "block_on_sunday" {
-  name         = "block_on_weekends"
+  name         = "block_on_sunday"
   description  = "this policy block connection to sidecar on sunday."
   owners       = ["john@company.com"]
   notification = "all"
