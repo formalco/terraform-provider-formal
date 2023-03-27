@@ -29,7 +29,7 @@ terraform {
 
 # Configure the Formal Provider
 provider "formal" {
-  api_key = var.formal_api_key
+  api_key  = var.formal_api_key
 }
 
 # Create a Role
@@ -60,13 +60,13 @@ Configuration for the Formal Provider is derived from the API tokens you can gen
 configuration and risks secret leakage should this file ever be committed to a
 public version control system.
 
-Credentials is provided by adding an `api_key`.
+Credentials can be provided by adding an `api_key`.
 
 Usage:
 
 ```terraform
 provider "formal" {
-  api_key = var.formal_api_key
+  api_key  = var.formal_api_key
 }
 ```
 

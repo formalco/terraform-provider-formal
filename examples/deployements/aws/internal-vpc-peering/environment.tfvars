@@ -1,4 +1,4 @@
-formal_api_key  = ""
+formal_api_key = ""
 
 aws_access_key = ""
 aws_secret_key = ""

@@ -1,2 +1,2 @@
-formal_api_key  = ""
-group_id        = ""
+formal_api_key = ""
+group_id       = ""
