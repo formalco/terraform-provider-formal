@@ -56,37 +56,24 @@ type DatastoreV2 struct {
 }
 
 type CreatePolicyPayload struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Description    string   `json:"description"`
-	CreatedBy      string   `json:"created_by"`
-	CreatedAt      string   `json:"created_at"`
-	UpdatedAt      string   `json:"updated_at"`
-	Module         string   `json:"module"`
-	Active         bool     `json:"active"`
-	OrganisationID string   `json:"org_id"`
-	SourceType     string   `json:"source_type"`
-	Notification   string   `json:"notification"`
-	Owners         []string `json:"owners"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Module       string   `json:"module"`
+	Active       bool     `json:"active"`
+	SourceType   string   `json:"source_type"`
+	Notification string   `json:"notification"`
+	Owners       []string `json:"owners"`
 }
 
 type PolicyOrgItem struct {
-	ID             string   `json:"id"`
-	Name           string   `json:"name"`
-	Description    string   `json:"description"`
-	CreatedBy      string   `json:"created_by"`
-	CreatedAt      string   `json:"created_at"`
-	UpdatedAt      string   `json:"updated_at"`
-	Module         string   `json:"module"`
-	Active         bool     `json:"active"`
-	OrganisationID string   `json:"org_id"`
-	SourceType     string   `json:"source_type"`
-	Notification   string   `json:"notification"`
-	Owners         []string `json:"owners"`
-
-	// below is diff vs payload
-	ExpireAt string `json:"expire_at"`
-	Status   string `json:"status"`
+	ID           string   `json:"id"`
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	Module       string   `json:"module"`
+	SourceType   string   `json:"source_type"`
+	Notification string   `json:"notification"`
+	Owners       []string `json:"owners"`
 }
 
 type Message struct {
