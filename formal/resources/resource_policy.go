@@ -180,12 +180,18 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	policyId := d.Id()
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") {
+
+		var owners []string
+		for _, owner := range d.Get("owners").([]interface{}) {
+			owners = append(owners, owner.(string))
+		}
+
 		policyUpdate := api.PolicyOrgItem{
 			Name:         d.Get("name").(string),
 			Description:  d.Get("description").(string),
 			Module:       d.Get("module").(string),
 			Notification: d.Get("notification").(string),
-			Owners:       d.Get("owners").([]string),
+			Owners:       owners,
 			SourceType:   "terraform",
 		}
 
