@@ -179,12 +179,20 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") {
+
+		var owners []string
+		for _, owner := range d.Get("owners").([]interface{}) {
+			owners = append(owners, owner.(string))
+		}
+
 		policyUpdate := api.PolicyOrgItem{
-			Name:        d.Get("name").(string),
-			Description: d.Get("description").(string),
-			Module:      d.Get("module").(string),
-			SourceType:  "terraform",
+			Name:         d.Get("name").(string),
+			Description:  d.Get("description").(string),
+			Module:       d.Get("module").(string),
+			Notification: d.Get("notification").(string),
+			Owners:       owners,
+			SourceType:   "terraform",
 		}
 
 		err := client.UpdatePolicy(policyId, policyUpdate)
@@ -194,7 +202,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 		return resourcePolicyRead(ctx, d, meta)
 	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, and module. Please delete and recreate the Policy")
+		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification and owners. Please delete and recreate the Policy")
 	}
 }
 
