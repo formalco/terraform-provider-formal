@@ -98,6 +98,7 @@ func ResourceSidecar() *schema.Resource {
 				Description: "The hostname of the created sidcar.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
 			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
@@ -154,6 +155,10 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		NetworkType:       d.Get("network_type").(string),
 		FullKMSDecryption: d.Get("global_kms_decrypt").(bool),
 		Version:           d.Get("version").(string),
+	}
+	hostname := d.Get("formal_hostname").(string)
+	if newSidecar.DeploymentType == "onprem" && hostname != "" {
+		newSidecar.FormalHostname = hostname
 	}
 
 	sidecarId, err := client.CreateSidecar(newSidecar)
