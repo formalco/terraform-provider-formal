@@ -30,7 +30,7 @@ Registering a Sidecar with Formal.
 - `cloud_account_id` (String) Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.
 - `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
-- `formal_hostname` (String) The hostname of the created sidcar.
+- `formal_hostname` (String) The hostname of the created sidecar.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 - `version` (String) Version of the Sidecar.
 
