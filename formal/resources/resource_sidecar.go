@@ -95,7 +95,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"formal_hostname": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The hostname of the created sidcar.",
+				Description: "The hostname of the created sidecar.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Optional:    true,
