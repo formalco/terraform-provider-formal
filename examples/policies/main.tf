@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.13"
+      version = "~> 3.0.15"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -19,8 +19,8 @@ provider "formal" {
 resource "formal_policy" "decrypt" {
   name         = "decrypt"
   description  = "this policy, when linked to a role or group, allows them to decrypt the demo table."
-  owners       = ["john@company.com"]
-  notification = "all"
+  owners       = ["john@formal.com"]
+  notification = "none"
   module       = <<-EOF
 package formal.validator
 
@@ -35,7 +35,7 @@ resource "formal_policy" "mask_emails" {
   name         = "mask-email"
   description  = "this policy, when linked to a role or group, masks the emails' username."
   owners       = ["john@company.com"]
-  notification = "all"
+  notification = "consumer"
   module       = <<-EOF
 package formal.validator
 
@@ -67,7 +67,7 @@ resource "formal_policy" "mask_emails_typesafe_fallback_to_null" {
   name         = "mask-email-fallback-to-null"
   description  = "this policy, masks the emails' username is type safe and fallback to null."
   owners       = ["john@company.com"]
-  notification = "all"
+  notification = "owner"
   module       = <<-EOF
 package formal.validator
 
