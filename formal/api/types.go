@@ -135,7 +135,8 @@ type Role struct {
 	MachineRoleAccessToken string `json:"machine_role_access_token"` // returned in CREATE and GET routes. added for terraform
 
 	// Status     string          `json:"status"`
-	ExpireAt int `json:"expire_at"`
+	ExpireAt int  `json:"expire_at"`
+	Admin    bool `json:"admin"`
 	// Created    int64           `json:"created_at"`
 	// Policies   []PolicyOrgItem `json:"linked_policies"`
 }
@@ -151,6 +152,7 @@ type CreateRolePayload struct {
 	LastName  string `json:"last_name"`
 	Type      string `json:"type"`
 	Email     string `json:"email"`
+	Admin     bool   `json:"admin"`
 
 	// Other
 	// Role       *string         `json:"role"`
