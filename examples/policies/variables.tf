@@ -3,7 +3,6 @@ variable "formal_api_key" {
   sensitive = true
 }
 
-
 variable "group_id" {
   type = string
 }

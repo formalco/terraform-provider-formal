@@ -63,7 +63,7 @@ func ResourceRole() *schema.Resource {
 			},
 			"admin": {
 				Description: "For human users, specify if their admin.",
-				Type:        schema.TypeString,
+				Type:        schema.TypeBool,
 				Optional:    true,
 				ForceNew:    true,
 			},
