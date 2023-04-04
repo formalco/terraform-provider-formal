@@ -2,6 +2,8 @@ package provider
 
 import (
 	"context"
+	"github.com/formalco/terraform-provider-formal/formal/apiv2"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
@@ -45,6 +47,7 @@ func New(version string) func() *schema.Provider {
 				"formal_group":                    resource.ResourceGroup(),
 				"formal_group_link_role":          resource.ResourceGroupLinkRole(),
 				"formal_datastore":                resource.ResourceDatastore(),
+				"formal_datastore_link":           resource.ResourceDatastoreLink(),
 				"formal_sidecar":                  resource.ResourceSidecar(),
 				"formal_key":                      resource.ResourceKey(),
 				"formal_field_encryption":         resource.ResourceFieldEncryption(),
@@ -67,11 +70,12 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		apiKey := d.Get("api_key").(string)
 
-		c, err := api.NewClient(apiKey)
+		http, err := api.NewClient(apiKey)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
+		grpc := apiv2.NewClient(apiKey)
 
-		return c, nil
+		return &clients.Clients{Http: http, Grpc: grpc}, nil
 	}
 }

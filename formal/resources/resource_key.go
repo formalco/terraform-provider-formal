@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -91,7 +92,7 @@ func ResourceKey() *schema.Resource {
 
 // Done
 func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	newKey := api.KeyStruct{
@@ -103,7 +104,7 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 		CloudAccountID: d.Get("cloud_account_id").(string),
 	}
 
-	key, err := client.CreateKey(newKey)
+	key, err := c.Http.CreateKey(newKey)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,10 +120,10 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	key, err := client.GetKey(d.Id())
+	key, err := c.Http.GetKey(d.Id())
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Key not found
@@ -157,7 +158,7 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("Keys are immutable at the moment, but will be updateable soon. Please create a new key. Thank you!")
 
-	// client := meta.(*Client)
+	// 	c := meta.(*clients.Clients)
 
 	// keyId := d.Id()
 
@@ -172,13 +173,13 @@ func resourceKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	keyId := d.Id()
 
-	err := client.DeleteKey(keyId)
+	err := c.Http.DeleteKey(keyId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
