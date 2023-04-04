@@ -8,15 +8,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceDatastoreLink() *schema.Resource {
+func ResourceSidecarDatastoreLink() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description: "Linking a Datastore to a Sidecar in Formal.",
 
-		CreateContext: resourceDatastoreLinkCreate,
-		ReadContext:   resourceDatastoreLinkRead,
+		CreateContext: resourceSidecarDatastoreLinkCreate,
+		ReadContext:   resourceSidecarDatastoreLinkRead,
 		// UpdateContext: resourceDatastoreLinkUpdate,
-		DeleteContext: resourceDatastoreLinkDelete,
+		DeleteContext: resourceSidecarDatastoreLinkDelete,
 
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -50,63 +50,63 @@ func ResourceDatastoreLink() *schema.Resource {
 	}
 }
 
-func resourceDatastoreLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarDatastoreLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newDatastoreLink := apiv2.SidecarDatastoreLink{
+	newSidecarDatastoreLink := apiv2.SidecarDatastoreLink{
 		DatastoreId: d.Get("datastore_id").(string),
 		SidecarId:   d.Get("sidecar_id").(string),
 		Port:        d.Get("port").(int),
 	}
 
-	datastoreLinkId, err := c.Grpc.CreateLink(ctx, newDatastoreLink)
+	sidecarDatastoreLinkId, err := c.Grpc.CreateLink(ctx, newSidecarDatastoreLink)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(datastoreLinkId)
+	d.SetId(sidecarDatastoreLinkId)
 
-	resourceDatastoreLinkRead(ctx, d, meta)
+	resourceSidecarDatastoreLinkRead(ctx, d, meta)
 	return diags
 }
 
-func resourceDatastoreLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarDatastoreLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	datastoreLinkId := d.Id()
+	sidecarDatastoreLinkId := d.Id()
 
-	datastoreLink, err := c.Grpc.GetLink(ctx, datastoreLinkId)
+	sidecarDatastoreLink, err := c.Grpc.GetLink(ctx, sidecarDatastoreLinkId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if datastoreLink == nil {
+	if sidecarDatastoreLink == nil {
 		return diags
 	}
 
 	// Should map to all fields of
-	d.Set("id", datastoreLink.Id)
-	d.Set("datastore_id", datastoreLink.DatastoreId)
-	d.Set("sidecar_id", datastoreLink.SidecarId)
-	d.Set("port", datastoreLink.Port)
+	d.Set("id", sidecarDatastoreLink.Id)
+	d.Set("datastore_id", sidecarDatastoreLink.DatastoreId)
+	d.Set("sidecar_id", sidecarDatastoreLink.SidecarId)
+	d.Set("port", sidecarDatastoreLink.Port)
 
-	d.SetId(datastoreLink.Id)
+	d.SetId(sidecarDatastoreLink.Id)
 
 	return diags
 }
 
-func resourceDatastoreLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarDatastoreLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	datastoreLinkId := d.Id()
+	sidecarDatastoreLinkId := d.Id()
 
-	err := c.Grpc.DeleteLink(ctx, datastoreLinkId)
+	err := c.Grpc.DeleteLink(ctx, sidecarDatastoreLinkId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -47,7 +47,7 @@ func New(version string) func() *schema.Provider {
 				"formal_group":                    resource.ResourceGroup(),
 				"formal_group_link_role":          resource.ResourceGroupLinkRole(),
 				"formal_datastore":                resource.ResourceDatastore(),
-				"formal_datastore_link":           resource.ResourceDatastoreLink(),
+				"formal_sidecar_datastore_link":   resource.ResourceSidecarDatastoreLink(),
 				"formal_sidecar":                  resource.ResourceSidecar(),
 				"formal_key":                      resource.ResourceKey(),
 				"formal_field_encryption":         resource.ResourceFieldEncryption(),
