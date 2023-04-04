@@ -129,6 +129,26 @@ func (c *Client) UpdateSidecarVersion(sidecarId, version string) error {
 	return nil
 }
 
+func (c *Client) UpdateSidecarHostname(sidecarId, hostname string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/admin/sidecars/%s/sidecar-hostname?hostname=%s", c.HostURL, sidecarId, hostname), nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Client) UpdateSidecarGlobalKMSEncrypt(sidecarId string, sidecarUpdate SidecarV2) error {
 	if sidecarUpdate.FullKMSDecryption {
 		req, err := http.NewRequest("PUT", c.HostURL+"/admin/sidecars/"+sidecarId+"/kms-decrypt-policy?enable=true", nil)

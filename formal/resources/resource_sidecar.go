@@ -259,7 +259,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -289,6 +289,18 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("version") {
 		version := d.Get("version").(string)
 		err := client.UpdateSidecarVersion(sidecarId, version)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("formal_hostname") {
+		if d.Get("deployment_type").(string) != "onprem" {
+			return diag.Errorf("formal_hostname can only be updated for onprem deployment types")
+		}
+
+		formalHostname := d.Get("formal_hostname").(string)
+		err := client.UpdateSidecarHostname(sidecarId, formalHostname)
 		if err != nil {
 			return diag.FromErr(err)
 		}
