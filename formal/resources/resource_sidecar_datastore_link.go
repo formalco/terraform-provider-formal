@@ -63,7 +63,7 @@ func resourceSidecarDatastoreLinkCreate(ctx context.Context, d *schema.ResourceD
 		Port:        d.Get("port").(int),
 	}
 
-	sidecarDatastoreLinkId, err := c.Grpc.CreateLink(ctx, newSidecarDatastoreLink)
+	sidecarDatastoreLinkId, err := c.Grpc.CreateSidecarDatastoreLink(ctx, newSidecarDatastoreLink)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -80,7 +80,7 @@ func resourceSidecarDatastoreLinkRead(ctx context.Context, d *schema.ResourceDat
 
 	sidecarDatastoreLinkId := d.Id()
 
-	sidecarDatastoreLink, err := c.Grpc.GetLink(ctx, sidecarDatastoreLinkId)
+	sidecarDatastoreLink, err := c.Grpc.GetSidecarDatastoreLink(ctx, sidecarDatastoreLinkId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -106,7 +106,7 @@ func resourceSidecarDatastoreLinkDelete(ctx context.Context, d *schema.ResourceD
 
 	sidecarDatastoreLinkId := d.Id()
 
-	err := c.Grpc.DeleteLink(ctx, sidecarDatastoreLinkId)
+	err := c.Grpc.DeleteSidecarDatastoreLink(ctx, sidecarDatastoreLinkId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

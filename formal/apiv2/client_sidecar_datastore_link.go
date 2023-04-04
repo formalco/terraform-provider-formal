@@ -13,39 +13,39 @@ type SidecarDatastoreLink struct {
 	Port        int    `json:"port"`
 }
 
-func (c GrpcClient) CreateLink(ctx context.Context, link SidecarDatastoreLink) (string, error) {
+func (c GrpcClient) CreateSidecarDatastoreLink(ctx context.Context, link SidecarDatastoreLink) (string, error) {
 
 	req := connect.NewRequest(&adminv1.CreateSidecarDatastoreLinkRequest{
 		DatastoreId: link.DatastoreId,
 		SidecarId:   link.SidecarId,
 		Port:        int32(link.Port),
 	})
-	datastoreLink, err := c.SidecarServiceClient.CreateSidecarDatastoreLink(ctx, req)
+	sidecarDatastoreLink, err := c.SidecarServiceClient.CreateSidecarDatastoreLink(ctx, req)
 	if err != nil {
 		return "", err
 	}
-	return datastoreLink.Msg.LinkId, nil
+	return sidecarDatastoreLink.Msg.LinkId, nil
 }
 
-func (c GrpcClient) GetLink(ctx context.Context, linkId string) (*SidecarDatastoreLink, error) {
+func (c GrpcClient) GetSidecarDatastoreLink(ctx context.Context, linkId string) (*SidecarDatastoreLink, error) {
 
 	req := connect.NewRequest(&adminv1.GetLinkByIdRequest{
 		Id: linkId,
 	})
-	datastoreLink, err := c.SidecarServiceClient.GetLinkById(ctx, req)
+	sidecarDatastoreLink, err := c.SidecarServiceClient.GetLinkById(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	res := &SidecarDatastoreLink{
-		Id:          datastoreLink.Msg.Link.Id,
-		SidecarId:   datastoreLink.Msg.Link.DatastoreId,
-		DatastoreId: datastoreLink.Msg.Link.SidecarId,
-		Port:        int(datastoreLink.Msg.Link.Port),
+		Id:          sidecarDatastoreLink.Msg.Link.Id,
+		SidecarId:   sidecarDatastoreLink.Msg.Link.DatastoreId,
+		DatastoreId: sidecarDatastoreLink.Msg.Link.SidecarId,
+		Port:        int(sidecarDatastoreLink.Msg.Link.Port),
 	}
 	return res, nil
 }
 
-func (c GrpcClient) DeleteLink(ctx context.Context, linkId string) error {
+func (c GrpcClient) DeleteSidecarDatastoreLink(ctx context.Context, linkId string) error {
 
 	req := connect.NewRequest(&adminv1.RemoveSidecarDatastoreLinkRequest{
 		LinkId: linkId,
