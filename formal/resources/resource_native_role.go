@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -59,7 +60,7 @@ func ResourceNativeRole() *schema.Resource {
 const nativeRoleDelimiter = "#_#"
 
 func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -72,7 +73,7 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 		UseAsDefault:     d.Get("use_as_default").(bool),
 	}
 
-	role, err := client.CreateNativeRole(newRole)
+	role, err := c.Http.CreateNativeRole(newRole)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -88,7 +89,8 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
+
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
@@ -98,7 +100,7 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
 	}
 
-	role, err := client.GetNativeRole(splitId[0], splitId[1])
+	role, err := c.Http.GetNativeRole(splitId[0], splitId[1])
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Policy was deleted
@@ -125,7 +127,7 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 }
 
 func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	// if d.HasChangesExcept("use_as_default", "native_role_secret") {
@@ -138,7 +140,7 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange("use_as_default") {
 		useAsDefault := d.Get("use_as_default").(bool)
 		if useAsDefault {
-			err := client.UpdateNativeRole(datastoreId, nativeRoleId, "", true)
+			err := c.Http.UpdateNativeRole(datastoreId, nativeRoleId, "", true)
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -146,7 +148,7 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 	if d.HasChange("native_role_secret") {
 		nativeRoleSecret := d.Get("native_role_secret").(string)
-		err := client.UpdateNativeRole(datastoreId, nativeRoleId, nativeRoleSecret, false)
+		err := c.Http.UpdateNativeRole(datastoreId, nativeRoleId, nativeRoleSecret, false)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -158,7 +160,7 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourceNativeRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -168,7 +170,7 @@ func resourceNativeRoleDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
 	}
 
-	err := client.DeleteNativeRole(splitId[0], splitId[1])
+	err := c.Http.DeleteNativeRole(splitId[0], splitId[1])
 	if err != nil {
 		return diag.FromErr(err)
 	}
