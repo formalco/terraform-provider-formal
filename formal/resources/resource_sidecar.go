@@ -93,6 +93,13 @@ func ResourceSidecar() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"technology": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift` and `s3`.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"formal_hostname": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The hostname of the created sidecar.",
@@ -155,6 +162,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		NetworkType:       d.Get("network_type").(string),
 		FullKMSDecryption: d.Get("global_kms_decrypt").(bool),
 		Version:           d.Get("version").(string),
+		Technology:        d.Get("technology").(string),
 	}
 	hostname := d.Get("formal_hostname").(string)
 	if newSidecar.DeploymentType == "onprem" && hostname != "" {
