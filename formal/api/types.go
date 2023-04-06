@@ -20,6 +20,7 @@ type DefaultFieldEncryptionStruct struct {
 // Used for datastore creation status
 type SidecarV2 struct {
 	Id                     string `json:"id"`
+	Technology             string `json:"technology"`
 	CloudAccountId         string `json:"cloud_account_id"`
 	CloudProvider          string `json:"cloud_provider"`
 	CloudRegion            string `json:"cloud_region"`

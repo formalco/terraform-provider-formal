@@ -20,7 +20,7 @@ Registering a Datastore with Formal.
 - `default_access_behavior` (String) The default access behavior of the datastore. Accepted values are `allow` and `block`.
 - `hostname` (String) Hostname of the Datastore.
 - `name` (String) Friendly name for the Datastore.
-- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, and `redshift`.
+- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift` and `s3`.
 
 ### Optional
 
