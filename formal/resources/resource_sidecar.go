@@ -95,7 +95,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Technology of the Datastore: supported values are `snowflake`, `postgres`, and `redshift`.",
+				Description: "Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift` and `s3`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
