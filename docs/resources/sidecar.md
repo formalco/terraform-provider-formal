@@ -24,7 +24,7 @@ Registering a Sidecar with Formal.
 - `global_kms_decrypt` (Boolean) Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.
 - `name` (String) Friendly name for this Sidecar.
 - `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
-- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, and `redshift`.
+- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift` and `s3`.
 
 ### Optional
 
