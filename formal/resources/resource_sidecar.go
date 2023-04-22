@@ -150,7 +150,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	newSidecar := api.SidecarV2{
+	newSidecar := api.Sidecar{
 		Name:              d.Get("name").(string),
 		DsId:              d.Get("datastore_id").(string),
 		DataplaneId:       d.Get("dataplane_id").(string),
@@ -277,7 +277,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("global_kms_decrypt") {
 		fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
 		if fullKmsDecryption {
-			err := client.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.SidecarV2{FullKMSDecryption: fullKmsDecryption})
+			err := client.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.Sidecar{FullKMSDecryption: fullKmsDecryption})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -288,7 +288,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := client.UpdateSidecarName(sidecarId, api.SidecarV2{Name: name})
+		err := client.UpdateSidecarName(sidecarId, api.Sidecar{Name: name})
 		if err != nil {
 			return diag.FromErr(err)
 		}

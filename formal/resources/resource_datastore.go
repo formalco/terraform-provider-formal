@@ -104,7 +104,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	portInt, _ := d.Get("port").(int)
 
-	newDatastore := api.DatastoreV2{
+	newDatastore := api.Datastore{
 		Name:                    d.Get("name").(string),
 		OriginalHostname:        d.Get("hostname").(string),
 		Port:                    portInt,
@@ -180,7 +180,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := client.UpdateDatastoreName(datastoreId, api.DatastoreV2{Name: name})
+		err := client.UpdateDatastoreName(datastoreId, api.Datastore{Name: name})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -188,7 +188,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("health_check_db_name") {
 		healthCheckName := d.Get("health_check_db_name").(string)
-		err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.DatastoreV2{HealthCheckDbName: healthCheckName})
+		err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.Datastore{HealthCheckDbName: healthCheckName})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -196,7 +196,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("default_access_behavior") {
 		defaultAccessBehavior := d.Get("default_access_behavior").(string)
-		err := client.UpdateDatastoreDefaultAcccessBehavior(datastoreId, api.DatastoreV2{DefaultAccessBehavior: defaultAccessBehavior})
+		err := client.UpdateDatastoreDefaultAcccessBehavior(datastoreId, api.Datastore{DefaultAccessBehavior: defaultAccessBehavior})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -205,7 +205,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("db_discovery_job_wait_time") || d.HasChange("db_discovery_native_role_id") {
 		dbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
 		dbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
-		err := client.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.DatastoreV2{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
+		err := client.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.Datastore{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
 		if err != nil {
 			return diag.FromErr(err)
 		}
