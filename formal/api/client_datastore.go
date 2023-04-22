@@ -7,12 +7,12 @@ import (
 )
 
 type GetAndCreateDataStoreResponseV2 struct {
-	DataStoreId string      `json:"datastore_id"`
-	DataStore   DatastoreV2 `json:"datastore"`
+	DataStoreId string    `json:"datastore_id"`
+	DataStore   Datastore `json:"datastore"`
 }
 
 // CreateDatastore - Create new datastore
-func (c *Client) CreateDatastore(payload DatastoreV2) (string, error) {
+func (c *Client) CreateDatastore(payload Datastore) (string, error) {
 	rb, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
@@ -38,7 +38,7 @@ func (c *Client) CreateDatastore(payload DatastoreV2) (string, error) {
 }
 
 // GetDatastore - Returns a specifc datastore
-func (c *Client) GetDatastore(datastoreId string) (*DatastoreV2, error) {
+func (c *Client) GetDatastore(datastoreId string) (*Datastore, error) {
 	req, err := http.NewRequest("GET", c.HostURL+"/admin/datastores/"+datastoreId, nil)
 	if err != nil {
 		return nil, err
@@ -59,7 +59,7 @@ func (c *Client) GetDatastore(datastoreId string) (*DatastoreV2, error) {
 }
 
 // UpdateDatastoreName
-func (c *Client) UpdateDatastoreName(datastoreId string, datastoreUpdate DatastoreV2) error {
+func (c *Client) UpdateDatastoreName(datastoreId string, datastoreUpdate Datastore) error {
 	rb, err := json.Marshal(datastoreUpdate)
 	if err != nil {
 		return nil
@@ -85,7 +85,7 @@ func (c *Client) UpdateDatastoreName(datastoreId string, datastoreUpdate Datasto
 }
 
 // UpdateDatastoreName
-func (c *Client) UpdateDatastoreHealthCheckDbName(datastoreId string, datastoreUpdate DatastoreV2) error {
+func (c *Client) UpdateDatastoreHealthCheckDbName(datastoreId string, datastoreUpdate Datastore) error {
 	rb, err := json.Marshal(datastoreUpdate)
 	if err != nil {
 		return nil
@@ -111,7 +111,7 @@ func (c *Client) UpdateDatastoreHealthCheckDbName(datastoreId string, datastoreU
 }
 
 // To be used in the future with other fields too
-func (c *Client) UpdateDatastoreDefaultAcccessBehavior(datastoreId string, datastoreUpdate DatastoreV2) error {
+func (c *Client) UpdateDatastoreDefaultAcccessBehavior(datastoreId string, datastoreUpdate Datastore) error {
 	rb, err := json.Marshal(datastoreUpdate)
 	if err != nil {
 		return nil
@@ -136,7 +136,7 @@ func (c *Client) UpdateDatastoreDefaultAcccessBehavior(datastoreId string, datas
 	return nil
 }
 
-func (c *Client) UpdateDatastoreDbDiscoveryConfig(datastoreId string, datastoreUpdate DatastoreV2) error {
+func (c *Client) UpdateDatastoreDbDiscoveryConfig(datastoreId string, datastoreUpdate Datastore) error {
 	rb, err := json.Marshal(datastoreUpdate)
 	if err != nil {
 		return nil
