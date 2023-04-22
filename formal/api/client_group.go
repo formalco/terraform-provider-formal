@@ -7,13 +7,13 @@ import (
 )
 
 type CreateGroupEndpointRes struct {
-	Group   GroupStruct  `json:"group"`
+	Group   Group  `json:"group"`
 	Message string `json:"message"`
 }
 
 // Done 2
 // Create new group
-func (c *Client) CreateGroup(payload GroupStruct) (*GroupStruct, error) {
+func (c *Client) CreateGroup(payload Group) (*Group, error) {
 	rb, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
@@ -39,12 +39,12 @@ func (c *Client) CreateGroup(payload GroupStruct) (*GroupStruct, error) {
 }
 
 type GetGroupEndpointRes struct {
-	Group GroupStruct `json:"group"`
+	Group Group `json:"group"`
 }
 
 // Done 2
 // GetGroup - Returns a specifc group
-func (c *Client) GetGroup(groupId string) (*GroupStruct, error) {
+func (c *Client) GetGroup(groupId string) (*Group, error) {
 	req, err := http.NewRequest("GET", c.HostURL+"/admin/identities/groups/"+groupId, nil)
 	if err != nil {
 		return nil, err
@@ -67,7 +67,7 @@ func (c *Client) GetGroup(groupId string) (*GroupStruct, error) {
 }
 
 // UpdateGroup - Updates an group
-func (c *Client) UpdateGroup(groupId string, groupUpdate GroupStruct) error {
+func (c *Client) UpdateGroup(groupId string, groupUpdate Group) error {
 	rb, err := json.Marshal(groupUpdate)
 	if err != nil {
 		return err
