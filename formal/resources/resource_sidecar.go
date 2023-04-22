@@ -24,6 +24,7 @@ func ResourceSidecar() *schema.Resource {
 		ReadContext:   resourceSidecarRead,
 		UpdateContext: resourceSidecarUpdate,
 		DeleteContext: resourceSidecarDelete,
+		SchemaVersion: 1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
@@ -392,7 +393,7 @@ func resourceSidecarStateUpgradeV0(_ context.Context, rawState map[string]interf
 
 	client := meta.(*api.Client)
 
-	if val, ok := rawState["id"]; !ok {
+	if val, ok := rawState["id"]; ok {
 		sidecar, err := client.GetSidecar(val.(string))
 		if err != nil {
 			return nil, err
