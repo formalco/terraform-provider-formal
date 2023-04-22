@@ -24,6 +24,13 @@ func ResourceSidecar() *schema.Resource {
 		ReadContext:   resourceSidecarRead,
 		UpdateContext: resourceSidecarUpdate,
 		DeleteContext: resourceSidecarDelete,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceSidecarInstanceResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceSidecarStateUpgradeV0,
+			},
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
@@ -242,6 +249,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("global_kms_decrypt", sidecar.FullKMSDecryption)
 	d.Set("dataplane_id", sidecar.DataplaneId)
 	d.Set("version", sidecar.Version)
+	d.Set("technology", sidecar.Technology)
 
 	if sidecar.DeploymentType == "onprem" {
 		tlsCert, err := client.GetSidecarTlsCert(sidecarId)
@@ -364,4 +372,33 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId("")
 	return diags
+}
+
+func resourceSidecarInstanceResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"technology": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
+	}
+}
+
+func resourceSidecarStateUpgradeV0(_ context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	if rawState == nil {
+		return nil, fmt.Errorf("sidecar resource state upgrade failed, state is nil")
+	}
+
+	client := meta.(*api.Client)
+
+	if val, ok := rawState["id"]; !ok {
+		sidecar, err := client.GetSidecar(val.(string))
+		if err != nil {
+			return nil, err
+		}
+		rawState["technology"] = sidecar.Technology
+	}
+
+	return rawState, nil
 }
