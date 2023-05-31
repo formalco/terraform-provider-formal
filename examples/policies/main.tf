@@ -18,205 +18,72 @@ provider "formal" {
 
 resource "formal_policy" "decrypt" {
   name         = "decrypt"
-  description  = "this policy, when linked to a role or group, allows them to decrypt the demo table."
+  description  = "decrpyt any columns that has the name encrypted-col."
   owners       = ["john@formal.com"]
   notification = "none"
   module       = <<-EOF
-package formal.validator
+package formal.v2
 
-decrypt { 
-    input.path = "main.public.demo_field_encryption.name" 
-}	
+import future.keywords.if
+import future.keywords.in
+
+post_request := { "action": "decrypt", "columns": columns } if {
+    columns := [col | col := input.row[_]; col["name"] == "encrypted-col"]
+}
 EOF
 }
 
 
 resource "formal_policy" "mask_emails" {
   name         = "mask-email"
-  description  = "this policy, when linked to a role or group, masks the emails' username."
+  description  = "Mask any column that has the email data labal email_address."
   owners       = ["john@company.com"]
   notification = "consumer"
   module       = <<-EOF
-package formal.validator
+package formal.v2
 
-mask[[action, typesafe]] {
-  input.tag = "email_address"  
-  action := "email_mask_username"
-  typesafe := ""
+import future.keywords.if
+
+post_request := { "action": "mask", "type": "redact.partial", "sub_type": "email_mask_username", "columns": columns, "typesafe": "fallback_to_default" } if {
+    columns := [col | col := input.columns[_]; col["data_label"] == "email_address";]
 }
 EOF
-}
-
-resource "formal_policy" "mask_emails_typesafe_fallback_to_default" {
-  name         = "mask-email-fallback-to-default"
-  description  = "this policy, masks the emails' username is type safe and fallback to default."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-mask[[action, typesafe]] {
-  input.tag = "email_address"  
-  action := "email_mask_username"
-  typesafe := "fallback_to_default"
-}
-EOF
-}
-
-resource "formal_policy" "mask_emails_typesafe_fallback_to_null" {
-  name         = "mask-email-fallback-to-null"
-  description  = "this policy, masks the emails' username is type safe and fallback to null."
-  owners       = ["john@company.com"]
-  notification = "owner"
-  module       = <<-EOF
-package formal.validator
-
-mask[[action, typesafe]] {
-  input.tag = "email_address"  
-  action := "email_mask_username"
-  typesafe := "fallback_to_null"
-}
-EOF
-}
-
-resource "formal_policy_link" "masked_email" {
-  type      = "group"
-  item_id   = var.group_id
-  policy_id = formal_policy.mask_emails.id
 }
 
 resource "formal_policy" "row_level_hashing" {
   name         = "test-row-level-hashing-eu"
-  description  = "this policy, when linked to a role or group, hash the first name of any row that has an eu value."
+  description  = "hash every row that has the eu column set to true."
   owners       = ["john@company.com"]
   notification = "all"
   module       = <<-EOF
-package formal.validator
+package formal.v2
 
-mask[action] {
-  input.row_value = true
-  input.column_name = "eu"
-  action := {"first_name": "hash"}
+import future.keywords.if
+
+post_request := { "action": "mask", "type": "hash.with_salt", "columns": input.columns } if {
+    colValue := [col | col := input.row[_]; col["name"] == "eu"; col["value"] == true]
+    count(colValue) > 0
 }
 EOF
-}
-
-resource "formal_policy_link" "row_level_hashing" {
-  type      = "group"
-  item_id   = var.group_id
-  policy_id = formal_policy.row_level_hashing.id
 }
 
 resource "formal_policy" "block_db_with_formal_message" {
   name         = "block_db_with_formal_message"
-  description  = "this policy block connection to sidecar based on the name of db and throw an error message about Formal."
+  description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
   owners       = ["john@company.com"]
   notification = "all"
   module       = <<-EOF
-package formal.validator
+package formal.v2
 
-block[action] {
-  input.db_name = "main"
-  action := "block_with_formal_message"
+import future.keywords.if
+import future.keywords.in
+
+default session := { "action": "block", "type": "block_with_formal_message" }
+
+session := { "action": "allow", "reason": "the policy is blocking request" } if {
+	input.db_name == "main"
+	"USAnalyst" in input.user.groups
+	input.datastore.technology == "postgres"
 }
 EOF
-}
-
-resource "formal_policy" "block_silently" {
-  name         = "block_db_silently"
-  description  = "this policy block connection to sidecar based on the name of db and drop the connection silently."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-block[action] {
-  input.db_name = "main"
-  action := "block_silently"
-}
-EOF
-}
-
-resource "formal_policy" "block_with_fake_error" {
-  name         = "block_db_with_fake_error"
-  description  = "this policy block connection to sidecar based on the name of db and drop the connection with a fake error."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-block[action] {
-  input.db_name = "main"
-  action := "block_with_fake_error"
-}
-EOF
-}
-
-resource "formal_policy" "block_for_ip_address" {
-  name         = "block_for_ip_address"
-  description  = "this policy block connection to sidecar if the ip address is 127.0.0.1 and drop the connection with a fake error."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-block[action] {
-  input.ip_address = "127.0.0.1"
-  action := "block_with_fake_error"
-}
-EOF
-}
-
-resource "formal_policy" "allow_for_ip_address" {
-  name         = "allow_for_ip_address"
-  description  = "this policy allow connection to sidecar if the ip address is 127.0.0.1."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-allow {
-  input.ip_address = "127.0.0.1"
-}
-EOF
-}
-
-resource "formal_policy" "block_on_sunday" {
-  name         = "block_on_sunday"
-  description  = "this policy block connection to sidecar on sunday."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-block[action] {
-  time.weekday(time.now_ns()) = "Sunday"
-  action := "block_with_formal_message"
-}
-EOF
-}
-
-resource "formal_policy" "block_on_weekends" {
-  name         = "block_on_weekends"
-  description  = "this policy block connection to sidecar on weekends."
-  owners       = ["john@company.com"]
-  notification = "all"
-  module       = <<-EOF
-package formal.validator
-
-block[action] {
-	current_day := time.weekday(time.now_ns())
-  weekend := {"Sunday", "Saturday"}
-    
-  weekend[current_day]
-
-  action := "block_with_formal_message"
-}
-EOF
-}
-
-resource "formal_policy_link" "block" {
-  type      = "group"
-  item_id   = var.group_id
-  policy_id = formal_policy.block_with_fake_error.id
 }
