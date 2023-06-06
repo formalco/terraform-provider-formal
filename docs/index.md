@@ -70,6 +70,20 @@ provider "formal" {
 }
 ```
 
+Credentials can be provided by using the `FORMAL_API_KEY` environment variables.
+
+For example:
+
+Usage:
+
+```terraform
+provider "formal" {}
+```
+
+```bash
+export FORMAL_API_KEY="some_api_key"
+```
+
 ### Deploying with a Managed Cloud model
 
 Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](console.joinformal.app).
