@@ -22,7 +22,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.16"
+      version = "~> 3.0.23"
     }
   }
 }
@@ -83,7 +83,6 @@ provider "formal" {}
 ```bash
 export FORMAL_API_KEY="some_api_key"
 ```
-
 
 ### Deploying with a Managed Cloud model
 

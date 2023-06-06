@@ -22,7 +22,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.16"
+      version = "~> 3.0.23"
     }
   }
 }
@@ -68,6 +68,20 @@ Usage:
 provider "formal" {
   api_key  = var.formal_api_key
 }
+```
+
+Credentials can be provided by using the `FORMAL_API_KEY` environment variables.
+
+For example:
+
+Usage:
+
+```terraform
+provider "formal" {}
+```
+
+```bash
+export FORMAL_API_KEY="some_api_key"
 ```
 
 ### Deploying with a Managed Cloud model
