@@ -7,4 +7,4 @@ snowflake_password = ""
 snowflake_hostname = ""
 snowflake_port     = ""
 
-sidecar_hostname   = ""
+sidecar_hostname = ""
