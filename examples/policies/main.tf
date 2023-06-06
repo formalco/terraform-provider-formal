@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.16"
+      version = "~> 3.0.23"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -13,7 +13,7 @@ terraform {
 }
 
 provider "formal" {
-  api_key = var.formal_api_key
+  api_key = var.formal_api_key # you can also use env variable FORMAL_API_KEY
 }
 
 resource "formal_policy" "decrypt" {
@@ -21,6 +21,7 @@ resource "formal_policy" "decrypt" {
   description  = "decrpyt any columns that has the name encrypted-col."
   owners       = ["john@formal.com"]
   notification = "none"
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -39,6 +40,7 @@ resource "formal_policy" "mask_emails" {
   description  = "Mask any column that has the email data labal email_address."
   owners       = ["john@company.com"]
   notification = "consumer"
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -55,6 +57,7 @@ resource "formal_policy" "row_level_hashing" {
   description  = "hash every row that has the eu column set to true."
   owners       = ["john@company.com"]
   notification = "all"
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -72,6 +75,7 @@ resource "formal_policy" "block_db_with_formal_message" {
   description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
   owners       = ["john@company.com"]
   notification = "all"
+  active       = true
   module       = <<-EOF
 package formal.v2
 
