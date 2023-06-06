@@ -2,6 +2,7 @@ package provider
 
 import (
 	"context"
+	"os"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
@@ -32,7 +33,7 @@ func New(version string) func() *schema.Provider {
 			Schema: map[string]*schema.Schema{
 				"api_key": {
 					Type:     schema.TypeString,
-					Required: true,
+					Optional: true,
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
@@ -66,6 +67,12 @@ func New(version string) func() *schema.Provider {
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		apiKey := d.Get("api_key").(string)
+		if apiKey == "" {
+			apiKey = os.Getenv("FORMAL_API_KEY")
+			if apiKey == "" {
+				return nil, diag.Errorf("api_key must be set in the provider or as an environment variable")
+			}
+		}
 
 		c, err := api.NewClient(apiKey)
 		if err != nil {
