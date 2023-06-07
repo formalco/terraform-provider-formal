@@ -14,7 +14,7 @@ import (
 func ResourceRole() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Creating a Role in Formal.",
+		Description: "User in Formal.",
 
 		CreateContext: resourceRoleCreate,
 		ReadContext:   resourceRoleRead,
