@@ -51,7 +51,6 @@ type Datastore struct {
 	Port                    int    `json:"port"`
 	Technology              string `json:"technology"`
 	HealthCheckDbName       string `json:"health_check_db_name"`
-	DefaultAccessBehavior   string `json:"default_access_behavior"`
 	DbDiscoveryJobWaitTime  string `json:"db_discovery_job_wait_time"`
 	DbDiscoveryNativeRoleID string `json:"db_discovery_native_role_id"`
 }
