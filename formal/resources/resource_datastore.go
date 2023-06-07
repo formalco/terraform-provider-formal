@@ -73,12 +73,6 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"default_access_behavior": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The default access behavior of the datastore. Accepted values are `allow` and `block`.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"db_discovery_native_role_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The `native_role_id` of the Native Role to be used for the discovery job.",
@@ -110,7 +104,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Port:                    portInt,
 		HealthCheckDbName:       d.Get("health_check_db_name").(string),
 		Technology:              d.Get("technology").(string),
-		DefaultAccessBehavior:   d.Get("default_access_behavior").(string),
 		DbDiscoveryJobWaitTime:  d.Get("db_discovery_job_wait_time").(string),
 		DbDiscoveryNativeRoleID: d.Get("db_discovery_native_role_id").(string),
 	}
@@ -155,7 +148,6 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("port", datastore.Port)
 	d.Set("technology", datastore.Technology)
 	d.Set("created_at", datastore.CreatedAt)
-	d.Set("default_access_behavior", datastore.DefaultAccessBehavior)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(datastore.DsId)
@@ -172,7 +164,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "health_check_db_name", "default_access_behavior", "db_discovery_job_wait_time", "db_discovery_native_role_id"}
+	fieldsThatCanChange := []string{"name", "health_check_db_name", "db_discovery_job_wait_time", "db_discovery_native_role_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -189,14 +181,6 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("health_check_db_name") {
 		healthCheckName := d.Get("health_check_db_name").(string)
 		err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.Datastore{HealthCheckDbName: healthCheckName})
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("default_access_behavior") {
-		defaultAccessBehavior := d.Get("default_access_behavior").(string)
-		err := client.UpdateDatastoreDefaultAcccessBehavior(datastoreId, api.Datastore{DefaultAccessBehavior: defaultAccessBehavior})
 		if err != nil {
 			return diag.FromErr(err)
 		}

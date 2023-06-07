@@ -3,12 +3,12 @@
 page_title: "formal_role Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Creating a Role in Formal.
+  User in Formal.
 ---
 
 # formal_role (Resource)
 
-Creating a Role in Formal.
+User in Formal.
 
 
 
