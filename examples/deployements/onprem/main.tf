@@ -17,17 +17,17 @@ provider "formal" {
 }
 
 resource "formal_datastore" "main" {
-  technology              = "snowflake"
-  name                    = var.name
-  hostname                = var.snowflake_hostname
-  port                    = var.snowflake_port
-  default_access_behavior = "allow"
+  technology = "snowflake"
+  name       = var.name
+  hostname   = var.snowflake_hostname
+  port       = var.snowflake_port
 }
 
 resource "formal_sidecar" "main" {
   name               = var.name
   deployment_type    = "onprem"
   datastore_id       = formal_datastore.main.id
+  technology         = "snowflake"
   fail_open          = false
   global_kms_decrypt = false
   network_type       = "internet-facing"
@@ -36,7 +36,7 @@ resource "formal_sidecar" "main" {
 }
 
 # Native Role
-resource "formal_native_role" "main_postgres" {
+resource "formal_native_role" "main_snowflake" {
   datastore_id       = formal_datastore.main.id
   native_role_id     = var.snowflake_username
   native_role_secret = var.snowflake_password
