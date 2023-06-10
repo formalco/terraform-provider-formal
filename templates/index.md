@@ -67,6 +67,7 @@ Usage:
 ```terraform
 provider "formal" {
   api_key  = var.formal_api_key
+  retrieve_sensitive_values = true
 }
 ```
 
@@ -83,6 +84,10 @@ provider "formal" {}
 ```bash
 export FORMAL_API_KEY="some_api_key"
 ```
+
+#### Retrieving Sensitive Values
+
+You can configure the Formal Provider to disabled retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
 
 ### Deploying with a Managed Cloud model
 
