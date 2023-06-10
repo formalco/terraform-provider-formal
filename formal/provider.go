@@ -35,10 +35,13 @@ func New(version string) func() *schema.Provider {
 					Type:     schema.TypeString,
 					Optional: true,
 				},
+				"retrieve_sensitive_values": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  true,
+				},
 			},
-			DataSourcesMap: map[string]*schema.Resource{
-				// "policy_data_source": dataSourcePolicy(),
-			},
+			DataSourcesMap: map[string]*schema.Resource{},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_policy":                   resource.ResourcePolicy(),
 				"formal_policy_link":              resource.ResourcePolicyLink(),
@@ -73,8 +76,9 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 				return nil, diag.Errorf("api_key must be set in the provider or as an environment variable")
 			}
 		}
+		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		c, err := api.NewClient(apiKey)
+		c, err := api.NewClient(apiKey, returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
