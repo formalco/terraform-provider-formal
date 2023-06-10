@@ -252,10 +252,13 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("version", sidecar.Version)
 	d.Set("technology", sidecar.Technology)
 
-	if sidecar.DeploymentType == "onprem" {
+	if sidecar.DeploymentType == "onprem" && client.ReturnSensitiveValue {
 		tlsCert, err := client.GetSidecarTlsCert(sidecarId)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+		if tlsCert == nil {
+			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
 		}
 		if *tlsCert == "" {
 			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
