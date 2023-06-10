@@ -160,8 +160,12 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("email", role.Email)
 	d.Set("admin", role.Admin)
 	d.Set("app_type", role.AppType)
-	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 	d.Set("expire_at", role.ExpireAt)
+
+	if client.ReturnSensitiveValue {
+		d.Set("machine_role_access_token", role.MachineRoleAccessToken)
+	}
+
 	d.SetId(roleId)
 
 	return diags

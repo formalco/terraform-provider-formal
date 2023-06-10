@@ -9,18 +9,20 @@ import (
 )
 
 type Client struct {
-	HostURL    string
-	HTTPClient *http.Client
-	APIKey     string
+	HostURL              string
+	HTTPClient           *http.Client
+	APIKey               string
+	ReturnSensitiveValue bool
 }
 
 const FORMAL_HOST_URL string = "https://api.formalcloud.net"
 
-func NewClient(apiKey string) (*Client, error) {
+func NewClient(apiKey string, returnSensitiveValue bool) (*Client, error) {
 	c := Client{
-		HTTPClient: &http.Client{Timeout: 100 * time.Second},
-		APIKey:     apiKey,
-		HostURL:    FORMAL_HOST_URL,
+		HTTPClient:           &http.Client{Timeout: 100 * time.Second},
+		APIKey:               apiKey,
+		HostURL:              FORMAL_HOST_URL,
+		ReturnSensitiveValue: returnSensitiveValue,
 	}
 
 	return &c, nil
