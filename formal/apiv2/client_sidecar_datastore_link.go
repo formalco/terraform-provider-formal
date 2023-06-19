@@ -38,8 +38,8 @@ func (c GrpcClient) GetSidecarDatastoreLink(ctx context.Context, linkId string) 
 	}
 	res := &SidecarDatastoreLink{
 		Id:          sidecarDatastoreLink.Msg.Link.Id,
-		SidecarId:   sidecarDatastoreLink.Msg.Link.DatastoreId,
-		DatastoreId: sidecarDatastoreLink.Msg.Link.SidecarId,
+		SidecarId:   sidecarDatastoreLink.Msg.Link.SidecarId,
+		DatastoreId: sidecarDatastoreLink.Msg.Link.DatastoreId,
 		Port:        int(sidecarDatastoreLink.Msg.Link.Port),
 	}
 	return res, nil
