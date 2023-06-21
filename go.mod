@@ -3,14 +3,15 @@ module github.com/formalco/terraform-provider-formal
 go 1.19
 
 require (
+	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230621004452-95108a27822f.1
+	buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230621004452-95108a27822f.1
+	github.com/bufbuild/connect-go v1.8.0
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.20.0
 )
 
 require (
-	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.6.0-20230404210519-e7b39fca1acf.1 // indirect
-	buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230404210519-e7b39fca1acf.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
@@ -18,7 +19,6 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
-	github.com/bufbuild/connect-go v1.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect

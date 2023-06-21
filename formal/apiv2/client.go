@@ -9,16 +9,20 @@ import (
 const FORMAL_HOST_URL string = "https://adminv2.api.formalcloud.net"
 
 type GrpcClient struct {
-	SidecarServiceClient adminv1connect.SidecarServiceClient
+	SidecarServiceClient          adminv1connect.SidecarServiceClient
+	IntegrationExternalAPIService adminv1connect.IntegrationExternalAPIServiceClient
 }
 
 func NewClient(apiKey string) *GrpcClient {
 	sidecarServiceClient := adminv1connect.NewSidecarServiceClient(
 		&http.Client{Timeout: 100 * time.Second, Transport: &transport{underlyingTransport: http.DefaultTransport, apiKey: apiKey}},
 		FORMAL_HOST_URL)
-
+	integrationExternalApiClient := adminv1connect.NewIntegrationExternalAPIServiceClient(
+		&http.Client{Timeout: 100 * time.Second, Transport: &transport{underlyingTransport: http.DefaultTransport, apiKey: apiKey}},
+		FORMAL_HOST_URL)
 	return &GrpcClient{
-		SidecarServiceClient: sidecarServiceClient,
+		SidecarServiceClient:          sidecarServiceClient,
+		IntegrationExternalAPIService: integrationExternalApiClient,
 	}
 }
 
