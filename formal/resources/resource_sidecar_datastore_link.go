@@ -43,7 +43,8 @@ func ResourceSidecarDatastoreLink() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Port.",
 				Type:        schema.TypeInt,
-				Computed:    true,
+				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}
