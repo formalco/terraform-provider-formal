@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -110,7 +111,7 @@ func ResourcePolicy() *schema.Resource {
 }
 
 func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -130,7 +131,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		Notification: d.Get("notification").(string),
 	}
 
-	policy, err := client.CreatePolicy(ctx, newPolicy)
+	policy, err := c.Http.CreatePolicy(ctx, newPolicy)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,12 +143,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	policyId := d.Id()
 
-	policy, err := client.GetPolicy(policyId)
+	policy, err := c.Http.GetPolicy(policyId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Policy was deleted
@@ -175,7 +176,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	policyId := d.Id()
 
@@ -187,7 +188,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			SourceType:  "terraform",
 		}
 
-		err := client.UpdatePolicy(policyId, policyUpdate)
+		err := c.Http.UpdatePolicy(policyId, policyUpdate)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -199,13 +200,13 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	policyId := d.Id()
 
-	err := client.DeletePolicy(policyId)
+	err := c.Http.DeletePolicy(policyId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

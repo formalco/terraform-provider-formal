@@ -4,10 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 	"time"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -100,7 +100,7 @@ func ResourceCloudAccount() *schema.Resource {
 }
 
 func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -114,7 +114,7 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(errors.New("cloud_provider must be 'aws'"))
 	}
 
-	createdAccount, err := client.CreateCloudAccount(cloudAccountName, awsCloudRegion)
+	createdAccount, err := c.Http.CreateCloudAccount(cloudAccountName, awsCloudRegion)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -129,10 +129,10 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	cloudAccount, err := client.GetCloudAccount(d.Id())
+	cloudAccount, err := c.Http.GetCloudAccount(d.Id())
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// CloudAccount was deleted
@@ -171,13 +171,13 @@ func resourceCloudAccountUpdate(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	accountId := d.Id()
 
-	err := client.DeleteCloudAccount(accountId)
+	err := c.Http.DeleteCloudAccount(accountId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// 404 means Cloud account is deleted, likely by CloudFormation

@@ -1,6 +1,6 @@
 module github.com/formalco/terraform-provider-formal
 
-go 1.17
+go 1.19
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
@@ -9,6 +9,8 @@ require (
 )
 
 require (
+	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.6.0-20230404210519-e7b39fca1acf.1 // indirect
+	buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230404210519-e7b39fca1acf.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
@@ -16,9 +18,10 @@ require (
 	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
+	github.com/bufbuild/connect-go v1.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/go-cmp v0.5.8 // indirect
+	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
@@ -64,5 +67,5 @@ require (
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/genproto v0.0.0-20200711021454-869866162049 // indirect
 	google.golang.org/grpc v1.48.0 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.30.0 // indirect
 )

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strconv"
 	"strings"
 	"time"
@@ -127,7 +128,7 @@ func ResourceDataplane() *schema.Resource {
 
 func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*(api.Client))
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -137,14 +138,14 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	time.Sleep(60 * time.Second)
 
 	newDataplane := api.FlatDataplane{
-		StackName:             d.Get("name").(string),
-		CloudAccountId:        d.Get("cloud_account_id").(string),
-		Region:                d.Get("cloud_region").(string),
-		AvailabilityZone:      d.Get("availability_zones").(int),
-		VpcPeering:            d.Get("vpc_peering").(bool),
+		StackName:        d.Get("name").(string),
+		CloudAccountId:   d.Get("cloud_account_id").(string),
+		Region:           d.Get("cloud_region").(string),
+		AvailabilityZone: d.Get("availability_zones").(int),
+		VpcPeering:       d.Get("vpc_peering").(bool),
 	}
 
-	res, err := client.CreateDataplane(newDataplane)
+	res, err := c.Http.CreateDataplane(newDataplane)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -160,7 +161,7 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	currentErrors := 0
 	for {
 		// Retrieve status
-		existingDp, err := client.GetDataplane(newDataPlaneId)
+		existingDp, err := c.Http.GetDataplane(newDataPlaneId)
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
@@ -195,12 +196,12 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	dataplaneId := d.Id()
 
-	foundDataplane, err := client.GetDataplane(dataplaneId)
+	foundDataplane, err := c.Http.GetDataplane(dataplaneId)
 	if err != nil || foundDataplane == nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Datplane was deleted
@@ -236,14 +237,14 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 
 func resourceDataplaneDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	dataplaneId := d.Id()
 
-	err := client.DeleteDataplane(dataplaneId)
+	err := c.Http.DeleteDataplane(dataplaneId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -253,7 +254,7 @@ func resourceDataplaneDelete(ctx context.Context, d *schema.ResourceData, meta i
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := client.GetDataplane(dataplaneId)
+		_, err := c.Http.GetDataplane(dataplaneId)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "status: 404") {
 				// Dataplane was deleted

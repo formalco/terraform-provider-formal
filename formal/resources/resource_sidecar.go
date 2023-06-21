@@ -2,6 +2,7 @@ package resource
 
 import (
 	"errors"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strconv"
 	"time"
 
@@ -144,7 +145,7 @@ func ResourceSidecar() *schema.Resource {
 
 func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*(api.Client))
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -164,7 +165,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		Technology:        d.Get("technology").(string),
 	}
 
-	sidecarId, err := client.CreateSidecar(newSidecar)
+	sidecarId, err := c.Http.CreateSidecar(newSidecar)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,7 +174,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdSidecar, err := client.GetSidecar(sidecarId)
+		createdSidecar, err := c.Http.GetSidecar(sidecarId)
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
@@ -208,12 +209,13 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
+
 	var diags diag.Diagnostics
 
 	sidecarId := d.Id()
 
-	sidecar, err := client.GetSidecar(sidecarId)
+	sidecar, err := c.Http.GetSidecar(sidecarId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
@@ -239,7 +241,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("version", sidecar.Version)
 
 	if sidecar.DeploymentType == "onprem" {
-		tlsCert, err := client.GetSidecarTlsCert(sidecarId)
+		tlsCert, err := c.Http.GetSidecarTlsCert(sidecarId)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -256,7 +258,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -272,7 +274,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("global_kms_decrypt") {
 		fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
 		if fullKmsDecryption {
-			err := client.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.SidecarV2{FullKMSDecryption: fullKmsDecryption})
+			err := c.Http.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.SidecarV2{FullKMSDecryption: fullKmsDecryption})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -283,7 +285,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := client.UpdateSidecarName(sidecarId, api.SidecarV2{Name: name})
+		err := c.Http.UpdateSidecarName(sidecarId, api.SidecarV2{Name: name})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -291,7 +293,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if d.HasChange("version") {
 		version := d.Get("version").(string)
-		err := client.UpdateSidecarVersion(sidecarId, version)
+		err := c.Http.UpdateSidecarVersion(sidecarId, version)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -304,14 +306,14 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	dsId := d.Id()
 
-	err := client.DeleteSidecar(dsId)
+	err := c.Http.DeleteSidecar(dsId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -321,7 +323,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := client.GetSidecar(dsId)
+		_, err := c.Http.GetSidecar(dsId)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "status: 404") {
 				// Sidecar was deleted

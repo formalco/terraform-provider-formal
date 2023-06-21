@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -68,7 +69,7 @@ const fieldEncryptionTerraformIdDelimiter = "#_#"
 
 // Done
 func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -82,7 +83,7 @@ func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, 
 		Alg:        d.Get("alg").(string),
 	}
 
-	fieldEncryption, err := client.CreateFieldEncryption(newFieldEncryption)
+	fieldEncryption, err := c.Http.CreateFieldEncryption(newFieldEncryption)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -97,9 +98,8 @@ func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-//
 func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	terraformFieldEncryptionId := d.Id()
@@ -111,7 +111,7 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 	dsId := terraformFieldEncryptionIdSplit[0]
 	path := terraformFieldEncryptionIdSplit[1]
 
-	fieldEncryption, err := client.GetFieldEncryption(dsId, path)
+	fieldEncryption, err := c.Http.GetFieldEncryption(dsId, path)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Was deleted
@@ -157,7 +157,7 @@ func resourceFieldEncryptionUpdate(ctx context.Context, d *schema.ResourceData, 
 
 // DONE
 func resourceFieldEncryptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -170,7 +170,7 @@ func resourceFieldEncryptionDelete(ctx context.Context, d *schema.ResourceData, 
 	dsId := terraformFieldEncryptionIdSplit[0]
 	path := terraformFieldEncryptionIdSplit[1]
 
-	err := client.DeleteFieldEncryption(dsId, path)
+	err := c.Http.DeleteFieldEncryption(dsId, path)
 	if err != nil {
 		return diag.FromErr(err)
 	}

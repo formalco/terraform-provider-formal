@@ -31,6 +31,7 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version-file: 'go.mod'
+          go-version: '1.19'
           cache: true
       -
         name: Import GPG key
