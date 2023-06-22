@@ -17,6 +17,7 @@ Creating a Policy in Formal.
 
 ### Required
 
+- `active` (Boolean) Active status of this policy.
 - `description` (String) Policy Description.
 - `module` (String) The module describing how the policy works. Create one in the Formal Console.
 - `name` (String) Policy Name
@@ -25,7 +26,6 @@ Creating a Policy in Formal.
 
 ### Read-Only
 
-- `active` (Boolean) Active status of this policy.
 - `created_at` (String) When the policy was created.
 - `created_by` (String) Who the policy was created by.
 - `expire_at` (String) When this policy is set to expire.

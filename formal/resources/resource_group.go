@@ -54,7 +54,7 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newGroup := api.GroupStruct{
+	newGroup := api.Group{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 	}
@@ -109,7 +109,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	groupName := d.Get("name").(string)
 	groupDesc := d.Get("description").(string)
 
-	err := c.Http.UpdateGroup(groupId, api.GroupStruct{Name: groupName, Description: groupDesc})
+	err := c.Http.UpdateGroup(groupId, api.Group{Name: groupName, Description: groupDesc})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -8,7 +8,7 @@ import (
 )
 
 // CreatePolicy - Create new policy
-func (c *Client) CreatePolicy(ctx context.Context, payload CreatePolicyPayload) (*PolicyOrgItem, error) {
+func (c *Client) CreatePolicy(ctx context.Context, payload CreatePolicyPayload) (*Policy, error) {
 	rb, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
@@ -24,7 +24,7 @@ func (c *Client) CreatePolicy(ctx context.Context, payload CreatePolicyPayload) 
 		return nil, err
 	}
 
-	createdPolicy := PolicyOrgItem{}
+	createdPolicy := Policy{}
 	err = json.Unmarshal(body, &createdPolicy)
 	if err != nil {
 		return nil, err
@@ -35,11 +35,11 @@ func (c *Client) CreatePolicy(ctx context.Context, payload CreatePolicyPayload) 
 
 // At the moment, only GET is shaped such. Create needs to be updated (is just struct atm)
 type GetAndCreatePolicyEndpointRes struct {
-	Policy PolicyOrgItem `json:"policy"`
+	Policy Policy `json:"policy"`
 }
 
 // GetPolicy - Returns a specifc policy
-func (c *Client) GetPolicy(policyId string) (*PolicyOrgItem, error) {
+func (c *Client) GetPolicy(policyId string) (*Policy, error) {
 	req, err := http.NewRequest("GET", c.HostURL+"/admin/policies/"+policyId, nil)
 	if err != nil {
 		return nil, err
@@ -62,7 +62,7 @@ func (c *Client) GetPolicy(policyId string) (*PolicyOrgItem, error) {
 }
 
 // UpdatePolicy - Updates an policy
-func (c *Client) UpdatePolicy(policyId string, policyUpdate PolicyOrgItem) error {
+func (c *Client) UpdatePolicy(policyId string, policyUpdate Policy) error {
 	rb, err := json.Marshal(policyUpdate)
 	if err != nil {
 		return err

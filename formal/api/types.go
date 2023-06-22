@@ -18,7 +18,7 @@ type DefaultFieldEncryptionStruct struct {
 }
 
 // Used for datastore creation status
-type SidecarV2 struct {
+type Sidecar struct {
 	Id                     string `json:"id"`
 	Technology             string `json:"technology"`
 	CloudAccountId         string `json:"cloud_account_id"`
@@ -41,7 +41,7 @@ type SidecarV2 struct {
 	Version                string `json:"version"`
 }
 
-type DatastoreV2 struct {
+type Datastore struct {
 	Id                      string `json:"id"`
 	CreatedAt               int64  `json:"created_at"`
 	OrgId                   string `json:"org_id"`
@@ -51,7 +51,6 @@ type DatastoreV2 struct {
 	Port                    int    `json:"port"`
 	Technology              string `json:"technology"`
 	HealthCheckDbName       string `json:"health_check_db_name"`
-	DefaultAccessBehavior   string `json:"default_access_behavior"`
 	DbDiscoveryJobWaitTime  string `json:"db_discovery_job_wait_time"`
 	DbDiscoveryNativeRoleID string `json:"db_discovery_native_role_id"`
 }
@@ -67,7 +66,7 @@ type CreatePolicyPayload struct {
 	Owners       []string `json:"owners"`
 }
 
-type PolicyOrgItem struct {
+type Policy struct {
 	ID           string   `json:"id"`
 	Name         string   `json:"name"`
 	Description  string   `json:"description"`
@@ -75,6 +74,7 @@ type PolicyOrgItem struct {
 	SourceType   string   `json:"source_type"`
 	Notification string   `json:"notification"`
 	Owners       []string `json:"owners"`
+	Active       bool     `json:"active"`
 }
 
 type Message struct {
@@ -136,49 +136,32 @@ type Role struct {
 	MachineRoleAccessToken string `json:"machine_role_access_token"` // returned in CREATE and GET routes. added for terraform
 
 	// Status     string          `json:"status"`
-	ExpireAt int `json:"expire_at"`
+	ExpireAt int  `json:"expire_at"`
+	Admin    bool `json:"admin"`
 	// Created    int64           `json:"created_at"`
-	// Policies   []PolicyOrgItem `json:"linked_policies"`
+	// Policies   []Policy `json:"linked_policies"`
 }
 
 type CreateRolePayload struct {
 	// ID string `json:"id"`
-	// OrganisationID *string `json:"organization_id"`
-	// Formal/idp etc
-	// DBUsername string `json:"db_username"`
 
 	// Human
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Type      string `json:"type"`
 	Email     string `json:"email"`
-
-	// Other
-	// Role       *string         `json:"role"`
-	// Idp        string          `json:"idp"`
-	// IdpUserID  string          `json:"idp_user_id"`
+	Admin     bool   `json:"admin"`
 
 	// Machine
 	Name    string `json:"name"`
 	AppType string `json:"app_type"`
-
-	// Status     string          `json:"status"`
-	// Expire     int64           `json:"expire_at"`
-	// Created    int64           `json:"created_at"`
-	// Policies   []PolicyOrgItem `json:"linked_policies"`
 }
 
-type GroupStruct struct {
-	ID string `json:"id"`
-	// OrganisationID *string         `json:"org_id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
-	// Active         bool            `json:"active"`
-	// Status         string          `json:"status"`
-	// Roles          []DbUser        `json:"roles"`
-	// Policies       []PolicyOrgItem `json:"policies"`
-	// Created string `json:"created_at"`
-	RolesIDs []string `json:"user_ids"`
+type Group struct {
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	RolesIDs    []string `json:"user_ids"`
 }
 
 /*

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/formalco/terraform-provider-formal/formal/apiv2"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"os"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
@@ -34,12 +35,15 @@ func New(version string) func() *schema.Provider {
 			Schema: map[string]*schema.Schema{
 				"api_key": {
 					Type:     schema.TypeString,
-					Required: true,
+					Optional: true,
+				},
+				"retrieve_sensitive_values": {
+					Type:     schema.TypeBool,
+					Optional: true,
+					Default:  true,
 				},
 			},
-			DataSourcesMap: map[string]*schema.Resource{
-				// "policy_data_source": dataSourcePolicy(),
-			},
+			DataSourcesMap: map[string]*schema.Resource{},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_policy":                   resource.ResourcePolicy(),
 				"formal_policy_link":              resource.ResourcePolicyLink(),
@@ -47,7 +51,6 @@ func New(version string) func() *schema.Provider {
 				"formal_group":                    resource.ResourceGroup(),
 				"formal_group_link_role":          resource.ResourceGroupLinkRole(),
 				"formal_datastore":                resource.ResourceDatastore(),
-				"formal_sidecar_datastore_link":   resource.ResourceSidecarDatastoreLink(),
 				"formal_sidecar":                  resource.ResourceSidecar(),
 				"formal_key":                      resource.ResourceKey(),
 				"formal_field_encryption":         resource.ResourceFieldEncryption(),
@@ -69,8 +72,15 @@ func New(version string) func() *schema.Provider {
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 		apiKey := d.Get("api_key").(string)
+		if apiKey == "" {
+			apiKey = os.Getenv("FORMAL_API_KEY")
+			if apiKey == "" {
+				return nil, diag.Errorf("api_key must be set in the provider or as an environment variable")
+			}
+		}
+		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		http, err := api.NewClient(apiKey)
+		http, err := api.NewClient(apiKey, returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
