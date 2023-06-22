@@ -19,7 +19,7 @@ Registering a Datastore with Formal.
 
 - `hostname` (String) Hostname of the Datastore.
 - `name` (String) Friendly name for the Datastore.
-- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift` and `s3`.
+- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.
 
 ### Optional
 
