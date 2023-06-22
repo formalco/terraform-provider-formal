@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -36,14 +36,14 @@ func ResourceGroupLinkRole() *schema.Resource {
 				Description: "The Formal ID of the role to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew: true,
+				ForceNew:    true,
 			},
 			"group_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Formal ID for the group to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew: true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -52,7 +52,7 @@ func ResourceGroupLinkRole() *schema.Resource {
 const roleLinkGroupTerraformIdDelimiter = "#_#"
 
 func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -61,7 +61,7 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 	roleId := d.Get("role_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	err := client.CreateGroupLinkRole(roleId, groupId)
+	err := c.Http.CreateGroupLinkRole(roleId, groupId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,7 +74,7 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 }
 
 func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	roleLinkGroupTerraformId := d.Id()
@@ -86,7 +86,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	groupId := roleLinkGroupTerraformIdSplit[0]
 	roleId := roleLinkGroupTerraformIdSplit[1]
 
-	roleLinkGroup, err := client.GetGroupLinkRole(roleId, groupId)
+	roleLinkGroup, err := c.Http.GetGroupLinkRole(roleId, groupId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Link was deleted
@@ -115,7 +115,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 // }
 
 func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -128,7 +128,7 @@ func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, me
 	groupId := roleLinkGroupTerraformIdSplit[0]
 	roleId := roleLinkGroupTerraformIdSplit[1]
 
-	err := client.DeleteGroupLinkRole(roleId, groupId)
+	err := c.Http.DeleteGroupLinkRole(roleId, groupId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

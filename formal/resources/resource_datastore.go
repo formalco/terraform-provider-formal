@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 	"time"
 
@@ -91,7 +92,7 @@ func ResourceDatastore() *schema.Resource {
 
 func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*(api.Client))
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -108,7 +109,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		DbDiscoveryNativeRoleID: d.Get("db_discovery_native_role_id").(string),
 	}
 
-	datastoreId, err := client.CreateDatastore(newDatastore)
+	datastoreId, err := c.Http.CreateDatastore(newDatastore)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,13 +126,13 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	datastoreId := d.Id()
 
 	tflog.Info(ctx, "reading.......")
-	datastore, err := client.GetDatastore(datastoreId)
+	datastore, err := c.Http.GetDatastore(datastoreId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Datastore was deleted
@@ -156,8 +157,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 }
 
 func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
-
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	datastoreId := d.Id()
@@ -172,7 +172,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := client.UpdateDatastoreName(datastoreId, api.Datastore{Name: name})
+		err := c.Http.UpdateDatastoreName(datastoreId, api.Datastore{Name: name})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -180,7 +180,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("health_check_db_name") {
 		healthCheckName := d.Get("health_check_db_name").(string)
-		err := client.UpdateDatastoreHealthCheckDbName(datastoreId, api.Datastore{HealthCheckDbName: healthCheckName})
+		err := c.Http.UpdateDatastoreHealthCheckDbName(datastoreId, api.Datastore{HealthCheckDbName: healthCheckName})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -189,7 +189,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("db_discovery_job_wait_time") || d.HasChange("db_discovery_native_role_id") {
 		dbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
 		dbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
-		err := client.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.Datastore{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
+		err := c.Http.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.Datastore{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -202,14 +202,13 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
-
+	c := meta.(*clients.Clients)
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	dsId := d.Id()
 
-	err := client.DeleteDatastore(dsId)
+	err := c.Http.DeleteDatastore(dsId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

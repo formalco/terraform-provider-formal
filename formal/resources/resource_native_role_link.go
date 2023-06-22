@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -60,7 +60,7 @@ func ResourceNativeRoleLink() *schema.Resource {
 const terraformIdDelimiter = "#_#"
 
 func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -71,7 +71,7 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	formalIdentityId := d.Get("formal_identity_id").(string)
 	formalIdentityType := d.Get("formal_identity_type").(string)
 
-	err := client.CreateNativeRoleLink(datastoreId, nativeRoleId, formalIdentityId, formalIdentityType)
+	err := c.Http.CreateNativeRoleLink(datastoreId, nativeRoleId, formalIdentityId, formalIdentityType)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -84,7 +84,7 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	tfId := d.Id()
@@ -96,7 +96,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	datastoreId := tfIdSplit[0]
 	formalIdentityId := tfIdSplit[1]
 
-	nativeRoleLink, err := client.GetNativeRoleLink(datastoreId, formalIdentityId)
+	nativeRoleLink, err := c.Http.GetNativeRoleLink(datastoreId, formalIdentityId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Link was deleted
@@ -119,7 +119,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 }
 
 func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -132,7 +132,7 @@ func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, m
 	datastoreId := roleLinkGroupTerraformIdSplit[0]
 	formalIdentityId := roleLinkGroupTerraformIdSplit[1]
 
-	err := client.DeleteNativeRoleLink(datastoreId, formalIdentityId)
+	err := c.Http.DeleteNativeRoleLink(datastoreId, formalIdentityId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

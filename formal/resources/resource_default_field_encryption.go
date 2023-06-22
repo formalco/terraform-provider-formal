@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -47,7 +48,7 @@ func ResourceDefaultFieldEncryption() *schema.Resource {
 
 // Done
 func resourceDefaultFieldEncryptionCreateOrUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -59,7 +60,7 @@ func resourceDefaultFieldEncryptionCreateOrUpdate(ctx context.Context, d *schema
 		EncryptionAlg:  d.Get("encryption_alg").(string),
 	}
 
-	defaultFieldEncryption, err := client.CreateOrUpdateDefaultFieldEncryption(newDefaultFieldEncryption)
+	defaultFieldEncryption, err := c.Http.CreateOrUpdateDefaultFieldEncryption(newDefaultFieldEncryption)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -75,12 +76,12 @@ func resourceDefaultFieldEncryptionCreateOrUpdate(ctx context.Context, d *schema
 }
 
 func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	resourceId := d.Id()
 
-	defaultFieldEncryption, err := client.GetDefaultFieldEncryption()
+	defaultFieldEncryption, err := c.Http.GetDefaultFieldEncryption()
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Was deleted
@@ -106,12 +107,11 @@ func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceD
 
 // DONE
 func resourceDefaultFieldEncryptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-
-	err := client.DeleteDefaultFieldEncryption()
+	err := c.Http.DeleteDefaultFieldEncryption()
 	if err != nil {
 		return diag.FromErr(err)
 	}
