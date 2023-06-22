@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strconv"
 	"strings"
 	"time"
@@ -75,7 +76,7 @@ func ResourceDataplaneRoutes() *schema.Resource {
 
 func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*(api.Client))
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -86,7 +87,7 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 		TransitGatewayId:       d.Get("transit_gateway_id").(string),
 		VpcPeeringConnectionId: d.Get("vpc_peering_connection_id").(string),
 	}
-	res, err := client.CreateDataplaneRoutes(newDataplaneRoutes)
+	res, err := c.Http.CreateDataplaneRoutes(newDataplaneRoutes)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -101,7 +102,7 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 	currentErrors := 0
 	for {
 		// Retrieve status
-		existingDp, err := client.GetDataplaneRoutes(newDataplaneRoutesId)
+		existingDp, err := c.Http.GetDataplaneRoutes(newDataplaneRoutesId)
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
@@ -136,12 +137,12 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 
 func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	dataplaneId := d.Id()
 
-	foundDataplaneRoutes, err := client.GetDataplaneRoutes(dataplaneId)
+	foundDataplaneRoutes, err := c.Http.GetDataplaneRoutes(dataplaneId)
 	if err != nil || foundDataplaneRoutes == nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Datplane was deleted
@@ -171,14 +172,14 @@ func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, me
 
 func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	routeId := d.Id()
 
-	err := client.DeleteDataplaneRoutes(routeId)
+	err := c.Http.DeleteDataplaneRoutes(routeId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -188,7 +189,7 @@ func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, 
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := client.GetDataplaneRoutes(routeId)
+		_, err := c.Http.GetDataplaneRoutes(routeId)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "status: 404") {
 				// Dataplane was deleted

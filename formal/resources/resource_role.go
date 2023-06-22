@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -98,7 +99,7 @@ func ResourceRole() *schema.Resource {
 }
 
 func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -115,7 +116,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		ExpireAt:  d.Get("expire_at").(int),
 	}
 
-	role, err := client.CreateRole(newRole)
+	role, err := c.Http.CreateRole(newRole)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -131,12 +132,12 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
 
-	role, err := client.GetRole(roleId)
+	role, err := c.Http.GetRole(roleId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Policy was deleted
@@ -162,7 +163,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("app_type", role.AppType)
 	d.Set("expire_at", role.ExpireAt)
 
-	if client.ReturnSensitiveValue {
+	if c.Http.ReturnSensitiveValue {
 		d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 	}
 
@@ -172,7 +173,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 }
 
 func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -181,7 +182,7 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
 
-	err := client.UpdateRole(roleId, api.Role{Name: name, FirstName: firstName, LastName: lastName})
+	err := c.Http.UpdateRole(roleId, api.Role{Name: name, FirstName: firstName, LastName: lastName})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -192,13 +193,13 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 }
 
 func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	roleId := d.Id()
 
-	err := client.DeleteRole(roleId)
+	err := c.Http.DeleteRole(roleId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

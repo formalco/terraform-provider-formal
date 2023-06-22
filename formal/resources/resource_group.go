@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -47,7 +48,7 @@ func ResourceGroup() *schema.Resource {
 }
 
 func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -58,7 +59,7 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 		Description: d.Get("description").(string),
 	}
 
-	group, err := client.CreateGroup(newGroup)
+	group, err := c.Http.CreateGroup(newGroup)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -70,12 +71,12 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
 
-	group, err := client.GetGroup(groupId)
+	group, err := c.Http.GetGroup(groupId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Group was deleted
@@ -100,7 +101,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 }
 
 func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
@@ -108,7 +109,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	groupName := d.Get("name").(string)
 	groupDesc := d.Get("description").(string)
 
-	err := client.UpdateGroup(groupId, api.Group{Name: groupName, Description: groupDesc})
+	err := c.Http.UpdateGroup(groupId, api.Group{Name: groupName, Description: groupDesc})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,13 +120,13 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 }
 
 func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
 
-	err := client.DeleteGroup(groupId)
+	err := c.Http.DeleteGroup(groupId)
 	if err != nil {
 		return diag.FromErr(err)
 	}

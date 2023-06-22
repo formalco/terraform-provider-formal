@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -66,7 +67,7 @@ func ResourcePolicyLink() *schema.Resource {
 }
 
 func resourcePolicyLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
@@ -78,7 +79,7 @@ func resourcePolicyLinkCreate(ctx context.Context, d *schema.ResourceData, meta 
 		Type:     d.Get("type").(string),
 	}
 
-	policyLink, err := client.CreatePolicyLink(newPolicyLink)
+	policyLink, err := c.Http.CreatePolicyLink(newPolicyLink)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -90,12 +91,12 @@ func resourcePolicyLinkCreate(ctx context.Context, d *schema.ResourceData, meta 
 }
 
 func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	policyLinkId := d.Id()
 
-	policyLink, err := client.GetPolicyLink(policyLinkId)
+	policyLink, err := c.Http.GetPolicyLink(policyLinkId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			// Link was deleted
@@ -126,13 +127,13 @@ func resourcePolicyLinkRead(ctx context.Context, d *schema.ResourceData, meta in
 // }
 
 func resourcePolicyLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	client := meta.(*api.Client)
+	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	policyLinkId := d.Id()
 
-	err := client.DeletePolicyLink(ctx, policyLinkId)
+	err := c.Http.DeletePolicyLink(ctx, policyLinkId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
