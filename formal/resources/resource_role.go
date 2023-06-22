@@ -163,7 +163,7 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("app_type", role.AppType)
 	d.Set("expire_at", role.ExpireAt)
 
-	if client.ReturnSensitiveValue {
+	if c.Http.ReturnSensitiveValue {
 		d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 	}
 
