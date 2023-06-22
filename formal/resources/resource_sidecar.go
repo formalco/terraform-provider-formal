@@ -25,6 +25,14 @@ func ResourceSidecar() *schema.Resource {
 		ReadContext:   resourceSidecarRead,
 		UpdateContext: resourceSidecarUpdate,
 		DeleteContext: resourceSidecarDelete,
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceSidecarInstanceResourceV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourceSidecarStateUpgradeV0,
+			},
+		},
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
@@ -103,9 +111,10 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"formal_hostname": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The hostname of the created sidcar.",
+				Description: "The hostname of the created sidecar.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Optional:    true,
 			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
@@ -150,7 +159,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	newSidecar := api.SidecarV2{
+	newSidecar := api.Sidecar{
 		Name:              d.Get("name").(string),
 		DsId:              d.Get("datastore_id").(string),
 		DataplaneId:       d.Get("dataplane_id").(string),
@@ -163,6 +172,10 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		FullKMSDecryption: d.Get("global_kms_decrypt").(bool),
 		Version:           d.Get("version").(string),
 		Technology:        d.Get("technology").(string),
+	}
+	hostname := d.Get("formal_hostname").(string)
+	if newSidecar.DeploymentType == "onprem" && hostname != "" {
+		newSidecar.FormalHostname = hostname
 	}
 
 	sidecarId, err := c.Http.CreateSidecar(newSidecar)
@@ -239,11 +252,15 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("global_kms_decrypt", sidecar.FullKMSDecryption)
 	d.Set("dataplane_id", sidecar.DataplaneId)
 	d.Set("version", sidecar.Version)
+	d.Set("technology", sidecar.Technology)
 
-	if sidecar.DeploymentType == "onprem" {
+	if sidecar.DeploymentType == "onprem" && c.Http.ReturnSensitiveValue {
 		tlsCert, err := c.Http.GetSidecarTlsCert(sidecarId)
 		if err != nil {
 			return diag.FromErr(err)
+		}
+		if tlsCert == nil {
+			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
 		}
 		if *tlsCert == "" {
 			return diag.Errorf("The TLS Certificate was not found. Please contact the Formal team for support.")
@@ -264,7 +281,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -274,7 +291,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("global_kms_decrypt") {
 		fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
 		if fullKmsDecryption {
-			err := c.Http.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.SidecarV2{FullKMSDecryption: fullKmsDecryption})
+			err := c.Http.UpdateSidecarGlobalKMSEncrypt(sidecarId, api.Sidecar{FullKMSDecryption: fullKmsDecryption})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -285,7 +302,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := c.Http.UpdateSidecarName(sidecarId, api.SidecarV2{Name: name})
+		err := c.Http.UpdateSidecarName(sidecarId, api.Sidecar{Name: name})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -294,6 +311,18 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("version") {
 		version := d.Get("version").(string)
 		err := c.Http.UpdateSidecarVersion(sidecarId, version)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("formal_hostname") {
+		if d.Get("deployment_type").(string) != "onprem" {
+			return diag.Errorf("formal_hostname can only be updated for onprem deployment types")
+		}
+
+		formalHostname := d.Get("formal_hostname").(string)
+		err := c.Http.UpdateSidecarHostname(sidecarId, formalHostname)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -349,4 +378,33 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId("")
 	return diags
+}
+
+func resourceSidecarInstanceResourceV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"technology": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+		},
+	}
+}
+
+func resourceSidecarStateUpgradeV0(_ context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+	if rawState == nil {
+		return nil, fmt.Errorf("sidecar resource state upgrade failed, state is nil")
+	}
+
+	client := meta.(*api.Client)
+
+	if val, ok := rawState["id"]; ok {
+		sidecar, err := client.GetSidecar(val.(string))
+		if err != nil {
+			return nil, err
+		}
+		rawState["technology"] = sidecar.Technology
+	}
+
+	return rawState, nil
 }

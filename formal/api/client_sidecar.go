@@ -8,12 +8,12 @@ import (
 )
 
 type GetAndCreateSidecarResponseV2 struct {
-	Id      string    `json:"id"`
-	Sidecar SidecarV2 `json:"sidecar"`
+	Id      string  `json:"id"`
+	Sidecar Sidecar `json:"sidecar"`
 }
 
 // CreateSidecar - Create new sidecar
-func (c *Client) CreateSidecar(payload SidecarV2) (string, error) {
+func (c *Client) CreateSidecar(payload Sidecar) (string, error) {
 	rb, err := json.Marshal(payload)
 	if err != nil {
 		return "", err
@@ -39,7 +39,7 @@ func (c *Client) CreateSidecar(payload SidecarV2) (string, error) {
 }
 
 // GetSidecar - Returns a specifc sidecar
-func (c *Client) GetSidecar(sidecarId string) (*SidecarV2, error) {
+func (c *Client) GetSidecar(sidecarId string) (*Sidecar, error) {
 	req, err := http.NewRequest("GET", c.HostURL+"/admin/sidecars/"+sidecarId, nil)
 	if err != nil {
 		return nil, err
@@ -84,7 +84,7 @@ func (c *Client) GetSidecarTlsCert(sidecarId string) (*string, error) {
 }
 
 // UpdateSidecarName
-func (c *Client) UpdateSidecarName(sidecarId string, sidecarUpdate SidecarV2) error {
+func (c *Client) UpdateSidecarName(sidecarId string, sidecarUpdate Sidecar) error {
 	rb, err := json.Marshal(sidecarUpdate)
 	if err != nil {
 		return nil
@@ -129,7 +129,27 @@ func (c *Client) UpdateSidecarVersion(sidecarId, version string) error {
 	return nil
 }
 
-func (c *Client) UpdateSidecarGlobalKMSEncrypt(sidecarId string, sidecarUpdate SidecarV2) error {
+func (c *Client) UpdateSidecarHostname(sidecarId, hostname string) error {
+	req, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/admin/sidecars/%s/sidecar-hostname?hostname=%s", c.HostURL, sidecarId, hostname), nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := c.doRequest(req)
+	if err != nil {
+		return err
+	}
+
+	var res Message
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) UpdateSidecarGlobalKMSEncrypt(sidecarId string, sidecarUpdate Sidecar) error {
 	if sidecarUpdate.FullKMSDecryption {
 		req, err := http.NewRequest("PUT", c.HostURL+"/admin/sidecars/"+sidecarId+"/kms-decrypt-policy?enable=true", nil)
 		if err != nil {

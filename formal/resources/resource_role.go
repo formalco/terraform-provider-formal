@@ -15,7 +15,7 @@ import (
 func ResourceRole() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Creating a Role in Formal.",
+		Description: "User in Formal.",
 
 		CreateContext: resourceRoleCreate,
 		ReadContext:   resourceRoleRead,
@@ -62,6 +62,12 @@ func ResourceRole() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"admin": {
+				Description: "For human users, specify if their admin.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "For machine users, the name of the role.",
@@ -104,6 +110,7 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		FirstName: d.Get("first_name").(string),
 		LastName:  d.Get("last_name").(string),
 		Email:     d.Get("email").(string),
+		Admin:     d.Get("admin").(bool),
 		Name:      d.Get("name").(string),
 		AppType:   d.Get("app_type").(string),
 		ExpireAt:  d.Get("expire_at").(int),
@@ -152,9 +159,14 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("first_name", role.FirstName)
 	d.Set("last_name", role.LastName)
 	d.Set("email", role.Email)
+	d.Set("admin", role.Admin)
 	d.Set("app_type", role.AppType)
-	d.Set("machine_role_access_token", role.MachineRoleAccessToken)
 	d.Set("expire_at", role.ExpireAt)
+
+	if client.ReturnSensitiveValue {
+		d.Set("machine_role_access_token", role.MachineRoleAccessToken)
+	}
+
 	d.SetId(roleId)
 
 	return diags

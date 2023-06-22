@@ -71,7 +71,7 @@ func ResourcePolicy() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Active status of this policy.",
 				Type:        schema.TypeBool,
-				Computed:    true,
+				Required:    true,
 			},
 			"org_id": {
 				// This description is used by the documentation generator and the language server.
@@ -129,6 +129,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		SourceType:   "terraform",
 		Owners:       owners,
 		Notification: d.Get("notification").(string),
+		Active:       d.Get("active").(bool),
 	}
 
 	policy, err := c.Http.CreatePolicy(ctx, newPolicy)
@@ -162,13 +163,14 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 		return diags
 	}
 
-	// Should map to all fields of PolicyOrgItem
+	// Should map to all fields of Policy
 	d.Set("id", policy.ID)
 	d.Set("name", policy.Name)
 	d.Set("description", policy.Description)
 	d.Set("module", policy.Module)
 	d.Set("notification", policy.Notification)
 	d.Set("owners", policy.Owners)
+	d.Set("active", policy.Active)
 
 	d.SetId(policyId)
 
@@ -180,12 +182,21 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") {
-		policyUpdate := api.PolicyOrgItem{
-			Name:        d.Get("name").(string),
-			Description: d.Get("description").(string),
-			Module:      d.Get("module").(string),
-			SourceType:  "terraform",
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") {
+
+		var owners []string
+		for _, owner := range d.Get("owners").([]interface{}) {
+			owners = append(owners, owner.(string))
+		}
+
+		policyUpdate := api.Policy{
+			Name:         d.Get("name").(string),
+			Description:  d.Get("description").(string),
+			Module:       d.Get("module").(string),
+			Notification: d.Get("notification").(string),
+			Owners:       owners,
+			SourceType:   "terraform",
+			Active:       d.Get("active").(bool),
 		}
 
 		err := c.Http.UpdatePolicy(policyId, policyUpdate)
@@ -195,7 +206,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 		return resourcePolicyRead(ctx, d, meta)
 	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, and module. Please delete and recreate the Policy")
+		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
 	}
 }
 
