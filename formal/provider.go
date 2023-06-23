@@ -2,9 +2,10 @@ package provider
 
 import (
 	"context"
+	"os"
+
 	"github.com/formalco/terraform-provider-formal/formal/apiv2"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"os"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
@@ -46,7 +47,6 @@ func New(version string) func() *schema.Provider {
 			DataSourcesMap: map[string]*schema.Resource{},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_policy":                   resource.ResourcePolicy(),
-				"formal_policy_link":              resource.ResourcePolicyLink(),
 				"formal_role":                     resource.ResourceRole(),
 				"formal_group":                    resource.ResourceGroup(),
 				"formal_group_link_role":          resource.ResourceGroupLinkRole(),

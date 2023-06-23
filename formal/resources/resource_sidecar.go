@@ -2,9 +2,11 @@ package resource
 
 import (
 	"errors"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strconv"
 	"time"
+
+	"github.com/formalco/terraform-provider-formal/formal/apiv2"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 
 	"context"
 	"fmt"
@@ -47,57 +49,15 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"datastore_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Datastore ID that the new Sidecar will be attached to.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Friendly name for this Sidecar.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"deployment_type": {
+			"datastore_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "How the Sidecar should be deployed: `saas`, `managed`, or `onprem`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"fail_open": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.",
-				Type:        schema.TypeBool,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"network_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"cloud_provider": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Cloud Provider that the sidecar sholud deploy in. Supported values at the moment are `aws`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"cloud_region": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"cloud_account_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.",
+				Description: "The Datastore ID that the new Sidecar will be attached to.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
@@ -107,6 +67,27 @@ func ResourceSidecar() *schema.Resource {
 				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
+			},
+			"deployment_type": {
+				// This description is used by the documentation generator and the language server.
+				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
+			"fail_open": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"network_type": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
+				Type:        schema.TypeString,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"formal_hostname": {
@@ -144,7 +125,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"version": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Version of the Sidecar.",
+				Description: "Version of the Sidecar to deploy for `managed`.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
@@ -159,14 +140,11 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	newSidecar := api.Sidecar{
+	newSidecar := apiv2.Sidecar{
 		Name:              d.Get("name").(string),
 		DsId:              d.Get("datastore_id").(string),
 		DataplaneId:       d.Get("dataplane_id").(string),
-		CloudProvider:     d.Get("cloud_provider").(string),
-		CloudRegion:       d.Get("cloud_region").(string),
 		DeploymentType:    d.Get("deployment_type").(string),
-		CloudAccountId:    d.Get("cloud_account_id").(string),
 		FailOpen:          d.Get("fail_open").(bool),
 		NetworkType:       d.Get("network_type").(string),
 		FullKMSDecryption: d.Get("global_kms_decrypt").(bool),
@@ -178,7 +156,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		newSidecar.FormalHostname = hostname
 	}
 
-	sidecarId, err := c.Http.CreateSidecar(newSidecar)
+	sidecarId, err := c.Grpc.CreateSidecar(ctx, newSidecar)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -187,7 +165,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdSidecar, err := c.Http.GetSidecar(sidecarId)
+		createdSidecar, err := c.Grpc.GetSidecar(ctx, sidecarId)
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
@@ -228,7 +206,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	sidecarId := d.Id()
 
-	sidecar, err := c.Http.GetSidecar(sidecarId)
+	sidecar, err := c.Grpc.GetSidecar(ctx, sidecarId)
 	if err != nil {
 		if strings.Contains(fmt.Sprint(err), "status: 404") {
 			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
@@ -242,10 +220,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("datastore_id", sidecar.DsId)
 	d.Set("name", sidecar.Name)
 	d.Set("formal_hostname", sidecar.FormalHostname)
-	d.Set("cloud_provider", sidecar.CloudProvider)
-	d.Set("cloud_region", sidecar.CloudRegion)
 	d.Set("deployment_type", sidecar.DeploymentType)
-	d.Set("cloud_account_id", sidecar.CloudAccountId)
 	d.Set("fail_open", sidecar.FailOpen)
 	d.Set("network_type", sidecar.NetworkType)
 	d.Set("created_at", sidecar.CreatedAt)
@@ -342,7 +317,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	dsId := d.Id()
 
-	err := c.Http.DeleteSidecar(dsId)
+	err := c.Grpc.DeleteSidecar(ctx, dsId)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -352,7 +327,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := c.Http.GetSidecar(dsId)
+		_, err := c.Grpc.GetSidecar(ctx, dsId)
 		if err != nil {
 			if strings.Contains(fmt.Sprint(err), "status: 404") {
 				// Sidecar was deleted
@@ -391,15 +366,15 @@ func resourceSidecarInstanceResourceV0() *schema.Resource {
 	}
 }
 
-func resourceSidecarStateUpgradeV0(_ context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func resourceSidecarStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
 	if rawState == nil {
 		return nil, fmt.Errorf("sidecar resource state upgrade failed, state is nil")
 	}
 
-	client := meta.(*api.Client)
+	client := meta.(*apiv2.GrpcClient)
 
 	if val, ok := rawState["id"]; ok {
-		sidecar, err := client.GetSidecar(val.(string))
+		sidecar, err := client.GetSidecar(ctx, val.(string))
 		if err != nil {
 			return nil, err
 		}
