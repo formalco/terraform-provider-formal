@@ -17,23 +17,20 @@ Registering a Sidecar with Formal.
 
 ### Required
 
-- `cloud_provider` (String) Cloud Provider that the sidecar sholud deploy in. Supported values at the moment are `aws`.
-- `datastore_id` (String) The Datastore ID that the new Sidecar will be attached to.
-- `deployment_type` (String) How the Sidecar should be deployed: `saas`, `managed`, or `onprem`.
-- `fail_open` (Boolean) Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.
+- `deployment_type` (String) How the Sidecar should be deployed: `managed`, or `onprem`.
 - `global_kms_decrypt` (Boolean) Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.
 - `name` (String) Friendly name for this Sidecar.
-- `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
 - `technology` (String) Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.
 
 ### Optional
 
-- `cloud_account_id` (String) Required for managed cloud - the Formal ID for the connected Cloud Account. You can find this after creating the connection in the Formal Console.
-- `cloud_region` (String) The cloud region the sidecar should be deployed in. For SaaS deployment models, supported values are `eu-west-1`, `eu-west-3`, `us-east-1`, and `us-west-2`
 - `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
+- `datastore_id` (String) The Datastore ID that the new Sidecar will be attached to.
+- `fail_open` (Boolean) Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.
 - `formal_hostname` (String) The hostname of the created sidecar.
+- `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `version` (String) Version of the Sidecar.
+- `version` (String) Version of the Sidecar to deploy for `managed`.
 
 ### Read-Only
 
