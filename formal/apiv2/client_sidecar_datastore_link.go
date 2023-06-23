@@ -1,8 +1,9 @@
 package apiv2
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 )
 
@@ -14,7 +15,6 @@ type SidecarDatastoreLink struct {
 }
 
 func (c GrpcClient) CreateSidecarDatastoreLink(ctx context.Context, link SidecarDatastoreLink) (string, error) {
-
 	req := connect.NewRequest(&adminv1.CreateSidecarDatastoreLinkRequest{
 		DatastoreId: link.DatastoreId,
 		SidecarId:   link.SidecarId,
@@ -28,7 +28,6 @@ func (c GrpcClient) CreateSidecarDatastoreLink(ctx context.Context, link Sidecar
 }
 
 func (c GrpcClient) GetSidecarDatastoreLink(ctx context.Context, linkId string) (*SidecarDatastoreLink, error) {
-
 	req := connect.NewRequest(&adminv1.GetLinkByIdRequest{
 		Id: linkId,
 	})
@@ -46,11 +45,8 @@ func (c GrpcClient) GetSidecarDatastoreLink(ctx context.Context, linkId string) 
 }
 
 func (c GrpcClient) DeleteSidecarDatastoreLink(ctx context.Context, linkId string) error {
-
-	req := connect.NewRequest(&adminv1.RemoveSidecarDatastoreLinkRequest{
-		LinkId: linkId,
-	})
-	_, err := c.SidecarServiceClient.RemoveSidecarDatastoreLink(ctx, req)
+	req := connect.NewRequest(&adminv1.DeleteSidecarDatastoreLinkRequest{LinkId: linkId})
+	_, err := c.SidecarServiceClient.DeleteSidecarDatastoreLink(ctx, req)
 	if err != nil {
 		return err
 	}
