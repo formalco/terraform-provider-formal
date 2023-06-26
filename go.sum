@@ -1,11 +1,7 @@
-buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230622151044-a5a859468049.1 h1:80RqziA5Qgv41oZXHXZ9O2YbyJth3sL0SYcodXxyORU=
-buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230622151044-a5a859468049.1/go.mod h1:QDm/WNKDxd1Yyi/ZNUKNDIymsmn3eSjMXR1hsqdcYgI=
-buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230623021611-c2380b1f7e84.1 h1:Uq+zT0Gl8eaM4PVq5Ve/s6DhgDHLXDhP0nmBxwI+JGI=
-buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230623021611-c2380b1f7e84.1/go.mod h1:bcl8GQZrIo0hOZsfi6SJ3PGTF76gQKsj/V3hHol7wRs=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230622151044-a5a859468049.1 h1:6UYOSR9Pza1ZRLM3KI6kg/WfHUiURmbi7xrEt3jU1Co=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230622151044-a5a859468049.1/go.mod h1:Sa5SUoh2vKkTD+YPzChjBN/HzogkOjfUHfqP0cMReHE=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230623021611-c2380b1f7e84.1 h1:3YKnE3BY1WBBgVxiwN7SBMQt5EPIUmXdo3J+wUhUFMY=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230623021611-c2380b1f7e84.1/go.mod h1:Sa5SUoh2vKkTD+YPzChjBN/HzogkOjfUHfqP0cMReHE=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230626140508-550959b7bbdd.1 h1:MJoTRS51QhnCJRajb14pWBXc1lBRwT+GSVQdfGU4tU8=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.8.0-20230626140508-550959b7bbdd.1/go.mod h1:x0ZhRkQz7ENbWR0xnRpTx0r+z/pyLDAgpmMbcLs6kMw=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230626140508-550959b7bbdd.1 h1:xp77M49iifMepVm3T61wfBK3Kix1KEoiqjeFcKg8jI4=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.30.0-20230626140508-550959b7bbdd.1/go.mod h1:Sa5SUoh2vKkTD+YPzChjBN/HzogkOjfUHfqP0cMReHE=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
