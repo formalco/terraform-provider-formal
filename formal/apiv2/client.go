@@ -10,5 +10,5 @@ type GrpcClient struct {
 }
 
 func NewClient(apiKey string, returnSensitiveValue bool) *GrpcClient {
-	return &GrpcClient{Sdk: sdk.NewWithUrl(apiKey, "http://localhost:443"), ReturnSensitiveValue: returnSensitiveValue}
+	return &GrpcClient{Sdk: sdk.New(apiKey), ReturnSensitiveValue: returnSensitiveValue}
 }
