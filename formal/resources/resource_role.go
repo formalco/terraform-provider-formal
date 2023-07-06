@@ -1,15 +1,17 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
+	"time"
 )
 
 func ResourceRole() *schema.Resource {
@@ -104,27 +106,22 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// Maps to user-defined fields
-	newRole := api.Role{
-		Type:      d.Get("type").(string),
+	res, err := c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, connect.NewRequest(&adminv1.CreateUserRequest{
 		FirstName: d.Get("first_name").(string),
 		LastName:  d.Get("last_name").(string),
+		Type:      d.Get("type").(string),
+		AppType:   d.Get("app_type").(string),
+		Name:      d.Get("name").(string),
 		Email:     d.Get("email").(string),
 		Admin:     d.Get("admin").(bool),
-		Name:      d.Get("name").(string),
-		AppType:   d.Get("app_type").(string),
-		ExpireAt:  d.Get("expire_at").(int),
-	}
+		ExpireAt:  timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
+	}))
 
-	role, err := c.Http.CreateRole(newRole)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if role == nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(role.ID)
+	d.SetId(res.Msg.User.Id)
 
 	resourceRoleRead(ctx, d, meta)
 
@@ -137,9 +134,9 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 
 	roleId := d.Id()
 
-	role, err := c.Http.GetRole(roleId)
+	res, err := c.Grpc.Sdk.UserServiceClient.GetUserById(ctx, connect.NewRequest(&adminv1.GetUserByIdRequest{Id: roleId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if status.Code(err) == codes.NotFound {
 			// Policy was deleted
 			tflog.Warn(ctx, "The Role with ID "+roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -147,24 +144,21 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		}
 		return diag.FromErr(err)
 	}
-	if role == nil {
-		return diags
-	}
 
 	// Should map to all fields of RoleOrgItem
-	d.Set("id", role.ID)
-	d.Set("type", role.Type)
-	d.Set("db_username", role.DBUsername)
-	d.Set("name", role.Name)
-	d.Set("first_name", role.FirstName)
-	d.Set("last_name", role.LastName)
-	d.Set("email", role.Email)
-	d.Set("admin", role.Admin)
-	d.Set("app_type", role.AppType)
-	d.Set("expire_at", role.ExpireAt)
+	d.Set("id", res.Msg.User.Id)
+	d.Set("type", res.Msg.User.Type)
+	d.Set("db_username", res.Msg.User.DbUsername)
+	d.Set("name", res.Msg.User.Name)
+	d.Set("first_name", res.Msg.User.FirstName)
+	d.Set("last_name", res.Msg.User.LastName)
+	d.Set("email", res.Msg.User.Email)
+	d.Set("admin", res.Msg.User.Admin)
+	d.Set("app_type", res.Msg.User.AppType)
+	d.Set("expire_at", res.Msg.User.ExpireAt)
 
-	if c.Http.ReturnSensitiveValue {
-		d.Set("machine_role_access_token", role.MachineRoleAccessToken)
+	if c.Grpc.ReturnSensitiveValue {
+		d.Set("machine_role_access_token", res.Msg.User.MachineRoleAccessToken)
 	}
 
 	d.SetId(roleId)
@@ -182,7 +176,12 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
 
-	err := c.Http.UpdateRole(roleId, api.Role{Name: name, FirstName: firstName, LastName: lastName})
+	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&adminv1.UpdateUserRequest{
+		Id:        roleId,
+		Name:      name,
+		FirstName: firstName,
+		LastName:  lastName,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -199,7 +198,7 @@ func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interf
 
 	roleId := d.Id()
 
-	err := c.Http.DeleteRole(roleId)
+	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&adminv1.DeleteUserRequest{Id: roleId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

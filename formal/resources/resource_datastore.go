@@ -1,13 +1,16 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 	"time"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -97,28 +100,35 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	portInt, _ := d.Get("port").(int)
-
-	newDatastore := api.Datastore{
-		Name:                    d.Get("name").(string),
-		OriginalHostname:        d.Get("hostname").(string),
-		Port:                    portInt,
-		HealthCheckDbName:       d.Get("health_check_db_name").(string),
-		Technology:              d.Get("technology").(string),
-		DbDiscoveryJobWaitTime:  d.Get("db_discovery_job_wait_time").(string),
-		DbDiscoveryNativeRoleID: d.Get("db_discovery_native_role_id").(string),
+	portInt, ok := d.Get("port").(int)
+	if !ok {
+		return diag.FromErr(fmt.Errorf("error reading port"))
 	}
 
-	datastoreId, err := c.Http.CreateDatastore(newDatastore)
+	Name := d.Get("name").(string)
+	OriginalHostname := d.Get("hostname").(string)
+	Port := portInt
+	HealthCheckDbName := d.Get("health_check_db_name").(string)
+	Technology := d.Get("technology").(string)
+	DbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
+	DbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
+
+	res, err := c.Grpc.Sdk.DataStoreServiceClient.CreateDatastore(ctx, connect.NewRequest(&adminv1.CreateDatastoreRequest{
+		Name:                    Name,
+		Hostname:                OriginalHostname,
+		Port:                    int32(Port),
+		Technology:              Technology,
+		HealthCheckDbName:       HealthCheckDbName,
+		DbDiscoveryJobWaitTime:  DbDiscoveryJobWaitTime,
+		DbDiscoveryNativeRoleId: DbDiscoveryNativeRoleID,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	tflog.Info(ctx, "here:"+datastoreId)
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
-	d.SetId(datastoreId)
+	d.SetId(res.Msg.Id)
 
-	tflog.Info(ctx, "reading")
 	resourceDatastoreRead(ctx, d, meta)
 
 	return diags
@@ -131,10 +141,12 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	datastoreId := d.Id()
 
-	tflog.Info(ctx, "reading.......")
-	datastore, err := c.Http.GetDatastore(datastoreId)
+	res, err := c.Grpc.Sdk.DataStoreServiceClient.GetDatastore(ctx, connect.NewRequest(&adminv1.GetDatastoreRequest{Id: datastoreId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		return diag.FromErr(err)
+	}
+	if err != nil {
+		if status.Code(err) == codes.NotFound {
 			// Datastore was deleted
 			tflog.Warn(ctx, "The datastore was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -143,15 +155,15 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", datastore.DsId)
-	d.Set("name", datastore.Name)
-	d.Set("hostname", datastore.OriginalHostname)
-	d.Set("port", datastore.Port)
-	d.Set("technology", datastore.Technology)
-	d.Set("created_at", datastore.CreatedAt)
+	d.Set("id", res.Msg.Datastore.DatastoreId)
+	d.Set("name", res.Msg.Datastore.Name)
+	d.Set("hostname", res.Msg.Datastore.Hostname)
+	d.Set("port", res.Msg.Datastore.Port)
+	d.Set("technology", res.Msg.Datastore.Technology)
+	d.Set("created_at", res.Msg.Datastore.CreatedAt)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
-	d.SetId(datastore.DsId)
+	d.SetId(res.Msg.Datastore.DatastoreId)
 
 	return diags
 }
@@ -172,7 +184,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		err := c.Http.UpdateDatastoreName(datastoreId, api.Datastore{Name: name})
+		_, err := c.Grpc.Sdk.DataStoreServiceClient.UpdateDatastoreName(ctx, connect.NewRequest(&adminv1.UpdateDatastoreNameRequest{Id: datastoreId, Name: name}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -180,7 +192,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	if d.HasChange("health_check_db_name") {
 		healthCheckName := d.Get("health_check_db_name").(string)
-		err := c.Http.UpdateDatastoreHealthCheckDbName(datastoreId, api.Datastore{HealthCheckDbName: healthCheckName})
+		_, err := c.Grpc.Sdk.DataStoreServiceClient.UpdateDataStoreHealthCheckDbName(ctx, connect.NewRequest(&adminv1.UpdateDataStoreHealthCheckDbNameRequest{Id: datastoreId, HealthCheckDbName: healthCheckName}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -189,7 +201,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	if d.HasChange("db_discovery_job_wait_time") || d.HasChange("db_discovery_native_role_id") {
 		dbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
 		dbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
-		err := c.Http.UpdateDatastoreDbDiscoveryConfig(datastoreId, api.Datastore{DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleID: dbDiscoveryNativeRoleID})
+		_, err := c.Grpc.Sdk.DataStoreServiceClient.UpdateDbDiscoveryConfig(ctx, connect.NewRequest(&adminv1.UpdateDbDiscoveryConfigRequest{Id: datastoreId, DbDiscoveryJobWaitTime: dbDiscoveryJobWaitTime, DbDiscoveryNativeRoleId: dbDiscoveryNativeRoleID}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -208,7 +220,7 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 
 	dsId := d.Id()
 
-	err := c.Http.DeleteDatastore(dsId)
+	_, err := c.Grpc.Sdk.DataStoreServiceClient.DeleteDatastore(ctx, connect.NewRequest(&adminv1.DeleteDatastoreRequest{Id: dsId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

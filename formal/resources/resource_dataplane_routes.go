@@ -1,15 +1,16 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -81,17 +82,21 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	newDataplaneRoutes := api.DataplaneRoutes{
-		DataplaneId:            d.Get("dataplane_id").(string),
-		DestinationCidrBlock:   d.Get("destination_cidr_block").(string),
-		TransitGatewayId:       d.Get("transit_gateway_id").(string),
-		VpcPeeringConnectionId: d.Get("vpc_peering_connection_id").(string),
-	}
-	res, err := c.Http.CreateDataplaneRoutes(newDataplaneRoutes)
+	DataplaneId := d.Get("dataplane_id").(string)
+	DestinationCidrBlock := d.Get("destination_cidr_block").(string)
+	TransitGatewayId := d.Get("transit_gateway_id").(string)
+	VpcPeeringConnectionId := d.Get("vpc_peering_connection_id").(string)
+
+	res, err := c.Grpc.Sdk.CloudServiceClient.CreateDataplaneRoutes(ctx, connect.NewRequest(&adminv1.CreateDataplaneRoutesRequest{
+		DataplaneId:            DataplaneId,
+		DestinationCidrBlock:   DestinationCidrBlock,
+		TransitGatewayId:       TransitGatewayId,
+		VpcPeeringConnectionId: VpcPeeringConnectionId,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	newDataplaneRoutesId := res.Id
+	newDataplaneRoutesId := res.Msg.DataplaneRoutes.Id
 	tflog.Info(ctx, newDataplaneRoutesId)
 	if newDataplaneRoutesId == "" {
 		return diag.FromErr(errors.New("created dataplane routes ID is empty, please try again later"))
@@ -102,7 +107,7 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 	currentErrors := 0
 	for {
 		// Retrieve status
-		existingDp, err := c.Http.GetDataplaneRoutes(newDataplaneRoutesId)
+		existingDp, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneRoutesById(ctx, connect.NewRequest(&adminv1.GetDataplaneRoutesByIdRequest{Id: newDataplaneRoutesId}))
 		if err != nil {
 			if currentErrors >= ERROR_TOLERANCE {
 				return diag.FromErr(err)
@@ -116,11 +121,7 @@ func resourceDataplaneRoutesCreate(ctx context.Context, d *schema.ResourceData, 
 
 		// Found
 
-		if existingDp == nil {
-			err = errors.New("dataplane Routes with the given ID not found. It may have been deleted")
-			return diag.FromErr(err)
-		}
-		if existingDp.Deployed {
+		if existingDp.Msg.DataplaneRoutes.Deployed {
 			break
 		} else {
 			time.Sleep(15 * time.Second)
@@ -142,9 +143,9 @@ func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, me
 
 	dataplaneId := d.Id()
 
-	foundDataplaneRoutes, err := c.Http.GetDataplaneRoutes(dataplaneId)
+	foundDataplaneRoutes, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneRoutesById(ctx, connect.NewRequest(&adminv1.GetDataplaneRoutesByIdRequest{Id: dataplaneId}))
 	if err != nil || foundDataplaneRoutes == nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if status.Code(err) == codes.NotFound {
 			// Datplane was deleted
 			tflog.Warn(ctx, "The dataplane routes was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -153,15 +154,15 @@ func resourceDataplaneRoutesRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", foundDataplaneRoutes.Id)
-	d.Set("dataplane_id", foundDataplaneRoutes.DataplaneId)
-	d.Set("destination_cidr_block", foundDataplaneRoutes.DestinationCidrBlock)
-	d.Set("transit_gateway_id", foundDataplaneRoutes.TransitGatewayId)
-	d.Set("vpc_peering_connection_id", foundDataplaneRoutes.VpcPeeringConnectionId)
-	d.Set("deployed", foundDataplaneRoutes.Deployed)
+	d.Set("id", foundDataplaneRoutes.Msg.DataplaneRoutes.Id)
+	d.Set("dataplane_id", foundDataplaneRoutes.Msg.DataplaneRoutes.DataplaneId)
+	d.Set("destination_cidr_block", foundDataplaneRoutes.Msg.DataplaneRoutes.DestinationCidrBlock)
+	d.Set("transit_gateway_id", foundDataplaneRoutes.Msg.DataplaneRoutes.TransitGatewayId)
+	d.Set("vpc_peering_connection_id", foundDataplaneRoutes.Msg.DataplaneRoutes.VpcPeeringConnectionId)
+	d.Set("deployed", foundDataplaneRoutes.Msg.DataplaneRoutes.Deployed)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details
-	d.SetId(foundDataplaneRoutes.Id)
+	d.SetId(foundDataplaneRoutes.Msg.DataplaneRoutes.Id)
 
 	return diags
 }
@@ -179,7 +180,7 @@ func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, 
 
 	routeId := d.Id()
 
-	err := c.Http.DeleteDataplaneRoutes(routeId)
+	_, err := c.Grpc.Sdk.CloudServiceClient.DeleteDataplaneRoutes(ctx, connect.NewRequest(&adminv1.DeleteDataplaneRoutesRequest{Id: routeId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -189,9 +190,9 @@ func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, 
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := c.Http.GetDataplaneRoutes(routeId)
+		_, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneRoutesById(ctx, connect.NewRequest(&adminv1.GetDataplaneRoutesByIdRequest{Id: routeId}))
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "status: 404") {
+			if status.Code(err) == codes.NotFound {
 				// Dataplane was deleted
 				break
 			}
@@ -206,7 +207,7 @@ func resourceDataplaneRoutesDelete(ctx context.Context, d *schema.ResourceData, 
 		}
 
 		if time.Since(deleteTimeStart) > time.Minute*10 {
-			tflog.Info(ctx, "Deletion of dataplane routes has taken more than 10m. The deletion process may be unhealthy and will be managed by the Formal. Exiting and marking as deleted.")
+			tflog.Info(ctx, "Deletion of dataplane routes has taken more than 10m. The deletion process may be unhealthy and will be managed by Formal. Exiting and marking as deleted.")
 			break
 		}
 
