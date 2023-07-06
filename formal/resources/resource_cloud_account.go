@@ -110,14 +110,15 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 	// Maps to user-defined fields
 	cloudAccountName := d.Get("cloud_account_name").(string)
 	cloudProvider := d.Get("cloud_provider").(string)
-	//awsCloudRegion := d.Get("aws_cloud_region").(string)
+	awsCloudRegion := d.Get("aws_cloud_region").(string)
 
 	if cloudProvider != "aws" {
 		return diag.FromErr(errors.New("cloud_provider must be 'aws'"))
 	}
 
 	awsConnectionSession, err := c.Grpc.Sdk.CloudServiceClient.CreateAwsConnectionSession(ctx, connect.NewRequest(&adminv1.CreateAwsConnectionSessionRequest{
-		CloudAccountName: cloudAccountName,
+		CloudAccountName:   cloudAccountName,
+		CloudAccountRegion: awsCloudRegion,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
