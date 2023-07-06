@@ -1,10 +1,13 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -71,7 +74,12 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	formalIdentityId := d.Get("formal_identity_id").(string)
 	formalIdentityType := d.Get("formal_identity_type").(string)
 
-	err := c.Http.CreateNativeRoleLink(datastoreId, nativeRoleId, formalIdentityId, formalIdentityType)
+	_, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.CreateNativeUserIdentityLinkRequest{
+		DataStoreId:        datastoreId,
+		NativeUserId:       nativeRoleId,
+		IdentityId:         formalIdentityId,
+		FormalIdentityType: formalIdentityType,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -96,9 +104,12 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	datastoreId := tfIdSplit[0]
 	formalIdentityId := tfIdSplit[1]
 
-	nativeRoleLink, err := c.Http.GetNativeRoleLink(datastoreId, formalIdentityId)
+	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.GetNativeUserIdentityLinkRequest{
+		DataStoreId: datastoreId,
+		IdentityId:  formalIdentityId,
+	}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if status.Code(err) == codes.NotFound {
 			// Link was deleted
 			tflog.Warn(ctx, "The Native Role Link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -109,9 +120,9 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 
 	// Should map to all fields of
 	d.Set("datastore_id", datastoreId)
-	d.Set("native_role_id", nativeRoleLink.NativeRoleId)
+	d.Set("native_role_id", res.Msg.Link.NativeUserId)
 	d.Set("formal_identity_id", formalIdentityId)
-	d.Set("formal_identity_type", nativeRoleLink.FormalIdentityType)
+	d.Set("formal_identity_type", res.Msg.Link.FormalIdentityType)
 
 	d.SetId(tfId)
 
@@ -132,7 +143,7 @@ func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, m
 	datastoreId := roleLinkGroupTerraformIdSplit[0]
 	formalIdentityId := roleLinkGroupTerraformIdSplit[1]
 
-	err := c.Http.DeleteNativeRoleLink(datastoreId, formalIdentityId)
+	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.DeleteNativeUserIdentityLinkRequest{DataStoreId: datastoreId, IdentityId: formalIdentityId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

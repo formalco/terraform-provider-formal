@@ -85,7 +85,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-		grpc := apiv2.NewClient(apiKey)
+		grpc := apiv2.NewClient(apiKey, returnSensitiveValue)
 
 		return &clients.Clients{Http: http, Grpc: grpc}, nil
 	}
