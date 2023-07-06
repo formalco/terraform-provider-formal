@@ -69,7 +69,7 @@ func resourceIntegrationIncidentCreate(ctx context.Context, d *schema.ResourceDa
 	logo := d.Get("logo").(string)
 	apiKey := d.Get("api_key").(string)
 
-	_, err := c.Grpc.Sdk.IncidentServiceClient.ConnectIncidentAccount(ctx, connect.NewRequest(&adminv1.ConnectIncidentAccountRequest{
+	res, err := c.Grpc.Sdk.IncidentServiceClient.ConnectIncidentAccount(ctx, connect.NewRequest(&adminv1.ConnectIncidentAccountRequest{
 		Name:   name,
 		Type:   incidentType,
 		Logo:   logo,
@@ -79,7 +79,7 @@ func resourceIntegrationIncidentCreate(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	//d.SetId(res)
+	d.SetId(res.Msg.Id)
 
 	resourceIntegrationIncidentRead(ctx, d, meta)
 
