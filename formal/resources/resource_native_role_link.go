@@ -6,8 +6,6 @@ import (
 	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -109,7 +107,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 		IdentityId:  formalIdentityId,
 	}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
 			tflog.Warn(ctx, "The Native Role Link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")

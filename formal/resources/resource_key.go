@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func ResourceKey() *schema.Resource {
@@ -127,7 +125,7 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 
 	res, err := c.Grpc.Sdk.KmsServiceClient.GetKey(ctx, connect.NewRequest(&adminv1.GetKeyRequest{Id: d.Id()}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Key not found
 			tflog.Warn(ctx, "The key was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")

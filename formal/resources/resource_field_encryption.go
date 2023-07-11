@@ -6,8 +6,6 @@ import (
 	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -116,7 +114,7 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 
 	res, err := c.Grpc.Sdk.FieldEncryptionServiceClient.GetFieldEncryptionsByDatastore(ctx, connect.NewRequest(&adminv1.GetFieldEncryptionsByDatastoreRequest{DatastoreId: dsId}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Was deleted
 			tflog.Warn(ctx, "The Field Encryption was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")

@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func ResourceGroup() *schema.Resource {
@@ -79,7 +77,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroupById(ctx, connect.NewRequest(&adminv1.GetGroupByIdRequest{Id: groupId}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Group was deleted
 			tflog.Warn(ctx, "The Group was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")

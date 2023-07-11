@@ -6,8 +6,6 @@ import (
 	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -104,7 +102,7 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUser(ctx, connect.NewRequest(&adminv1.GetNativeUserRequest{DataStoreId: splitId[0], NativeUserId: splitId[1]}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
 			tflog.Warn(ctx, "The Native Role for Datastore ID "+splitId[0]+" and Native Role ID"+splitId[1]+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
