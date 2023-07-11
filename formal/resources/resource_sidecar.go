@@ -4,8 +4,6 @@ import (
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"errors"
 	"github.com/bufbuild/connect-go"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strconv"
 	"time"
 
@@ -163,13 +161,13 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	for {
 		// Retrieve status
 		createdSidecar, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: res.Msg.Id}))
 		if err != nil {
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving Sidecar: ", map[string]interface{}{"err": err})
@@ -210,7 +208,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: sidecarId}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
@@ -318,21 +316,21 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
 		_, err = c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: dsId}))
 		if err != nil {
-			if status.Code(err) == codes.NotFound {
+			if connect.CodeOf(err) == connect.CodeNotFound {
 				tflog.Info(ctx, "Sidecar deleted", map[string]interface{}{"sidecar_id": dsId})
 				// Sidecar was deleted
 				break
 			}
 
 			// Handle other errors
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Sidecar Status: ", map[string]interface{}{"err": err})

@@ -8,8 +8,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func ResourceDefaultFieldEncryption() *schema.Resource {
@@ -78,7 +76,7 @@ func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceD
 
 	defaultFieldEncryption, err := c.Grpc.Sdk.FieldEncryptionPolicyServiceClient.GetDefaultFieldEncryptionPolicy(ctx, connect.NewRequest(&adminv1.GetDefaultFieldEncryptionPolicyRequest{}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Was deleted
 			tflog.Warn(ctx, "The Default Field Encryption was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")

@@ -6,8 +6,6 @@ import (
 	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"strconv"
 	"time"
 
@@ -163,13 +161,13 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	time.Sleep(30 * time.Second)
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	for {
 		// Retrieve status
 		existingDp, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: newDataPlaneId}))
 		if err != nil {
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced error #"+strconv.Itoa(currentErrors+1)+" checking on DataplaneStatus: ", map[string]interface{}{"err": err})
@@ -209,7 +207,7 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	res, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: dataplaneId}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The dataplane was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
@@ -253,20 +251,20 @@ func resourceDataplaneDelete(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
 		_, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: dataplaneId}))
 		if err != nil {
-			if status.Code(err) == codes.NotFound {
+			if connect.CodeOf(err) == connect.CodeNotFound {
 				// Dataplane was deleted
 				break
 			}
 
 			// Handle other errors
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DataplaneStatus: ", map[string]interface{}{"err": err})

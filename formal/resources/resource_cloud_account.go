@@ -6,8 +6,6 @@ import (
 	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -139,7 +137,7 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 
 	res, err := c.Grpc.Sdk.CloudServiceClient.GetIntegrationsCloudAccountById(ctx, connect.NewRequest(&adminv1.GetIntegrationsCloudAccountByIdRequest{Id: d.Id()}))
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted or the integration was deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
@@ -181,7 +179,7 @@ func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, met
 		return diags
 	}
 	if err != nil {
-		if status.Code(err) == codes.NotFound {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted, likely by CloudFormation.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
