@@ -36,36 +36,42 @@ func ResourceIntegrationExternalApi() *schema.Resource {
 				Description: "Friendly name for the ExternalApi.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of the ExternalApi: zendesk or custom",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"url": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Url of the ExternalApi.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"auth_type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Auth type of the ExternalApi: basic or oauth",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"basic_auth_username": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Username of the ExternalApi.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"basic_auth_password": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Password of the ExternalApi.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -121,6 +127,8 @@ func resourceIntegrationExternalApiRead(ctx context.Context, d *schema.ResourceD
 	d.Set("type", externalApi.Msg.Integration.Type)
 	d.Set("url", externalApi.Msg.Integration.Url)
 	d.Set("auth_type", externalApi.Msg.Integration.AuthType)
+
+	d.SetId(externalApi.Msg.Integration.Id)
 
 	return diags
 }

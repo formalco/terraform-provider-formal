@@ -12,23 +12,22 @@ import (
 	"time"
 )
 
-func ResourceRole() *schema.Resource {
+func ResourceUser() *schema.Resource {
 	return &schema.Resource{
-		DeprecationMessage: "Use formal_user resource instead.",
 		// This description is used by the documentation generator and the language server.
 		Description: "User in Formal.",
 
-		CreateContext: resourceRoleCreate,
-		ReadContext:   resourceRoleRead,
-		UpdateContext: resourceRoleUpdate,
-		DeleteContext: resourceRoleDelete,
+		CreateContext: resourceUserCreate,
+		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
+		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Role ID",
+				Description: "User ID",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -71,19 +70,19 @@ func ResourceRole() *schema.Resource {
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "For machine users, the name of the role.",
+				Description: "For machine users, the name of the user.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the role is of type `machine`, this is an optional designation for the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Description: "If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
-			"machine_role_access_token": {
+			"machine_user_access_token": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the role is of type `machine`, this is the accesss token (database password) of this role.",
+				Description: "If the user is of type `machine`, this is the accesss token (database password) of this user.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -99,7 +98,7 @@ func ResourceRole() *schema.Resource {
 	}
 }
 
-func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -127,17 +126,17 @@ func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	return diags
 }
 
-func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
+	userId := d.Id()
 
-	res, err := c.Grpc.Sdk.UserServiceClient.GetUserById(ctx, connect.NewRequest(&adminv1.GetUserByIdRequest{Id: roleId}))
+	res, err := c.Grpc.Sdk.UserServiceClient.GetUserById(ctx, connect.NewRequest(&adminv1.GetUserByIdRequest{Id: userId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Role with ID "+roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Role with ID "+userId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -155,28 +154,27 @@ func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("admin", res.Msg.User.Admin)
 	d.Set("app_type", res.Msg.User.AppType)
 	d.Set("expire_at", res.Msg.User.ExpireAt.AsTime().Unix())
-
 	if c.Grpc.ReturnSensitiveValue {
-		d.Set("machine_role_access_token", res.Msg.User.MachineRoleAccessToken)
+		d.Set("machine_user_access_token", res.Msg.User.MachineRoleAccessToken)
 	}
 
-	d.SetId(roleId)
+	d.SetId(userId)
 
 	return diags
 }
 
-func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
+	userId := d.Id()
 	name := d.Get("name").(string)
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
 
 	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&adminv1.UpdateUserRequest{
-		Id:        roleId,
+		Id:        userId,
 		Name:      name,
 		FirstName: firstName,
 		LastName:  lastName,
@@ -190,14 +188,14 @@ func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	return diags
 }
 
-func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
+	userId := d.Id()
 
-	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&adminv1.DeleteUserRequest{Id: roleId}))
+	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&adminv1.DeleteUserRequest{Id: userId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

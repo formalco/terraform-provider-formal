@@ -36,36 +36,42 @@ func ResourceIntegrationApp() *schema.Resource {
 				Description: "Friendly name for the App.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of the App: metabase or custom",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"metabase_hostname": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Hostname of the Metabase app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"metabase_username": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Username of the Metabase app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"metabase_password": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Password of the Metabase app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"linked_db_user_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Linked DB User ID of the App.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -101,15 +107,26 @@ func resourceIntegrationAppCreate(ctx context.Context, d *schema.ResourceData, m
 }
 
 func resourceIntegrationAppRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	//c := meta.(*clients.Clients)
+	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
-	//
-	//appId := d.Id()
-	//
-	//res, err := c.Grpc.Sdk.AppServiceClient.GetIntegrationApps(ctx, connect.NewRequest(&adminv1.GetIntegrationApps{}))
-	//if err != nil {
-	//	return diag.FromErr(err)
-	//}
+
+	appId := d.Id()
+
+	res, err := c.Grpc.Sdk.AppServiceClient.GetIntegrationById(ctx, connect.NewRequest(&adminv1.GetIntegrationByIdRequest{
+		Id: appId,
+	}))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	d.Set("name", res.Msg.Integration.Name)
+	d.Set("type", res.Msg.Integration.Type)
+	d.Set("metabase_hostname", res.Msg.Integration.MetabaseHostname)
+	d.Set("metabase_username", res.Msg.Integration.MetabaseUsername)
+	d.Set("metabase_password", res.Msg.Integration.MetabasePassword)
+	d.Set("linked_db_user_id", res.Msg.Integration.LinkedDbUserId)
+
+	d.SetId(res.Msg.Integration.Id)
 	return diags
 }
 

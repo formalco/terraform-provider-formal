@@ -40,6 +40,7 @@ func ResourceKey() *schema.Resource {
 				Description: "The Formal ID for your organisation.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "field is deprecated, and will be removed on a future release",
 			},
 			"key_id": {
 				// This description is used by the documentation generator and the language server.
