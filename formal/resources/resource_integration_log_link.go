@@ -36,18 +36,14 @@ func ResourceIntegrationLogLink() *schema.Resource {
 				Description: "The ID of the Integration.",
 				Type:        schema.TypeString,
 				Required:    true,
-			},
-			"item_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Item type of the Integration.",
-				Type:        schema.TypeString,
-				Required:    true,
+				ForceNew:    true,
 			},
 			"datastore_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Datastore ID of the Integration.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -60,18 +56,15 @@ func resourceIntegrationLogLinkCreate(ctx context.Context, d *schema.ResourceDat
 
 	integrationId := d.Get("integration_id").(string)
 	dataStoreId := d.Get("datastore_id").(string)
-	itemType := d.Get("item_type").(string)
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogsLinkItem(ctx, connect.NewRequest(&adminv1.CreateLogsLinkItemRequest{
 		IntegrationId: integrationId,
 		DatastoreId:   dataStoreId,
-		ItemType:      itemType,
 	}))
 
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	d.SetId(res.Msg.LogItemLink.Id)
 
 	resourceIntegrationLogLinkRead(ctx, d, meta)
@@ -84,7 +77,7 @@ func resourceIntegrationLogLinkRead(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogsLinkItemById(ctx, connect.NewRequest(&adminv1.GetLogsLinkItemByIdRequest{
-		IntegrationId: d.Id(),
+		IntegrationId: d.Get("integration_id").(string),
 		DatastoreId:   d.Get("datastore_id").(string),
 	}))
 
@@ -92,9 +85,10 @@ func resourceIntegrationLogLinkRead(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	d.Set("integration_id", res.Msg.LogItemLinks.Id)
-	d.Set("datastore_id", res.Msg.LogItemLinks.ItemId)
-	d.Set("item_type", res.Msg.LogItemLinks.ItemType)
+	d.Set("integration_id", res.Msg.LogItemLinks.IntegrationLogId)
+	d.Set("datastore_id", res.Msg.LogItemLinks.DatastoreId)
+
+	d.SetId(res.Msg.LogItemLinks.Id)
 
 	return diags
 }
@@ -105,7 +99,7 @@ func resourceIntegrationLogLinkDelete(ctx context.Context, d *schema.ResourceDat
 	var diags diag.Diagnostics
 
 	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogsLinkItem(ctx, connect.NewRequest(&adminv1.DeleteLogsLinkItemRequest{
-		IntegrationId: d.Id(),
+		IntegrationId: d.Get("integration_id").(string),
 		DatastoreId:   d.Get("datastore_id").(string),
 	}))
 

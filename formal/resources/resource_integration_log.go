@@ -33,45 +33,52 @@ func ResourceIntegrationLogs() *schema.Resource {
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Friendly name for the Incident app.",
+				Description: "Friendly name for the Integration app.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Incident app: pagerduty or custom",
+				Description: "Type of the Integration app: datadog or splunk",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"dd_site": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Url of your Datadog app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"dd_api_key": {
 				// This description is used by the documentation generator and the language server.
 				Description: "API Key of Datadog.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"dd_account_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Account ID of Datadog.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"splunk_url": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Url of your Splunk app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"splunk_api_key": {
 				// This description is used by the documentation generator and the language server.
 				Description: "API Key of Splunk.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -128,6 +135,8 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 	d.Set("dd_site", res.Msg.Integration.DdSite)
 	d.Set("dd_account_id", res.Msg.Integration.DdAccountId)
 	d.Set("splunk_url", res.Msg.Integration.SplunkUrl)
+
+	d.SetId(res.Msg.Integration.Id)
 
 	return diags
 }

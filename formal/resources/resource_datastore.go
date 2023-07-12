@@ -158,7 +158,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("hostname", res.Msg.Datastore.Hostname)
 	d.Set("port", res.Msg.Datastore.Port)
 	d.Set("technology", res.Msg.Datastore.Technology)
-	d.Set("created_at", res.Msg.Datastore.CreatedAt)
+	d.Set("created_at", res.Msg.Datastore.CreatedAt.AsTime().Unix())
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(res.Msg.Datastore.DatastoreId)

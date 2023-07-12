@@ -61,6 +61,7 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
+				Deprecated:  "This field is deprecated. Please use formal_sidecar_datastore_link resource instead. This attribute will be removed in the next major version of the provider.",
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
@@ -142,7 +143,6 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarReq := &adminv1.CreateSidecarRequest{
 		Name:             d.Get("name").(string),
-		DatastoreId:      d.Get("datastore_id").(string),
 		DataplaneId:      d.Get("dataplane_id").(string),
 		DeploymentType:   d.Get("deployment_type").(string),
 		FailOpen:         d.Get("fail_open").(bool),
@@ -217,13 +217,12 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	d.Set("id", res.Msg.Sidecar.Id)
-	d.Set("datastore_id", res.Msg.Sidecar.DatastoreId)
 	d.Set("name", res.Msg.Sidecar.Name)
 	d.Set("formal_hostname", res.Msg.Sidecar.FormalHostname)
 	d.Set("deployment_type", res.Msg.Sidecar.DeploymentType)
 	d.Set("fail_open", res.Msg.Sidecar.FailOpen)
 	d.Set("network_type", res.Msg.Sidecar.NetworkType)
-	d.Set("created_at", res.Msg.Sidecar.CreatedAt)
+	d.Set("created_at", res.Msg.Sidecar.CreatedAt.AsTime().Unix())
 	d.Set("global_kms_decrypt", res.Msg.Sidecar.GlobalKmsDecrypt)
 	d.Set("dataplane_id", res.Msg.Sidecar.DataplaneId)
 	d.Set("version", res.Msg.Sidecar.Version)

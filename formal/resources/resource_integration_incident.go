@@ -36,24 +36,28 @@ func ResourceIntegrationIncident() *schema.Resource {
 				Description: "Friendly name for the Incident app.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of the Incident app: pagerduty or custom",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"logo": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Logo of the Incident app.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				ForceNew:    true,
 			},
 			"api_key": {
 				// This description is used by the documentation generator and the language server.
 				Description: "API Key of the Incident app.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 		},
 	}
@@ -101,6 +105,8 @@ func resourceIntegrationIncidentRead(ctx context.Context, d *schema.ResourceData
 	d.Set("name", res.Msg.Account.Name)
 	d.Set("type", res.Msg.Account.Type)
 	d.Set("logo", res.Msg.Account.Logo)
+
+	d.SetId(res.Msg.Account.Id)
 
 	return diags
 }

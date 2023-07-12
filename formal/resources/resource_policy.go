@@ -82,6 +82,7 @@ func ResourcePolicy() *schema.Resource {
 				Description: "When this policy is set to expire.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "This field is deprecated. it will be removed in a future release.",
 			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
