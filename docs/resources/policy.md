@@ -28,7 +28,7 @@ Creating a Policy in Formal.
 
 - `created_at` (String) When the policy was created.
 - `created_by` (String) Who the policy was created by.
-- `expire_at` (String) When this policy is set to expire.
+- `expire_at` (String, Deprecated) When this policy is set to expire.
 - `id` (String) ID of this Policy.
 - `org_id` (String) The Formal ID for your organisation.
 - `status` (String) Additional descriptor for active status of this policy.

@@ -25,7 +25,7 @@ Registering a Sidecar with Formal.
 ### Optional
 
 - `dataplane_id` (String) If deployment_type is managed, this is the ID of the Dataplane
-- `datastore_id` (String) The Datastore ID that the new Sidecar will be attached to.
+- `datastore_id` (String, Deprecated) The Datastore ID that the new Sidecar will be attached to.
 - `fail_open` (Boolean) Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.
 - `formal_hostname` (String) The hostname of the created sidecar.
 - `network_type` (String) Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.
