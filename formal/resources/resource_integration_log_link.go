@@ -77,8 +77,7 @@ func resourceIntegrationLogLinkRead(ctx context.Context, d *schema.ResourceData,
 	var diags diag.Diagnostics
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogsLinkItemById(ctx, connect.NewRequest(&adminv1.GetLogsLinkItemByIdRequest{
-		IntegrationId: d.Get("integration_id").(string),
-		DatastoreId:   d.Get("datastore_id").(string),
+		Id: d.Id(),
 	}))
 
 	if err != nil {
@@ -98,10 +97,7 @@ func resourceIntegrationLogLinkDelete(ctx context.Context, d *schema.ResourceDat
 
 	var diags diag.Diagnostics
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogsLinkItem(ctx, connect.NewRequest(&adminv1.DeleteLogsLinkItemRequest{
-		IntegrationId: d.Get("integration_id").(string),
-		DatastoreId:   d.Get("datastore_id").(string),
-	}))
+	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogsLinkItem(ctx, connect.NewRequest(&adminv1.DeleteLogsLinkItemRequest{}))
 
 	if err != nil {
 		return diag.FromErr(err)
