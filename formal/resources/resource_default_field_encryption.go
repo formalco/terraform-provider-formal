@@ -1,12 +1,10 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,17 +52,12 @@ func resourceDefaultFieldEncryptionCreateOrUpdate(ctx context.Context, d *schema
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newDefaultFieldEncryption := api.DefaultFieldEncryptionStruct{
-		DataKeyStorage: d.Get("data_key_storage").(string),
-		KmsKeyID:       d.Get("kms_key_id").(string),
-		EncryptionAlg:  d.Get("encryption_alg").(string),
-	}
+	DataKeyStorage := d.Get("data_key_storage").(string)
+	KmsKeyID := d.Get("kms_key_id").(string)
+	EncryptionAlg := d.Get("encryption_alg").(string)
 
-	defaultFieldEncryption, err := c.Http.CreateOrUpdateDefaultFieldEncryption(newDefaultFieldEncryption)
+	_, err := c.Grpc.Sdk.FieldEncryptionPolicyServiceClient.CreateOrUpdateDefaultFieldEncryptionPolicy(ctx, connect.NewRequest(&adminv1.CreateOrUpdateDefaultFieldEncryptionPolicyRequest{KmsKeyId: KmsKeyID, DataKeyStorage: DataKeyStorage, EncryptionAlg: EncryptionAlg}))
 	if err != nil {
-		return diag.FromErr(err)
-	}
-	if defaultFieldEncryption == nil {
 		return diag.FromErr(err)
 	}
 
@@ -81,9 +74,9 @@ func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceD
 
 	resourceId := d.Id()
 
-	defaultFieldEncryption, err := c.Http.GetDefaultFieldEncryption()
+	defaultFieldEncryption, err := c.Grpc.Sdk.FieldEncryptionPolicyServiceClient.GetDefaultFieldEncryptionPolicy(ctx, connect.NewRequest(&adminv1.GetDefaultFieldEncryptionPolicyRequest{}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Was deleted
 			tflog.Warn(ctx, "The Default Field Encryption was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -96,27 +89,15 @@ func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceD
 	}
 
 	// Should map to all tracked fields of DefaultFieldEncryptionOrgItem
-	d.Set("data_key_storage", defaultFieldEncryption.DataKeyStorage)
-	d.Set("kms_key_id", defaultFieldEncryption.KmsKeyID)
-	d.Set("encryption_alg", defaultFieldEncryption.EncryptionAlg)
+	d.Set("data_key_storage", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.DataKeyStorage)
+	d.Set("kms_key_id", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.KmsKeyId)
+	d.Set("encryption_alg", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.EncryptionAlg)
 
 	d.SetId(resourceId)
 
 	return diags
 }
 
-// DONE
 func resourceDefaultFieldEncryptionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*clients.Clients)
-
-	var diags diag.Diagnostics
-
-	err := c.Http.DeleteDefaultFieldEncryption()
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return diags
+	return diag.Errorf("At the moment you can't delete a default field encryption policy. Thank you!")
 }

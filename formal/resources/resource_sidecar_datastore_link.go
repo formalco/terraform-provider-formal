@@ -1,8 +1,9 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"github.com/formalco/terraform-provider-formal/formal/apiv2"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -56,19 +57,16 @@ func resourceSidecarDatastoreLinkCreate(ctx context.Context, d *schema.ResourceD
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// Maps to user-defined fields
-	newSidecarDatastoreLink := apiv2.SidecarDatastoreLink{
+	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.CreateSidecarDatastoreLinkRequest{
 		DatastoreId: d.Get("datastore_id").(string),
 		SidecarId:   d.Get("sidecar_id").(string),
-		Port:        d.Get("port").(int),
-	}
-
-	sidecarDatastoreLinkId, err := c.Grpc.CreateSidecarDatastoreLink(ctx, newSidecarDatastoreLink)
+		Port:        int32(d.Get("port").(int)),
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(sidecarDatastoreLinkId)
+	d.SetId(res.Msg.LinkId)
 
 	resourceSidecarDatastoreLinkRead(ctx, d, meta)
 	return diags
@@ -80,21 +78,18 @@ func resourceSidecarDatastoreLinkRead(ctx context.Context, d *schema.ResourceDat
 
 	sidecarDatastoreLinkId := d.Id()
 
-	sidecarDatastoreLink, err := c.Grpc.GetSidecarDatastoreLink(ctx, sidecarDatastoreLinkId)
+	res, err := c.Grpc.Sdk.SidecarServiceClient.GetLinkById(ctx, connect.NewRequest(&adminv1.GetLinkByIdRequest{Id: sidecarDatastoreLinkId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if sidecarDatastoreLink == nil {
-		return diags
-	}
 
 	// Should map to all fields of
-	d.Set("id", sidecarDatastoreLink.Id)
-	d.Set("datastore_id", sidecarDatastoreLink.DatastoreId)
-	d.Set("sidecar_id", sidecarDatastoreLink.SidecarId)
-	d.Set("port", sidecarDatastoreLink.Port)
+	d.Set("id", res.Msg.Link.Id)
+	d.Set("datastore_id", res.Msg.Link.DatastoreId)
+	d.Set("sidecar_id", res.Msg.Link.SidecarId)
+	d.Set("port", res.Msg.Link.Port)
 
-	d.SetId(sidecarDatastoreLink.Id)
+	d.SetId(res.Msg.Link.Id)
 
 	return diags
 }
@@ -106,7 +101,7 @@ func resourceSidecarDatastoreLinkDelete(ctx context.Context, d *schema.ResourceD
 
 	sidecarDatastoreLinkId := d.Id()
 
-	err := c.Grpc.DeleteSidecarDatastoreLink(ctx, sidecarDatastoreLinkId)
+	_, err := c.Grpc.Sdk.SidecarServiceClient.DeleteSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.DeleteSidecarDatastoreLinkRequest{LinkId: sidecarDatastoreLinkId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

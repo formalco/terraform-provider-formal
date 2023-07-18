@@ -1,13 +1,13 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -66,22 +66,22 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newRole := api.NativeRole{
-		DatastoreId:      d.Get("datastore_id").(string),
-		NativeRoleId:     d.Get("native_role_id").(string),
-		NativeRoleSecret: d.Get("native_role_secret").(string),
-		UseAsDefault:     d.Get("use_as_default").(bool),
-	}
+	DatastoreId := d.Get("datastore_id").(string)
+	NativeRoleId := d.Get("native_role_id").(string)
+	NativeRoleSecret := d.Get("native_role_secret").(string)
+	UseAsDefault := d.Get("use_as_default").(bool)
 
-	role, err := c.Http.CreateNativeRole(newRole)
+	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUser(ctx, connect.NewRequest(&adminv1.CreateNativeUserRequest{
+		DataStoreId:      DatastoreId,
+		NativeUserId:     NativeRoleId,
+		NativeUserSecret: NativeRoleSecret,
+		UseAsDefault:     UseAsDefault,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if role == nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(newRole.DatastoreId + nativeRoleDelimiter + newRole.NativeRoleId)
+	d.SetId(res.Msg.NativeUser.DatastoreId + nativeRoleDelimiter + res.Msg.NativeUser.NativeUserId)
 
 	resourceNativeRoleRead(ctx, d, meta)
 
@@ -100,9 +100,9 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
 	}
 
-	role, err := c.Http.GetNativeRole(splitId[0], splitId[1])
+	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUser(ctx, connect.NewRequest(&adminv1.GetNativeUserRequest{DataStoreId: splitId[0], NativeUserId: splitId[1]}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
 			tflog.Warn(ctx, "The Native Role for Datastore ID "+splitId[0]+" and Native Role ID"+splitId[1]+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -110,17 +110,12 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 		}
 		return diag.FromErr(err)
 	}
-	fmt.Println("role")
-	fmt.Println(role)
-	if role == nil {
-		return diags
-	}
 
 	// Should map to all fields of RoleOrgItem
-	d.Set("datastore_id", role.DatastoreId)
-	d.Set("native_role_id", role.NativeRoleId)
-	d.Set("native_role_secret", role.NativeRoleSecret)
-	d.Set("use_as_default", role.UseAsDefault)
+	d.Set("datastore_id", res.Msg.NativeUser.DatastoreId)
+	d.Set("native_role_id", res.Msg.NativeUser.NativeUserId)
+	d.Set("native_role_secret", res.Msg.NativeUser.NativeUserSecret)
+	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
 	d.SetId(roleId)
 
 	return diags
@@ -140,7 +135,10 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange("use_as_default") {
 		useAsDefault := d.Get("use_as_default").(bool)
 		if useAsDefault {
-			err := c.Http.UpdateNativeRole(datastoreId, nativeRoleId, "", true)
+			_, err := c.Grpc.Sdk.NativeUserServiceClient.SetNativeUserAsDefault(ctx, connect.NewRequest(&adminv1.SetNativeUserAsDefaultRequest{
+				DataStoreId:  datastoreId,
+				NativeUserId: nativeRoleId,
+			}))
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -148,7 +146,11 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	}
 	if d.HasChange("native_role_secret") {
 		nativeRoleSecret := d.Get("native_role_secret").(string)
-		err := c.Http.UpdateNativeRole(datastoreId, nativeRoleId, nativeRoleSecret, false)
+		_, err := c.Grpc.Sdk.NativeUserServiceClient.UpdateNativeUserSecret(ctx, connect.NewRequest(&adminv1.UpdateNativeUserSecretRequest{
+			DataStoreId:      datastoreId,
+			NativeUserId:     nativeRoleId,
+			NativeUserSecret: nativeRoleSecret,
+		}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -170,7 +172,7 @@ func resourceNativeRoleDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
 	}
 
-	err := c.Http.DeleteNativeRole(splitId[0], splitId[1])
+	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&adminv1.DeleteNativeUserRequest{DataStoreId: splitId[0], NativeUserId: splitId[1]}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -1,13 +1,13 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -75,23 +75,24 @@ func resourceFieldEncryptionCreate(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newFieldEncryption := api.FieldEncryptionStruct{
-		DsId:       d.Get("datastore_id").(string),
-		Path:       d.Get("path").(string),
-		KeyStorage: d.Get("key_storage").(string),
-		KeyId:      d.Get("key_id").(string),
-		Alg:        d.Get("alg").(string),
-	}
+	DsId := d.Get("datastore_id").(string)
+	Path := d.Get("path").(string)
+	KeyStorage := d.Get("key_storage").(string)
+	KeyId := d.Get("key_id").(string)
+	Alg := d.Get("alg").(string)
 
-	fieldEncryption, err := c.Http.CreateFieldEncryption(newFieldEncryption)
+	res, err := c.Grpc.Sdk.FieldEncryptionServiceClient.CreateFieldEncryption(ctx, connect.NewRequest(&adminv1.CreateFieldEncryptionRequest{
+		Path:        Path,
+		KeyStorage:  KeyStorage,
+		KeyId:       KeyId,
+		Alg:         Alg,
+		DatastoreId: DsId,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if fieldEncryption == nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(fieldEncryption.DsId + fieldEncryptionTerraformIdDelimiter + fieldEncryption.Path)
+	d.SetId(res.Msg.FieldEncryption.DatastoreId + fieldEncryptionTerraformIdDelimiter + res.Msg.FieldEncryption.Path)
 
 	resourceFieldEncryptionRead(ctx, d, meta)
 
@@ -111,9 +112,9 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 	dsId := terraformFieldEncryptionIdSplit[0]
 	path := terraformFieldEncryptionIdSplit[1]
 
-	fieldEncryption, err := c.Http.GetFieldEncryption(dsId, path)
+	res, err := c.Grpc.Sdk.FieldEncryptionServiceClient.GetFieldEncryptionsByDatastore(ctx, connect.NewRequest(&adminv1.GetFieldEncryptionsByDatastoreRequest{DatastoreId: dsId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Was deleted
 			tflog.Warn(ctx, "The Field Encryption was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -121,12 +122,19 @@ func resourceFieldEncryptionRead(ctx context.Context, d *schema.ResourceData, me
 		}
 		return diag.FromErr(err)
 	}
+	var fieldEncryption *adminv1.FieldEncryption
+	for _, resFieldEncryption := range res.Msg.FieldEncryptions {
+		if path == resFieldEncryption.Path {
+			fieldEncryption = resFieldEncryption
+		}
+	}
+
 	if fieldEncryption == nil {
 		return diags
 	}
 
 	// Should map to all tracked fields of FieldEncryptionOrgItem
-	d.Set("datastore_id", fieldEncryption.DsId)
+	d.Set("datastore_id", fieldEncryption.DatastoreId)
 	d.Set("path", fieldEncryption.Path)
 	// d.Set("name", fieldEncryption.FieldName)
 	d.Set("key_storage", fieldEncryption.KeyStorage)
@@ -170,7 +178,7 @@ func resourceFieldEncryptionDelete(ctx context.Context, d *schema.ResourceData, 
 	dsId := terraformFieldEncryptionIdSplit[0]
 	path := terraformFieldEncryptionIdSplit[1]
 
-	err := c.Http.DeleteFieldEncryption(dsId, path)
+	_, err := c.Grpc.Sdk.FieldEncryptionServiceClient.DeleteFieldEncryption(ctx, connect.NewRequest(&adminv1.DeleteFieldEncryptionRequest{DatastoreId: dsId, FieldEncryptionId: path}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

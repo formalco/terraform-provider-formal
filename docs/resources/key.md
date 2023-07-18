@@ -32,6 +32,6 @@ Creating a key in Formal.
 - `active` (Boolean) Active status of the key. For data accessibility, Formal does not delete its record of created keys.
 - `arn` (String) ARN of the created key.
 - `id` (String) The Formal ID for this key.
-- `org_id` (String) The Formal ID for your organisation.
+- `org_id` (String, Deprecated) The Formal ID for your organisation.
 
 
