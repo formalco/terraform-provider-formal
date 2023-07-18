@@ -97,7 +97,7 @@ func resourceIntegrationLogLinkDelete(ctx context.Context, d *schema.ResourceDat
 
 	var diags diag.Diagnostics
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogsLinkItem(ctx, connect.NewRequest(&adminv1.DeleteLogsLinkItemRequest{}))
+	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogsLinkItem(ctx, connect.NewRequest(&adminv1.DeleteLogsLinkItemRequest{Id: d.Id()}))
 
 	if err != nil {
 		return diag.FromErr(err)
