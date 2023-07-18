@@ -1,12 +1,10 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,17 +52,18 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	newGroup := api.Group{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-	}
+	Name := d.Get("name").(string)
+	Description := d.Get("description").(string)
 
-	group, err := c.Http.CreateGroup(newGroup)
+	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, connect.NewRequest(&adminv1.CreateGroupRequest{
+		Name:        Name,
+		Description: Description,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(group.ID)
+	d.SetId(res.Msg.Group.Id)
 
 	resourceGroupRead(ctx, d, meta)
 	return diags
@@ -76,9 +75,9 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	groupId := d.Id()
 
-	group, err := c.Http.GetGroup(groupId)
+	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroupById(ctx, connect.NewRequest(&adminv1.GetGroupByIdRequest{Id: groupId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Group was deleted
 			tflog.Warn(ctx, "The Group was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -86,14 +85,11 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 		}
 		return diag.FromErr(err)
 	}
-	if group == nil {
-		return diags
-	}
 
 	// Should map to all fields of
-	d.Set("id", group.ID)
-	d.Set("name", group.Name)
-	d.Set("description", group.Description)
+	d.Set("id", res.Msg.Group.Id)
+	d.Set("name", res.Msg.Group.Name)
+	d.Set("description", res.Msg.Group.Description)
 
 	d.SetId(groupId)
 
@@ -107,9 +103,9 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 
 	groupId := d.Id()
 	groupName := d.Get("name").(string)
-	groupDesc := d.Get("description").(string)
+	//groupDesc := d.Get("description").(string)
 
-	err := c.Http.UpdateGroup(groupId, api.Group{Name: groupName, Description: groupDesc})
+	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&adminv1.UpdateGroupRequest{Name: groupName, Id: groupId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,8 +121,7 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	var diags diag.Diagnostics
 
 	groupId := d.Id()
-
-	err := c.Http.DeleteGroup(groupId)
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, connect.NewRequest(&adminv1.DeleteGroupRequest{Id: groupId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

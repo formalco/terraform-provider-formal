@@ -1,15 +1,14 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -137,19 +136,24 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// not have a dependency on the aws_cloudformation resource, so we need to wait for that to be complete before doing dataplane elements.
 	time.Sleep(60 * time.Second)
 
-	newDataplane := api.FlatDataplane{
-		StackName:        d.Get("name").(string),
-		CloudAccountId:   d.Get("cloud_account_id").(string),
-		Region:           d.Get("cloud_region").(string),
-		AvailabilityZone: d.Get("availability_zones").(int),
-		VpcPeering:       d.Get("vpc_peering").(bool),
-	}
+	StackName := d.Get("name").(string)
+	CloudAccountId := d.Get("cloud_account_id").(string)
+	Region := d.Get("cloud_region").(string)
+	AvailabilityZone := d.Get("availability_zones").(int)
+	VpcPeering := d.Get("vpc_peering").(bool)
 
-	res, err := c.Http.CreateDataplane(newDataplane)
+	res, err := c.Grpc.Sdk.CloudServiceClient.CreateDataplane(ctx, connect.NewRequest(&adminv1.CreateDataplaneRequest{
+		Name:             StackName,
+		Region:           Region,
+		CloudAccountId:   CloudAccountId,
+		AvailabilityZone: int32(AvailabilityZone),
+		VpcPeering:       VpcPeering,
+	}))
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	newDataPlaneId := res.Id
+	newDataPlaneId := res.Msg.Dataplane.Id
 	tflog.Info(ctx, newDataPlaneId)
 	if newDataPlaneId == "" {
 		return diag.FromErr(errors.New("could not initiate a dataplane creation at this time. Please try again later"))
@@ -157,13 +161,13 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	time.Sleep(30 * time.Second)
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	for {
 		// Retrieve status
-		existingDp, err := c.Http.GetDataplane(newDataPlaneId)
+		existingDp, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: newDataPlaneId}))
 		if err != nil {
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced error #"+strconv.Itoa(currentErrors+1)+" checking on DataplaneStatus: ", map[string]interface{}{"err": err})
@@ -179,7 +183,7 @@ func resourceDataplaneCreate(ctx context.Context, d *schema.ResourceData, meta i
 			err = errors.New("dataplane with the given ID not found. It may have been deleted")
 			return diag.FromErr(err)
 		}
-		if existingDp.Status == "healthy" {
+		if existingDp.Msg.Dataplane.Status == "healthy" {
 			break
 		} else {
 			time.Sleep(15 * time.Second)
@@ -201,10 +205,9 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	dataplaneId := d.Id()
 
-	foundDataplane, err := c.Http.GetDataplane(dataplaneId)
-	if err != nil || foundDataplane == nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
-			// Datplane was deleted
+	res, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: dataplaneId}))
+	if err != nil {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The dataplane was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
@@ -212,21 +215,21 @@ func resourceDataplaneRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", foundDataplane.StackName)
-	d.Set("cloud_account_id", foundDataplane.CloudAccountId)
-	d.Set("cloud_region", foundDataplane.Region)
-	d.Set("availability_zones", foundDataplane.AvailabilityZone)
-	d.Set("formal_public_route_table_id", foundDataplane.FormalVpcPublicRouteTableId)
-	d.Set("formal_private_route_table_ids", foundDataplane.FormalVpcPrivateRouteTables)
-	d.Set("formal_vpc_id", foundDataplane.FormalVpcId)
-	d.Set("formal_vpc_cidr_block", foundDataplane.FormalVpcCidrBlock)
-	d.Set("formal_private_subnets", foundDataplane.FormalPrivateSubnets)
-	d.Set("formal_public_subnets", foundDataplane.FormalPublicSubnets)
-	d.Set("formal_r53_private_hosted_zone_id", foundDataplane.FormalR53PrivateHostedZoneId)
-	d.Set("id", foundDataplane.Id)
+	d.Set("name", res.Msg.Dataplane.Name)
+	d.Set("cloud_account_id", res.Msg.Dataplane.CloudAccountId)
+	d.Set("cloud_region", res.Msg.Dataplane.Region)
+	d.Set("availability_zones", res.Msg.Dataplane.AvailabilityZone)
+	d.Set("formal_public_route_table_id", res.Msg.Dataplane.FormalVpcPublicRouteTableId)
+	d.Set("formal_private_route_table_ids", res.Msg.Dataplane.FormalVpcPrivateRouteTableRoutes)
+	d.Set("formal_vpc_id", res.Msg.Dataplane.FormalVpcId)
+	d.Set("formal_vpc_cidr_block", res.Msg.Dataplane.FormalVpcCidrBlock)
+	d.Set("formal_private_subnets", res.Msg.Dataplane.FormalPrivateSubnets)
+	d.Set("formal_public_subnets", res.Msg.Dataplane.FormalPublicSubnets)
+	d.Set("formal_r53_private_hosted_zone_id", res.Msg.Dataplane.FormalR53PrivateHostedZoneId)
+	d.Set("id", res.Msg.Dataplane.Id)
 
 	// DsId is the UUID type id. See GetDataplaneInfraByDataplaneID in admin-api for more details
-	d.SetId(foundDataplane.Id)
+	d.SetId(res.Msg.Dataplane.Id)
 
 	return diags
 }
@@ -243,26 +246,25 @@ func resourceDataplaneDelete(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	dataplaneId := d.Id()
-
-	err := c.Http.DeleteDataplane(dataplaneId)
+	_, err := c.Grpc.Sdk.CloudServiceClient.DeleteDataplane(ctx, connect.NewRequest(&adminv1.DeleteDataplaneRequest{Id: dataplaneId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	const ERROR_TOLERANCE = 5
+	const ErrorTolerance = 5
 	currentErrors := 0
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err := c.Http.GetDataplane(dataplaneId)
+		_, err := c.Grpc.Sdk.CloudServiceClient.GetDataplaneById(ctx, connect.NewRequest(&adminv1.GetDataplaneByIdRequest{Id: dataplaneId}))
 		if err != nil {
-			if strings.Contains(fmt.Sprint(err), "status: 404") {
+			if connect.CodeOf(err) == connect.CodeNotFound {
 				// Dataplane was deleted
 				break
 			}
 
 			// Handle other errors
-			if currentErrors >= ERROR_TOLERANCE {
+			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			} else {
 				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on DataplaneStatus: ", map[string]interface{}{"err": err})

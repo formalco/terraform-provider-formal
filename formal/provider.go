@@ -61,6 +61,12 @@ func New(version string) func() *schema.Provider {
 				"formal_dataplane_routes":         resource.ResourceDataplaneRoutes(),
 				"formal_native_role":              resource.ResourceNativeRole(),
 				"formal_native_role_link":         resource.ResourceNativeRoleLink(),
+				"formal_user":                     resource.ResourceUser(),
+				"formal_integration_log":          resource.ResourceIntegrationLogs(),
+				"formal_integration_log_link":     resource.ResourceIntegrationLogLink(),
+				"formal_integration_app":          resource.ResourceIntegrationApp(),
+				"formal_integration_external_api": resource.ResourceIntegrationExternalApi(),
+				"formal_integration_incident":     resource.ResourceIntegrationIncident(),
 			},
 		}
 
@@ -85,7 +91,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
-		grpc := apiv2.NewClient(apiKey)
+		grpc := apiv2.NewClient(apiKey, returnSensitiveValue)
 
 		return &clients.Clients{Http: http, Grpc: grpc}, nil
 	}

@@ -1,12 +1,10 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -84,6 +82,7 @@ func ResourcePolicy() *schema.Resource {
 				Description: "When this policy is set to expire.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "This field is deprecated. it will be removed in a future release.",
 			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
@@ -122,22 +121,27 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	}
 
 	// Maps to user-defined fields
-	newPolicy := api.CreatePolicyPayload{
-		Name:         d.Get("name").(string),
-		Description:  d.Get("description").(string),
-		Module:       d.Get("module").(string),
-		SourceType:   "terraform",
-		Owners:       owners,
-		Notification: d.Get("notification").(string),
-		Active:       d.Get("active").(bool),
-	}
+	Name := d.Get("name").(string)
+	Description := d.Get("description").(string)
+	Module := d.Get("module").(string)
+	SourceType := "terraform"
+	Notification := d.Get("notification").(string)
+	Active := d.Get("active").(bool)
 
-	policy, err := c.Http.CreatePolicy(ctx, newPolicy)
+	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicy(ctx, connect.NewRequest(&adminv1.CreatePolicyRequest{
+		Name:         Name,
+		Description:  Description,
+		Code:         Module,
+		Notification: Notification,
+		Owners:       owners,
+		SourceType:   SourceType,
+		Active:       Active,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(policy.ID)
+	d.SetId(res.Msg.Policy.Id)
 
 	resourcePolicyRead(ctx, d, meta)
 	return diags
@@ -149,9 +153,9 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	policyId := d.Id()
 
-	policy, err := c.Http.GetPolicy(policyId)
+	res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicy(ctx, connect.NewRequest(&adminv1.GetPolicyRequest{PolicyId: policyId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
 			tflog.Warn(ctx, "The Policy with ID "+policyId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -159,18 +163,15 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 		}
 		return diag.FromErr(err)
 	}
-	if policy == nil {
-		return diags
-	}
 
 	// Should map to all fields of Policy
-	d.Set("id", policy.ID)
-	d.Set("name", policy.Name)
-	d.Set("description", policy.Description)
-	d.Set("module", policy.Module)
-	d.Set("notification", policy.Notification)
-	d.Set("owners", policy.Owners)
-	d.Set("active", policy.Active)
+	d.Set("id", res.Msg.Policy.Id)
+	d.Set("name", res.Msg.Policy.Name)
+	d.Set("description", res.Msg.Policy.Description)
+	d.Set("module", res.Msg.Policy.Code)
+	d.Set("notification", res.Msg.Policy.Notification)
+	d.Set("owners", res.Msg.Policy.Owners)
+	d.Set("active", res.Msg.Policy.Active)
 
 	d.SetId(policyId)
 
@@ -189,17 +190,24 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			owners = append(owners, owner.(string))
 		}
 
-		policyUpdate := api.Policy{
-			Name:         d.Get("name").(string),
-			Description:  d.Get("description").(string),
-			Module:       d.Get("module").(string),
-			Notification: d.Get("notification").(string),
-			Owners:       owners,
-			SourceType:   "terraform",
-			Active:       d.Get("active").(bool),
-		}
+		Name := d.Get("name").(string)
+		Description := d.Get("description").(string)
+		Module := d.Get("module").(string)
+		Notification := d.Get("notification").(string)
+		SourceType := "terraform"
+		Active := d.Get("active").(bool)
 
-		err := c.Http.UpdatePolicy(policyId, policyUpdate)
+		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicy(ctx, connect.NewRequest(&adminv1.UpdatePolicyRequest{
+			Id:           policyId,
+			SourceType:   SourceType,
+			Name:         Name,
+			Description:  Description,
+			Code:         Module,
+			Notification: Notification,
+			Owners:       owners,
+			Active:       Active,
+		}))
+
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -217,7 +225,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	err := c.Http.DeletePolicy(policyId)
+	_, err := c.Grpc.Sdk.PolicyServiceClient.DeletePolicy(ctx, connect.NewRequest(&adminv1.DeletePolicyRequest{Id: policyId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

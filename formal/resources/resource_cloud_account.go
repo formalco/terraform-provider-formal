@@ -1,11 +1,11 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -114,7 +114,10 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(errors.New("cloud_provider must be 'aws'"))
 	}
 
-	createdAccount, err := c.Http.CreateCloudAccount(cloudAccountName, awsCloudRegion)
+	awsConnectionSession, err := c.Grpc.Sdk.CloudServiceClient.CreateAwsConnectionSession(ctx, connect.NewRequest(&adminv1.CreateAwsConnectionSessionRequest{
+		CloudAccountName:   cloudAccountName,
+		CloudAccountRegion: awsCloudRegion,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -122,7 +125,7 @@ func resourceCloudAccountCreate(ctx context.Context, d *schema.ResourceData, met
 	// Delay before creating CloudFormation Stack
 	time.Sleep(10 * time.Second)
 
-	d.SetId(createdAccount.Id)
+	d.SetId(awsConnectionSession.Msg.CloudIntegration.Id)
 
 	resourceCloudAccountRead(ctx, d, meta)
 	return diags
@@ -132,36 +135,30 @@ func resourceCloudAccountRead(ctx context.Context, d *schema.ResourceData, meta 
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	cloudAccount, err := c.Http.GetCloudAccount(d.Id())
+	res, err := c.Grpc.Sdk.CloudServiceClient.GetIntegrationsCloudAccountById(ctx, connect.NewRequest(&adminv1.GetIntegrationsCloudAccountByIdRequest{Id: d.Id()}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
-			// CloudAccount was deleted
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted or the integration was deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
 		return diag.FromErr(err)
 	}
-	if cloudAccount == nil {
-		tflog.Warn(ctx, "The Cloud Account was not found, which means it may have been deleted in the AWS console or otherwise without using this Terraform config.", map[string]interface{}{"err": err})
-		d.SetId("")
-		return diags
-	}
 
 	// Read AWS fields
-	d.Set("cloud_account_name", cloudAccount.CloudAccountName)
-	d.Set("cloud_provider", cloudAccount.CloudProvider)
-	d.Set("aws_cloud_region", cloudAccount.AwsCloudRegion)
-	d.Set("aws_formal_id", cloudAccount.AwsFormalId)
-	d.Set("aws_formal_iam_role", cloudAccount.AwsFormalIamRole)
-	d.Set("aws_formal_handshake_id", cloudAccount.AwsFormalHandshakeID)
-	d.Set("aws_formal_pingback_arn", cloudAccount.AwsFormalPingbackArn)
-	d.Set("aws_formal_stack_name", cloudAccount.AwsFormalStackName)
-	d.Set("aws_formal_template_body", cloudAccount.TemplateBody)
-	d.Set("aws_formal_r53_private_hosted_zone_id", cloudAccount.AwsFormalR53PrivateHostedZoneId)
-	d.Set("id", cloudAccount.Id)
+	d.Set("cloud_account_name", res.Msg.Integration.CloudAccountName)
+	d.Set("cloud_provider", res.Msg.Integration.CloudProvider)
+	d.Set("aws_cloud_region", res.Msg.Integration.AwsCloudRegion)
+	d.Set("aws_formal_id", res.Msg.Integration.AwsFormalId)
+	d.Set("aws_formal_iam_role", res.Msg.Integration.AwsFormalIamRole)
+	d.Set("aws_formal_handshake_id", res.Msg.Integration.AwsFormalHandshakeId)
+	d.Set("aws_formal_pingback_arn", res.Msg.Integration.AwsFormalPingbackArn)
+	d.Set("aws_formal_stack_name", res.Msg.Integration.AwsFormalStackName)
+	d.Set("aws_formal_template_body", res.Msg.Integration.TemplateBody)
+	d.Set("aws_formal_r53_private_hosted_zone_id", res.Msg.Integration.AwsFormalR53PrivateHostedZoneId)
+	d.Set("id", res.Msg.Integration.Id)
 
-	d.SetId(cloudAccount.Id)
+	d.SetId(res.Msg.Integration.Id)
 
 	return diags
 }
@@ -177,10 +174,12 @@ func resourceCloudAccountDelete(ctx context.Context, d *schema.ResourceData, met
 
 	accountId := d.Id()
 
-	err := c.Http.DeleteCloudAccount(accountId)
+	_, err := c.Grpc.Sdk.CloudServiceClient.DeleteAwsConnectionSession(ctx, connect.NewRequest(&adminv1.DeleteAwsConnectionSessionRequest{Id: accountId}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
-			// 404 means Cloud account is deleted, likely by CloudFormation
+		return diags
+	}
+	if err != nil {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Cloud Account was not found, which means the stack was deleted, likely by CloudFormation.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags

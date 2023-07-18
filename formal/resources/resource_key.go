@@ -1,12 +1,10 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"fmt"
+	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -42,6 +40,7 @@ func ResourceKey() *schema.Resource {
 				Description: "The Formal ID for your organisation.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Deprecated:  "field is deprecated, and will be removed on a future release",
 			},
 			"key_id": {
 				// This description is used by the documentation generator and the language server.
@@ -95,24 +94,26 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	newKey := api.KeyStruct{
-		KeyName:        d.Get("name").(string),
-		KeyId:          d.Get("key_id").(string),
-		CloudRegion:    d.Get("cloud_region").(string),
-		KeyType:        d.Get("key_type").(string),
-		ManagedBy:      d.Get("managed_by").(string),
-		CloudAccountID: d.Get("cloud_account_id").(string),
-	}
+	KeyName := d.Get("name").(string)
+	KeyId := d.Get("key_id").(string)
+	CloudRegion := d.Get("cloud_region").(string)
+	KeyType := d.Get("key_type").(string)
+	ManagedBy := d.Get("managed_by").(string)
+	CloudAccountID := d.Get("cloud_account_id").(string)
 
-	key, err := c.Http.CreateKey(newKey)
+	res, err := c.Grpc.Sdk.KmsServiceClient.CreateKeyRegistration(ctx, connect.NewRequest(&adminv1.CreateKeyRegistrationRequest{
+		CloudRegion:    CloudRegion,
+		KeyId:          KeyId,
+		ManagedBy:      ManagedBy,
+		KeyType:        KeyType,
+		KeyName:        KeyName,
+		CloudAccountId: CloudAccountID,
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	if key == nil {
-		return diag.FromErr(err)
-	}
 
-	d.SetId(key.Id)
+	d.SetId(res.Msg.Key.Id)
 
 	resourceKeyRead(ctx, d, meta)
 
@@ -123,9 +124,9 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	key, err := c.Http.GetKey(d.Id())
+	res, err := c.Grpc.Sdk.KmsServiceClient.GetKey(ctx, connect.NewRequest(&adminv1.GetKeyRequest{Id: d.Id()}))
 	if err != nil {
-		if strings.Contains(fmt.Sprint(err), "status: 404") {
+		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Key not found
 			tflog.Warn(ctx, "The key was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
@@ -133,24 +134,20 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 		}
 		return diag.FromErr(err)
 	}
-	if key == nil {
-		return diags
-	}
 
 	// Should map to all fields of KeyOrgItem
-	d.Set("id", key.Id)
-	d.Set("arn", key.KeyArn)
-	d.Set("name", key.KeyName)
-	d.Set("org_id", key.OrgId)
-	d.Set("key_id", key.KeyId)
-	d.Set("cloud_region", key.CloudRegion)
-	d.Set("arn", key.KeyArn)
-	d.Set("active", key.Active)
-	d.Set("key_type", key.KeyType)
-	d.Set("managed_by", key.ManagedBy)
-	d.Set("cloud_account_id", key.CloudAccountID)
+	d.Set("id", res.Msg.Key.Id)
+	d.Set("arn", res.Msg.Key.KeyArn)
+	d.Set("name", res.Msg.Key.Name)
+	d.Set("key_id", res.Msg.Key.KeyId)
+	d.Set("cloud_region", res.Msg.Key.CloudRegion)
+	d.Set("arn", res.Msg.Key.KeyArn)
+	d.Set("active", res.Msg.Key.Active)
+	d.Set("key_type", res.Msg.Key.KeyType)
+	d.Set("managed_by", res.Msg.Key.ManagedBy)
+	d.Set("cloud_account_id", res.Msg.Key.CloudAccountId)
 
-	d.SetId(key.Id)
+	d.SetId(res.Msg.Key.Id)
 
 	return diags
 }
@@ -179,7 +176,7 @@ func resourceKeyDelete(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	keyId := d.Id()
 
-	err := c.Http.DeleteKey(keyId)
+	_, err := c.Grpc.Sdk.KmsServiceClient.DeactivateFieldEncryptionKey(ctx, connect.NewRequest(&adminv1.DeactivateFieldEncryptionKeyRequest{Id: keyId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
