@@ -18,6 +18,9 @@ func ResourceSidecarDatastoreLink() *schema.Resource {
 		ReadContext:   resourceSidecarDatastoreLinkRead,
 		// UpdateContext: resourceDatastoreLinkUpdate,
 		DeleteContext: resourceSidecarDatastoreLinkDelete,
+		Importer: &schema.ResourceImporter{
+			StateContext: schema.ImportStatePassthroughContext,
+		},
 
 		Schema: map[string]*schema.Schema{
 			"id": {
