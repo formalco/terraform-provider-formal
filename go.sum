@@ -10,6 +10,8 @@ buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719131104-a4c54619
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719131104-a4c546194b05.1/go.mod h1:Ifnyq1u62mhxu/J9GGTq2knb0/mnDRg7GJONo/Rc1k0=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719145954-c13f9edfe18e.1 h1:cQ7hC/sovQ39Bux9UcSLDttz7Cv2tbhv3gxH/MS9XiM=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719145954-c13f9edfe18e.1/go.mod h1:3c7JWDYmVuxmhWJZVv661d/qQ+On7mKEyBO12bcc0jo=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719172416-992604c4d08f.1 h1:1YaSa1pHN/MmQuz0U4byEF5TSaUDM/13uRkd1EQMqmc=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.9.0-20230719172416-992604c4d08f.1/go.mod h1:mg8vMIvDlNsam6r7ptSNP/ESoopP15dmYIJDi3CmH9Y=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230706003847-b8461d7f37ba.1 h1:fsybkkf/t8pOkQPUNlbtRqYuyzNQhbrN+RMT17Lugs8=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230706003847-b8461d7f37ba.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230706215557-c587da663b2b.1 h1:/Qctujxp1TXwN0Avrm8N7ebirsUrNyLnhm8azGGR2GU=
@@ -22,6 +24,8 @@ buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719131104-a4c54619
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719131104-a4c546194b05.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719145954-c13f9edfe18e.1 h1:smPgGSsHSbDOvkEIi3kuQ/I+UnLsokJ4ogrU1lT2Xrs=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719145954-c13f9edfe18e.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719172416-992604c4d08f.1 h1:IOtdGQGo8Izoo/bAurPeDKRXjzRSDha1KTgqaedyZ+M=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20230719172416-992604c4d08f.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
 github.com/Masterminds/semver/v3 v3.1.1 h1:hLg3sBzpNErnxhQtUy/mmLR2I9foDujNK030IGemrRc=
@@ -75,6 +79,8 @@ github.com/formalco/go-sdk/sdk v1.0.7 h1:xF2/77fXjyNpcDuEmwx2q1DCyqQhrEyWHoZjUAU
 github.com/formalco/go-sdk/sdk v1.0.7/go.mod h1:z3tSDDucbsYyh/f3/O9udWgMY0/IcwGity71isVggTM=
 github.com/formalco/go-sdk/sdk v1.0.8 h1:WEzjniqRL0bGONButNVXYaudplfl14jI3TvRpMUz8Ik=
 github.com/formalco/go-sdk/sdk v1.0.8/go.mod h1:6wF9eMaId5foeaLqcwmERlgNY53b66xPx9aRNWKJDC8=
+github.com/formalco/go-sdk/sdk v1.0.9 h1:hIQZRkAOro9EdJ8iFlwBPT1k18r6uRYTSkHx3pUkYus=
+github.com/formalco/go-sdk/sdk v1.0.9/go.mod h1:F9qECYa8IYUASQSlj3CGC9MqMyZ07a+BMuUPvcoAN58=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
 github.com/gliderlabs/ssh v0.2.2/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=
 github.com/go-git/gcfg v1.5.0 h1:Q5ViNfGF8zFgyJWPqYwA7qGFoMTEiBmdlkcfRmpIMa4=
