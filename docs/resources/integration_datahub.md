@@ -19,9 +19,9 @@ Registering a Datahub integration.
 
 - `active` (Boolean) Active status of the Integration.
 - `api_key` (String) Api Key for the GMS server.
-- `communication_type` (String) Communication type of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.
-- `gms_url` (String) GMS URL of the Integration.
-- `subscribed_entities` (List of String) Subscribed entities of the Integration: currently supported values are 'tags', 'data_labels'.
+- `generalized_metadata_service_url` (String) Generalized Metadata Service URL of the Integration.
+- `sync_direction` (String) Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.
+- `synced_entities` (List of String) Synced entities of the Integration: currently supported values are 'tags', 'data_labels'.
 
 ### Optional
 

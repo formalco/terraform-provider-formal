@@ -38,15 +38,15 @@ func ResourceIntegrationDatahub() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"communication_type": {
+			"sync_direction": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Communication type of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.",
+				Description: "Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"gms_url": {
+			"generalized_metadata_service_url": {
 				// This description is used by the documentation generator and the language server.
-				Description: "GMS URL of the Integration.",
+				Description: "Generalized Metadata Service URL of the Integration.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -62,9 +62,9 @@ func ResourceIntegrationDatahub() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"subscribed_entities": {
+			"synced_entities": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Subscribed entities of the Integration: currently supported values are 'tags', 'data_labels'.",
+				Description: "Synced entities of the Integration: currently supported values are 'tags', 'data_labels'.",
 				Type:        schema.TypeList,
 				Required:    true,
 				Elem: &schema.Schema{
@@ -86,22 +86,22 @@ func resourceIntegrationDatahubCreate(ctx context.Context, d *schema.ResourceDat
 
 	var diags diag.Diagnostics
 
-	var subscribedEntities []string
-	for _, subscribedEntity := range d.Get("subscribed_entities").([]interface{}) {
-		subscribedEntities = append(subscribedEntities, subscribedEntity.(string))
+	var syncedEntities []string
+	for _, syncedEntity := range d.Get("synced_entities").([]interface{}) {
+		syncedEntities = append(syncedEntities, syncedEntity.(string))
 	}
 
-	CommunicationType := d.Get("communication_type").(string)
-	GMSUrl := d.Get("gms_url").(string)
+	SyncDirection := d.Get("sync_direction").(string)
+	GeneralizedMetadataServiceUrl := d.Get("generalized_metadata_service_url").(string)
 	Active := d.Get("active").(bool)
 	ApiKey := d.Get("api_key").(string)
 
 	res, err := c.Grpc.Sdk.DatahubServiceClient.CreateDatahubIntegration(ctx, connect.NewRequest(&adminv1.CreateDatahubIntegrationRequest{
-		CommunicationType:  CommunicationType,
-		GmsUrl:             GMSUrl,
-		SubscribedEntities: subscribedEntities,
-		Active:             Active,
-		ApiKey:             ApiKey,
+		SyncDirection:                 SyncDirection,
+		GeneralizedMetadataServiceUrl: GeneralizedMetadataServiceUrl,
+		SyncedEntities:                syncedEntities,
+		Active:                        Active,
+		ApiKey:                        ApiKey,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -130,12 +130,12 @@ func resourceIntegrationDatahubRead(ctx context.Context, d *schema.ResourceData,
 		return diags
 	}
 
-	d.Set("communication_type", res.Msg.Integration.CommunicationType)
-	d.Set("gms_url", res.Msg.Integration.GmsUrl)
+	d.Set("sync_direction", res.Msg.Integration.SyncDirection)
+	d.Set("generalized_metadata_service_url", res.Msg.Integration.GeneralizedMetadataServiceUrl)
 	d.Set("webhook_secret", res.Msg.Integration.WebhookSecret)
 	d.Set("organization_id", res.Msg.Integration.OrganizationId)
 	d.Set("active", res.Msg.Integration.Active)
-	d.Set("subscribed_entities", res.Msg.Integration.SubscribedEntities)
+	d.Set("synced_entities", res.Msg.Integration.SyncedEntities)
 
 	d.SetId(res.Msg.Integration.Id)
 	return diags
@@ -145,23 +145,23 @@ func resourceIntegrationDatahubUpdate(ctx context.Context, d *schema.ResourceDat
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	var subscribedEntities []string
-	for _, subscribedEntity := range d.Get("subscribed_entities").([]interface{}) {
-		subscribedEntities = append(subscribedEntities, subscribedEntity.(string))
+	var syncedEntities []string
+	for _, syncedEntity := range d.Get("synced_entities").([]interface{}) {
+		syncedEntities = append(syncedEntities, syncedEntity.(string))
 	}
 
-	CommunicationType := d.Get("communication_type").(string)
-	GMSUrl := d.Get("gms_url").(string)
+	SyncDirection := d.Get("sync_direction").(string)
+	GeneralizedMetadataServiceUrl := d.Get("generalized_metadata_service_url").(string)
 	Active := d.Get("active").(bool)
 	ApiKey := d.Get("api_key").(string)
 
 	_, err := c.Grpc.Sdk.DatahubServiceClient.UpdateDatahubIntegration(ctx, connect.NewRequest(&adminv1.UpdateDatahubIntegrationRequest{
-		Id:                 d.Id(),
-		CommunicationType:  CommunicationType,
-		GmsUrl:             GMSUrl,
-		SubscribedEntities: subscribedEntities,
-		Active:             Active,
-		ApiKey:             ApiKey,
+		Id:                            d.Id(),
+		SyncDirection:                 SyncDirection,
+		GeneralizedMetadataServiceUrl: GeneralizedMetadataServiceUrl,
+		SyncedEntities:                syncedEntities,
+		Active:                        Active,
+		ApiKey:                        ApiKey,
 	}))
 
 	if err != nil {
