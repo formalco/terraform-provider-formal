@@ -25,6 +25,7 @@ Registering a Datastore with Formal.
 
 - `db_discovery_job_wait_time` (String) The wait time for the discovery job.
 - `db_discovery_native_role_id` (String) The `native_role_id` of the Native Role to be used for the discovery job.
+- `environment` (String) Environment for the datastore, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `health_check_db_name` (String) Database name to use for health checks. Default `postgres`.
 - `port` (Number) The port your Datastore is listening on.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
