@@ -91,7 +91,7 @@ func ResourceDatastore() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Environment for the datastore, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
 		},
 	}
