@@ -87,6 +87,12 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"environment": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Environment for the datastore, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 		},
 	}
 }
@@ -110,6 +116,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	Technology := d.Get("technology").(string)
 	DbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
 	DbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
+	Environment := d.Get("environment").(string)
 
 	res, err := c.Grpc.Sdk.DataStoreServiceClient.CreateDatastore(ctx, connect.NewRequest(&adminv1.CreateDatastoreRequest{
 		Name:                    Name,
@@ -119,6 +126,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		HealthCheckDbName:       HealthCheckDbName,
 		DbDiscoveryJobWaitTime:  DbDiscoveryJobWaitTime,
 		DbDiscoveryNativeRoleId: DbDiscoveryNativeRoleID,
+		Environment:             Environment,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -159,6 +167,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("port", res.Msg.Datastore.Port)
 	d.Set("technology", res.Msg.Datastore.Technology)
 	d.Set("created_at", res.Msg.Datastore.CreatedAt.AsTime().Unix())
+	d.Set("environment", res.Msg.Datastore.Environment)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(res.Msg.Datastore.DatastoreId)
