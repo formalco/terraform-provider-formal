@@ -1,38 +1,38 @@
 terraform {
-  required_version = ">=1.1.8"
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.0.18"
-    }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~>3.0"
+      version = "~>3.2.2"
     }
   }
+
+  required_version = ">= 0.14.9"
 }
 
 provider "formal" {
   api_key = var.formal_api_key
 }
 
+resource "formal_sidecar" "main" {
+  name               = var.name
+  deployment_type    = "onprem"
+  technology         = "snowflake"
+  global_kms_decrypt = false
+  network_type       = "internal"
+  formal_hostname    = var.snowflake_sidecar_hostname
+}
+
 resource "formal_datastore" "main" {
   technology = "snowflake"
   name       = var.name
   hostname   = var.snowflake_hostname
-  port       = var.snowflake_port
+  port       = var.main_port
 }
 
-resource "formal_sidecar" "main" {
-  name               = var.name
-  deployment_type    = "onprem"
-  datastore_id       = formal_datastore.main.id
-  technology         = "snowflake"
-  fail_open          = false
-  global_kms_decrypt = false
-  network_type       = "internet-facing"
-  cloud_provider     = "aws"
-  formal_hostname    = var.sidecar_hostname // hostname of the instance running the formal sidecar
+resource "formal_sidecar_datastore_link" "main" {
+  datastore_id = formal_datastore.main.id
+  sidecar_id   = formal_sidecar.main.id
+  port         = 443
 }
 
 # Native Role
