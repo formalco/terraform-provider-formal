@@ -1,6 +1,6 @@
 formal_api_key = ""
 
-name = ""
+name        = ""
 environment = ""
 
 region = ""
@@ -17,6 +17,6 @@ dockerhub_password = ""
 datadog_api_key = ""
 
 health_check_port = 8080
-main_port = 2022
+main_port         = 2022
 
 container_image = ""

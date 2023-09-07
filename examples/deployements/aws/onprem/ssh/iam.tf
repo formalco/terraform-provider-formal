@@ -31,13 +31,13 @@ resource "aws_iam_policy" "ecs_secrets" {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
         Resource = aws_secretsmanager_secret.dockerhub_credentials.arn,
-        
+
       },
       {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
         Resource = aws_secretsmanager_secret.formal_tls_cert.arn
-        
+
       }
     ]
   })
@@ -53,7 +53,7 @@ resource "aws_iam_policy_attachment" "ecs_secrets_attachment" {
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs_task_role"
 
-    assume_role_policy = <<EOF
+  assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
