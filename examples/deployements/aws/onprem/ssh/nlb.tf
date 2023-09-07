@@ -46,8 +46,8 @@ resource "aws_lb_listener" "main" {
   port              = var.main_port
   protocol          = "TCP"
 
-  ssl_policy      = null 
-  certificate_arn = null 
+  ssl_policy      = null
+  certificate_arn = null
   alpn_policy     = null
 
   default_action {
