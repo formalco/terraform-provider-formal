@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs_execution_role"
+  name = "${var.name}-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attachment"
 }
 
 resource "aws_iam_policy" "ecs_secrets" {
-  name        = "ECSAccessToSecrets"
+  name        = "${var.name}-ecs-secrets"
   description = "Grant ECS tasks access to secrets"
 
   policy = jsonencode({
@@ -30,8 +30,7 @@ resource "aws_iam_policy" "ecs_secrets" {
       {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.dockerhub_credentials.arn,
-        
+        Resource = var.docker_hub_secret_arn
       },
       {
         Action   = ["secretsmanager:GetSecretValue"],
@@ -51,9 +50,9 @@ resource "aws_iam_policy_attachment" "ecs_secrets_attachment" {
 
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs_task_role"
+  name = "${var.name}-ecs-task-role"
 
-    assume_role_policy = <<EOF
+  assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -68,57 +67,4 @@ resource "aws_iam_role" "ecs_task_role" {
   ]
 }
 EOF
-}
-
-
-resource "aws_iam_policy" "full-secrets-access" {
-  name = "full-secrets-access"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ssm:StartSession",
-            "ssm:DescribeInstanceInformation",
-            "sts:GetCallerIdentity"
-        ],
-        "Resource": "*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ecs:ExecuteCommand",
-            "ecs:ListClusters",
-            "ecs:DescribeClusters",
-            "ecs:ListServices",
-            "ecs:DescribeServices",
-            "ecs:DescribeTasks",
-            "ecs:ListTasks"
-        ],
-        "Resource": "*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ec2:DescribeRegions",
-            "ec2:DescribeInstances"
-        ],
-        "Resource": "*"
-    }
-  ]
-}
-EOF
-}
-
-
-resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment-sidecar-destroyer" {
-  role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.full-secrets-access.arn
-
-  depends_on = [
-    aws_iam_role.ecs_task_role
-  ]
 }

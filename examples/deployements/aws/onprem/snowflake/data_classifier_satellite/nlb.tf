@@ -2,9 +2,9 @@ resource "aws_lb" "main" {
   name               = var.name
   internal           = false
   load_balancer_type = "network"
-  subnets            = aws_subnet.public.*.id
+  subnets            = var.public_subnets
 
-  enable_deletion_protection = true
+  enable_deletion_protection = false
 
   tags = {
     Name        = var.name
@@ -16,7 +16,7 @@ resource "aws_lb_target_group" "main" {
   name        = var.name
   port        = var.main_port
   protocol    = "TCP"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
   target_type = "ip"
 
   health_check {

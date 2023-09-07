@@ -11,7 +11,7 @@ resource "aws_ecs_task_definition" "main" {
         name        = var.name
         image       = var.container_image
         repositoryCredentials = {
-            credentialsParameter = aws_secretsmanager_secret.dockerhub_credentials.arn
+            credentialsParameter = var.docker_hub_secret_arn
         }
         essential   = true
         portMappings = [
@@ -25,11 +25,17 @@ resource "aws_ecs_task_definition" "main" {
             containerPort = var.health_check_port
             hostPort      = var.health_check_port
         }]
+        environment = [
+          {
+            name = "PII_DETECTION"
+            value = "formal"
+          }
+        ]
         secrets = [
-            {
-                name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
-                valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
-            }
+          {
+            name      = "FORMAL_TLS_CERT"
+            valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
+          }
         ],
         logConfiguration = {
             logDriver = "awsfirelens"
@@ -118,7 +124,7 @@ resource "aws_ecs_task_definition" "main" {
 resource "aws_security_group" "main" {
     name        = var.name
     description = "Allow inbound traffic"
-    vpc_id      = aws_vpc.main.id
+    vpc_id      = var.vpc_id
     
     ingress {
         description = "Allow inbound traffic"
@@ -139,7 +145,7 @@ resource "aws_security_group" "main" {
 
 resource "aws_ecs_service" "main" {
   name                               = var.name
-  cluster                            = aws_ecs_cluster.main.id
+  cluster                            = var.ecs_cluster_id
   task_definition                    = aws_ecs_task_definition.main.arn
   desired_count                      = 3
   deployment_minimum_healthy_percent = 50
@@ -151,7 +157,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     security_groups  = [aws_security_group.main.id]
-    subnets          = aws_subnet.private.*.id
+    subnets          = var.private_subnets
     assign_public_ip = false
   }
 
@@ -176,7 +182,7 @@ resource "aws_ecs_service" "main" {
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
   min_capacity       = 3
-  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
+  resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
