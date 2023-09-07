@@ -36,7 +36,7 @@ resource "aws_iam_policy" "ecs_secrets" {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
         Resource = aws_secretsmanager_secret.formal_tls_cert.arn
-        
+
       }
     ]
   })
