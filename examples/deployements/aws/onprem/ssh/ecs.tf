@@ -16,104 +16,104 @@ resource "aws_ecs_task_definition" "main" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions = jsonencode([
     {
-        name        = var.name
-        image       = var.container_image
-        repositoryCredentials = {
-            credentialsParameter = aws_secretsmanager_secret.dockerhub_credentials.arn
-        }
-        essential   = true
-        portMappings = [
+      name  = var.name
+      image = var.container_image
+      repositoryCredentials = {
+        credentialsParameter = aws_secretsmanager_secret.dockerhub_credentials.arn
+      }
+      essential = true
+      portMappings = [
         {
-            protocol      = "tcp"
-            containerPort = var.main_port
-            hostPort      = var.main_port
-        }, 
+          protocol      = "tcp"
+          containerPort = var.main_port
+          hostPort      = var.main_port
+        },
         {
-            protocol      = "tcp"
-            containerPort = var.health_check_port
-            hostPort      = var.health_check_port
-        }]
-        secrets = [
-            {
-                name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
-                valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
-            }
-        ],
-        logConfiguration = {
-            logDriver = "awsfirelens"
-            options = {
-                "Name"       = "datadog",
-                "Host"       = "http-intake.logs.datadoghq.eu",
-                "TLS"        = "on",
-                "dd_source"  = var.name,
-                "provider"   = "ecs",
-                "dd_service" = var.name,
-                "apikey"     = var.datadog_api_key
-            }
+          protocol      = "tcp"
+          containerPort = var.health_check_port
+          hostPort      = var.health_check_port
+      }]
+      secrets = [
+        {
+          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
+          valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         }
-        dependsOn = [
-            { "containerName": "log_router", "condition": "START" },
-            { "condition" = "HEALTHY", "containerName" = "datadog-agent" }
-        ]
+      ],
+      logConfiguration = {
+        logDriver = "awsfirelens"
+        options = {
+          "Name"       = "datadog",
+          "Host"       = "http-intake.logs.datadoghq.eu",
+          "TLS"        = "on",
+          "dd_source"  = var.name,
+          "provider"   = "ecs",
+          "dd_service" = var.name,
+          "apikey"     = var.datadog_api_key
+        }
+      }
+      dependsOn = [
+        { "containerName" : "log_router", "condition" : "START" },
+        { "condition" = "HEALTHY", "containerName" = "datadog-agent" }
+      ]
     },
     {
-        name              = "log_router"
-        image             = "public.ecr.aws/aws-observability/aws-for-fluent-bit:stable"
-        memoryReservation = 50,
-        firelensConfiguration = {
-            "type" = "fluentbit",
-            "options" = {
-            "enable-ecs-log-metadata" = "true"
-         }
-        },
+      name              = "log_router"
+      image             = "public.ecr.aws/aws-observability/aws-for-fluent-bit:stable"
+      memoryReservation = 50,
+      firelensConfiguration = {
+        "type" = "fluentbit",
+        "options" = {
+          "enable-ecs-log-metadata" = "true"
+        }
+      },
     },
     {
-        name  = "datadog-agent",
-        image = "public.ecr.aws/datadog/agent:latest",
-        portMappings = [
-            {
-            "containerPort" = 8126,
-            "hostPort"      = 8126,
-            "protocol"      = "tcp"
-            }
-        ],
-        environment = [{
-            "name"  = "ECS_FARGATE",
-            "value" = "true"
-        },
+      name  = "datadog-agent",
+      image = "public.ecr.aws/datadog/agent:latest",
+      portMappings = [
         {
-            "name"  = "DD_APM_ENABLED",
-            "value" = "true"
-        },
-        {
-            "name"  = "DD_LOGS_ENABLED",
-            "value" = "true"
-        },
-        {
-            "name"  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
-            "value" = "true"
-        },
-        {
-            "name"  = "DD_APM_NON_LOCAL_TRAFFIC",
-            "value" = "true"
-        },
-        {
-            "name"  = "DD_API_KEY",
-            "value" = var.datadog_api_key
-        },
-        {
-            "name"  = "DD_SITE",
-            "value" = "datadoghq.eu"
-        }],
-        healthCheck = {
-            "command" = [
-            "CMD-SHELL",
-            "agent health"
-            ],
-            "interval" = 30,
-            "timeout"  = 5,
-            "retries"  = 3
+          "containerPort" = 8126,
+          "hostPort"      = 8126,
+          "protocol"      = "tcp"
         }
+      ],
+      environment = [{
+        "name"  = "ECS_FARGATE",
+        "value" = "true"
+        },
+        {
+          "name"  = "DD_APM_ENABLED",
+          "value" = "true"
+        },
+        {
+          "name"  = "DD_LOGS_ENABLED",
+          "value" = "true"
+        },
+        {
+          "name"  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
+          "value" = "true"
+        },
+        {
+          "name"  = "DD_APM_NON_LOCAL_TRAFFIC",
+          "value" = "true"
+        },
+        {
+          "name"  = "DD_API_KEY",
+          "value" = var.datadog_api_key
+        },
+        {
+          "name"  = "DD_SITE",
+          "value" = "datadoghq.eu"
+      }],
+      healthCheck = {
+        "command" = [
+          "CMD-SHELL",
+          "agent health"
+        ],
+        "interval" = 30,
+        "timeout"  = 5,
+        "retries"  = 3
+      }
     }
   ])
 
@@ -124,25 +124,25 @@ resource "aws_ecs_task_definition" "main" {
 }
 
 resource "aws_security_group" "main" {
-    name        = var.name
-    description = "Allow inbound traffic"
-    vpc_id      = aws_vpc.main.id
-    
-    ingress {
-        description = "Allow inbound traffic"
-        from_port   = 0
-        to_port     = 65535
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+  name        = var.name
+  description = "Allow inbound traffic"
+  vpc_id      = aws_vpc.main.id
 
-    egress {
-        from_port   = 0
-        to_port     = 0
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    
+  ingress {
+    description = "Allow inbound traffic"
+    from_port   = 0
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 }
 
 resource "aws_ecs_service" "main" {
