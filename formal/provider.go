@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/formalco/terraform-provider-formal/formal/apiv2"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
@@ -89,12 +88,8 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		}
 		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		http, err := api.NewClient(apiKey, returnSensitiveValue)
-		if err != nil {
-			return nil, diag.FromErr(err)
-		}
-		grpc := apiv2.NewClient(apiKey, returnSensitiveValue)
+		grpc := api.NewClient(apiKey, returnSensitiveValue)
 
-		return &clients.Clients{Http: http, Grpc: grpc}, nil
+		return &clients.Clients{Grpc: grpc}, nil
 	}
 }
