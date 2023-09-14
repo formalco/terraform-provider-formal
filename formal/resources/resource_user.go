@@ -231,6 +231,36 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
+	const ErrorTolerance = 5
+	currentErrors := 0
+	deleteTimeStart := time.Now()
+	for {
+		// Retrieve status
+		_, err = c.Grpc.Sdk.UserServiceClient.GetUserById(ctx, connect.NewRequest(&adminv1.GetUserByIdRequest{Id: userId}))
+		if err != nil {
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				tflog.Info(ctx, "User deleted", map[string]interface{}{"user_id": userId})
+				// User was deleted
+				break
+			}
+
+			// Handle other errors
+			if currentErrors >= ErrorTolerance {
+				return diag.FromErr(err)
+			} else {
+				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on User Status: ", map[string]interface{}{"err": err})
+				currentErrors += 1
+			}
+		}
+
+		if time.Since(deleteTimeStart) > time.Minute*15 {
+			newErr := errors.New("deletion of this user has taken more than 15m")
+			return diag.FromErr(newErr)
+		}
+
+		time.Sleep(15 * time.Second)
+	}
+
 	d.SetId("")
 
 	return diags

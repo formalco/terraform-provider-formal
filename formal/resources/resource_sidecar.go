@@ -338,7 +338,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 		}
 
 		if time.Since(deleteTimeStart) > time.Minute*15 {
-			newErr := errors.New("deletion of this sidecar has taken more than 10m; the sidecar may be unhealthy")
+			newErr := errors.New("deletion of this sidecar has taken more than 15m; the sidecar may be unhealthy")
 			return diag.FromErr(newErr)
 		}
 
