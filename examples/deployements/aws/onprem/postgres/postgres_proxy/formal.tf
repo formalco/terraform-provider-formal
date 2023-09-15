@@ -32,7 +32,7 @@ resource "formal_datastore" "main" {
 resource "formal_sidecar_datastore_link" "main" {
   datastore_id = formal_datastore.main.id
   sidecar_id   = formal_sidecar.main.id
-  port         = 443
+  port         = 5432
 }
 
 # Native Role
