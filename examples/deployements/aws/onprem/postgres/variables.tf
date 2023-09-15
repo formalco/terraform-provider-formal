@@ -45,7 +45,7 @@ variable "data_classifier_satellite_port" {
   default = 50055
 }
 
-variable "snowflake_container_image" {}
+variable "postgres_container_image" {}
 variable "data_classifier_satellite_container_image" {}
 
 
