@@ -43,7 +43,7 @@ resource "aws_db_instance" "default" {
 
 resource "aws_db_subnet_group" "default" {
   name       = "main"
-  subnet_ids = var.private_subnets.*.id
+  subnet_ids = var.private_subnets
 
   tags = {
     Name = "RDS"
