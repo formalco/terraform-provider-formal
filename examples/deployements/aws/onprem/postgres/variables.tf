@@ -50,7 +50,6 @@ variable "data_classifier_satellite_container_image" {}
 
 
 variable "postgres_sidecar_hostname" {}
-variable "postgres_hostname" {}
 
 variable "postgres_username" {}
 variable "postgres_password" {}
