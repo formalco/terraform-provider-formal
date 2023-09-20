@@ -1,4 +1,4 @@
-resource "aws_ecs_task_definition" "main" {
+resource "aws_ecs_task_definition" "ecs_task" {
   family                   = var.name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -47,6 +47,10 @@ resource "aws_ecs_task_definition" "main" {
           value = "prod"
         },
         {
+          name = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
           name  = "DD_SERVICE"
           value = var.name
         },
@@ -63,7 +67,7 @@ resource "aws_ecs_task_definition" "main" {
         {
           name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
-        }
+        },
       ],
       logConfiguration = {
         logDriver = "awsfirelens"
@@ -174,7 +178,7 @@ resource "aws_security_group" "main" {
 resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
-  task_definition                    = aws_ecs_task_definition.main.arn
+  task_definition                    = aws_ecs_task_definition.ecs_task.arn
   desired_count                      = 3
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200

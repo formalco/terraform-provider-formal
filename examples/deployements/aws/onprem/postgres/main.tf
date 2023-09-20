@@ -59,7 +59,7 @@ module "postgres_proxy" {
   formal_api_key                 = var.formal_api_key
   main_port                      = var.postgres_port
   postgres_sidecar_hostname     = var.postgres_sidecar_hostname
-  postgres_hostname             = module.postgres_proxy.rds_endpoint
+  postgres_hostname             = module.postgres_proxy.rds_hostname
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.postgres_container_image
