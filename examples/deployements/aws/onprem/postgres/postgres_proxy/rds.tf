@@ -24,26 +24,25 @@ resource "aws_db_instance" "default" {
   allocated_storage               = 20
   db_name                         = "main"
   engine                          = "postgres"
-  engine_version                  = "14.7"
+  engine_version                  = "13.10"
   instance_class                  = "db.t3.micro"
   username                        = var.postgres_username
   password                        = var.postgres_password
-  multi_az                        = true
-  publicly_accessible             = false
-  parameter_group_name            = "default.postgres14"
+  publicly_accessible             = true
+  parameter_group_name            = "default.postgres13"
   skip_final_snapshot             = false
-  deletion_protection             = true
+  deletion_protection             = false
   backup_retention_period         = 35
   vpc_security_group_ids          = [aws_security_group.default.id]
-  storage_encrypted               = true
+  storage_encrypted               = false
   db_subnet_group_name            = aws_db_subnet_group.default.name
   enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  performance_insights_enabled    = true
+  performance_insights_enabled    = false
 }
 
 resource "aws_db_subnet_group" "default" {
   name       = "main"
-  subnet_ids = var.private_subnets
+  subnet_ids = var.public_subnets
 
   tags = {
     Name = "RDS"
@@ -62,6 +61,6 @@ resource "aws_security_group" "default" {
   }
 }
 
-output "rds_endpoint" {
-  value = aws_db_instance.default.endpoint
+output "rds_hostname" {
+  value = aws_db_instance.default.address
 }
