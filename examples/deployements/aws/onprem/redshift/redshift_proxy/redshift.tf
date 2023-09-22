@@ -15,8 +15,8 @@ resource "aws_security_group" "default" {
   name        = "main-redshift"
   description = "Allow all inbound for Redshift"
   ingress {
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = 5439
+    to_port     = 5439
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
