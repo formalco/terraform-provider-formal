@@ -59,7 +59,8 @@ module "s3_proxy" {
   formal_api_key                 = var.formal_api_key
   main_port                      = var.s3_port
   s3_sidecar_hostname     = var.s3_sidecar_hostname
-  s3_hostname             = "s3.awsamazon.com"
+  s3_hostname             = "${var.name}.s3.awsamazon.com"
+  bucket_name                    = var.bucket_name
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.s3_container_image
