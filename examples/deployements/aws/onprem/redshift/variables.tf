@@ -1,5 +1,5 @@
 variable "region" {
-  default = "ap-northeast-1"
+  default = "us-west-2"
 }
 
 variable "formal_api_key" {
@@ -20,7 +20,7 @@ variable "public_subnets" {
   default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 }
 variable "availability_zones" {
-  default = ["ap-northeast-1a", "ap-northeast-1c", "ap-northeast-1d"]
+  default = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
 variable "datadog_api_key" {}
