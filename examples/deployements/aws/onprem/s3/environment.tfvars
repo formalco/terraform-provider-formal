@@ -25,3 +25,5 @@ s3_hostname         = ""
 
 iam_user_key_id = ""
 iam_user_secret_key = ""
+
+bucket_name = ""

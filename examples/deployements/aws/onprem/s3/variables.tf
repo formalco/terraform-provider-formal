@@ -50,3 +50,5 @@ variable "data_classifier_satellite_container_image" {}
 
 
 variable "s3_sidecar_hostname" {}
+
+variable "bucket_name" {}

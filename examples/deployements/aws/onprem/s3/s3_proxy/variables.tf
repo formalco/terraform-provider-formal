@@ -30,5 +30,7 @@ variable "s3_hostname" {}
 
 variable "s3_sidecar_hostname" {}
 
+variable "bucket_name" {}
+
 variable "iam_user_key_id" {}
 variable "iam_user_secret_key" {}
