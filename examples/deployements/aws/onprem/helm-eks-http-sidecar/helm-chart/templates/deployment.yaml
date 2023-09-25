@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-sidecar-app
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: http-sidecar-app
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: http-sidecar-app
+  template:
+    metadata:
+      labels:
+        app: http-sidecar-app
+    spec:
+      containers:
+        - name: {{ .Values.containers.httpSidecar.name }}
+          image: {{ .Values.containers.httpSidecar.image }}
+          envFrom:
+            - configMapRef:
+                name: http-sidecar-config
+          resources:
+            {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
+
+        - name: {{ .Values.containers.dataClassifierSatellite.name }}
+          image: {{ .Values.containers.dataClassifierSatellite.image }}
+          envFrom:
+            - configMapRef:
+                name: data-classifier-satellite-config
+          resources:
+            {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
+      imagePullSecrets:
+        - name: {{ .Values.imagePullSecret }}
+      restartPolicy: Always
