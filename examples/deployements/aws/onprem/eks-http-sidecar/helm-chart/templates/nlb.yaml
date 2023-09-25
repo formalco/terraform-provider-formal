@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-sidecar-service
+  namespace: {{ .Values.namespace }}
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "alb"
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    app: http-sidecar-app
+  ports:
+    - port: {{ .Values.service.port }}
