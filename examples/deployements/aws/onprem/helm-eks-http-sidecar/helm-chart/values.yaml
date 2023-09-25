@@ -27,6 +27,7 @@ configMaps:
     LOGGED_HTTP_PAYLOAD_MAX_SIZE: "5000000"
   dataClassifierSatellite:
     PII_DETECTION: "formal"
+    FORMAL_CONTROL_PLANE_TLS_CERT: ''
 
 service:
   type: LoadBalancer
