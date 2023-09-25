@@ -22,16 +22,11 @@ configMaps:
     PII_SERVER: "localhost:50055"
     PII_SAMPLING_RATE: "2"
     CONTROL_PLANE_CONFIG_URI: "config.proxy.api.formalcloud.net:443"
-    CONTROL_PLANE_INVENTORY_URI: "https://inventory.proxy.api.formalcloud.net"
-    CONTROL_PLANE_LOGS_URI: "https://logs.proxy.api.formalcloud.net"
-    CONTROL_PLANE_METRICS_URI: "https://metrics.api.formalcloud.net"
     FORMAL_CONTROL_PLANE_TLS_CERT: ''
     STRIP_VALUES_FROM_LOGS: "false"
     MAX_BODY_SIZE: "5000000"
   dataClassifierSatellite:
     PII_DETECTION: "formal"
-    PII_AWS_MIN_CONFIDENCE: "0.95"
-    FORMAL_TLS_CERT: ''
 
 service:
   type: LoadBalancer

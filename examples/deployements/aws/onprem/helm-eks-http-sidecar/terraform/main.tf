@@ -8,10 +8,6 @@ terraform {
       source  = "formalco/formal"
       version = "~>3.2.3"
     }
-    helm = {
-      source = "hashicorp/helm"
-      version = "~>2.11.0"
-    }
   }
 
   required_version = ">= 0.14.9"
