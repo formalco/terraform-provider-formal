@@ -19,12 +19,12 @@ configMaps:
     SERVER_CONNECT_TLS: "false"
     CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
     CUSTOMER_TLS_CERT_FULLCHAIN: ""
-    PII_SERVER: "localhost:50055"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
     PII_SAMPLING_RATE: "2"
     CONTROL_PLANE_CONFIG_URI: "config.proxy.api.formalcloud.net:443"
     FORMAL_CONTROL_PLANE_TLS_CERT: ''
     STRIP_VALUES_FROM_LOGS: "false"
-    MAX_BODY_SIZE: "5000000"
+    LOGGED_HTTP_PAYLOAD_MAX_SIZE: "5000000"
   dataClassifierSatellite:
     PII_DETECTION: "formal"
 
