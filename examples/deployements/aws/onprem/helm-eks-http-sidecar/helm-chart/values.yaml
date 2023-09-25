@@ -1,8 +1,6 @@
 namespace: default
 replicaCount: 1
-
 imagePullSecret: registry-secret
-
 containers:
   httpSidecar:
     name: http-sidecar-app
@@ -12,7 +10,6 @@ containers:
     name: data-classifier-satellite-app
     image: formalco/docker-prod-data-classifier-satellite:latest
     resources: {}
-
 configMaps:
   httpSidecar:
     CLIENT_LISTEN_TLS: "false"
@@ -26,12 +23,10 @@ configMaps:
     STRIP_VALUES_FROM_LOGS: "false"
     LOGGED_HTTP_PAYLOAD_MAX_SIZE: "5000000"
   dataClassifierSatellite:
-    PII_DETECTION: "formal"
+    PII_DETECTION: formal
     FORMAL_CONTROL_PLANE_TLS_CERT: ''
-
 service:
   type: LoadBalancer
   port: 443
-
 secret:
-    : ''
+  dockerconfigjson: ""
