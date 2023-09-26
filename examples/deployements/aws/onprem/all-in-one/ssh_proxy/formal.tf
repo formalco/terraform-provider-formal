@@ -5,15 +5,7 @@ terraform {
       source  = "formalco/formal"
       version = "~>3.2.3"
     }
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~>3.0"
-    }
   }
-}
-
-provider "aws" {
-  region = var.region
 }
 
 provider "formal" {
@@ -24,5 +16,26 @@ resource "formal_sidecar" "main" {
   name               = var.name
   deployment_type    = "onprem"
   technology         = "ssh"
+  fail_open          = false
   global_kms_decrypt = false
+}
+
+resource "formal_datastore" "instance_1" {
+  technology = "ssh"
+  name       = var.name
+  hostname   = var.ssh_hostname
+  port       = var.port
+}
+
+resource "formal_native_role" "main_instance_1" {
+  datastore_id       = formal_datastore.instance_1.id
+  native_role_id     = var.username
+  native_role_secret = var.password
+  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+}
+
+resource "formal_sidecar_datastore_link" "link_1" {
+  datastore_id = formal_datastore.instance_1.id
+  sidecar_id   = formal_sidecar.main.id
+  port         = 2022
 }

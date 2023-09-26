@@ -1,11 +1,3 @@
-resource "aws_ecs_cluster" "main" {
-  name = var.name
-  tags = {
-    Name        = var.name
-    Environment = var.environment
-  }
-}
-
 resource "aws_ecs_task_definition" "main" {
   family                   = var.name
   network_mode             = "awsvpc"
@@ -19,7 +11,7 @@ resource "aws_ecs_task_definition" "main" {
       name  = var.name
       image = var.container_image
       repositoryCredentials = {
-        credentialsParameter = aws_secretsmanager_secret.dockerhub_credentials.arn
+        credentialsParameter = var.docker_hub_secret_arn
       }
       essential = true
       portMappings = [
@@ -147,7 +139,7 @@ resource "aws_security_group" "main" {
 
 resource "aws_ecs_service" "main" {
   name                               = var.name
-  cluster                            = aws_ecs_cluster.main.id
+  cluster                            = var.ecs_cluster_id
   task_definition                    = aws_ecs_task_definition.main.arn
   desired_count                      = 3
   deployment_minimum_healthy_percent = 50
@@ -184,7 +176,7 @@ resource "aws_ecs_service" "main" {
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
   min_capacity       = 3
-  resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
+  resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
