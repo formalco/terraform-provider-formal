@@ -36,10 +36,10 @@ variable "availability_zones" {
   default = ["eu-west-2a", "eu-west-2b", "eu-west-2c"]
 }
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
-
 variable "datadog_api_key" {}
+
+variable "ecs_cluster_name" {}
+variable "ecs_cluster_id" {}
 
 variable "health_check_port" {}
 variable "main_port" {}

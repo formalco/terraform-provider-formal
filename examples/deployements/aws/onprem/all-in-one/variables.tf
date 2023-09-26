@@ -1,5 +1,5 @@
 variable "region" {
-  default = "us-west-2"
+  default = "ap-southeast-1"
 }
 
 variable "formal_api_key" {
@@ -20,7 +20,7 @@ variable "public_subnets" {
   default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 }
 variable "availability_zones" {
-  default = ["us-west-2a", "us-west-2b", "us-west-2c"]
+  default = ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"]
 }
 
 variable "datadog_api_key" {}
@@ -45,11 +45,16 @@ variable "data_classifier_satellite_port" {
   default = 50055
 }
 
-variable "snowflake_container_image" {}
-variable "data_classifier_satellite_container_image" {}
+variable "snowflake_container_image" {
+  default = "formalco/docker-s-prod-snow-sidecar"
+}
+variable "data_classifier_satellite_container_image" {
+  default = "formalco/docker-prod-data-classifier-satellite"
+}
 
-
-variable "snowflake_sidecar_hostname" {}
+variable "snowflake_sidecar_hostname" {
+  default = "snow-lolo.proxy.formalcloud.net"
+}
 variable "snowflake_hostname" {}
 
 variable "snowflake_username" {}
@@ -62,14 +67,52 @@ variable "http_port" {
 variable "postgres_port" {
   default = 5432
 }
+variable "s3_port" {
+  default = 443
+}
+variable "ssh_port" {
+  default = 2022
+}
+variable "redshift_port" {
+  default = 5439
+}
 
-variable "postgres_container_image" {}
-variable "postgres_sidecar_hostname" {}
+variable "postgres_container_image" {
+  default = "formalco/docker-prod-pg-sidecar"
+}
+variable "postgres_sidecar_hostname" {
+  default = "pg-lolo.proxy.formalcloud.net"
+}
 
 variable "postgres_username" {}
 variable "postgres_password" {}
 
-variable "http_container_image" {}
+variable "http_container_image" {
+  default = "formalco/docker-prod-http-sidecar"
+}
 
-variable "http_sidecar_hostname" {}
-variable "http_hostname" {}
+variable "http_sidecar_hostname" {
+  default = "http-lolo.proxy.formalcloud.net"
+}
+variable "http_hostname" {
+  default = "http-lolo.proxy.formalcloud.net"
+}
+
+variable "s3_sidecar_hostname" {
+  default = "s3-lolo.proxy.formalcloud.net"
+}
+variable "s3_container_image" {
+  default = "formalco/docker-prod-s3-sidecar"
+}
+
+variable "bucket_name" {}
+
+variable "redshift_sidecar_hostname" {
+  default = "rd-lolo.proxy.formalcloud.net"
+}
+variable "redshift_container_image" {
+  default = "formalco/docker-prod-redshift-sidecar"
+}
+
+variable "redshift_username" {}
+variable "redshift_password" {}

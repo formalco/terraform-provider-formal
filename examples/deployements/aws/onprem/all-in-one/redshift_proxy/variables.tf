@@ -1,52 +1,32 @@
-variable "region" {
-  default = "us-west-2"
-}
-
-variable "formal_api_key" {
-  type      = string
-  sensitive = true
-}
-
 variable "name" {}
-variable "environment" {}
 
-variable "cidr" {
-  default = "172.0.0.0/16"
-}
-variable "private_subnets" {
-  default = ["172.0.0.0/20", "172.0.32.0/20", "172.0.64.0/20"]
-}
-variable "public_subnets" {
-  default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
-}
-variable "availability_zones" {
-  default = ["us-west-2a", "us-west-2b", "us-west-2c"]
-}
+variable "environment" {}
 
 variable "datadog_api_key" {}
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
+variable "health_check_port" {}
+variable "main_port" {}
 
-variable "container_cpu" {
-  default = 2048
-}
-variable "container_memory" {
-  default = 4096
-}
+variable "container_image" {}
 
-variable "health_check_port" {
-  default = 8080
-}
-variable "redshift_port" {
-  default = 5439
-}
-variable "data_classifier_satellite_port" {
-  default = 50055
-}
+variable "container_cpu" {}
 
-variable "redshift_container_image" {}
-variable "data_classifier_satellite_container_image" {}
+variable "container_memory" {}
+
+variable "vpc_id" {}
+variable "docker_hub_secret_arn" {}
+variable "formal_api_key" {}
+
+variable "ecs_cluster_id" {}
+variable "ecs_cluster_name" {}
+
+variable "private_subnets" {}
+variable "public_subnets" {}
+
+variable "data_classifier_satellite_url" {}
+variable "data_classifier_satellite_port" {}
+
+variable "redshift_hostname" {}
 
 variable "redshift_sidecar_hostname" {}
 

@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "formal_tls_cert" {
-  name = "${var.name}-formal-tls-cert"
+  name = "${var.name}-formal-tls-cert-s3"
 }
 
 resource "aws_secretsmanager_secret_version" "formal_tls_cert" {

@@ -1,54 +1,35 @@
-variable "region" {
-  default = "ap-southeast-2"
-}
-
-variable "formal_api_key" {
-  type      = string
-  sensitive = true
-}
-
 variable "name" {}
-variable "environment" {}
 
-variable "cidr" {
-  default = "172.0.0.0/16"
-}
-variable "private_subnets" {
-  default = ["172.0.0.0/20", "172.0.32.0/20", "172.0.64.0/20"]
-}
-variable "public_subnets" {
-  default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
-}
-variable "availability_zones" {
-  default = ["ap-southeast-2a", "ap-southeast-2c", "ap-southeast-2b"]
-}
+variable "environment" {}
 
 variable "datadog_api_key" {}
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
+variable "health_check_port" {}
+variable "main_port" {}
 
-variable "container_cpu" {
-  default = 2048
-}
-variable "container_memory" {
-  default = 4096
-}
+variable "container_image" {}
 
-variable "health_check_port" {
-  default = 8080
-}
-variable "s3_port" {
-  default = 443
-}
-variable "data_classifier_satellite_port" {
-  default = 50055
-}
+variable "container_cpu" {}
 
-variable "s3_container_image" {}
-variable "data_classifier_satellite_container_image" {}
+variable "container_memory" {}
 
+variable "vpc_id" {}
+variable "docker_hub_secret_arn" {}
+variable "formal_api_key" {}
 
+variable "ecs_cluster_id" {}
+variable "ecs_cluster_name" {}
+
+variable "private_subnets" {}
+variable "public_subnets" {}
+
+variable "data_classifier_satellite_url" {}
+variable "data_classifier_satellite_port" {}
+
+variable "s3_hostname" {}
 variable "s3_sidecar_hostname" {}
 
 variable "bucket_name" {}
+
+variable "iam_user_key_id" {}
+variable "iam_user_secret_key" {}
