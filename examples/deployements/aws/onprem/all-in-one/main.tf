@@ -83,8 +83,8 @@ module "postgres_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.postgres_port
-  postgres_sidecar_hostname     = var.postgres_sidecar_hostname
-  postgres_hostname             = module.postgres_proxy.rds_hostname
+  postgres_sidecar_hostname      = var.postgres_sidecar_hostname
+  postgres_hostname              = module.postgres_proxy.rds_hostname
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.postgres_container_image
@@ -98,8 +98,8 @@ module "postgres_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  postgres_username             = var.postgres_username
-  postgres_password             = var.postgres_password
+  postgres_username              = var.postgres_username
+  postgres_password              = var.postgres_password
 }
 
 module "http_proxy" {
@@ -125,4 +125,62 @@ module "http_proxy" {
   datastore_hostname             = var.http_hostname
 }
 
+module "redshift_proxy" {
+  source                         = "./redshift_proxy"
+  name                           = "${var.name}-redshift-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.redshift_port
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.postgres_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  data_classifier_satellite_url  = module.data_classifier_satellite.url
+  data_classifier_satellite_port = var.data_classifier_satellite_port
+  redshift_username              = var.redshift_username
+  redshift_password              = var.redshift_password
+}
 
+module "s3_proxy" {
+  source                         = "./s3_proxy"
+  name                           = "${var.name}-s3-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.postgres_port
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.postgres_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+}
+
+module "ssh_proxy" {
+  source                         = "./ssh_proxy"
+  name                           = "${var.name}-ssh-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.ssh_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+}
