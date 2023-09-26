@@ -63,10 +63,3 @@ resource "formal_sidecar_datastore_link" "link_2" {
   sidecar_id   = formal_sidecar.main.id
   port         = 2023
 }
-
-
-resource "formal_sidecar_datastore_link" "link_2" {
-  datastore_id = "b9ce8ad1-cb51-4241-924d-acc87c9c7405"
-  sidecar_id   = "b9ce8ad1-cb51-4241-924d-acc87c9c7405"
-  port         = 3306
-}
