@@ -33,7 +33,7 @@ resource "aws_ecs_task_definition" "main" {
       ]
       secrets = [
         {
-          name      = "FORMAL_TLS_CERT"
+          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         }
       ],

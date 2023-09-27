@@ -118,7 +118,7 @@ resource "aws_ecs_task_definition" "main" {
 resource "aws_security_group" "main" {
   name        = var.name
   description = "Allow inbound traffic"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = var.vpc_id
 
   ingress {
     description = "Allow inbound traffic"
@@ -151,7 +151,7 @@ resource "aws_ecs_service" "main" {
 
   network_configuration {
     security_groups  = [aws_security_group.main.id]
-    subnets          = aws_subnet.private.*.id
+    subnets          = var.private_subnets
     assign_public_ip = false
   }
 

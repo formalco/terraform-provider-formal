@@ -25,7 +25,7 @@ resource "formal_sidecar" "main" {
 resource "formal_datastore" "main" {
   technology = "http"
   name       = var.name
-  hostname   = var.datastore_hostname
+  hostname   = "zzzzz.fly.dev"
   port       = var.main_port
 }
 
