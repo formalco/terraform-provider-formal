@@ -36,7 +36,7 @@ postgres_hostname         = ""
 postgres_username = ""
 postgres_password = ""
 
-
+ssh_container_image  = ""
 http_container_image                 = ""
 
 http_sidecar_hostname = ""
@@ -57,3 +57,5 @@ redshift_hostname         = ""
 
 redshift_username = ""
 redshift_password = ""
+
+ssh_sidecar_hostname = ""

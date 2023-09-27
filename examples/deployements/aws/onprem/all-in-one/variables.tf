@@ -25,8 +25,12 @@ variable "availability_zones" {
 
 variable "datadog_api_key" {}
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
+variable "dockerhub_username" {
+  default = "lorisformal"
+}
+variable "dockerhub_password" {
+  default = "nbm.XWE4hbn.uqc*pde"
+}
 
 variable "container_cpu" {
   default = 2048
@@ -46,7 +50,7 @@ variable "data_classifier_satellite_port" {
 }
 
 variable "snowflake_container_image" {
-  default = "formalco/docker-s-prod-snow-sidecar"
+  default = "formalco/docker-s-prod-snow-sidecar:master"
 }
 variable "data_classifier_satellite_container_image" {
   default = "formalco/docker-prod-data-classifier-satellite"
@@ -55,10 +59,16 @@ variable "data_classifier_satellite_container_image" {
 variable "snowflake_sidecar_hostname" {
   default = "snow-lolo.proxy.formalcloud.net"
 }
-variable "snowflake_hostname" {}
+variable "snowflake_hostname" {
+  default = "gv36203.eu-west-1.snowflakecomputing.com"
+}
 
-variable "snowflake_username" {}
-variable "snowflake_password" {}
+variable "snowflake_username" {
+  default = "ahmb84"
+}
+variable "snowflake_password" {
+  default = "dpb_uhw_drq0amt2MKF"
+}
 
 variable "http_port" {
   default = 443
@@ -84,8 +94,12 @@ variable "postgres_sidecar_hostname" {
   default = "pg-lolo.proxy.formalcloud.net"
 }
 
-variable "postgres_username" {}
-variable "postgres_password" {}
+variable "postgres_username" {
+  default = "loris"
+}
+variable "postgres_password" {
+  default = "Loristest1234"
+}
 
 variable "http_container_image" {
   default = "formalco/docker-prod-http-sidecar"
@@ -95,24 +109,39 @@ variable "http_sidecar_hostname" {
   default = "http-lolo.proxy.formalcloud.net"
 }
 variable "http_hostname" {
-  default = "http-lolo.proxy.formalcloud.net"
+  default = "www.zzzzz.fly.dev"
 }
 
 variable "s3_sidecar_hostname" {
   default = "s3-lolo.proxy.formalcloud.net"
 }
 variable "s3_container_image" {
-  default = "formalco/docker-prod-s3-sidecar"
+  default = "formalco/docker-prod-s3-sidecar:1.4.10"
 }
 
-variable "bucket_name" {}
+variable "ssh_container_image" {
+  default = "formalco/ramp-sidecar-ssh:lastest"
+}
+
+variable "bucket_name" {
+  default = "lolb"
+}
 
 variable "redshift_sidecar_hostname" {
   default = "rd-lolo.proxy.formalcloud.net"
 }
-variable "redshift_container_image" {
-  default = "formalco/docker-prod-redshift-sidecar"
+
+variable "ssh_sidecar_hostname" {
+  default = "ssh-lolo.proxy.formalcloud.net"
 }
 
-variable "redshift_username" {}
-variable "redshift_password" {}
+variable "redshift_container_image" {
+  default = "formalco/docker-prod-redshift-sidecar:1.5.44"
+}
+
+variable "redshift_username" {
+  default = "loris"
+}
+variable "redshift_password" {
+  default = "Loristest1234"
+}

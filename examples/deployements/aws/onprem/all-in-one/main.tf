@@ -175,3 +175,26 @@ module "s3_proxy" {
   iam_user_key_id             = module.s3_proxy.iam_access_key_id
   iam_user_secret_key             = module.s3_proxy.iam_secret_access_key
 }
+
+module "ssh_proxy" {
+  source                         = "./ssh_proxy"
+  name                           = "${var.name}-ssh-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  health_check_port              = var.health_check_port
+  main_port = var.ssh_port
+  ssh_hostname = module.ssh_proxy.ssh_hostname
+  ssh_sidecar_hostname = var.ssh_sidecar_hostname
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.ssh_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  iam_access_key_id             = module.ssh_proxy.iam_access_key_id
+  iam_secret_access_key             = module.ssh_proxy.iam_secret_access_key
+}
