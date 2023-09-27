@@ -1,5 +1,5 @@
 apiVersion: v2
-name: formal-helm-chart
+name: formal-http-helm-chart
 description: A Helm chart for deploying Formal HTTP Sidecar
 version: 0.1.0
 appVersion: "1.0"
