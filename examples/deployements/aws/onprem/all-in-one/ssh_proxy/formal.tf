@@ -16,6 +16,7 @@ resource "formal_sidecar" "main" {
   name               = var.name
   deployment_type    = "onprem"
   technology         = "ssh"
+  network_type       = "internet-facing"
   fail_open          = false
   global_kms_decrypt = false
 }
@@ -24,13 +25,13 @@ resource "formal_datastore" "instance_1" {
   technology = "ssh"
   name       = var.name
   hostname   = var.ssh_hostname
-  port       = var.port
+  port       = var.main_port
 }
 
 resource "formal_native_role" "main_instance_1" {
   datastore_id       = formal_datastore.instance_1.id
-  native_role_id     = var.username
-  native_role_secret = var.password
+  native_role_id     = var.iam_access_key_id
+  native_role_secret = var.iam_secret_access_key
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
 

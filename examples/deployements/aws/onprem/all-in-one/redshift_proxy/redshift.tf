@@ -23,7 +23,7 @@ resource "aws_security_group" "default" {
 }
 
 resource "aws_redshift_subnet_group" "default" {
-  name       = "main"
+  name       = "main-rd"
   subnet_ids = var.public_subnets
 
   tags = {
