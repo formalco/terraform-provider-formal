@@ -39,3 +39,13 @@ module "eks" {
   private_subnets                = module.common.private_subnets
   public_subnets                 = module.common.public_subnets
 }
+
+module "helm" {
+  source                                     = "./helm"
+  eks_cluster_name                           = module.eks.aws_eks_cluster_name
+  eks_cluster_endpoint                       = module.eks.aws_eks_cluster_endpoint
+  eks_cluster_certificate_authority_data     = module.eks.aws_eks_cluster_ca_cert
+  aws_ecr_pwd                                = var.aws_ecr_pwd
+  chart_oci                                  = var.chart_oci
+  ecr_repository_oci_url                     = var.ecr_repository_oci_url
+}
