@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "main" {
       }]
       environment = [
         {
-          name  = "PII_SERVER"
+          name  = "DATA_CLASSIFIER_SATELLITE_URI"
           value = "${var.data_classifier_satellite_url}:${var.data_classifier_satellite_port}"
         },
         {
