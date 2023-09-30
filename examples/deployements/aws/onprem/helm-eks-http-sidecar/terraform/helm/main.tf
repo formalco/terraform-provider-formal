@@ -9,13 +9,6 @@ provider "helm" {
       args        = ["eks", "get-token", "--cluster-name", var.eks_cluster_name]
     }
   }
-
-#   # private ECR registry
-  registry {
-    url = var.ecr_repository_oci_url
-    username = "AWS"
-    password = var.aws_ecr_pwd
-  }
 }
 
 resource "helm_release" "example" {
