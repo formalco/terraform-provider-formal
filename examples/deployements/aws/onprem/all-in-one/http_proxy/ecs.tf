@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "main" {
       }]
       environment = [
         {
-          name  = "PII_SERVER"
+          name  = "DATA_CLASSIFIER_SATELLITE_URI"
           value = "${var.data_classifier_satellite_url}:${var.data_classifier_satellite_port}"
         },
         {
@@ -57,6 +57,22 @@ resource "aws_ecs_task_definition" "main" {
         {
           name  = "PII_SAMPLING_RATE"
           value = "8"
+        },
+        {
+          name = "ENCRYPT_RESPONSE_PAYLOAD"
+          value = "true"
+        },
+        {
+          name = "ENCRYPT_REQUEST_PAYLOAD"
+          value = "true"
+        },
+        {
+          name = "ENCRYPTION_KEY_REGION"
+          value = "ap-southeast-1"
+        },
+        {
+          name = "ENCRYPTION_KEY"
+          value = aws_kms_key.http_sidecar_key.id
         }
       ],
       secrets = [
