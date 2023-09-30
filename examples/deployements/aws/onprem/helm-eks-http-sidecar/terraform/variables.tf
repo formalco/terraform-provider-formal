@@ -30,3 +30,11 @@ variable "container_memory" {
   default = 4096
 }
 
+variable "aws_ecr_pwd" {
+}
+
+variable "chart_oci" {
+}
+
+variable "ecr_repository_oci_url" {
+}
