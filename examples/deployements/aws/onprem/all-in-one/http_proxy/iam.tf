@@ -107,6 +107,15 @@ resource "aws_iam_policy" "full-secrets-access" {
             "ec2:DescribeInstances"
         ],
         "Resource": "*"
+    },
+    {
+      "Sid": "VisualEditor1",
+      "Effect": "Allow",
+      "Action": [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+      ],
+      "Resource":  "*"
     }
   ]
 }
