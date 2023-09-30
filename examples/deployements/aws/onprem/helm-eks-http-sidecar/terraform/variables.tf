@@ -1,5 +1,5 @@
 variable "region" {
-  default = "us-east-1"
+  default = "us-west-2"
 }
 
 variable "formal_api_key" {
@@ -20,7 +20,7 @@ variable "public_subnets" {
   default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 }
 variable "availability_zones" {
-  default = ["us-east-1a", "us-east-1b", "us-east-1c"]
+  default = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
 variable "container_cpu" {
@@ -30,11 +30,6 @@ variable "container_memory" {
   default = 4096
 }
 
-variable "aws_ecr_pwd" {
-}
-
 variable "chart_oci" {
-}
-
-variable "ecr_repository_oci_url" {
+  default = "oci://public.ecr.aws/z9b2c2l8/formal-http-helm-chart"
 }
