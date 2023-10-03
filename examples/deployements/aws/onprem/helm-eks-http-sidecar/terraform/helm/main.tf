@@ -28,7 +28,7 @@ resource "helm_release" "example" {
 
   set {
     name  = "containers.httpSidecar.image"
-    value = "323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-http-proxy"
+    value = ""
   }
 
 
@@ -39,7 +39,7 @@ resource "helm_release" "example" {
 
   set {
     name  = "containers.dataClassifierSatellite.image"
-    value = "323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-data-classifier"
+    value = ""
   }
 
 
