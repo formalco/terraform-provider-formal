@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: http-sidecar-app
-  namespace: {{ .Values.namespace }}
+  namespace: {{ .Release.Namespace }}
   labels:
     app: http-sidecar-app
 spec:
@@ -31,6 +31,4 @@ spec:
                 name: data-classifier-satellite-config
           resources:
             {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
-      imagePullSecrets:
-        - name: {{ .Values.imagePullSecret }}
       restartPolicy: Always

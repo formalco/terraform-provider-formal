@@ -1,14 +1,13 @@
 namespace: default
 replicaCount: 1
-imagePullSecret: registry-secret
 containers:
   httpSidecar:
     name: http-sidecar-app
-    image: formalco/docker-prod-http-sidecar:latest
+    image: 
     resources: {}
   dataClassifierSatellite:
     name: data-classifier-satellite-app
-    image: formalco/docker-prod-data-classifier-satellite:latest
+    image: 
     resources: {}
 configMaps:
   httpSidecar:
@@ -28,5 +27,3 @@ configMaps:
 service:
   type: LoadBalancer
   port: 443
-secret:
-  dockerconfigjson: ""
