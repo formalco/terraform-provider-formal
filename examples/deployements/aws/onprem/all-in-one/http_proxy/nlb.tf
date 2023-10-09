@@ -22,9 +22,9 @@ resource "aws_lb_target_group" "main" {
   health_check {
     healthy_threshold   = "3"
     interval            = "10"
-    protocol            = "HTTP"
+    protocol            = "HTTPS"
     matcher             = "200-399"
-    port                = var.health_check_port
+    port                = "traffic-port"
     timeout             = "6"
     path                = "/health"
     unhealthy_threshold = "3"

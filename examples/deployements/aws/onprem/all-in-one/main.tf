@@ -152,6 +152,7 @@ module "redshift_proxy" {
 
 module "s3_proxy" {
   source                         = "./s3_proxy"
+  region                         = var.region
   name                           = "${var.name}-s3-proxy"
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key

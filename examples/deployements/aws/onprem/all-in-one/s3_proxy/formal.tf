@@ -42,3 +42,11 @@ resource "formal_native_role" "main_s3" {
   native_role_secret = var.iam_user_secret_key
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
+
+resource "formal_key" "encryption_key" {
+  cloud_region = "us-east-1"
+  key_type = "aws_kms"
+  managed_by = "customer_managed"
+  name = "formal-s3-demo-key"
+  key_id = aws_kms_key.field_encryption.id
+}
