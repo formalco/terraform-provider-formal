@@ -25,8 +25,12 @@ variable "availability_zones" {
 
 variable "datadog_api_key" {}
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
+variable "dockerhub_username" {
+  default = "lorisformal"
+}
+variable "dockerhub_password" {
+  default = "nbm.XWE4hbn.uqc*pde"
+}
 
 variable "container_cpu" {
   default = 2048
@@ -45,10 +49,18 @@ variable "data_classifier_satellite_port" {
   default = 50055
 }
 
-variable "s3_container_image" {}
-variable "data_classifier_satellite_container_image" {}
+variable "s3_container_image" {
+  default = "formalco/docker-prod-s3-sidecar:2.1.1"
+}
+variable "data_classifier_satellite_container_image" {
+  default = "formalco/docker-prod-data-classifier-satellite"
+}
 
 
-variable "s3_sidecar_hostname" {}
+variable "s3_sidecar_hostname" {
+  default = "ap-southeast-2.s3-formal-demo.proxy.formalcloud.net"
+}
 
-variable "bucket_name" {}
+variable "bucket_name" {
+  default = "sydney-demo"
+}
