@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attachment"
 }
 
 resource "aws_iam_policy" "ecs_secrets" {
-  name        = "${var.name}-ecs-secrets"
+  name        = "${var.name}-ecs-secrets-dc-sydney"
   description = "Grant ECS tasks access to secrets"
 
   policy = jsonencode({

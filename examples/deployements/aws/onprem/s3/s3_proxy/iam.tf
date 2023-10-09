@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs_execution_role"
+  name = "ecs_execution_role_s3_sydney"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -72,7 +72,7 @@ EOF
 
 
 resource "aws_iam_policy" "full-secrets-access" {
-  name = "full-secrets-access"
+  name = "full-secrets-access_s3_sydney"
 
   policy = <<EOF
 {
