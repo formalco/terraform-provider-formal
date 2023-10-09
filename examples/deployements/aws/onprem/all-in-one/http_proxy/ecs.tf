@@ -39,6 +39,10 @@ resource "aws_ecs_task_definition" "main" {
           value = "true"
         },
         {
+          name = "LOG_LEVEL",
+          value = "debug"
+        },
+        {
           name  = "DD_VERSION"
           value = "1.0.0"
         },
@@ -68,7 +72,15 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name = "ENCRYPTION_KEY_REGION"
-          value = "ap-southeast-1"
+          value = "ap-southeast-3"
+        },
+        {
+          name = "HEALTH_CHECK_ON_TRAFFIC_PORT"
+          value = "true"
+        },
+        {
+          name = "HEALTH_CHECK_ON_TRAFFIC_PORT_PATH"
+          value = "/health"
         },
         {
           name = "ENCRYPTION_KEY"
@@ -191,7 +203,7 @@ resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
   task_definition                    = aws_ecs_task_definition.main.arn
-  desired_count                      = 3
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
@@ -225,7 +237,7 @@ resource "aws_ecs_service" "main" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
-  min_capacity       = 3
+  min_capacity       = 1
   resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

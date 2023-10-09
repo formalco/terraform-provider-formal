@@ -25,7 +25,7 @@ resource "formal_datastore" "instance_1" {
   technology = "ssh"
   name       = var.name
   hostname   = var.ssh_hostname
-  port       = var.main_port
+  port       = 22
 }
 
 resource "formal_native_role" "main_instance_1" {
@@ -38,5 +38,5 @@ resource "formal_native_role" "main_instance_1" {
 resource "formal_sidecar_datastore_link" "link_1" {
   datastore_id = formal_datastore.instance_1.id
   sidecar_id   = formal_sidecar.main.id
-  port         = 2022
+  port         = 22
 }
