@@ -4,16 +4,22 @@ metadata:
   name: http-sidecar-app
   namespace: {{ .Release.Namespace }}
   labels:
-    app: http-sidecar-app
+     {{- range $key, $value := .Values.podSelector.labels }}
+    {{ $key }}: {{ $value }}
+    {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-      app: http-sidecar-app
+        {{- range $key, $value := .Values.podSelector.matchLabels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
   template:
     metadata:
       labels:
-        app: http-sidecar-app
+        {{- range $key, $value := .Values.podSelector.labels }}
+        {{ $key }}: {{ $value }}
+        {{- end }}
     spec:
       containers:
         - name: {{ .Values.containers.httpSidecar.name }}
