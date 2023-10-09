@@ -1,6 +1,7 @@
 resource "aws_instance" "main" {
-  ami           = "ami-0eeadc4ab092fef70"
-  instance_type = "t2.micro"
+  ami           = "ami-07a920f17020024b9"
+  instance_type = "t3.micro"
+  key_name = "demo-ssh-key-pair"
 
   associate_public_ip_address = true
   subnet_id                   = var.public_subnets[0]

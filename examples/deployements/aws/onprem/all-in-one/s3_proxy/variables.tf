@@ -1,5 +1,7 @@
 variable "name" {}
 
+variable "region" {}
+
 variable "environment" {}
 
 variable "datadog_api_key" {}

@@ -1,5 +1,5 @@
 variable "region" {
-  default = "ap-southeast-1"
+  default = "ap-southeast-3"
 }
 
 variable "formal_api_key" {
@@ -20,7 +20,7 @@ variable "public_subnets" {
   default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 }
 variable "availability_zones" {
-  default = ["ap-southeast-1a", "ap-southeast-1b", "ap-southeast-1c"]
+  default = ["ap-southeast-3a", "ap-southeast-3b", "ap-southeast-3c"]
 }
 
 variable "datadog_api_key" {}
@@ -33,10 +33,10 @@ variable "dockerhub_password" {
 }
 
 variable "container_cpu" {
-  default = 2048
+  default = 512
 }
 variable "container_memory" {
-  default = 4096
+  default = 1024
 }
 
 variable "health_check_port" {
@@ -57,7 +57,7 @@ variable "data_classifier_satellite_container_image" {
 }
 
 variable "snowflake_sidecar_hostname" {
-  default = "snow-lolo.proxy.formalcloud.net"
+  default = "snow-formal-demo.proxy.formalcloud.net"
 }
 variable "snowflake_hostname" {
   default = "gv36203.eu-west-1.snowflakecomputing.com"
@@ -91,14 +91,14 @@ variable "postgres_container_image" {
   default = "formalco/docker-prod-pg-sidecar"
 }
 variable "postgres_sidecar_hostname" {
-  default = "pg-lolo.proxy.formalcloud.net"
+  default = "pg-formal-demo.proxy.formalcloud.net"
 }
 
 variable "postgres_username" {
-  default = "loris"
+  default = "formal"
 }
 variable "postgres_password" {
-  default = "Loristest1234"
+  default = "FormalDemo1234"
 }
 
 variable "http_container_image" {
@@ -106,17 +106,17 @@ variable "http_container_image" {
 }
 
 variable "http_sidecar_hostname" {
-  default = "http-lolo.proxy.formalcloud.net"
+  default = "http-formal-demo.proxy.formalcloud.net"
 }
 variable "http_hostname" {
-  default = "www.zzzzz.fly.dev"
+  default = "api.stripe.com"
 }
 
 variable "s3_sidecar_hostname" {
-  default = "s3-lolo.proxy.formalcloud.net"
+  default = "s3-formal-demo.proxy.formalcloud.net"
 }
 variable "s3_container_image" {
-  default = "formalco/docker-prod-s3-sidecar:1.4.10"
+  default = "formalco/docker-prod-s3-sidecar:2.1.0"
 }
 
 variable "ssh_container_image" {
@@ -124,24 +124,24 @@ variable "ssh_container_image" {
 }
 
 variable "bucket_name" {
-  default = "lolb"
+  default = "formal-demo-us"
 }
 
 variable "redshift_sidecar_hostname" {
-  default = "rd-lolo.proxy.formalcloud.net"
+  default = "rd-formal-demo.proxy.formalcloud.net"
 }
 
 variable "ssh_sidecar_hostname" {
-  default = "ssh-lolo.proxy.formalcloud.net"
+  default = "ssh-formal-demo.proxy.formalcloud.net"
 }
 
 variable "redshift_container_image" {
-  default = "formalco/docker-prod-redshift-sidecar:1.5.44"
+  default = "formalco/docker-prod-redshift-sidecar:1.6.0"
 }
 
 variable "redshift_username" {
-  default = "loris"
+  default = "formal"
 }
 variable "redshift_password" {
-  default = "Loristest1234"
+  default = "Formaltest1234"
 }
