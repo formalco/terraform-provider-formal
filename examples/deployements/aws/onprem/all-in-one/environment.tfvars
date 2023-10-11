@@ -59,3 +59,11 @@ redshift_username = ""
 redshift_password = ""
 
 ssh_sidecar_hostname = ""
+
+mysql_port = ""
+mysql_container_image = ""
+mysql_sidecar_hostname = ""
+mysql_username = ""
+mysql_password = ""
+
+http_certificane_arn = ""

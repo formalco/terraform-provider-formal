@@ -22,12 +22,12 @@ resource "formal_sidecar" "main" {
   formal_hostname    = var.sidecar_hostname
 }
 
-resource "formal_datastore" "main" {
-  technology = "http"
-  name       = var.name
-  hostname   = "zzzzz.fly.dev"
-  port       = var.main_port
-}
+# resource "formal_datastore" "main" {
+#   technology = "http"
+#   name       = var.name
+#   hostname   = "zzzzz.fly.dev"
+#   port       = var.main_port
+# }
 
 # resource "formal_sidecar_datastore_link" "main" {
 #   datastore_id = formal_datastore.main.id
