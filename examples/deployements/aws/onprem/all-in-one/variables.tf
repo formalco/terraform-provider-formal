@@ -120,7 +120,7 @@ variable "s3_container_image" {
 }
 
 variable "ssh_container_image" {
-  default = "formalco/ramp-sidecar-ssh:lastest"
+  default = "formalco/docker-prod-ssh-sidecar:latest"
 }
 
 variable "bucket_name" {
@@ -136,7 +136,7 @@ variable "ssh_sidecar_hostname" {
 }
 
 variable "redshift_container_image" {
-  default = "formalco/docker-prod-redshift-sidecar:1.6.0"
+  default = "formalco/docker-prod-redshift-sidecar:1.6.1"
 }
 
 variable "redshift_username" {
@@ -144,4 +144,27 @@ variable "redshift_username" {
 }
 variable "redshift_password" {
   default = "Formaltest1234"
+}
+
+variable "mysql_port" {
+  default = 3306
+}
+
+variable "mysql_sidecar_hostname" {
+  default = "mysql-formal-demo.proxy.formalcloud.net"
+}
+
+variable "mysql_container_image" {
+  default = "formalco/dockerm-prod-mysql-sidecar"
+}
+
+variable "mysql_username" {
+  default = "formal"
+}
+variable "mysql_password" {
+  default = "FormalDemo1234"
+}
+
+variable "http_certificane_arn" {
+  default = "arn:aws:acm:ap-southeast-3:879131189120:certificate/afbec427-348e-4a23-8b51-521f8582c4e6"
 }

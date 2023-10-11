@@ -26,8 +26,9 @@ variable "public_subnets" {}
 variable "data_classifier_satellite_url" {}
 variable "data_classifier_satellite_port" {}
 
-variable "sidecar_hostname" {}
+variable "mysql_hostname" {}
 
-variable "datastore_hostname" {}
+variable "mysql_sidecar_hostname" {}
 
-variable "certificate_arn_acm" {}
+variable "mysql_username" {}
+variable "mysql_password" {}
