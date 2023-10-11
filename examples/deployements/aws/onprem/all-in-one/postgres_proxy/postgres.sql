@@ -1,5 +1,6 @@
 CREATE TABLE "pii" (
   id SERIAL PRIMARY KEY,
+  full_name varchar(255) default NULL,
   first_name varchar(255) default NULL,
   last_name varchar(255) default NULL,
   phone_number varchar(100) default NULL,
