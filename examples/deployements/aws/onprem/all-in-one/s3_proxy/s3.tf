@@ -1,5 +1,11 @@
+provider "aws" {
+  alias  = "us"
+  region = "us-east-1"
+}
+
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
+  provider = aws.us
   
   tags = {
     Name        = "Test"
@@ -8,11 +14,11 @@ resource "aws_s3_bucket" "b" {
 }
 
 resource "aws_iam_user" "aws_native_user" {
-  name = "example-user-sydney"
+  name = "example-user"
 }
 
 resource "aws_iam_policy" "s3_full_access" {
-  name = "s3-full-access-policy-sydney"
+  name = "s3-full-access-policy"
     
   # AmazonS3FullAccess managed policy ARN
   # You can also create a custom policy with the necessary permissions if needed.
@@ -25,6 +31,15 @@ resource "aws_iam_policy" "s3_full_access" {
       "Effect": "Allow",
       "Action": "s3:*",
       "Resource": "*"
+    },
+    {
+      "Sid": "VisualEditor1",
+      "Effect": "Allow",
+      "Action": [
+          "kms:Decrypt",
+          "kms:GenerateDataKey"
+      ],
+      "Resource":  "*"
     }
   ]
 }
@@ -44,7 +59,7 @@ resource "aws_iam_access_key" "example_access_key" {
 
 resource "aws_s3_bucket_public_access_block" "bucket" {
   bucket = aws_s3_bucket.b.id
-
+  provider = aws.us
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false

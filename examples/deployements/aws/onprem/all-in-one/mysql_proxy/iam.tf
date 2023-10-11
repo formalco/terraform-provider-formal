@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecs_execution_role_s3_sydney"
+  name = "ecs_execution_role_mysql"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy_attachment"
 }
 
 resource "aws_iam_policy" "ecs_secrets" {
-  name        = "ECSAccessToSecrets"
+  name        = "ECSAccessToSecrets_mysql"
   description = "Grant ECS tasks access to secrets"
 
   policy = jsonencode({
@@ -51,7 +51,7 @@ resource "aws_iam_policy_attachment" "ecs_secrets_attachment" {
 
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs_task_role"
+  name = "ecs_task_role_mysql"
 
   assume_role_policy = <<EOF
 {
@@ -72,7 +72,7 @@ EOF
 
 
 resource "aws_iam_policy" "full-secrets-access" {
-  name = "full-secrets-access_s3_sydney"
+  name = "full-secrets-access-mysql"
 
   policy = <<EOF
 {
@@ -107,24 +107,6 @@ resource "aws_iam_policy" "full-secrets-access" {
             "ec2:DescribeInstances"
         ],
         "Resource": "*"
-    },
-    {
-      "Sid": "VisualEditor0",
-      "Effect": "Allow",
-      "Action": [
-          "rekognition:DetectFaces",
-          "comprehend:DetectPiiEntities"
-      ],
-      "Resource": "*"
-    },
-     {
-      "Sid": "VisualEditor1",
-      "Effect": "Allow",
-      "Action": [
-          "kms:Decrypt",
-          "kms:GenerateDataKey"
-      ],
-      "Resource":  "*"
     }
   ]
 }

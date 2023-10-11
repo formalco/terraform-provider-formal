@@ -20,42 +20,41 @@ resource "aws_db_instance" "default" {
     ]
   }
 
-  identifier                      = "postgres-rds"
+  identifier                      = "mysql-rds"
   allocated_storage               = 20
   db_name                         = "main"
-  engine                          = "postgres"
-  engine_version                  = "13.10"
+  engine                          = "mysql"
+  engine_version                  = "5.7"
   instance_class                  = "db.t3.micro"
-  username                        = var.postgres_username
-  password                        = var.postgres_password
+  username                        = var.mysql_username
+  password                        = var.mysql_password
   publicly_accessible             = true
-  parameter_group_name            = "default.postgres13"
+  parameter_group_name            = "default.mysql5.7"
   skip_final_snapshot             = true
   deletion_protection             = false
   backup_retention_period         = 35
   vpc_security_group_ids          = [aws_security_group.default.id]
   storage_encrypted               = false
   db_subnet_group_name            = aws_db_subnet_group.default.name
-  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
   performance_insights_enabled    = false
 }
 
 resource "aws_db_subnet_group" "default" {
-  name       = "main"
+  name       = "main-mysql"
   subnet_ids = var.public_subnets
 
   tags = {
-    Name = "RDS"
+    Name = "MYSQL"
   }
 }
 
 resource "aws_security_group" "default" {
   vpc_id      = var.vpc_id
-  name        = "main-rds"
+  name        = "main-mysql"
   description = "Allow all inbound for Postgres"
   ingress {
-    from_port   = 5432
-    to_port     = 5432
+    from_port   = 3306
+    to_port     = 3306
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }

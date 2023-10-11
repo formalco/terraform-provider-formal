@@ -1,4 +1,4 @@
-resource "aws_ecs_task_definition" "ecs_task" {
+resource "aws_ecs_task_definition" "main" {
   family                   = var.name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -39,6 +39,10 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
+          name = "LOG_LEVEL",
+          value = "debug"
+        },
+        {
           name  = "DD_VERSION"
           value = "1.0.0"
         },
@@ -47,7 +51,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "prod"
         },
         {
-          name = "ENVIRONMENT",
+          name  = "ENVIRONMENT",
           value = "prod"
         },
         {
@@ -67,7 +71,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
         {
           name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
-        },
+        }
       ],
       logConfiguration = {
         logDriver = "awsfirelens"
@@ -178,8 +182,8 @@ resource "aws_security_group" "main" {
 resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
-  task_definition                    = aws_ecs_task_definition.ecs_task.arn
-  desired_count                      = 3
+  task_definition                    = aws_ecs_task_definition.main.arn
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
@@ -213,7 +217,7 @@ resource "aws_ecs_service" "main" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
-  min_capacity       = 3
+  min_capacity       = 1
   resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

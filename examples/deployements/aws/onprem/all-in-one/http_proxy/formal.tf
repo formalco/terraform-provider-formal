@@ -18,19 +18,32 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "http"
   global_kms_decrypt = false
-  network_type       = "internal"
+  network_type       = "internet-facing"
   formal_hostname    = var.sidecar_hostname
 }
 
-resource "formal_datastore" "main" {
+# resource "formal_datastore" "main" {
+#   technology = "http"
+#   name       = var.name
+#   hostname   = "zzzzz.fly.dev"
+#   port       = var.main_port
+# }
+
+# resource "formal_sidecar_datastore_link" "main" {
+#   datastore_id = formal_datastore.main.id
+#   sidecar_id   = formal_sidecar.main.id
+#   port         = 443
+# }
+
+resource "formal_datastore" "stripe" {
   technology = "http"
-  name       = var.name
-  hostname   = var.datastore_hostname
+  name       = "stripe-api"
+  hostname   = "api.stripe.com"
   port       = var.main_port
 }
 
-resource "formal_sidecar_datastore_link" "main" {
-  datastore_id = formal_datastore.main.id
-  sidecar_id   = formal_sidecar.main.id
-  port         = 443
-}
+# resource "formal_sidecar_datastore_link" "stripe" {
+#   datastore_id = formal_datastore.stripe.id
+#   sidecar_id   = formal_sidecar.main.id
+#   port         = 444
+# }
