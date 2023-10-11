@@ -83,8 +83,8 @@ module "postgres_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.postgres_port
-  postgres_sidecar_hostname     = var.postgres_sidecar_hostname
-  postgres_hostname             = module.postgres_proxy.rds_hostname
+  postgres_sidecar_hostname      = var.postgres_sidecar_hostname
+  postgres_hostname              = module.postgres_proxy.rds_hostname
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.postgres_container_image
@@ -98,8 +98,8 @@ module "postgres_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  postgres_username             = var.postgres_username
-  postgres_password             = var.postgres_password
+  postgres_username              = var.postgres_username
+  postgres_password              = var.postgres_password
 }
 
 module "http_proxy" {
@@ -108,6 +108,7 @@ module "http_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.http_port
+  certificate_arn_acm            = var.http_certificane_arn
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.http_container_image
@@ -125,4 +126,102 @@ module "http_proxy" {
   datastore_hostname             = var.http_hostname
 }
 
+module "redshift_proxy" {
+  source                         = "./redshift_proxy"
+  name                           = "${var.name}-redshift-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.redshift_port
+  redshift_sidecar_hostname     = var.redshift_sidecar_hostname
+  redshift_hostname             = module.redshift_proxy.redshift_hostname
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.redshift_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  data_classifier_satellite_url  = module.data_classifier_satellite.url
+  data_classifier_satellite_port = var.data_classifier_satellite_port
+  redshift_username             = var.redshift_username
+  redshift_password             = var.redshift_password
+}
 
+module "s3_proxy" {
+  source                         = "./s3_proxy"
+  region                         = var.region
+  name                           = "${var.name}-s3-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.s3_port
+  s3_sidecar_hostname     = var.s3_sidecar_hostname
+  s3_hostname             = "${var.name}.s3.awsamazon.com"
+  bucket_name                    = var.bucket_name
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.s3_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  data_classifier_satellite_url  = module.data_classifier_satellite.url
+  data_classifier_satellite_port = var.data_classifier_satellite_port
+  iam_user_key_id             = module.s3_proxy.iam_access_key_id
+  iam_user_secret_key             = module.s3_proxy.iam_secret_access_key
+}
+
+module "ssh_proxy" {
+  source                         = "./ssh_proxy"
+  name                           = "${var.name}-ssh-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  health_check_port              = var.health_check_port
+  main_port = var.ssh_port
+  ssh_hostname = module.ssh_proxy.ssh_hostname
+  ssh_sidecar_hostname = var.ssh_sidecar_hostname
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.ssh_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  iam_access_key_id             = module.ssh_proxy.iam_access_key_id
+  iam_secret_access_key             = module.ssh_proxy.iam_secret_access_key
+}
+
+module "mysql_proxy" {
+  source                         = "./mysql_proxy"
+  name                           = "${var.name}-mysql-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.mysql_port
+  mysql_sidecar_hostname      = var.mysql_sidecar_hostname
+  mysql_hostname              = module.mysql_proxy.rds_hostname
+  health_check_port              = var.health_check_port
+  datadog_api_key                = var.datadog_api_key
+  container_image                = var.mysql_container_image
+  container_cpu                  = var.container_cpu
+  container_memory               = var.container_memory
+  vpc_id                         = module.common.vpc_id
+  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
+  ecs_cluster_id                 = module.common.ecs_cluster_id
+  ecs_cluster_name               = module.common.ecs_cluster_name
+  private_subnets                = module.common.private_subnets
+  public_subnets                 = module.common.public_subnets
+  data_classifier_satellite_url  = module.data_classifier_satellite.url
+  data_classifier_satellite_port = var.data_classifier_satellite_port
+  mysql_username              = var.mysql_username
+  mysql_password              = var.mysql_password
+}

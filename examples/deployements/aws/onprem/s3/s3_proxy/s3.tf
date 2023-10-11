@@ -1,6 +1,6 @@
 resource "aws_s3_bucket" "b" {
   bucket = var.bucket_name
-
+  
   tags = {
     Name        = "Test"
     Environment = "S3-test"
@@ -8,11 +8,11 @@ resource "aws_s3_bucket" "b" {
 }
 
 resource "aws_iam_user" "aws_native_user" {
-  name = "example-user"
+  name = "example-user-sydney"
 }
 
 resource "aws_iam_policy" "s3_full_access" {
-  name = "s3-full-access-policy"
+  name = "s3-full-access-policy-sydney"
     
   # AmazonS3FullAccess managed policy ARN
   # You can also create a custom policy with the necessary permissions if needed.
