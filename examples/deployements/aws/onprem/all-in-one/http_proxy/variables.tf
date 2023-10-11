@@ -29,3 +29,5 @@ variable "data_classifier_satellite_port" {}
 variable "sidecar_hostname" {}
 
 variable "datastore_hostname" {}
+
+variable "certificate_arn_acm" {}
