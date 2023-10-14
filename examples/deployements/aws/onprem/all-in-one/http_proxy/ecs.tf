@@ -64,11 +64,11 @@ resource "aws_ecs_task_definition" "main" {
         },
         {
           name = "ENCRYPT_RESPONSE_PAYLOAD"
-          value = "true"
+          value = "false"
         },
         {
           name = "ENCRYPT_REQUEST_PAYLOAD"
-          value = "true"
+          value = "false"
         },
         {
           name = "ENCRYPTION_KEY_REGION"
