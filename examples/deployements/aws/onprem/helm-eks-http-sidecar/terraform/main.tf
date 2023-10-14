@@ -40,10 +40,10 @@ module "eks" {
   public_subnets                 = module.common.public_subnets
 }
 
-module "helm" {
-  source                                     = "./helm"
-  eks_cluster_name                           = module.eks.aws_eks_cluster_name
-  eks_cluster_endpoint                       = module.eks.aws_eks_cluster_endpoint
-  eks_cluster_certificate_authority_data     = module.eks.aws_eks_cluster_ca_cert
-  chart_oci                                  = var.chart_oci
-}
+# module "helm" {
+#   source                                     = "./helm"
+#   eks_cluster_name                           = module.eks.aws_eks_cluster_name
+#   eks_cluster_endpoint                       = module.eks.aws_eks_cluster_endpoint
+#   eks_cluster_certificate_authority_data     = module.eks.aws_eks_cluster_ca_cert
+#   chart_oci                                  = var.chart_oci
+# }
