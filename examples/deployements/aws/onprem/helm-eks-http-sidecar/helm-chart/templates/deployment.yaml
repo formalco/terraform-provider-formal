@@ -32,7 +32,8 @@ spec:
         - name: FORMAL_CONTROL_PLANE_TLS_CERT
           valueFrom:
             secretKeyRef:
-              name: http-proxy-tls-cert
+              name: formal-eks-secret
+              key: http-tls-cert
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
           envFrom:
@@ -43,5 +44,6 @@ spec:
         - name: FORMAL_CONTROL_PLANE_TLS_CERT
           valueFrom:
             secretKeyRef:
-              name: data-classifier-tls-cert
+              name: formal-eks-secret
+              key: classifier-tls-cert
       restartPolicy: Always
