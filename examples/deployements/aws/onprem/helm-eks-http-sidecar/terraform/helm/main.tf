@@ -33,7 +33,7 @@ provider "helm" {
 resource "helm_release" "example" {
   name        = "formal-http"
   chart  =  var.chart_oci
-  version     = "0.3.0"
+  version     = "0.4.0"
   values = [
     "${file("./helm/values.yaml")}"
   ]
