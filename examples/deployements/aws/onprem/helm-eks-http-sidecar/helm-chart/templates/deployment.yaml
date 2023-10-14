@@ -33,7 +33,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: formal-eks-secret
-              key: http-tls-cert
+              key: formal-http-proxy-tls-cert
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
           envFrom:
@@ -45,5 +45,5 @@ spec:
           valueFrom:
             secretKeyRef:
               name: formal-eks-secret
-              key: classifier-tls-cert
-      restartPolicy: Always
+              key: formal-data-classifier-tls-cert
+      restartPolicy: Always 
