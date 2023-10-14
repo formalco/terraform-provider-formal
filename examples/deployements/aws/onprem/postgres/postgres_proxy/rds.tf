@@ -24,12 +24,12 @@ resource "aws_db_instance" "default" {
   allocated_storage               = 20
   db_name                         = "main"
   engine                          = "postgres"
-  engine_version                  = "13.10"
+  engine_version                  = "15.2"
   instance_class                  = "db.t3.micro"
   username                        = var.postgres_username
   password                        = var.postgres_password
   publicly_accessible             = true
-  parameter_group_name            = "default.postgres13"
+  parameter_group_name            = "default.postgres15"
   skip_final_snapshot             = false
   deletion_protection             = false
   backup_retention_period         = 35
