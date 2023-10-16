@@ -15,6 +15,7 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "main" {
   name        = var.name
   port        = var.main_port
+  proxy_protocol_v2 = true
   protocol    = "TCP"
   vpc_id      = aws_vpc.main.id
   target_type = "ip"
