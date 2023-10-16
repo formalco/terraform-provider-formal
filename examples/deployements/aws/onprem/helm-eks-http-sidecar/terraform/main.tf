@@ -38,6 +38,8 @@ module "eks" {
   vpc_id                         = module.common.vpc_id
   private_subnets                = module.common.private_subnets
   public_subnets                 = module.common.public_subnets
+  formal_sidecar_cert            = var.formal_sidecar_cert
+  formal_data_classifier_cert    = var.formal_data_classifier_cert
 }
 
 module "helm" {

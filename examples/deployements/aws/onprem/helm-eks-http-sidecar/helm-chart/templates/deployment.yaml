@@ -29,11 +29,12 @@ spec:
                 name: http-sidecar-config
           resources:
             {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
-        - name: FORMAL_CONTROL_PLANE_TLS_CERT
-          valueFrom:
-            secretKeyRef:
-              name: formal-eks-secret
-              key: formal-http-proxy-tls-cert
+          env:
+            - name: FORMAL_CONTROL_PLANE_TLS_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-http-proxy-tls-cert
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
           envFrom:
@@ -41,9 +42,10 @@ spec:
                 name: data-classifier-satellite-config
           resources:
             {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
-        - name: FORMAL_CONTROL_PLANE_TLS_CERT
-          valueFrom:
-            secretKeyRef:
-              name: formal-eks-secret
-              key: formal-data-classifier-tls-cert
+          env:
+            - name: FORMAL_CONTROL_PLANE_TLS_CERT
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-data-classifier-tls-cert
       restartPolicy: Always 
