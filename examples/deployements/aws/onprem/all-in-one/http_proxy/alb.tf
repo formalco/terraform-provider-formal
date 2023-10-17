@@ -19,7 +19,7 @@ resource "aws_lb_target_group" "main" {
   port        = var.main_port
   protocol    = "HTTPS"
   vpc_id      = var.vpc_id
-  proxy_protocol_v2 = true
+  proxy_protocol_v2 = false
   target_type = "ip"
 
   health_check {
