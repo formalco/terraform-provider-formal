@@ -10,6 +10,7 @@ metadata:
 spec:
   type: NodePort
   selector:
-    app: external-formal
+      "app.kubernetes.io/name": formal-external
+      "app.kubernetes.io/instance": formal-external-web
   ports:
     - port: 443
