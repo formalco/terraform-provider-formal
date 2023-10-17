@@ -12,9 +12,10 @@ provider "helm" {
 }
 
 resource "helm_release" "example" {
-  name        = "formal-http"
+  name        = "formal-http-helm-chart"
+  namespace = "formal-external"
   chart  =  var.chart_oci
-  version     = "0.4.0"
+  version     = "0.4.5"
   values = [
     "${file("./helm/values.yaml")}"
   ]

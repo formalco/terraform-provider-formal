@@ -11,15 +11,13 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-        {{- range $key, $value := .Values.podSelector.matchLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
   template:
     metadata:
       labels:
-        {{- range $key, $value := .Values.podSelector.labels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
     spec:
       containers:
         - name: {{ .Values.containers.httpSidecar.name }}

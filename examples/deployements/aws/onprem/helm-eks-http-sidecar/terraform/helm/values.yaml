@@ -2,11 +2,11 @@ replicaCount: 1
 containers:
   httpSidecar:
     name: http-sidecar-app
-    image: 
+    image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-http-proxy
     resources: {}
   dataClassifierSatellite:
     name: data-classifier-satellite-app
-    image: 
+    image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-data-classifier
     resources: {}
 configMaps:
   httpSidecar:
@@ -22,9 +22,5 @@ configMaps:
     HEALTH_CHECK_ON_TRAFFIC_PORT_PATH: "/health"
   dataClassifierSatellite:
     PII_DETECTION: formal
-podSelector:
-  matchLabels:
-    app:  formal-external
-  labels:
-    app:  formal-external
 secretManagerRegion: ap-southeast-2
+secretStoreServiceAccount: formal-external-secrets-irsa
