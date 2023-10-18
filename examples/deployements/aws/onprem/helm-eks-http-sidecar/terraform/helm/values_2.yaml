@@ -4,10 +4,6 @@ containers:
     name: http-sidecar-app
     image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-http-proxy
     resources: {}
-  dataClassifierSatellite:
-    name: data-classifier-satellite-app
-    image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-data-classifier
-    resources: {}
 configMaps:
   httpSidecar:
     CLIENT_LISTEN_TLS: "false"
@@ -20,8 +16,6 @@ configMaps:
     LOGGED_HTTP_PAYLOAD_MAX_SIZE: "5000000"
     HEALTH_CHECK_ON_TRAFFIC_PORT: "true"
     HEALTH_CHECK_ON_TRAFFIC_PORT_PATH: "/health"
-  dataClassifierSatellite:
-    PII_DETECTION: formal
 secretManagerRegion: ap-southeast-2
 secretStoreServiceAccount: formal-external-secrets-irsa
 deployDataClassifierSatellite: false
