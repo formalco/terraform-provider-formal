@@ -15,8 +15,18 @@ resource "helm_release" "example" {
   name        = "formal-http-helm-chart"
   namespace = "formal-external"
   chart  =  var.chart_oci
-  version     = "0.4.5"
+  version     = "0.4.6"
   values = [
     "${file("./helm/values.yaml")}"
+  ]
+}
+
+resource "helm_release" "example_2" {
+  name        = "formal-http-helm-chart-2"
+  namespace = "formal-external"
+  chart  =  var.chart_oci
+  version     = "0.4.6"
+  values = [
+    "${file("./helm/values_2.yaml")}"
   ]
 }
