@@ -22,11 +22,6 @@ configMaps:
     HEALTH_CHECK_ON_TRAFFIC_PORT_PATH: "/health"
   dataClassifierSatellite:
     PII_DETECTION: formal
-podSelector:
-  matchLabels:
-    app:  formal-external
-  labels:
-    app:  formal-external
 secretManagerRegion: ap-southeast-2
 secretStoreServiceAccount: formal-external-secrets-irsa
 deployDataClassifierSatellite: false
