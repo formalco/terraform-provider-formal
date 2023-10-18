@@ -4,9 +4,8 @@ metadata:
   name: {{ printf "http-sidecar-app-%s" .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-     {{- range $key, $value := .Values.podSelector.labels }}
-    {{ $key }}: {{ $value }}
-    {{- end }}
+    "app.kubernetes.io/name": formal-external
+    "app.kubernetes.io/instance": formal-external-web
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
