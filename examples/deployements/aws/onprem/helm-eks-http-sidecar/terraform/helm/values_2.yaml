@@ -28,6 +28,9 @@ podSelector:
   labels:
     app:  formal-external
 secretManagerRegion: ap-southeast-2
+secretStoreServiceAccount: formal-external-secrets-irsa
 deployDataClassifierSatellite: false
+deploySecretStore: false
 externalSecrets:
-  httpProxyKeyName : app/production/formal-external/formal-http-proxy-tls-cert
+  httpProxyKeyName : formal-http-proxy-tls-cert
+  dataClassifierSatelliteKeyName: formal-data-classifier-tls-cert
