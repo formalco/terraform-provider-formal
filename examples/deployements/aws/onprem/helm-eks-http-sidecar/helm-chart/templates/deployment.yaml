@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: http-sidecar-app
+  name: {{ printf "http-sidecar-app-%s" .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
      {{- range $key, $value := .Values.podSelector.labels }}
@@ -11,22 +11,20 @@ spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-        {{- range $key, $value := .Values.podSelector.matchLabels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
   template:
     metadata:
       labels:
-        {{- range $key, $value := .Values.podSelector.labels }}
-        {{ $key }}: {{ $value }}
-        {{- end }}
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
     spec:
       containers:
         - name: {{ .Values.containers.httpSidecar.name }}
           image: {{ .Values.containers.httpSidecar.image }}
           envFrom:
             - configMapRef:
-                name: http-sidecar-config
+                name: {{ printf "http-sidecar-config-%s" .Release.Name }}
           resources:
             {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
           env:
@@ -35,11 +33,12 @@ spec:
                 secretKeyRef:
                   name: formal-eks-secret
                   key: formal-http-proxy-tls-cert
+        {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
           envFrom:
             - configMapRef:
-                name: data-classifier-satellite-config
+                name:  {{ printf "data-classifier-satellite-config-%s" .Release.Name }}
           resources:
             {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
           env:
@@ -48,4 +47,5 @@ spec:
                 secretKeyRef:
                   name: formal-eks-secret
                   key: formal-data-classifier-tls-cert
+        {{- end }}
       restartPolicy: Always 
