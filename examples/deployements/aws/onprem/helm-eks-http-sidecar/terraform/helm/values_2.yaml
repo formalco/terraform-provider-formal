@@ -28,4 +28,3 @@ deployDataClassifierSatellite: false
 deploySecretStore: false
 externalSecrets:
   httpProxyKeyName : formal-http-proxy-tls-cert
-  dataClassifierSatelliteKeyName: formal-data-classifier-tls-cert
