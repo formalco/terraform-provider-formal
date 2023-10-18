@@ -136,7 +136,7 @@ variable "ssh_sidecar_hostname" {
 }
 
 variable "redshift_container_image" {
-  default = "formalco/docker-prod-redshift-sidecar:1.6.2"
+  default = "formalco/docker-prod-redshift-sidecar:1.6.3"
 }
 
 variable "redshift_username" {
