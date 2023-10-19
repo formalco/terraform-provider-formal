@@ -1,13 +1,13 @@
 package resource
 
 import (
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -43,11 +43,12 @@ func ResourceSatellite() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"tls_cert": {
+			"api_key": {
 				// This description is used by the documentation generator and the language server.
-				Description: "TLS certificate of the Satellite.",
+				Description: "Api key of the Satellite.",
 				Type:        schema.TypeString,
 				Computed:    true,
+				Sensitive:   true,
 			},
 		},
 	}
@@ -119,7 +120,11 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", res.Msg.Satellite.Name)
 
 	if c.Grpc.ReturnSensitiveValue {
-		d.Set("tls_cert", res.Msg.Satellite.TlsCert)
+		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&adminv1.GetSatelliteApiKeyRequest{Id: d.Id()}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		d.Set("api_key", res.Msg.ApiKey)
 	}
 
 	d.SetId(res.Msg.Satellite.Id)
