@@ -27,7 +27,7 @@ spec:
           resources:
             {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
           env:
-            - name: FORMAL_CONTROL_PLANE_TLS_CERT
+            - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: formal-eks-secret
@@ -41,7 +41,7 @@ spec:
           resources:
             {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
           env:
-            - name: FORMAL_CONTROL_PLANE_TLS_CERT
+            - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: formal-eks-secret
