@@ -100,7 +100,7 @@ EOF
 resource "formal_policy" "http_pre_request_name_hash" {
   name         = "http_pre_request_name_hash"
   description  = "this policy hash every names in body request of HTTP requests"
-  owners       = ["loris@joinformal.com"]
+  owners       = ["john@company.com"]
   notification = "all"
   status       = "active"
   active       = true
