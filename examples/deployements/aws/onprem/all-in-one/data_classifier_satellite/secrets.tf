@@ -4,5 +4,5 @@ resource "aws_secretsmanager_secret" "formal_tls_cert" {
 
 resource "aws_secretsmanager_secret_version" "formal_tls_cert" {
   secret_id     = aws_secretsmanager_secret.formal_tls_cert.id
-  secret_string = formal_satellite.main.tls_cert
+  secret_string = "63xd1kARu5GzTfaM9CmtlYH04BiL72O8"
 }
