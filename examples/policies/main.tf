@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 3.0.23"
+      version = "~> 3.2.6"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -21,7 +21,8 @@ resource "formal_policy" "decrypt" {
   description  = "decrpyt any columns that has the name encrypted-col."
   owners       = ["john@formal.com"]
   notification = "none"
-  active       = true
+  status       = "active"
+active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -40,7 +41,8 @@ resource "formal_policy" "mask_emails" {
   description  = "Mask any column that has the email data labal email_address."
   owners       = ["john@company.com"]
   notification = "consumer"
-  active       = true
+  status       = "active"
+active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -57,7 +59,8 @@ resource "formal_policy" "row_level_hashing" {
   description  = "hash every row that has the eu column set to true."
   owners       = ["john@company.com"]
   notification = "all"
-  active       = true
+  status       = "active"
+    active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -75,7 +78,8 @@ resource "formal_policy" "block_db_with_formal_message" {
   description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
   owners       = ["john@company.com"]
   notification = "all"
-  active       = true
+    active       = true
+  status       = "active"
   module       = <<-EOF
 package formal.v2
 
@@ -88,6 +92,25 @@ session := { "action": "allow", "reason": "the policy is blocking request" } if 
 	input.db_name == "main"
 	"USAnalyst" in input.user.groups
 	input.datastore.technology == "postgres"
+}
+EOF
+}
+
+
+resource "formal_policy" "http_pre_request_name_hash" {
+  name         = "http_pre_request_name_hash"
+  description  = "this policy hash every names in body request of HTTP requests"
+  owners       = ["john@company.com"]
+  notification = "all"
+  status       = "active"
+  active       = true
+  module       = <<-EOF
+package formal.v2
+
+import future.keywords.if
+
+pre_request := { "action": "mask", "type": "hash.with_salt", "columns": columns } if {
+    columns := [col | col := input.row[_]; col["data_label"] == "name"]
 }
 EOF
 }
