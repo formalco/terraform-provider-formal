@@ -43,6 +43,12 @@ func ResourceSatellite() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"tls_cert": {
+				// This description is used by the documentation generator and the language server.
+				Description: "TLS certificate of the Satellite.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"api_key": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Api key of the Satellite.",
@@ -125,6 +131,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 			return diag.FromErr(err)
 		}
 		d.Set("api_key", res.Msg.ApiKey)
+		d.Set("tls_cert", res.Msg.ApiKey)
 	}
 
 	d.SetId(res.Msg.Satellite.Id)
