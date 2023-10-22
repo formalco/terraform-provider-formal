@@ -21,6 +21,7 @@ func ResourceSatellite() *schema.Resource {
 		Description:   "Registering a Satellite",
 		CreateContext: resourceSatelliteCreate,
 		ReadContext:   resourceSatelliteRead,
+		UpdateContext: resourceSatelliteUpdate,
 		DeleteContext: resourceSatelliteDelete,
 
 		Timeouts: &schema.ResourceTimeout{
@@ -55,6 +56,13 @@ func ResourceSatellite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
+			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Satellite cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 		},
 	}
@@ -135,6 +143,27 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.SetId(res.Msg.Satellite.Id)
+
+	return diags
+}
+
+func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+
+	var diags diag.Diagnostics
+
+	satelliteId := d.Id()
+
+	if d.HasChange("termination_protection") {
+		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&adminv1.UpdateSatelliteRequest{
+			Id:                    satelliteId,
+			TerminationProtection: d.Get("termination_protection").(bool),
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	resourceSatelliteRead(ctx, d, meta)
 
 	return diags
 }

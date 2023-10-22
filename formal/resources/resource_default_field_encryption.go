@@ -40,6 +40,13 @@ func ResourceDefaultFieldEncryption() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this field encryption policy cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -55,8 +62,9 @@ func resourceDefaultFieldEncryptionCreateOrUpdate(ctx context.Context, d *schema
 	DataKeyStorage := d.Get("data_key_storage").(string)
 	KmsKeyID := d.Get("kms_key_id").(string)
 	EncryptionAlg := d.Get("encryption_alg").(string)
+	TerminationProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.FieldEncryptionPolicyServiceClient.CreateOrUpdateDefaultFieldEncryptionPolicy(ctx, connect.NewRequest(&adminv1.CreateOrUpdateDefaultFieldEncryptionPolicyRequest{KmsKeyId: KmsKeyID, DataKeyStorage: DataKeyStorage, EncryptionAlg: EncryptionAlg}))
+	_, err := c.Grpc.Sdk.FieldEncryptionPolicyServiceClient.CreateOrUpdateDefaultFieldEncryptionPolicy(ctx, connect.NewRequest(&adminv1.CreateOrUpdateDefaultFieldEncryptionPolicyRequest{KmsKeyId: KmsKeyID, DataKeyStorage: DataKeyStorage, EncryptionAlg: EncryptionAlg, TerminationProtection: TerminationProtection}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -92,6 +100,7 @@ func resourceDefaultFieldEncryptionRead(ctx context.Context, d *schema.ResourceD
 	d.Set("data_key_storage", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.DataKeyStorage)
 	d.Set("kms_key_id", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.KmsKeyId)
 	d.Set("encryption_alg", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.EncryptionAlg)
+	d.Set("termination_protection", defaultFieldEncryption.Msg.DefaultFieldEncryptionPolicy.TerminationProtection)
 
 	d.SetId(resourceId)
 

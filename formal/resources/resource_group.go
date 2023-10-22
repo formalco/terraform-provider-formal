@@ -41,6 +41,13 @@ func ResourceGroup() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Group cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -54,10 +61,12 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	// Maps to user-defined fields
 	Name := d.Get("name").(string)
 	Description := d.Get("description").(string)
+	TerminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, connect.NewRequest(&adminv1.CreateGroupRequest{
-		Name:        Name,
-		Description: Description,
+		Name:                  Name,
+		Description:           Description,
+		TerminationProtection: TerminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -90,6 +99,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	d.Set("id", res.Msg.Group.Id)
 	d.Set("name", res.Msg.Group.Name)
 	d.Set("description", res.Msg.Group.Description)
+	d.Set("termination_protection", res.Msg.Group.TerminationProtection)
 
 	d.SetId(groupId)
 
@@ -104,8 +114,9 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	groupId := d.Id()
 	groupName := d.Get("name").(string)
 	//groupDesc := d.Get("description").(string)
+	groupTermProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&adminv1.UpdateGroupRequest{Name: groupName, Id: groupId}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&adminv1.UpdateGroupRequest{Name: groupName, Id: groupId, TerminationProtection: &groupTermProtection}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -119,6 +130,12 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
+
+	terminationProtection := d.Get("termination_protection").(bool)
+
+	if terminationProtection {
+		return diag.Errorf("Group cannot be deleted because termination_protection is set to true")
+	}
 
 	groupId := d.Id()
 	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, connect.NewRequest(&adminv1.DeleteGroupRequest{Id: groupId}))

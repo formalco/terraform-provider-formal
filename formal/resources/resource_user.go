@@ -96,6 +96,13 @@ func ResourceUser() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this User cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -107,14 +114,15 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	res, err := c.Grpc.Sdk.UserServiceClient.CreateUserV2(ctx, connect.NewRequest(&adminv1.CreateUserV2Request{
-		FirstName: d.Get("first_name").(string),
-		LastName:  d.Get("last_name").(string),
-		Type:      d.Get("type").(string),
-		AppType:   d.Get("app_type").(string),
-		Name:      d.Get("name").(string),
-		Email:     d.Get("email").(string),
-		Admin:     d.Get("admin").(bool),
-		ExpireAt:  timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
+		FirstName:             d.Get("first_name").(string),
+		LastName:              d.Get("last_name").(string),
+		Type:                  d.Get("type").(string),
+		AppType:               d.Get("app_type").(string),
+		Name:                  d.Get("name").(string),
+		Email:                 d.Get("email").(string),
+		Admin:                 d.Get("admin").(bool),
+		ExpireAt:              timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}))
 
 	if err != nil {
@@ -185,6 +193,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("admin", res.Msg.User.Admin)
 	d.Set("app_type", res.Msg.User.AppType)
 	d.Set("expire_at", res.Msg.User.ExpireAt.AsTime().Unix())
+	d.Set("termination_protection", res.Msg.User.TerminationProtection)
 	if c.Grpc.ReturnSensitiveValue {
 		d.Set("machine_user_access_token", res.Msg.User.MachineRoleAccessToken)
 	}
@@ -203,12 +212,14 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	name := d.Get("name").(string)
 	firstName := d.Get("first_name").(string)
 	lastName := d.Get("last_name").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
 
 	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&adminv1.UpdateUserRequest{
-		Id:        userId,
-		Name:      name,
-		FirstName: firstName,
-		LastName:  lastName,
+		Id:                    userId,
+		Name:                  name,
+		FirstName:             firstName,
+		LastName:              lastName,
+		TerminationProtection: &terminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -225,6 +236,12 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	var diags diag.Diagnostics
 
 	userId := d.Id()
+
+	terminationProtection := d.Get("termination_protection").(bool)
+
+	if terminationProtection {
+		return diag.Errorf("User cannot be deleted because termination_protection is set to true")
+	}
 
 	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&adminv1.DeleteUserRequest{Id: userId}))
 	if err != nil {
