@@ -50,6 +50,13 @@ func ResourceNativeRole() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Native Role cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -65,12 +72,14 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 	NativeRoleId := d.Get("native_role_id").(string)
 	NativeRoleSecret := d.Get("native_role_secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
+	TerminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUser(ctx, connect.NewRequest(&adminv1.CreateNativeUserRequest{
-		DataStoreId:      DatastoreId,
-		NativeUserId:     NativeRoleId,
-		NativeUserSecret: NativeRoleSecret,
-		UseAsDefault:     UseAsDefault,
+		DataStoreId:           DatastoreId,
+		NativeUserId:          NativeRoleId,
+		NativeUserSecret:      NativeRoleSecret,
+		UseAsDefault:          UseAsDefault,
+		TerminationProtection: TerminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
