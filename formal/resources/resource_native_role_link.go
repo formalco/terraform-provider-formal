@@ -134,10 +134,14 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
+	if res.Msg.Link.FormalIdentityType == "role" {
+		res.Msg.Link.FormalIdentityType = "user"
+	}
+
 	// Should map to all fields of
-	d.Set("datastore_id", datastoreId)
+	d.Set("datastore_id", res.Msg.Link.DataStoreId)
 	d.Set("native_role_id", res.Msg.Link.NativeUserId)
-	d.Set("formal_identity_id", formalIdentityId)
+	d.Set("formal_identity_id", res.Msg.Link.FormalIdentityId)
 	d.Set("formal_identity_type", res.Msg.Link.FormalIdentityType)
 	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
 
