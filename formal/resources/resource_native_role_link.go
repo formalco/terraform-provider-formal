@@ -115,8 +115,6 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	id := d.Id()
-
 	datastoreId := d.Get("datastore_id").(string)
 	formalIdentityId := d.Get("formal_identity_id").(string)
 
@@ -145,7 +143,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	d.Set("formal_identity_type", res.Msg.Link.FormalIdentityType)
 	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
 
-	d.SetId(id)
+	d.SetId(res.Msg.Link.Id)
 
 	return diags
 }
