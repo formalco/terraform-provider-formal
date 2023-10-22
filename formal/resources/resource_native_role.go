@@ -97,8 +97,6 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
-
 	datastoreId := d.Get("datastore_id").(string)
 	nativeRoleId := d.Get("native_role_id").(string)
 
@@ -120,7 +118,7 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
 	d.Set("termination_protection", res.Msg.NativeUser.TerminationProtection)
 
-	d.SetId(roleId)
+	d.SetId(res.Msg.NativeUser.Id)
 
 	return diags
 }
