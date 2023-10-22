@@ -17,7 +17,7 @@ func ResourceNativeRoleLink() *schema.Resource {
 
 		CreateContext: resourceNativeRoleLinkCreate,
 		ReadContext:   resourceNativeRoleLinkRead,
-		// UpdateContext: resourceNativeRoleLinkUpdate,
+		UpdateContext: resourceNativeRoleLinkUpdate,
 		DeleteContext: resourceNativeRoleLinkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -42,7 +42,6 @@ func ResourceNativeRoleLink() *schema.Resource {
 				Description: "The Formal ID for the Role or Group to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"formal_identity_type": {
 				// This description is used by the documentation generator and the language server.
@@ -75,7 +74,7 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	formalIdentityType := d.Get("formal_identity_type").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.CreateNativeUserIdentityLinkRequest{
+	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUserIdentityLinkV2(ctx, connect.NewRequest(&adminv1.CreateNativeUserIdentityLinkV2Request{
 		DataStoreId:           datastoreId,
 		NativeUserId:          nativeRoleId,
 		IdentityId:            formalIdentityId,
@@ -89,6 +88,26 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(res.Msg.Link.Id)
 
 	resourceNativeRoleLinkRead(ctx, d, meta)
+	return diags
+}
+
+func resourceNativeRoleLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+	var diags diag.Diagnostics
+
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.NativeUserServiceClient.UpdateNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.UpdateNativeUserIdentityLinkRequest{
+			Id:                    d.Id(),
+			TerminationProtection: &terminationProtection,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	resourceNativeRoleLinkRead(ctx, d, meta)
+
 	return diags
 }
 

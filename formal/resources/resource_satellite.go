@@ -132,6 +132,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.Set("name", res.Msg.Satellite.Name)
+	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
 
 	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&adminv1.GetSatelliteApiKeyRequest{Id: d.Id()}))
@@ -172,6 +173,11 @@ func resourceSatelliteDelete(ctx context.Context, d *schema.ResourceData, meta i
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
+
+	terminationProtection := d.Get("termination_protection").(bool)
+	if terminationProtection {
+		return diag.Errorf("Satellite cannot be deleted because termination_protection is set to true")
+	}
 
 	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatellite(ctx, connect.NewRequest(&adminv1.DeleteSatelliteRequest{
 		Id: d.Id(),
