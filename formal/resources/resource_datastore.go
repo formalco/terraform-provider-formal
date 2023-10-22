@@ -93,6 +93,13 @@ func ResourceDatastore() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, the datastore cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -117,6 +124,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	DbDiscoveryJobWaitTime := d.Get("db_discovery_job_wait_time").(string)
 	DbDiscoveryNativeRoleID := d.Get("db_discovery_native_role_id").(string)
 	Environment := d.Get("environment").(string)
+	TerminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.DataStoreServiceClient.CreateDatastore(ctx, connect.NewRequest(&adminv1.CreateDatastoreRequest{
 		Name:                    Name,
@@ -127,6 +135,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		DbDiscoveryJobWaitTime:  DbDiscoveryJobWaitTime,
 		DbDiscoveryNativeRoleId: DbDiscoveryNativeRoleID,
 		Environment:             Environment,
+		TerminationProtection:   TerminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -168,6 +177,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("technology", res.Msg.Datastore.Technology)
 	d.Set("created_at", res.Msg.Datastore.CreatedAt.AsTime().Unix())
 	d.Set("environment", res.Msg.Datastore.Environment)
+	d.Set("termination_protection", res.Msg.Datastore.TerminationProtection)
 
 	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(res.Msg.Datastore.DatastoreId)
@@ -183,7 +193,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "health_check_db_name", "db_discovery_job_wait_time", "db_discovery_native_role_id"}
+	fieldsThatCanChange := []string{"name", "health_check_db_name", "db_discovery_job_wait_time", "db_discovery_native_role_id", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -214,6 +224,14 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 	}
 
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.DataStoreServiceClient.SetTerminationProtection(ctx, connect.NewRequest(&adminv1.SetTerminationProtectionRequest{Id: datastoreId, TerminationProtection: terminationProtection}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	resourceDatastoreRead(ctx, d, meta)
 
 	return diags
@@ -226,6 +244,11 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	dsId := d.Id()
+	terminationProtection := d.Get("termination_protection").(bool)
+
+	if terminationProtection {
+		return diag.Errorf("Datastore cannot be deleted because termination_protection is set to true")
+	}
 
 	_, err := c.Grpc.Sdk.DataStoreServiceClient.DeleteDatastore(ctx, connect.NewRequest(&adminv1.DeleteDatastoreRequest{Id: dsId}))
 	if err != nil {

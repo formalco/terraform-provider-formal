@@ -21,6 +21,7 @@ func ResourceSatellite() *schema.Resource {
 		Description:   "Registering a Satellite",
 		CreateContext: resourceSatelliteCreate,
 		ReadContext:   resourceSatelliteRead,
+		UpdateContext: resourceSatelliteUpdate,
 		DeleteContext: resourceSatelliteDelete,
 
 		Timeouts: &schema.ResourceTimeout{
@@ -55,6 +56,13 @@ func ResourceSatellite() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
+			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Satellite cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
 			},
 		},
 	}
@@ -124,6 +132,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 
 	d.Set("name", res.Msg.Satellite.Name)
+	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
 
 	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&adminv1.GetSatelliteApiKeyRequest{Id: d.Id()}))
@@ -139,10 +148,36 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
+func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+
+	var diags diag.Diagnostics
+
+	satelliteId := d.Id()
+
+	if d.HasChange("termination_protection") {
+		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&adminv1.UpdateSatelliteRequest{
+			Id:                    satelliteId,
+			TerminationProtection: d.Get("termination_protection").(bool),
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	resourceSatelliteRead(ctx, d, meta)
+
+	return diags
+}
+
 func resourceSatelliteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
+
+	terminationProtection := d.Get("termination_protection").(bool)
+	if terminationProtection {
+		return diag.Errorf("Satellite cannot be deleted because termination_protection is set to true")
+	}
 
 	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatellite(ctx, connect.NewRequest(&adminv1.DeleteSatelliteRequest{
 		Id: d.Id(),
