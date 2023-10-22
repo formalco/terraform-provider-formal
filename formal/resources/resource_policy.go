@@ -213,7 +213,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
 
 		var owners []string
 		for _, owner := range d.Get("owners").([]interface{}) {
