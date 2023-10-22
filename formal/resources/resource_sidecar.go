@@ -130,6 +130,13 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Sidecar cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -142,14 +149,15 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	sidecarReq := &adminv1.CreateSidecarRequest{
-		Name:             d.Get("name").(string),
-		DataplaneId:      d.Get("dataplane_id").(string),
-		DeploymentType:   d.Get("deployment_type").(string),
-		FailOpen:         d.Get("fail_open").(bool),
-		NetworkType:      d.Get("network_type").(string),
-		GlobalKmsDecrypt: d.Get("global_kms_decrypt").(bool),
-		Version:          d.Get("version").(string),
-		Technology:       d.Get("technology").(string),
+		Name:                  d.Get("name").(string),
+		DataplaneId:           d.Get("dataplane_id").(string),
+		DeploymentType:        d.Get("deployment_type").(string),
+		FailOpen:              d.Get("fail_open").(bool),
+		NetworkType:           d.Get("network_type").(string),
+		GlobalKmsDecrypt:      d.Get("global_kms_decrypt").(bool),
+		Version:               d.Get("version").(string),
+		Technology:            d.Get("technology").(string),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 	hostname := d.Get("formal_hostname").(string)
 	if sidecarReq.DeploymentType == "onprem" && hostname != "" {
@@ -227,6 +235,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("dataplane_id", res.Msg.Sidecar.DataplaneId)
 	d.Set("version", res.Msg.Sidecar.Version)
 	d.Set("technology", res.Msg.Sidecar.Technology)
+	d.Set("termination_protection", res.Msg.Sidecar.TerminationProtection)
 
 	if res.Msg.Sidecar.DeploymentType == "onprem" && c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarTlsCertificateById(ctx, connect.NewRequest(&adminv1.GetSidecarTlsCertificateByIdRequest{Id: sidecarId}))
@@ -249,7 +258,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -296,6 +305,17 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		}
 	}
 
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateTerminationProtection(ctx, connect.NewRequest(&adminv1.UpdateTerminationProtectionRequest{
+			Id:      sidecarId,
+			Enabled: terminationProtection,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	resourceSidecarRead(ctx, d, meta)
 
 	return diags
@@ -309,6 +329,11 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 	var diags diag.Diagnostics
 
 	dsId := d.Id()
+
+	terminationProtection := d.Get("termination_protection").(bool)
+	if terminationProtection {
+		return diag.Errorf("Sidecar cannot be deleted because termination_protection is set to true")
+	}
 
 	_, err := c.Grpc.Sdk.SidecarServiceClient.DeleteSidecar(ctx, connect.NewRequest(&adminv1.DeleteSidecarRequest{Id: dsId}))
 	if err != nil {

@@ -3,11 +3,8 @@ package resource
 import (
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
-	"errors"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"strings"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -53,11 +50,16 @@ func ResourceNativeRole() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Native Role cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
-
-const nativeRoleDelimiter = "#_#"
 
 func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
@@ -70,18 +72,20 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 	NativeRoleId := d.Get("native_role_id").(string)
 	NativeRoleSecret := d.Get("native_role_secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
+	TerminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUser(ctx, connect.NewRequest(&adminv1.CreateNativeUserRequest{
-		DataStoreId:      DatastoreId,
-		NativeUserId:     NativeRoleId,
-		NativeUserSecret: NativeRoleSecret,
-		UseAsDefault:     UseAsDefault,
+		DataStoreId:           DatastoreId,
+		NativeUserId:          NativeRoleId,
+		NativeUserSecret:      NativeRoleSecret,
+		UseAsDefault:          UseAsDefault,
+		TerminationProtection: TerminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.NativeUser.DatastoreId + nativeRoleDelimiter + res.Msg.NativeUser.NativeUserId)
+	d.SetId(res.Msg.NativeUser.Id)
 
 	resourceNativeRoleRead(ctx, d, meta)
 
@@ -93,18 +97,14 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
+	datastoreId := d.Get("datastore_id").(string)
+	nativeRoleId := d.Get("native_role_id").(string)
 
-	splitId := strings.Split(roleId, nativeRoleDelimiter)
-	if len(splitId) != 2 {
-		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
-	}
-
-	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUser(ctx, connect.NewRequest(&adminv1.GetNativeUserRequest{DataStoreId: splitId[0], NativeUserId: splitId[1]}))
+	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUser(ctx, connect.NewRequest(&adminv1.GetNativeUserRequest{DataStoreId: datastoreId, NativeUserId: nativeRoleId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Native Role for Datastore ID "+splitId[0]+" and Native Role ID"+splitId[1]+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Native Role for Datastore ID "+datastoreId+" and Native Role ID"+nativeRoleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -116,7 +116,9 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("native_role_id", res.Msg.NativeUser.NativeUserId)
 	d.Set("native_role_secret", res.Msg.NativeUser.NativeUserSecret)
 	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
-	d.SetId(roleId)
+	d.Set("termination_protection", res.Msg.NativeUser.TerminationProtection)
+
+	d.SetId(res.Msg.NativeUser.Id)
 
 	return diags
 }
@@ -156,6 +158,17 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 	}
 
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.NativeUserServiceClient.SetNativeUserTerminationProtection(ctx, connect.NewRequest(&adminv1.SetNativeUserTerminationProtectionRequest{
+			Id:                    d.Id(),
+			TerminationProtection: terminationProtection,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	resourceNativeRoleRead(ctx, d, meta)
 
 	return diags
@@ -166,13 +179,15 @@ func resourceNativeRoleDelete(ctx context.Context, d *schema.ResourceData, meta 
 
 	var diags diag.Diagnostics
 
-	roleId := d.Id()
-	splitId := strings.Split(roleId, nativeRoleDelimiter)
-	if len(splitId) != 2 {
-		return diag.FromErr(errors.New("Resource ID for Native Role is Malformatted: " + roleId))
+	datastoreId := d.Get("datastore_id").(string)
+	nativeRoleId := d.Get("native_role_id").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
+
+	if terminationProtection {
+		return diag.Errorf("Native Role cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&adminv1.DeleteNativeUserRequest{DataStoreId: splitId[0], NativeUserId: splitId[1]}))
+	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&adminv1.DeleteNativeUserRequest{DataStoreId: datastoreId, NativeUserId: nativeRoleId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
