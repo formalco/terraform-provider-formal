@@ -137,6 +137,13 @@ func ResourceSidecar() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"api_key": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Api key for the deployed Sidecar.",
+				Type:        schema.TypeString,
+				Computed:    true,
+				Sensitive:   true,
+			},
 		},
 	}
 }
@@ -244,6 +251,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 		}
 
 		d.Set("formal_control_plane_tls_certificate", res.Msg.Secret)
+		d.Set("api_key", res.Msg.Secret)
 	}
 
 	d.SetId(res.Msg.Sidecar.Id)
