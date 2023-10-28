@@ -61,7 +61,7 @@ resource "formal_group" "name" {
 
 resource "formal_group_link_role" "name" {
   group_id = formal_group.name.id
-  role_id  = formal_role.name.id
+  role_id  = formal_user.name.id
 }
 
 resource "formal_integration_app" "name" {
@@ -138,18 +138,13 @@ pre_request := {
   "action": "block",
   "type": "block_with_formal_message"
 } if {
-  input.datastore.id == ${formal_datastore.postgres1.id}
+  input.datastore.id == "${formal_datastore.postgres1.id}"
 }
 EOT
   name         = "terraform-test-policy"
   notification = "none"
   owners       = ["farid@joinformal.com"]
   status       = "draft"
-}
-
-resource "formal_role" "name" {
-  type = "machine"
-  name = "terraform-test-role"
 }
 
 resource "formal_satellite" "name" {
