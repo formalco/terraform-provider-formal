@@ -40,19 +40,19 @@ resource "formal_datastore" "postgres1" {
 #   kms_key_id       = formal_encryption_key.name.id
 # }
 
-resource "formal_encryption_key" "name" {
-  cloud_region = "us-west-1"
-  key_id       = "terraform-test-encryption-key-id"
-  key_name     = "terraform-test-encryption-key-local"
-}
+# resource "formal_encryption_key" "name" {
+#   cloud_region = "us-west-1"
+#   key_id       = "terraform-test-encryption-key-id"
+#   key_name     = "terraform-test-encryption-key-local"
+# }
 
-resource "formal_field_encryption" "name" {
-  alg          = "aes_deterministic"
-  datastore_id = formal_datastore.postgres1.id
-  key_id       = formal_encryption_key.name.id
-  key_storage  = "control_plane_only"
-  path         = "postgres.public.users.id"
-}
+# resource "formal_field_encryption" "name" {
+#   alg          = "aes_deterministic"
+#   datastore_id = formal_datastore.postgres1.id
+#   key_id       = formal_encryption_key.name.id
+#   key_storage  = "control_plane_only"
+#   path         = "postgres.public.users.id"
+# }
 
 resource "formal_group" "name" {
   description = "terraform-test-group"
@@ -100,13 +100,13 @@ resource "formal_integration_log_link" "name" {
   datastore_id   = formal_datastore.postgres1.id
 }
 
-resource "formal_key" "name" {
-  cloud_region = "eu-west-1"
-  key_type     = "aws_kms"
-  managed_by   = "customer_managed"
-  name         = "terraform-test-key-aws-kms"
-  key_id       = formal_encryption_key.name.id
-}
+# resource "formal_key" "name" {
+#   cloud_region = "eu-west-1"
+#   key_type     = "aws_kms"
+#   managed_by   = "customer_managed"
+#   name         = "terraform-test-key-aws-kms"
+#   key_id       = formal_encryption_key.name.id
+# }
 
 resource "formal_native_role" "name" {
   datastore_id       = formal_datastore.postgres1.id
