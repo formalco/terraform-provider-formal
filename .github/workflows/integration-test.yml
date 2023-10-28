@@ -22,6 +22,7 @@ jobs:
           go build -o ${BINARY}
           mkdir -p /home/runner/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
           mv ${BINARY} /home/runner/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+          echo "/home/runner/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}"
         env:
           HOSTNAME: joinformal.com
           NAMESPACE: local
