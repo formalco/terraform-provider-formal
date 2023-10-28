@@ -20,8 +20,8 @@ jobs:
       - name: Build Terraform Provider
         run: |
           go build -o ${BINARY}
-          mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-          mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+          mkdir -p /home/runner/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+          mv ${BINARY} /home/runner/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
         env:
           HOSTNAME: joinformal.com
           NAMESPACE: local
