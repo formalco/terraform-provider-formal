@@ -3,7 +3,7 @@ on:
   pull_request:
 
 jobs:
-  test-postgres-sidecar:
+  test-terraform:
     name: Test Postgres Sidecar
     runs-on: ubuntu-latest
     steps:
@@ -28,3 +28,9 @@ jobs:
           NAME: formal
           OS_ARCH: linux_amd64
           BINARY: terraform-provider-formal # last word comes from NAME env
+      - name: Terraform Init
+        run: |
+          cd tests
+          terraform init
+        env:
+          TF_LOG: DEBUG
