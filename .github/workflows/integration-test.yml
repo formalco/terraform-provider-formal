@@ -1,0 +1,30 @@
+name: Test Terraform Functionality
+on:
+  pull_request:
+
+jobs:
+  test-postgres-sidecar:
+    name: Test Postgres Sidecar
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.19'
+          id: go
+      - name: 'Terraform Setup'
+        id: terraform-setup
+        uses: hashicorp/setup-terraform@v2
+      - name: Build Terraform Provider
+        run: |
+          go build -o ${BINARY}
+          mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+          mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+        env:
+          HOSTNAME: joinformal.com
+          NAMESPACE: local
+          NAME: formal
+          OS_ARCH: linux_amd64
+          BINARY: terraform-provider-formal # last word comes from NAME env
