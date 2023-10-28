@@ -36,12 +36,14 @@ jobs:
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
       - name: Terraform Apply
+        id: terraform-apply
         run: |
           cd tests
           terraform apply -auto-approve
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
       - name: Terraform Destroy
+        if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
         run: |
           cd tests
           terraform destroy -auto-approve
