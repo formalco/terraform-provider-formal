@@ -34,4 +34,16 @@ jobs:
           cd tests
           terraform init
         env:
-          TF_LOG: DEBUG
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Apply
+        run: |
+          cd tests
+          terraform apply -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Destroy
+        run: |
+          cd tests
+          terraform destroy -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
