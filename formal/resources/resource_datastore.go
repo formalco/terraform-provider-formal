@@ -141,7 +141,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
-	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
 	d.SetId(res.Msg.Id)
 
 	resourceDatastoreRead(ctx, d, meta)
@@ -170,7 +169,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.Datastore.DatastoreId)
+	d.Set("id", res.Msg.Datastore.Id)
 	d.Set("name", res.Msg.Datastore.Name)
 	d.Set("hostname", res.Msg.Datastore.Hostname)
 	d.Set("port", res.Msg.Datastore.Port)
@@ -179,8 +178,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("environment", res.Msg.Datastore.Environment)
 	d.Set("termination_protection", res.Msg.Datastore.TerminationProtection)
 
-	// DsId is the UUID type id. See GetDatastoreInfraByDatastoreID in admin-api for more details
-	d.SetId(res.Msg.Datastore.DatastoreId)
+	d.SetId(res.Msg.Datastore.Id)
 
 	return diags
 }
