@@ -22,6 +22,10 @@ This resource creates assigns a Native Role to a Formal Identity.
 - `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `role` and `group`.
 - `native_role_id` (String) The Native Role ID of the Native Role.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Native Role link cannot be deleted.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.

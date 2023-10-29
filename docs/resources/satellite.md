@@ -21,10 +21,12 @@ Registering a Satellite
 
 ### Optional
 
+- `termination_protection` (Boolean) If set to true, this Satellite cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `api_key` (String, Sensitive) Api key of the Satellite.
 - `id` (String) The ID of the Satellite.
 - `tls_cert` (String) TLS certificate of the Satellite.
 
