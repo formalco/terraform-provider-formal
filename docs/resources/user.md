@@ -28,6 +28,7 @@ User in Formal.
 - `first_name` (String) For human users, their first name.
 - `last_name` (String) For human users, their last name.
 - `name` (String) For machine users, the name of the user.
+- `termination_protection` (Boolean) If set to true, this User cannot be deleted.
 
 ### Read-Only
 
