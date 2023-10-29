@@ -20,6 +20,10 @@ Creating a Group in Formal.
 - `description` (String) Description for this Group.
 - `name` (String) Friendly Name for this Group.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Group cannot be deleted.
+
 ### Read-Only
 
 - `id` (String) The Formal ID for this Group.

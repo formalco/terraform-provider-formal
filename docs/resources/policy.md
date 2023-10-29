@@ -25,6 +25,10 @@ Creating a Policy in Formal.
 - `owners` (List of String) Owners of this policy.
 - `status` (String) Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Policy cannot be deleted.
+
 ### Read-Only
 
 - `created_at` (String) When the policy was created.
