@@ -28,6 +28,7 @@ Registering a Datastore with Formal.
 - `environment` (String) Environment for the datastore, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `health_check_db_name` (String) Database name to use for health checks. Default `postgres`.
 - `port` (Number) The port your Datastore is listening on.
+- `termination_protection` (Boolean) If set to true, the datastore cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
