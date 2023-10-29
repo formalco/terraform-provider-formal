@@ -23,6 +23,7 @@ This resource creates a Native Role.
 
 ### Optional
 
+- `termination_protection` (Boolean) If set to true, this Native Role cannot be deleted.
 - `use_as_default` (Boolean) The password of the Native Role.
 
 ### Read-Only

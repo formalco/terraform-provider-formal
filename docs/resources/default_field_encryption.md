@@ -21,6 +21,10 @@ Creating Field Encryptions in Formal.
 - `encryption_alg` (String) Encryption Algorithm to use. Supported values are `aes_random` and `aes_deterministic`. For highest security, `aes_random` is recommended, but `aes_deterministic` is required to enable search (WHERE clauses) over underlying data in encrypted fields.
 - `kms_key_id` (String) Formal ID of the encryption key to be used for this field encryption. This encryption key will be used to encrypt the data key. Read about envelope encryption here: https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#enveloping
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this field encryption policy cannot be deleted.
+
 ### Read-Only
 
 - `id` (String) The ID of this resource.
