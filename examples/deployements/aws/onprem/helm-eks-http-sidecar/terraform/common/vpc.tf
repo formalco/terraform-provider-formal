@@ -32,8 +32,8 @@ resource "aws_nat_gateway" "main" {
 }
 
 resource "aws_eip" "nat" {
-  count = length(var.private_subnets)
-  domain   = "vpc"
+  count  = length(var.private_subnets)
+  domain = "vpc"
 
   tags = {
     Name        = "${var.name}-eip-${format("%03d", count.index + 1)}"
@@ -48,8 +48,8 @@ resource "aws_subnet" "private" {
   count             = length(var.private_subnets)
 
   tags = {
-    Name        = "${var.name}-private-subnet-${format("%03d", count.index + 1)}"
-    Environment = var.environment
+    Name                              = "${var.name}-private-subnet-${format("%03d", count.index + 1)}"
+    Environment                       = var.environment
     "kubernetes.io/role/internal-elb" = 1
   }
 }
@@ -62,8 +62,8 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name        = "${var.name}-public-subnet-${format("%03d", count.index + 1)}"
-    Environment = var.environment
+    Name                     = "${var.name}-public-subnet-${format("%03d", count.index + 1)}"
+    Environment              = var.environment
     "kubernetes.io/role/elb" = 1
   }
 }

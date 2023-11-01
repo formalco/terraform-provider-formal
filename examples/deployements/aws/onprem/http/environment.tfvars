@@ -14,12 +14,12 @@ dockerhub_username = ""
 dockerhub_password = ""
 
 health_check_port              = 8080
-http_port                 = 443
+http_port                      = 443
 data_classifier_satellite_port = 50055
 
-http_container_image                 = ""
+http_container_image                      = ""
 data_classifier_satellite_container_image = ""
 
-sidecar_hostname = ""
+sidecar_hostname   = ""
 datastore_hostname = ""
 

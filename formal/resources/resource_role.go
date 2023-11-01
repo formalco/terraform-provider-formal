@@ -1,15 +1,7 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
-	"context"
-	"github.com/bufbuild/connect-go"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"google.golang.org/protobuf/types/known/timestamppb"
-	"time"
 )
 
 func ResourceRole() *schema.Resource {
@@ -18,17 +10,17 @@ func ResourceRole() *schema.Resource {
 		// This description is used by the documentation generator and the language server.
 		Description: "User in Formal.",
 
-		CreateContext: resourceRoleCreate,
-		ReadContext:   resourceRoleRead,
-		UpdateContext: resourceRoleUpdate,
-		DeleteContext: resourceRoleDelete,
+		CreateContext: resourceUserCreate,
+		ReadContext:   resourceUserRead,
+		UpdateContext: resourceUserUpdate,
+		DeleteContext: resourceUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Role ID",
+				Description: "User ID",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -95,114 +87,13 @@ func ResourceRole() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this User cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
-}
-
-func resourceRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*clients.Clients)
-
-	// Warning or errors can be collected in a slice type
-	var diags diag.Diagnostics
-
-	res, err := c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, connect.NewRequest(&adminv1.CreateUserRequest{
-		FirstName: d.Get("first_name").(string),
-		LastName:  d.Get("last_name").(string),
-		Type:      d.Get("type").(string),
-		AppType:   d.Get("app_type").(string),
-		Name:      d.Get("name").(string),
-		Email:     d.Get("email").(string),
-		Admin:     d.Get("admin").(bool),
-		ExpireAt:  timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
-	}))
-
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId(res.Msg.User.Id)
-
-	resourceRoleRead(ctx, d, meta)
-
-	return diags
-}
-
-func resourceRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*clients.Clients)
-	var diags diag.Diagnostics
-
-	roleId := d.Id()
-
-	res, err := c.Grpc.Sdk.UserServiceClient.GetUserById(ctx, connect.NewRequest(&adminv1.GetUserByIdRequest{Id: roleId}))
-	if err != nil {
-		if connect.CodeOf(err) == connect.CodeNotFound {
-			// Policy was deleted
-			tflog.Warn(ctx, "The Role with ID "+roleId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
-			d.SetId("")
-			return diags
-		}
-		return diag.FromErr(err)
-	}
-
-	// Should map to all fields of RoleOrgItem
-	d.Set("id", res.Msg.User.Id)
-	d.Set("type", res.Msg.User.Type)
-	d.Set("db_username", res.Msg.User.DbUsername)
-	d.Set("name", res.Msg.User.Name)
-	d.Set("first_name", res.Msg.User.FirstName)
-	d.Set("last_name", res.Msg.User.LastName)
-	d.Set("email", res.Msg.User.Email)
-	d.Set("admin", res.Msg.User.Admin)
-	d.Set("app_type", res.Msg.User.AppType)
-	d.Set("expire_at", res.Msg.User.ExpireAt.AsTime().Unix())
-
-	if c.Grpc.ReturnSensitiveValue {
-		d.Set("machine_role_access_token", res.Msg.User.MachineRoleAccessToken)
-	}
-
-	d.SetId(roleId)
-
-	return diags
-}
-
-func resourceRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*clients.Clients)
-
-	var diags diag.Diagnostics
-
-	roleId := d.Id()
-	name := d.Get("name").(string)
-	firstName := d.Get("first_name").(string)
-	lastName := d.Get("last_name").(string)
-
-	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&adminv1.UpdateUserRequest{
-		Id:        roleId,
-		Name:      name,
-		FirstName: firstName,
-		LastName:  lastName,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	resourceRoleRead(ctx, d, meta)
-
-	return diags
-}
-
-func resourceRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-	c := meta.(*clients.Clients)
-
-	var diags diag.Diagnostics
-
-	roleId := d.Id()
-
-	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&adminv1.DeleteUserRequest{Id: roleId}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	d.SetId("")
-
-	return diags
 }
