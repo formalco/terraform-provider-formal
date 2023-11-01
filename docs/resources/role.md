@@ -28,11 +28,12 @@ User in Formal.
 - `first_name` (String) For human users, their first name.
 - `last_name` (String) For human users, their last name.
 - `name` (String) For machine users, the name of the role.
+- `termination_protection` (Boolean) If set to true, this User cannot be deleted.
 
 ### Read-Only
 
 - `db_username` (String) The username that the user will use to access the sidecar.
-- `id` (String) Role ID
+- `id` (String) User ID
 - `machine_role_access_token` (String, Sensitive) If the role is of type `machine`, this is the accesss token (database password) of this role.
 
 

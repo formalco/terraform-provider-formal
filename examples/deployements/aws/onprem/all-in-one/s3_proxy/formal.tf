@@ -45,8 +45,8 @@ resource "formal_native_role" "main_s3" {
 
 resource "formal_key" "encryption_key" {
   cloud_region = "us-east-1"
-  key_type = "aws_kms"
-  managed_by = "customer_managed"
-  name = "formal-s3-demo-key"
-  key_id = aws_kms_key.field_encryption.id
+  key_type     = "aws_kms"
+  managed_by   = "customer_managed"
+  name         = "formal-s3-demo-key"
+  key_id       = aws_kms_key.field_encryption.id
 }

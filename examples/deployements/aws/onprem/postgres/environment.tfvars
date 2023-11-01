@@ -14,10 +14,10 @@ dockerhub_username = ""
 dockerhub_password = ""
 
 health_check_port              = 8080
-postgres_port                 = 5432
+postgres_port                  = 5432
 data_classifier_satellite_port = 50055
 
-postgres_container_image                 = ""
+postgres_container_image                  = ""
 data_classifier_satellite_container_image = ""
 
 postgres_sidecar_hostname = ""

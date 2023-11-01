@@ -4,9 +4,9 @@ provider "aws" {
 }
 
 resource "aws_s3_bucket" "b" {
-  bucket = var.bucket_name
+  bucket   = var.bucket_name
   provider = aws.us
-  
+
   tags = {
     Name        = "Test"
     Environment = "S3-test"
@@ -19,7 +19,7 @@ resource "aws_iam_user" "aws_native_user" {
 
 resource "aws_iam_policy" "s3_full_access" {
   name = "s3-full-access-policy"
-    
+
   # AmazonS3FullAccess managed policy ARN
   # You can also create a custom policy with the necessary permissions if needed.
   description = "Full access to Amazon S3"
@@ -47,7 +47,7 @@ EOF
 }
 
 resource "aws_iam_policy_attachment" "attach_s3_full_access" {
-  name = "tf-test-iam"
+  name       = "tf-test-iam"
   policy_arn = aws_iam_policy.s3_full_access.arn
   users      = [aws_iam_user.aws_native_user.name]
 }
@@ -58,8 +58,8 @@ resource "aws_iam_access_key" "example_access_key" {
 
 
 resource "aws_s3_bucket_public_access_block" "bucket" {
-  bucket = aws_s3_bucket.b.id
-  provider = aws.us
+  bucket                  = aws_s3_bucket.b.id
+  provider                = aws.us
   block_public_acls       = false
   block_public_policy     = false
   ignore_public_acls      = false
