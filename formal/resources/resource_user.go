@@ -1,17 +1,18 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
+	"strconv"
+	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/timestamppb"
-	"strconv"
-	"time"
 )
 
 func ResourceUser() *schema.Resource {
@@ -160,7 +161,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	d.SetId(res.Msg.Id)
 
-	resourceRoleRead(ctx, d, meta)
+	resourceUserRead(ctx, d, meta)
 
 	return diags
 }
@@ -225,7 +226,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		return diag.FromErr(err)
 	}
 
-	resourceRoleRead(ctx, d, meta)
+	resourceUserRead(ctx, d, meta)
 
 	return diags
 }
