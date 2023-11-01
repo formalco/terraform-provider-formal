@@ -58,8 +58,8 @@ module "postgres_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.postgres_port
-  postgres_sidecar_hostname     = var.postgres_sidecar_hostname
-  postgres_hostname             = module.postgres_proxy.rds_hostname
+  postgres_sidecar_hostname      = var.postgres_sidecar_hostname
+  postgres_hostname              = module.postgres_proxy.rds_hostname
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.postgres_container_image
@@ -73,7 +73,7 @@ module "postgres_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  postgres_username             = var.postgres_username
-  postgres_password             = var.postgres_password
+  postgres_username              = var.postgres_username
+  postgres_password              = var.postgres_password
 }
 

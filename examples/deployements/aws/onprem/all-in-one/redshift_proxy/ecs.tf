@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "main" {
           value = "true"
         },
         {
-          name = "LOG_LEVEL",
+          name  = "LOG_LEVEL",
           value = "debug"
         },
         {

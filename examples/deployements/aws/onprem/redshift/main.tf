@@ -58,8 +58,8 @@ module "redshift_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.redshift_port
-  redshift_sidecar_hostname     = var.redshift_sidecar_hostname
-  redshift_hostname             = module.redshift_proxy.redshift_hostname
+  redshift_sidecar_hostname      = var.redshift_sidecar_hostname
+  redshift_hostname              = module.redshift_proxy.redshift_hostname
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.redshift_container_image
@@ -73,7 +73,7 @@ module "redshift_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  redshift_username             = var.redshift_username
-  redshift_password             = var.redshift_password
+  redshift_username              = var.redshift_username
+  redshift_password              = var.redshift_password
 }
 

@@ -1,7 +1,7 @@
 resource "aws_instance" "main" {
   ami           = "ami-07a920f17020024b9"
   instance_type = "t3.micro"
-  key_name = "demo-ssh-key-pair"
+  key_name      = "demo-ssh-key-pair"
 
   associate_public_ip_address = true
   subnet_id                   = var.public_subnets[0]
@@ -36,7 +36,7 @@ resource "aws_iam_user" "aws_native_user" {
 
 resource "aws_iam_policy" "ssh_full_access" {
   name = "ssh-policy"
-    
+
   # AmazonS3FullAccess managed policy ARN
   # You can also create a custom policy with the necessary permissions if needed.
   description = "Ssh proxy policy"
@@ -68,7 +68,7 @@ EOF
 }
 
 resource "aws_iam_policy_attachment" "attach_s3_full_access" {
-  name = "ssh-iam"
+  name       = "ssh-iam"
   policy_arn = aws_iam_policy.ssh_full_access.arn
   users      = [aws_iam_user.aws_native_user.name]
 }
