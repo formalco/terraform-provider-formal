@@ -47,7 +47,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "prod"
         },
         {
-          name = "ENVIRONMENT",
+          name  = "ENVIRONMENT",
           value = "prod"
         },
         {

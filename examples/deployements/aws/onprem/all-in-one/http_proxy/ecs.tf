@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "main" {
           value = "true"
         },
         {
-          name = "LOG_LEVEL",
+          name  = "LOG_LEVEL",
           value = "debug"
         },
         {
@@ -63,27 +63,27 @@ resource "aws_ecs_task_definition" "main" {
           value = "8"
         },
         {
-          name = "ENCRYPT_RESPONSE_PAYLOAD"
+          name  = "ENCRYPT_RESPONSE_PAYLOAD"
           value = "false"
         },
         {
-          name = "ENCRYPT_REQUEST_PAYLOAD"
+          name  = "ENCRYPT_REQUEST_PAYLOAD"
           value = "false"
         },
         {
-          name = "ENCRYPTION_KEY_REGION"
+          name  = "ENCRYPTION_KEY_REGION"
           value = "ap-southeast-3"
         },
         {
-          name = "HEALTH_CHECK_ON_TRAFFIC_PORT"
+          name  = "HEALTH_CHECK_ON_TRAFFIC_PORT"
           value = "true"
         },
         {
-          name = "HEALTH_CHECK_ON_TRAFFIC_PORT_PATH"
+          name  = "HEALTH_CHECK_ON_TRAFFIC_PORT_PATH"
           value = "/health"
         },
         {
-          name = "ENCRYPTION_KEY"
+          name  = "ENCRYPTION_KEY"
           value = aws_kms_key.http_sidecar_key.id
         }
       ],

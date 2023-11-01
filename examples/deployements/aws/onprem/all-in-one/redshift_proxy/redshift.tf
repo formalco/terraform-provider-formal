@@ -1,12 +1,12 @@
 resource "aws_redshift_cluster" "default" {
-  cluster_identifier = "tf-redshift-cluster"
-  database_name      = "main"
-  master_username    = var.redshift_username
-  master_password    = var.redshift_password
-  node_type          = "dc2.large"
-  cluster_type       = "single-node"
-  vpc_security_group_ids          = [aws_security_group.default.id]
-  cluster_subnet_group_name            = aws_redshift_subnet_group.default.name
+  cluster_identifier        = "tf-redshift-cluster"
+  database_name             = "main"
+  master_username           = var.redshift_username
+  master_password           = var.redshift_password
+  node_type                 = "dc2.large"
+  cluster_type              = "single-node"
+  vpc_security_group_ids    = [aws_security_group.default.id]
+  cluster_subnet_group_name = aws_redshift_subnet_group.default.name
 
 }
 
