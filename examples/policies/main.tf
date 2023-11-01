@@ -22,7 +22,7 @@ resource "formal_policy" "decrypt" {
   owners       = ["john@formal.com"]
   notification = "none"
   status       = "active"
-active       = true
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -42,7 +42,7 @@ resource "formal_policy" "mask_emails" {
   owners       = ["john@company.com"]
   notification = "consumer"
   status       = "active"
-active       = true
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -60,7 +60,7 @@ resource "formal_policy" "row_level_hashing" {
   owners       = ["john@company.com"]
   notification = "all"
   status       = "active"
-    active       = true
+  active       = true
   module       = <<-EOF
 package formal.v2
 
@@ -78,7 +78,7 @@ resource "formal_policy" "block_db_with_formal_message" {
   description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
   owners       = ["john@company.com"]
   notification = "all"
-    active       = true
+  active       = true
   status       = "active"
   module       = <<-EOF
 package formal.v2
