@@ -13,7 +13,7 @@ module "eks" {
     ami_type = "AL2_x86_64"
   }
 
-   cluster_addons = {
+  cluster_addons = {
     coredns = {
       most_recent = true
     }

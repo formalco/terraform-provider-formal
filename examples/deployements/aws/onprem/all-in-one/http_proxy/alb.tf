@@ -15,12 +15,12 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name        = var.name
-  port        = var.main_port
-  protocol    = "HTTPS"
-  vpc_id      = var.vpc_id
+  name              = var.name
+  port              = var.main_port
+  protocol          = "HTTPS"
+  vpc_id            = var.vpc_id
   proxy_protocol_v2 = true
-  target_type = "ip"
+  target_type       = "ip"
 
   health_check {
     healthy_threshold   = "3"
@@ -48,11 +48,11 @@ resource "aws_lb_listener" "main" {
   load_balancer_arn = aws_lb.main.id
   port              = var.main_port
   protocol          = "HTTPS"
-  ssl_policy = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn = var.certificate_arn_acm
+  ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  certificate_arn   = var.certificate_arn_acm
 
 
-  alpn_policy     = null
+  alpn_policy = null
 
   default_action {
     type             = "forward"
@@ -67,7 +67,7 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "public_alb" {
   name        = "${var.name}_public_alb"
   description = "Allow public traffic for Application Load Balancer."
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   # for allowing health check traffic
   ingress {

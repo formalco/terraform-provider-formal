@@ -14,10 +14,10 @@ dockerhub_username = ""
 dockerhub_password = ""
 
 health_check_port              = 8080
-redshift_port                 = 5439
+redshift_port                  = 5439
 data_classifier_satellite_port = 50055
 
-redshift_container_image                 = ""
+redshift_container_image                  = ""
 data_classifier_satellite_container_image = ""
 
 redshift_sidecar_hostname = ""

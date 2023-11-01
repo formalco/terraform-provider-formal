@@ -58,8 +58,8 @@ module "s3_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.s3_port
-  s3_sidecar_hostname     = var.s3_sidecar_hostname
-  s3_hostname             = "${var.name}.s3.awsamazon.com"
+  s3_sidecar_hostname            = var.s3_sidecar_hostname
+  s3_hostname                    = "${var.name}.s3.awsamazon.com"
   bucket_name                    = var.bucket_name
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
@@ -74,7 +74,7 @@ module "s3_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  iam_user_key_id             = module.s3_proxy.iam_access_key_id
-  iam_user_secret_key             = module.s3_proxy.iam_secret_access_key
+  iam_user_key_id                = module.s3_proxy.iam_access_key_id
+  iam_user_secret_key            = module.s3_proxy.iam_secret_access_key
 }
 

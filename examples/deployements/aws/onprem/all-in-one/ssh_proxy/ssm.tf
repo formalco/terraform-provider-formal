@@ -18,15 +18,15 @@ resource "aws_ecs_task_definition" "task" {
 
   container_definitions = jsonencode([
     {
-      name: "nginx",
-      image: "nginx:1.23.1",
-      cpu: 512,
-      memory: 2048,
-      essential: true,
-      portMappings: [
+      name : "nginx",
+      image : "nginx:1.23.1",
+      cpu : 512,
+      memory : 2048,
+      essential : true,
+      portMappings : [
         {
-          containerPort: 80,
-          hostPort: 80,
+          containerPort : 80,
+          hostPort : 80,
         },
       ],
     },
@@ -35,13 +35,13 @@ resource "aws_ecs_task_definition" "task" {
 
 # Creating an ECS service
 resource "aws_ecs_service" "service" {
-  name             = "ssm-service"
-  cluster          = aws_ecs_cluster.ssm-cluster.id
-  task_definition  = aws_ecs_task_definition.task.arn
-  desired_count    = 1
+  name                   = "ssm-service"
+  cluster                = aws_ecs_cluster.ssm-cluster.id
+  task_definition        = aws_ecs_task_definition.task.arn
+  desired_count          = 1
   enable_execute_command = true
-  launch_type      = "FARGATE"
-  platform_version = "LATEST"
+  launch_type            = "FARGATE"
+  platform_version       = "LATEST"
 
   network_configuration {
     assign_public_ip = true
