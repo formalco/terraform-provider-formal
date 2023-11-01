@@ -1,12 +1,13 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"errors"
 	"fmt"
 	"strconv"
 	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -74,9 +75,11 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	var diags diag.Diagnostics
 
 	name := d.Get("name").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(&adminv1.CreateSatelliteRequest{
-		Name: name,
+		Name:                  name,
+		TerminationProtection: terminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
