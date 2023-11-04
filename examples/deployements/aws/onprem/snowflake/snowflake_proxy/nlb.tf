@@ -4,6 +4,8 @@ resource "aws_lb" "main" {
   load_balancer_type = "network"
   subnets            = var.public_subnets
 
+  security_groups = ["${aws_security_group.public_nlb.id}"]
+
   enable_deletion_protection = false
 
   tags = {
@@ -58,5 +60,46 @@ resource "aws_lb_listener" "main" {
 
   lifecycle {
     ignore_changes = [default_action]
+  }
+}
+
+resource "aws_security_group" "public_nlb" {
+  name        = "${var.name}_public_nlb"
+  description = "Allow public traffic for Network Load Balancer."
+  vpc_id      = "${var.vpc_id}"
+
+  # for allowing health check traffic
+  ingress {
+    from_port = 32768 # ephemeral port range: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PortMapping.html
+    # to_port     = 61000
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] // anywhere
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] // anywhere
+  }
+
+  ingress {
+    # TLS (change to whatever ports you need)
+    from_port = 443
+    to_port   = 443
+    protocol  = "tcp"
+
+    # Please restrict your ingress to only necessary IPs and ports.
+    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
+    cidr_blocks = ["0.0.0.0/0"] # add a CIDR block here
+  }
+
+  # allow all traffic
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }

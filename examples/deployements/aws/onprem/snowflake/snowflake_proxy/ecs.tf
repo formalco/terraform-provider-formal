@@ -61,7 +61,7 @@ resource "aws_ecs_task_definition" "main" {
       ],
       secrets = [
         {
-          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
+          name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         }
       ],
@@ -175,7 +175,7 @@ resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
   task_definition                    = aws_ecs_task_definition.main.arn
-  desired_count                      = 3
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
