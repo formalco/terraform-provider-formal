@@ -66,7 +66,16 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "public_nlb" {
   name        = "${var.name}_public_nlb"
   description = "Allow public traffic for Network Load Balancer."
-  vpc_id      = var.vpc_id
+  vpc_id      = "${var.vpc_id}"
+
+  # for allowing health check traffic
+  ingress {
+    from_port = 32768 # ephemeral port range: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PortMapping.html
+    # to_port     = 61000
+    to_port     = 65535
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"] // anywhere
+  }
 
   ingress {
     from_port   = 80
@@ -76,6 +85,7 @@ resource "aws_security_group" "public_nlb" {
   }
 
   ingress {
+    # TLS (change to whatever ports you need)
     from_port = 443
     to_port   = 443
     protocol  = "tcp"
