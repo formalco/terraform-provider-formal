@@ -17,7 +17,7 @@ func ResourceSidecarDatastoreLink() *schema.Resource {
 
 		CreateContext: resourceSidecarDatastoreLinkCreate,
 		ReadContext:   resourceSidecarDatastoreLinkRead,
-		// UpdateContext: resourceDatastoreLinkUpdate,
+		UpdateContext: resourceSidecarDatastoreLinkUpdate,
 		DeleteContext: resourceSidecarDatastoreLinkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -90,9 +90,9 @@ func resourceSidecarDatastoreLinkUpdate(ctx context.Context, d *schema.ResourceD
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.UpdateSidecarDatastoreLinkRequest{
-			Id:                    d.Id(),
-			TerminationProtection: &terminationProtection,
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateTerminationProtection(ctx, connect.NewRequest(&adminv1.UpdateTerminationProtectionRequest{
+			Id:      d.Id(),
+			Enabled: terminationProtection,
 		}))
 		if err != nil {
 			return diag.FromErr(err)

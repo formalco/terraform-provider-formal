@@ -1,7 +1,7 @@
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231101234842-06acc9c3973a.1 h1:wXhohJeF80EXKqtXeUX/kd5CD/yQH92fZMyINdE/nH8=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231101234842-06acc9c3973a.1/go.mod h1:acHDIeUJiKPr62UylhsIlFioIY30P0100nshPzW3L3Y=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231101234842-06acc9c3973a.1 h1:bFJSodaQANojRKC7YjyRxYRftL963Ex0/wH7N311TgY=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231101234842-06acc9c3973a.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231103165244-cca353373697.2 h1:N23zvA799p/P4sSIbbQ7p6b3yHJXVqaz0vCSsbogJNc=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231103165244-cca353373697.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
