@@ -1,10 +1,12 @@
 resource "aws_lb" "main" {
   name               = var.name
-  internal           = false
+  internal           = true
   load_balancer_type = "network"
-  subnets            = var.public_subnets
+  subnets            = var.private_subnets
 
   enable_deletion_protection = false
+
+  security_groups = ["${aws_security_group.sg_nlb.id}"]
 
   tags = {
     Name        = var.name
@@ -58,4 +60,24 @@ resource "aws_lb_listener" "main" {
   lifecycle {
     ignore_changes = [default_action]
   }
+}
+
+resource "aws_security_group" "sg_nlb" {
+  name        = "${var.name}_nlb_data_classifier"
+  description = "Allow traffic for Network Load Balancer."
+  vpc_id      = "${var.vpc_id}"
+
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
 }
