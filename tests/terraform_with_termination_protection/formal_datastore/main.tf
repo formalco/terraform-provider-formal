@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     formal = {
-      source  = "formalco/formal"
-      version = ">= 3.2.11"
+      version = "~> 1.0.0"
+      source  = "joinformal.com/local/formal"
     }
   }
 }
