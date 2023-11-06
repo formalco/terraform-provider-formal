@@ -1,8 +1,6 @@
 #!/bin/bash
 
-export FORMAL_ENV="dev"
-export FORMAL_DEV_URL="http://localhost:444"
-# export FORMAL_API_KEY="" # Export your API key on terminal. Don't put it in this file for security reason
+ 
 
 echo "$(basename $(pwd)): Cleaning up the Terraform state if exists"
 rm -f .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup output.txt
