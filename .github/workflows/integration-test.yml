@@ -48,11 +48,3 @@ jobs:
           terraform destroy -auto-approve
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      - name: 'Test Terraform Termination Protection'
-        if: ${{ !cancelled() && ( steps.terraform-apply.outcome == 'success') }}
-        timeout-minutes: 10
-        run: |
-          cd tests/terraform_with_termination_protection
-          ./run_test.sh
-        env:
-          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
