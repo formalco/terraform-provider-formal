@@ -132,6 +132,11 @@ func resourceSidecarDatastoreLinkDelete(ctx context.Context, d *schema.ResourceD
 
 	var diags diag.Diagnostics
 
+	terminationProtection := d.Get("termination_protection").(bool)
+	if terminationProtection {
+		return diag.Errorf("Sidecar Datastore Link cannot be deleted because termination_protection is set to true")
+	}
+
 	sidecarDatastoreLinkId := d.Id()
 
 	_, err := c.Grpc.Sdk.SidecarServiceClient.DeleteSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.DeleteSidecarDatastoreLinkRequest{LinkId: sidecarDatastoreLinkId}))
