@@ -28,31 +28,31 @@ jobs:
           OS_ARCH: linux_amd64
           VERSION: 1.0.0
           BINARY: terraform-provider-formal # last word comes from NAME env
-      # - name: Terraform Init
-      #   run: |
-      #     cd tests
-      #     terraform init
-      #   env:
-      #     FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      # - name: Terraform Apply
-      #   id: terraform-apply
-      #   run: |
-      #     cd tests
-      #     terraform apply -auto-approve
-      #   env:
-      #     FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      # - name: Terraform Destroy
-      #   if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
-      #   run: |
-      #     cd tests
-      #     terraform destroy -auto-approve
-      #   env:
-      #     FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Init
+        run: |
+          cd tests
+          terraform init
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Apply
+        id: terraform-apply
+        run: |
+          cd tests
+          terraform apply -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Destroy
+        if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
+        run: |
+          cd tests
+          terraform destroy -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
       - name: 'Test Terraform Termination Protection'
-        # if: ${{ !cancelled() && ( steps.terraform-apply.outcome == 'success') }}
+        if: ${{ !cancelled() && ( steps.terraform-apply.outcome == 'success') }}
         timeout-minutes: 10
         run: |
-          cd tests/terraform_with_termination_protection/formal_sidecar_datastore_link
+          cd tests/terraform_with_termination_protection
           ./run_test.sh
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
