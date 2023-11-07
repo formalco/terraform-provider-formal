@@ -15,8 +15,8 @@ variable "termination_protection" {
 }
 
 resource "formal_datastore" "postgres1" {
-  hostname                   = "terraform-test-local-formal_sidecar_datastore_link-with-termination-protection"
-  name                       = "terraform-test-local-formal_sidecar_datastore_link-with-termination-protection"
+  hostname                   = "terraform-test-local.formal-sidecar-datastore-link.with-termination-protection"
+  name                       = "terraform-test-local-formal-sidecar-datastore-link-with-termination-protection"
   technology                 = "postgres"
   db_discovery_job_wait_time = "1m"
   environment                = "DEV"
@@ -27,7 +27,7 @@ resource "formal_datastore" "postgres1" {
 }
 
 resource "formal_sidecar" "name" {
-  name               = "terraform-test-local-formal_sidecar_datastore_link-with-termination-protection"
+  name               = "terraformtestlocalsidecardatastorelinkwithterminationprotection"
   deployment_type    = "onprem"
   global_kms_decrypt = false
   technology         = "postgres"
