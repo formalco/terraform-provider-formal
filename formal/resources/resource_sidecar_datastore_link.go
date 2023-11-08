@@ -1,8 +1,9 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -16,7 +17,7 @@ func ResourceSidecarDatastoreLink() *schema.Resource {
 
 		CreateContext: resourceSidecarDatastoreLinkCreate,
 		ReadContext:   resourceSidecarDatastoreLinkRead,
-		// UpdateContext: resourceDatastoreLinkUpdate,
+		UpdateContext: resourceSidecarDatastoreLinkUpdate,
 		DeleteContext: resourceSidecarDatastoreLinkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -50,6 +51,13 @@ func ResourceSidecarDatastoreLink() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Sidecar Datastore Link cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -61,9 +69,10 @@ func resourceSidecarDatastoreLinkCreate(ctx context.Context, d *schema.ResourceD
 	var diags diag.Diagnostics
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.CreateSidecarDatastoreLinkRequest{
-		DatastoreId: d.Get("datastore_id").(string),
-		SidecarId:   d.Get("sidecar_id").(string),
-		Port:        int32(d.Get("port").(int)),
+		DatastoreId:           d.Get("datastore_id").(string),
+		SidecarId:             d.Get("sidecar_id").(string),
+		Port:                  int32(d.Get("port").(int)),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -72,6 +81,26 @@ func resourceSidecarDatastoreLinkCreate(ctx context.Context, d *schema.ResourceD
 	d.SetId(res.Msg.LinkId)
 
 	resourceSidecarDatastoreLinkRead(ctx, d, meta)
+	return diags
+}
+
+func resourceSidecarDatastoreLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+	var diags diag.Diagnostics
+
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarDatastoreLink(ctx, connect.NewRequest(&adminv1.UpdateSidecarDatastoreLinkRequest{
+			Id:                    d.Id(),
+			TerminationProtection: &terminationProtection,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	resourceSidecarDatastoreLinkRead(ctx, d, meta)
+
 	return diags
 }
 
@@ -91,6 +120,7 @@ func resourceSidecarDatastoreLinkRead(ctx context.Context, d *schema.ResourceDat
 	d.Set("datastore_id", res.Msg.Link.DatastoreId)
 	d.Set("sidecar_id", res.Msg.Link.SidecarId)
 	d.Set("port", res.Msg.Link.Port)
+	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
 
 	d.SetId(res.Msg.Link.Id)
 
@@ -101,6 +131,11 @@ func resourceSidecarDatastoreLinkDelete(ctx context.Context, d *schema.ResourceD
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
+
+	terminationProtection := d.Get("termination_protection").(bool)
+	if terminationProtection {
+		return diag.Errorf("Sidecar Datastore Link cannot be deleted because termination_protection is set to true")
+	}
 
 	sidecarDatastoreLinkId := d.Id()
 
