@@ -12,8 +12,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.19'
-          id: go
+          go-version: '1.20'
       - name: 'Terraform Setup'
         id: terraform-setup
         uses: hashicorp/setup-terraform@v3
@@ -43,9 +42,18 @@ jobs:
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
       - name: Terraform Destroy
+        id: terraform-destroy
         if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
         run: |
           cd tests
           terraform destroy -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: 'Test Terraform Termination Protection'
+        if: ${{ !cancelled() && ( steps.terraform-destroy.outcome == 'success') }}
+        timeout-minutes: 10
+        run: |
+          cd tests/terraform_with_termination_protection
+          ./run_test.sh
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
