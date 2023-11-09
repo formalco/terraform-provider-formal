@@ -1,0 +1,8 @@
+source:
+  type: formal-datahub.formal.FormalSource
+  config:
+    client_id: ${CLIENT_ID}
+    secret_key: ${SECRET_KEY}
+    datastore_id: ${DATASTORE_ID}
+    dataset_urn: ${DATASET_URN}
+    datahub_gms_endpoint: ${DATAHUB_GMS_ENDPOINT}
