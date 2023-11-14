@@ -21,6 +21,10 @@ Linking a Datastore to a Sidecar in Formal.
 - `port` (Number) Port.
 - `sidecar_id` (String) Sidecar ID that should be linked.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Sidecar Datastore Link cannot be deleted.
+
 ### Read-Only
 
 - `id` (String) Resource ID
