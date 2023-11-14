@@ -1,6 +1,6 @@
 module github.com/formalco/terraform-provider-formal
 
-go 1.20
+go 1.21
 
 require (
 	buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231114152905-5cd92ed5619c.2
