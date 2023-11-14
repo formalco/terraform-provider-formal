@@ -15,12 +15,12 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name        = var.name
-  port        = var.main_port
-  protocol    = "TCP"
+  name              = var.name
+  port              = var.main_port
+  protocol          = "TCP"
   proxy_protocol_v2 = true
-  vpc_id      = var.vpc_id
-  target_type = "ip"
+  vpc_id            = var.vpc_id
+  target_type       = "ip"
 
   health_check {
     healthy_threshold   = "3"
@@ -66,7 +66,7 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "public_nlb" {
   name        = "${var.name}_public_nlb"
   description = "Allow public traffic for Network Load Balancer."
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 80
