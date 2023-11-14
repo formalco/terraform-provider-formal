@@ -40,5 +40,5 @@ output "es_password" {
 
 output "acm_certificate_arn" {
   description = "ARN of ACM Certificate"
-  value = aws_acm_certificate.cert.arn
+  value       = aws_acm_certificate.cert.arn
 }

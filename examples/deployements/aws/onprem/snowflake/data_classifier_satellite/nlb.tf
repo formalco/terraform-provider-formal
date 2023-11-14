@@ -65,7 +65,7 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "sg_nlb" {
   name        = "${var.name}_nlb_data_classifier"
   description = "Allow traffic for Network Load Balancer."
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 0
