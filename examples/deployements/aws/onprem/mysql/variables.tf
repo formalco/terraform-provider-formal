@@ -8,10 +8,10 @@ variable "formal_api_key" {
 }
 
 variable "name" {
-  default = "mysql"
+  default = ""
 }
 variable "environment" {
-  default = "demo-formal"
+  default = ""
 }
 
 variable "cidr" {
@@ -30,7 +30,7 @@ variable "availability_zones" {
 variable "datadog_api_key" {}
 
 variable "dockerhub_username" {
-  default = "lorisformal"
+  default = ""
 }
 variable "dockerhub_password" {}
 
@@ -57,7 +57,7 @@ variable "data_classifier_satellite_container_image" {
 
 
 variable "mysql_sidecar_hostname" {
-  default = "mysql-formal-demo.proxy.formalcloud.net"
+  default = ""
 }
 
 variable "mysql_container_image" {
@@ -65,8 +65,8 @@ variable "mysql_container_image" {
 }
 
 variable "mysql_username" {
-  default = "formal"
+  default = ""
 }
 variable "mysql_password" {
-  default = "FormalDemo1234"
+  default = ""
 }
