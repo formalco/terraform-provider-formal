@@ -18,6 +18,7 @@ spec:
         "app.kubernetes.io/name": formal-external
         "app.kubernetes.io/instance": formal-external-web
     spec:
+      serviceAccountName: {{ .Values.serviceAccountDeployment }}
       containers:
         - name: {{ .Values.containers.httpSidecar.name }}
           image: {{ .Values.containers.httpSidecar.image }}
