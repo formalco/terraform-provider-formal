@@ -31,3 +31,4 @@ secretManagerRegion: ap-southeast-2
 deployDataClassifierSatellite: false
 externalSecrets:
   httpProxyKeyName : app/production/formal-external/formal-http-proxy-tls-cert
+serviceAccountDeployment: value
