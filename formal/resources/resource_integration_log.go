@@ -1,13 +1,15 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"time"
 )
 
 func ResourceIntegrationLogs() *schema.Resource {
@@ -40,10 +42,11 @@ func ResourceIntegrationLogs() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration app: datadog or splunk",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "Type of the Integration app: datadog or splunk",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IntegrationLogType(),
 			},
 			"dd_site": {
 				// This description is used by the documentation generator and the language server.

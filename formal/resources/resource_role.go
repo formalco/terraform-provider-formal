@@ -1,6 +1,7 @@
 package resource
 
 import (
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -44,9 +45,10 @@ func ResourceRole() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Either 'human' or 'machine'.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Either 'human' or 'machine'.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.UserType(),
 			},
 			"email": {
 				// This description is used by the documentation generator and the language server.
@@ -69,9 +71,10 @@ func ResourceRole() *schema.Resource {
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the role is of type `machine`, this is an optional designation for the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:  "If the role is of type `machine`, this is an optional designation for the app that this role will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.RoleAppType(),
 			},
 			"machine_role_access_token": {
 				// This description is used by the documentation generator and the language server.

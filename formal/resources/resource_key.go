@@ -1,10 +1,12 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -69,15 +71,17 @@ func ResourceKey() *schema.Resource {
 			},
 			"key_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of key based on cloud provider. Supported values at the moment are `aws_kms`.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Type of key based on cloud provider. Supported values at the moment are `aws_kms`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.KeyType(),
 			},
 			"managed_by": {
 				// This description is used by the documentation generator and the language server.
-				Description: "How the key is managed. Supported values are `saas_managed`, `managed_cloud`, or `customer_managed`.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "How the key is managed. Supported values are `saas_managed`, `managed_cloud`, or `customer_managed`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.KeyManagedBy(),
 			},
 			"cloud_account_id": {
 				// This description is used by the documentation generator and the language server.

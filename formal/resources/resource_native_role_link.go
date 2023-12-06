@@ -1,10 +1,12 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -45,10 +47,11 @@ func ResourceNativeRoleLink() *schema.Resource {
 			},
 			"formal_identity_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of Formal Identity to be linked. Accepted values are `role` and `group`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "The type of Formal Identity to be linked. Accepted values are `role` and `group`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.IdentityType(),
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
