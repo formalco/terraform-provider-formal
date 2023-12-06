@@ -18,7 +18,7 @@ resource "formal_datastore" "postgres1" {
   hostname                   = "terraform-test-postgres2"
   name                       = "terraform-test-postgres2"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "1m"
+  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {
