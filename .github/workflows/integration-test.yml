@@ -1,59 +1,59 @@
-# name: Test Terraform Functionality
-# on:
-#   pull_request:
+name: Test Terraform Functionality
+on:
+  pull_request:
 
-# jobs:
-#   test-terraform:
-#     name: Test Terraform Functionality
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Check out repository code
-#         uses: actions/checkout@v4
-#       - name: Set up Go
-#         uses: actions/setup-go@v4
-#         with:
-#           go-version: '1.21'
-#       - name: 'Terraform Setup'
-#         id: terraform-setup
-#         uses: hashicorp/setup-terraform@v3
-#       - name: Build Terraform Provider
-#         run: |
-#           go build -o ${BINARY}
-#           mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#           mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
-#         env:
-#           HOSTNAME: joinformal.com
-#           NAMESPACE: local
-#           NAME: formal
-#           OS_ARCH: linux_amd64
-#           VERSION: 1.0.0
-#           BINARY: terraform-provider-formal # last word comes from NAME env
-#       - name: Terraform Init
-#         run: |
-#           cd tests
-#           terraform init
-#         env:
-#           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-#       - name: Terraform Apply
-#         id: terraform-apply
-#         run: |
-#           cd tests
-#           terraform apply -auto-approve
-#         env:
-#           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-#       - name: Terraform Destroy
-#         id: terraform-destroy
-#         if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
-#         run: |
-#           cd tests
-#           terraform destroy -auto-approve
-#         env:
-#           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-#       - name: 'Test Terraform Termination Protection'
-#         if: ${{ !cancelled() && ( steps.terraform-destroy.outcome == 'success') }}
-#         timeout-minutes: 10
-#         run: |
-#           cd tests/terraform_with_termination_protection
-#           ./run_test.sh
-#         env:
-#           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+jobs:
+  test-terraform:
+    name: Test Terraform Functionality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: 'Terraform Setup'
+        id: terraform-setup
+        uses: hashicorp/setup-terraform@v3
+      - name: Build Terraform Provider
+        run: |
+          go build -o ${BINARY}
+          mkdir -p ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+          mv ${BINARY} ~/.terraform.d/plugins/${HOSTNAME}/${NAMESPACE}/${NAME}/${VERSION}/${OS_ARCH}
+        env:
+          HOSTNAME: joinformal.com
+          NAMESPACE: local
+          NAME: formal
+          OS_ARCH: linux_amd64
+          VERSION: 1.0.0
+          BINARY: terraform-provider-formal # last word comes from NAME env
+      - name: Terraform Init
+        run: |
+          cd tests
+          terraform init
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Apply
+        id: terraform-apply
+        run: |
+          cd tests
+          terraform apply -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: Terraform Destroy
+        id: terraform-destroy
+        if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
+        run: |
+          cd tests
+          terraform destroy -auto-approve
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
+      - name: 'Test Terraform Termination Protection'
+        if: ${{ !cancelled() && ( steps.terraform-destroy.outcome == 'success') }}
+        timeout-minutes: 10
+        run: |
+          cd tests/terraform_with_termination_protection
+          ./run_test.sh
+        env:
+          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
