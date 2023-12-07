@@ -2,10 +2,16 @@ buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231105134549-07bf535
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231105134549-07bf535e12c8.1/go.mod h1:7mFqqNZXOra+KeMjFxdoLSuoku8emYgwKGmXsubhDTU=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231114152905-5cd92ed5619c.1 h1:ELOodC9gkhmVx68fdjLriknuL7+dner7xOkmQc8fke4=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231114152905-5cd92ed5619c.1/go.mod h1:eqZBWpyU3vZVcEQdCfB0v1/4QAPOwX3FT/FFrGbaVlk=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231207155928-9f87b1f68107.1 h1:KK6/oyvpuaHdsxDuP9hTuMoCkbaVZ9O6SzGy/Dv/VWQ=
+buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231207155928-9f87b1f68107.1/go.mod h1:xJgdQtYEv6eZWbUcNJiTpLqnPiGdFIeYpTFPvmyXeoI=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231105134549-07bf535e12c8.2 h1:DyXqObkhG7uhfFz61CvHcLF9w8UX9q3S9VGVoo35XNA=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231105134549-07bf535e12c8.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231114152905-5cd92ed5619c.2 h1:s4oVnfd1vSph7NNdeKJwstIhNN/xDIFt/k6vkPmfPjc=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231114152905-5cd92ed5619c.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231207155928-9f87b1f68107.1 h1:9I8IWH3xCv50uCVweyn0emIkk2LzA3Rd6XSQ8ZAw1hM=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231207155928-9f87b1f68107.1/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231207155928-9f87b1f68107.2 h1:xihTqthkglbQ5XAU+HpXDtEIb7JsuQOAXl1B6R9x5Eo=
+buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231207155928-9f87b1f68107.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
 github.com/Masterminds/goutils v1.1.1 h1:5nUrii3FMTL5diU80unEVvNevw1nH4+ZV4DSLVJLSYI=
 github.com/Masterminds/goutils v1.1.1/go.mod h1:8cTjp+g8YejhMuvIA5y2vz3BpJxksy863GQaJW2MFNU=
