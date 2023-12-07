@@ -1,10 +1,10 @@
-name: Test Terraform Functionality
+name: Test Terraform Enum Validation
 on:
   pull_request:
 
 jobs:
   test-terraform:
-    name: Test Terraform Functionality
+    name: Test Terraform Enum Validation
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
@@ -28,32 +28,10 @@ jobs:
           OS_ARCH: linux_amd64
           VERSION: 1.0.0
           BINARY: terraform-provider-formal # last word comes from NAME env
-      - name: Terraform Init
-        run: |
-          cd tests
-          terraform init
-        env:
-          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      - name: Terraform Apply
-        id: terraform-apply
-        run: |
-          cd tests
-          terraform apply -auto-approve
-        env:
-          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      - name: Terraform Destroy
-        id: terraform-destroy
-        if: ${{ !cancelled() && (steps.terraform-apply.outcome == 'success' || steps.terraform-apply.outcome == 'failure') }}
-        run: |
-          cd tests
-          terraform destroy -auto-approve
-        env:
-          FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
-      - name: 'Test Terraform Termination Protection'
-        if: ${{ !cancelled() && ( steps.terraform-destroy.outcome == 'success') }}
+      - name: 'Test Terraform Enum Validations'
         timeout-minutes: 10
         run: |
-          cd tests/terraform_with_termination_protection
+          cd tests/enum_validations
           ./run_test.sh
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}

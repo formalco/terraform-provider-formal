@@ -7,7 +7,7 @@ import (
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"github.com/formalco/terraform-provider-formal/formal/validation"
+	formalvalidation "github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -45,7 +45,7 @@ func ResourceIntegrationDatahub() *schema.Resource {
 				Description:  "Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.",
 				Type:         schema.TypeString,
 				Required:     true,
-				ValidateFunc: validation.IntegrationDatahubSyncDirection(),
+				ValidateFunc: formalvalidation.IntegrationDatahubSyncDirection(),
 			},
 			"generalized_metadata_service_url": {
 				// This description is used by the documentation generator and the language server.
@@ -71,9 +71,9 @@ func ResourceIntegrationDatahub() *schema.Resource {
 				Type:        schema.TypeList,
 				Required:    true,
 				Elem: &schema.Schema{
-					Type: schema.TypeString,
+					Type:         schema.TypeString,
+					ValidateFunc: formalvalidation.IntegrationDatahubSyncEntity(),
 				},
-				ValidateFunc: validation.IntegrationDatahubSyncEntities(),
 			},
 			"organization_id": {
 				// This description is used by the documentation generator and the language server.

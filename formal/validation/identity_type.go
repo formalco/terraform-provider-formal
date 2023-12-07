@@ -6,5 +6,5 @@ import (
 )
 
 func IdentityType() schema.SchemaValidateFunc {
-	return validation.StringInSlice([]string{"role", "group"}, false)
+	return validation.StringInSlice([]string{"role", "user", "group"}, false)
 }
