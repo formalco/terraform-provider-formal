@@ -19,7 +19,7 @@ This resource creates assigns a Native Role to a Formal Identity.
 
 - `datastore_id` (String) The Sidecar ID of the Native Role.
 - `formal_identity_id` (String) The Formal ID for the Role or Group to be linked.
-- `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `role` and `group`.
+- `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `user` and `group`. (`role` is deprecated.))
 - `native_role_id` (String) The Native Role ID of the Native Role.
 
 ### Optional
