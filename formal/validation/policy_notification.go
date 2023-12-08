@@ -19,8 +19,15 @@ func getPolicyNotificationEnumValues() []string {
 	len := enumValues.Len()
 	for i := 0; i < len; i++ {
 		enumValue := enumValues.Get(i)
-		policyNotificationName := strings.ToLower(string(enumValue.Name()))
-		validEnumValues = append(validEnumValues, policyNotificationName)
+		enumName := string(enumValue.Name())
+		enumName = strings.ReplaceAll(enumName, "POLICY_NOTIFICATION_", "")
+		enumName = strings.ToLower(enumName)
+
+		if enumName == "unspecified" {
+			continue
+		}
+
+		validEnumValues = append(validEnumValues, enumName)
 	}
 
 	return validEnumValues

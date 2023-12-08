@@ -19,7 +19,15 @@ func getKeyManagedByEnumValues() []string {
 	len := enumValues.Len()
 	for i := 0; i < len; i++ {
 		enumValue := enumValues.Get(i)
-		validEnumValues = append(validEnumValues, strings.ToLower(string(enumValue.Name())))
+		enumName := string(enumValue.Name())
+		enumName = strings.ReplaceAll(enumName, "KEY_MANAGED_BY_", "")
+		enumName = strings.ToLower(enumName)
+
+		if enumName == "unspecified" {
+			continue
+		}
+
+		validEnumValues = append(validEnumValues, enumName)
 	}
 
 	return validEnumValues
