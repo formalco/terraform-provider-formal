@@ -1,7 +1,5 @@
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231208072057-174a090ba6d4.1 h1:imOMyqdIo3KZT/1oaLrwBakflaHELY8FObbCNbLpekE=
 buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231208072057-174a090ba6d4.1/go.mod h1:EKSl07Khsm9ISvG2yWR9hoyyWJIEqb6x+xX2ZaKkuDU=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231208132702-af9f29facb9c.2 h1:zd7u6Upht57OYxMY1DAPIu8QOplCshBZJuTLXXxoOPQ=
-buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231208132702-af9f29facb9c.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231208144306-32d763a2c756.2 h1:vNo/TfwvJkDJizh2cUCcGWqU4/HVOOcfGLjsUCJQNgg=
 buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231208144306-32d763a2c756.2/go.mod h1:tT2ehgfLh5ummBwlcRRUHwLr5Xh7Sy1lYZTjZwCDoWo=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
