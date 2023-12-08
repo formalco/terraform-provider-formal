@@ -8,16 +8,18 @@ import (
 )
 
 func Environment() schema.SchemaValidateFunc {
-	return validation.StringInSlice(getEnumValues(), false)
+	return validation.StringInSlice(getEnvironmentEnumValues(), false)
 }
 
-func getEnumValues() []string {
+func getEnvironmentEnumValues() []string {
 	validEnumValues := []string{}
+
 	enumValues := adminv1.File_admin_v1_types_v1_datastore_proto.Enums().ByName("Environment").Values()
 	len := enumValues.Len()
 	for i := 0; i < len; i++ {
 		enumValue := enumValues.Get(i)
 		validEnumValues = append(validEnumValues, string(enumValue.Name()))
 	}
+
 	return validEnumValues
 }

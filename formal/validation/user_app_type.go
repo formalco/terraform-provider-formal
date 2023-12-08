@@ -8,21 +8,20 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
-func SidecarNetworkType() schema.SchemaValidateFunc {
-	return validation.StringInSlice(getSidecarNetworkTypeEnumValues(), false)
+func UserAppType() schema.SchemaValidateFunc {
+	return validation.StringInSlice(getUserAppTypeEnumValues(), false)
 }
 
-func getSidecarNetworkTypeEnumValues() []string {
+func getUserAppTypeEnumValues() []string {
 	validEnumValues := []string{}
 
-	enumValues := adminv1.File_admin_v1_types_v1_sidecar_proto.Enums().ByName("NetworkType").Values()
+	enumValues := adminv1.File_admin_v1_types_v1_user_proto.Enums().ByName("UserAppType").Values()
 	len := enumValues.Len()
 	for i := 0; i < len; i++ {
 		enumValue := enumValues.Get(i)
 		enumName := string(enumValue.Name())
-		enumName = strings.ReplaceAll(enumName, "NETWORK_TYPE_", "")
+		enumName = strings.ReplaceAll(enumName, "USER_APP_TYPE_", "")
 		enumName = strings.ToLower(enumName)
-		enumName = strings.ReplaceAll(enumName, "_", "-")
 
 		if enumName == "unspecified" {
 			continue

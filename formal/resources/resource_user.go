@@ -81,9 +81,10 @@ func ResourceUser() *schema.Resource {
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:  "If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.UserAppType(),
 			},
 			"machine_user_access_token": {
 				// This description is used by the documentation generator and the language server.

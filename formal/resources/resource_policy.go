@@ -106,9 +106,10 @@ func ResourcePolicy() *schema.Resource {
 			},
 			"notification": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Notification settings for this policy.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Notification settings for this policy. It can be one of the following: `none`, `consumer`, `owners`, `all`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.PolicyNotification(),
 			},
 			"owners": {
 				// This description is used by the documentation generator and the language server.

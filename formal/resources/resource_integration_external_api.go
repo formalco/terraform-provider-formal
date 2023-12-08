@@ -57,7 +57,7 @@ func ResourceIntegrationExternalApi() *schema.Resource {
 			},
 			"auth_type": {
 				// This description is used by the documentation generator and the language server.
-				Description:  "Auth type of the ExternalApi: basic or oauth",
+				Description:  "Auth type of the ExternalApi: basic or oauth2",
 				Type:         schema.TypeString,
 				Required:     true,
 				ForceNew:     true,
