@@ -15,12 +15,12 @@ resource "aws_lb" "main" {
 }
 
 resource "aws_lb_target_group" "main" {
-  name        = var.name
-  port        = var.main_port
-  protocol    = "TCP"
-  vpc_id      = var.vpc_id
+  name              = var.name
+  port              = var.main_port
+  protocol          = "TCP"
+  vpc_id            = var.vpc_id
   proxy_protocol_v2 = false
-  target_type = "ip"
+  target_type       = "ip"
 
   health_check {
     healthy_threshold   = "3"
@@ -66,7 +66,7 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "sg_nlb" {
   name        = "${var.name}_mysql"
   description = "Allow traffic for Network Load Balancer."
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   ingress {
     from_port   = 3306
