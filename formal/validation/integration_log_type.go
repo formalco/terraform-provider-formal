@@ -29,6 +29,7 @@ func getIntegrationLogTypeEnumValues() []string {
 
 		validEnumValues = append(validEnumValues, enumName)
 	}
+	validEnumValues = append(validEnumValues, "s3") // this is temporary due to blocked by the implementation is not yet merged
 
 	return validEnumValues
 }
