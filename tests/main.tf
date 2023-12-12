@@ -95,11 +95,6 @@ resource "formal_integration_log" "name" {
   splunk_url     = "https://splunk.com"
 }
 
-resource "formal_integration_log_link" "name" {
-  integration_id = formal_integration_log.name.id
-  datastore_id   = formal_datastore.postgres1.id
-}
-
 # resource "formal_key" "name" {
 #   cloud_region = "eu-west-1"
 #   key_type     = "aws_kms"
