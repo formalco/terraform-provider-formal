@@ -1,10 +1,12 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -24,9 +26,10 @@ func ResourceDefaultFieldEncryption() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"data_key_storage": {
 				// This description is used by the documentation generator and the language server.
-				Description: "How the encrypted data key that encrypts the data should be stored. Use `control_plane_and_with_data` if the encrypted data key should be stored in the database alongside the encrypted data. Use `control_plane_only` if the encrypted data key should only be stored in the Formal Control Plane. In both cases, the data key is encrypted by the encryption key.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "How the encrypted data key that encrypts the data should be stored. Use `control_plane_and_with_data` if the encrypted data key should be stored in the database alongside the encrypted data. Use `control_plane_only` if the encrypted data key should only be stored in the Formal Control Plane. In both cases, the data key is encrypted by the encryption key.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.KeyStorage(),
 			},
 			"kms_key_id": {
 				// This description is used by the documentation generator and the language server.
@@ -36,9 +39,10 @@ func ResourceDefaultFieldEncryption() *schema.Resource {
 			},
 			"encryption_alg": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Encryption Algorithm to use. Supported values are `aes_random` and `aes_deterministic`. For highest security, `aes_random` is recommended, but `aes_deterministic` is required to enable search (WHERE clauses) over underlying data in encrypted fields.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Encryption Algorithm to use. Supported values are `aes_random` and `aes_deterministic`. For highest security, `aes_random` is recommended, but `aes_deterministic` is required to enable search (WHERE clauses) over underlying data in encrypted fields.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.EncryptionAlgorithm(),
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.

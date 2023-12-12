@@ -1,15 +1,16 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"fmt"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourcePolicy() *schema.Resource {
@@ -98,20 +99,17 @@ func ResourcePolicy() *schema.Resource {
 			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"draft",
-					"dry-run",
-					"active",
-				}, false),
+				Description:  "Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.PolicyStatus(),
 			},
 			"notification": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Notification settings for this policy.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Notification settings for this policy. It can be one of the following: `none`, `consumer`, `owners`, `all`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.PolicyNotification(),
 			},
 			"owners": {
 				// This description is used by the documentation generator and the language server.

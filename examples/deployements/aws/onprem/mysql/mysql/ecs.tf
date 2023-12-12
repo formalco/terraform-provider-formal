@@ -39,7 +39,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
-          name = "LOG_LEVEL",
+          name  = "LOG_LEVEL",
           value = "debug"
         },
         {
@@ -51,7 +51,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "prod"
         },
         {
-          name = "ENVIRONMENT",
+          name  = "ENVIRONMENT",
           value = "prod"
         },
         {
@@ -138,7 +138,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
         {
           "name"  = "DD_SITE",
           "value" = "datadoghq.eu"
-        }],
+      }],
       healthCheck = {
         "command" = [
           "CMD-SHELL",

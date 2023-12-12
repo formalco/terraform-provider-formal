@@ -9,6 +9,7 @@ import (
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -54,9 +55,10 @@ func ResourceUser() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Either 'human' or 'machine'.",
-				Type:        schema.TypeString,
-				Required:    true,
+				Description:  "Either 'human' or 'machine'.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.UserType(),
 			},
 			"email": {
 				// This description is used by the documentation generator and the language server.
@@ -79,9 +81,10 @@ func ResourceUser() *schema.Resource {
 			},
 			"app_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				Description:  "If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.UserAppType(),
 			},
 			"machine_user_access_token": {
 				// This description is used by the documentation generator and the language server.

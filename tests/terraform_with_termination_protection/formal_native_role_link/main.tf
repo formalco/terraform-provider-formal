@@ -18,7 +18,7 @@ resource "formal_datastore" "postgres1" {
   hostname                   = "terraform-test-local.formal-native-role-link.with-termination-protection"
   name                       = "terraform-test-local-formal_native_role_link-with-termination-protection"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "1m"
+  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {

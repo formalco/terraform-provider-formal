@@ -1,13 +1,15 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"errors"
-	"github.com/bufbuild/connect-go"
 	"strconv"
 	"time"
 
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	"github.com/bufbuild/connect-go"
+
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/validation"
 
 	"context"
 	"fmt"
@@ -65,17 +67,19 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.Technology(),
 			},
 			"deployment_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  "How the Sidecar should be deployed: `managed`, or `onprem`.",
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.SidecarDeploymentType(),
 			},
 			"fail_open": {
 				// This description is used by the documentation generator and the language server.
@@ -86,10 +90,11 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"network_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Description:  "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.SidecarNetworkType(),
 			},
 			"formal_hostname": {
 				// This description is used by the documentation generator and the language server.

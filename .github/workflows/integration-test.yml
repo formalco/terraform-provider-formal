@@ -4,7 +4,7 @@ on:
 
 jobs:
   test-terraform:
-    name: Test Postgres Sidecar
+    name: Test Terraform Functionality
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code

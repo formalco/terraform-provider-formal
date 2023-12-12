@@ -17,7 +17,7 @@ Registering a Integration External Api.
 
 ### Required
 
-- `auth_type` (String) Auth type of the ExternalApi: basic or oauth
+- `auth_type` (String) Auth type of the ExternalApi: basic or oauth2
 - `name` (String) Friendly name for the ExternalApi.
 - `type` (String) Type of the ExternalApi: zendesk or custom
 - `url` (String) Url of the ExternalApi.
