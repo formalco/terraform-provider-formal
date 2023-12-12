@@ -18,7 +18,7 @@ Registering a Integration Logs app.
 ### Required
 
 - `name` (String) Friendly name for the Integration app.
-- `type` (String) Type of the Integration app: datadog or splunk
+- `type` (String) Type of the Integration app: `datadog`, `splunk` or `s3`.
 
 ### Optional
 
