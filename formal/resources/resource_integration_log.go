@@ -42,7 +42,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration app: datadog or splunk",
+				Description: "Type of the Integration app: `datadog`, `splunk` or `s3`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
