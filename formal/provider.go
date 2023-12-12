@@ -62,7 +62,6 @@ func New(version string) func() *schema.Provider {
 				"formal_native_role_link":         resource.ResourceNativeRoleLink(),
 				"formal_user":                     resource.ResourceUser(),
 				"formal_integration_log":          resource.ResourceIntegrationLogs(),
-				"formal_integration_log_link":     resource.ResourceIntegrationLogLink(),
 				"formal_integration_app":          resource.ResourceIntegrationApp(),
 				"formal_integration_external_api": resource.ResourceIntegrationExternalApi(),
 				"formal_integration_datahub":      resource.ResourceIntegrationDatahub(),
