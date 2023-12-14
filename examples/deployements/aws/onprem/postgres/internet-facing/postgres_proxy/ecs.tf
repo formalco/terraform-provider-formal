@@ -65,8 +65,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
       ],
       secrets = [
         {
-          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
-          valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
+          name      = "FORMAL_CONTROL_PLANE_API_KEY"
+          valueFrom = aws_secretsmanager_secret_version.formal_api_key.arn
         },
       ],
       logConfiguration = {
