@@ -39,6 +39,7 @@ jobs:
         run: |
           cd tests
           terraform apply -auto-approve
+          sleep 120
         env:
           FORMAL_API_KEY: ${{ secrets.TEST_DEV_API_KEY }}
       - name: Terraform Destroy
