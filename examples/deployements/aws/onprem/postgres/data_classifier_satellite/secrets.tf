@@ -1,8 +1,8 @@
-resource "aws_secretsmanager_secret" "formal_tls_cert" {
-  name = "${var.name}-formal-tls-cert-pg-15"
+resource "aws_secretsmanager_secret" "formal_api_key" {
+  name = "${var.name}-formal-api-key"
 }
 
-resource "aws_secretsmanager_secret_version" "formal_tls_cert" {
-  secret_id     = aws_secretsmanager_secret.formal_tls_cert.id
-  secret_string = formal_satellite.main.tls_cert
+resource "aws_secretsmanager_secret_version" "formal_api_key" {
+  secret_id     = aws_secretsmanager_secret.formal_api_key.id
+  secret_string = formal_satellite.main.api_key
 }
