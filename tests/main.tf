@@ -25,7 +25,7 @@ resource "formal_datastore" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "1m"
+  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {
@@ -88,16 +88,20 @@ resource "formal_integration_external_api" "name" {
   url       = "https://zendesk.com"
 }
 
-resource "formal_integration_log" "name" {
-  name           = "terraform-test-integration-log"
+resource "formal_integration_log" "splunk" {
+  name           = "terraform-test-integration-log-splunk"
   type           = "splunk"
   splunk_api_key = "aaaaa"
   splunk_url     = "https://splunk.com"
 }
 
-resource "formal_integration_log_link" "name" {
-  integration_id = formal_integration_log.name.id
-  datastore_id   = formal_datastore.postgres1.id
+resource "formal_integration_log" "s3" {
+  name                  = "terraform-test-integration-log-s3"
+  type                  = "s3"
+  aws_access_key_id     = "aaaaa"
+  aws_access_key_secret = "aaaaa"
+  aws_region            = "us-west-1"
+  aws_s3_bucket_name    = "terraform-test-integration-log-s3"
 }
 
 # resource "formal_key" "name" {
