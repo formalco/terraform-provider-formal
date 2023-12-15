@@ -14,12 +14,12 @@ dockerhub_username = ""
 dockerhub_password = ""
 
 health_check_port              = 8080
-mysql_port                 = 3386
+mysql_port                     = 3386
 data_classifier_satellite_port = 50055
 
 data_classifier_satellite_container_image = ""
 
-mysql_container_image = ""
+mysql_container_image  = ""
 mysql_sidecar_hostname = ""
-mysql_username = ""
-mysql_password = ""
+mysql_username         = ""
+mysql_password         = ""

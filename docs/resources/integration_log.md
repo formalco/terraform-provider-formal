@@ -18,10 +18,14 @@ Registering a Integration Logs app.
 ### Required
 
 - `name` (String) Friendly name for the Integration app.
-- `type` (String) Type of the Integration app: datadog or splunk
+- `type` (String) Type of the Integration app: `datadog`, `splunk` or `s3`.
 
 ### Optional
 
+- `aws_access_key_id` (String) AWS Access Key ID. Required if type is s3.
+- `aws_access_key_secret` (String) AWS Access Key Secret. Required if type is s3.
+- `aws_region` (String) AWS Region. Required if type is s3.
+- `aws_s3_bucket_name` (String) AWS S3 Bucket Name. Required if type is s3.
 - `dd_account_id` (String) Account ID of Datadog.
 - `dd_api_key` (String) API Key of Datadog.
 - `dd_site` (String) Url of your Datadog app.
