@@ -1,10 +1,9 @@
 data "aws_caller_identity" "current" {}
 
 resource "aws_kms_key" "field_encryption" {
-  description              = "Customer master key for the field encryption"
-  provider                 = aws.us
-  deletion_window_in_days  = 10
-  key_usage                = "ENCRYPT_DECRYPT"
+  description             = "Customer master key for the field encryption"
+  deletion_window_in_days = 10
+  key_usage = "ENCRYPT_DECRYPT"
   customer_master_key_spec = "SYMMETRIC_DEFAULT"
   policy = jsonencode({
     Version = "2012-10-17",
