@@ -1,6 +1,6 @@
 resource "aws_instance" "main" {
-  ami           = "ami-07a920f17020024b9"
-  instance_type = "t3.micro"
+  ami           = "ami-07355fe79b493752d"
+  instance_type = "t2.micro"
   key_name = "demo-ssh-key-pair"
 
   associate_public_ip_address = true
@@ -28,7 +28,6 @@ resource "aws_security_group" "ec2" {
     ipv6_cidr_blocks = ["::/0"]
   }
 }
-
 
 resource "aws_iam_user" "aws_native_user" {
   name = "ssh-sidecar-user"

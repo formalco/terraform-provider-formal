@@ -24,7 +24,7 @@ resource "formal_sidecar" "main" {
 
 resource "formal_datastore" "main" {
   technology = "mysql"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.mysql_hostname
   port       = var.main_port
 }

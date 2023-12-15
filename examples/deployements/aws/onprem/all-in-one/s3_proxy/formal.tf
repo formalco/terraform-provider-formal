@@ -24,7 +24,7 @@ resource "formal_sidecar" "main" {
 
 resource "formal_datastore" "main" {
   technology = "s3"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.s3_hostname
   port       = var.main_port
 }
@@ -44,9 +44,9 @@ resource "formal_native_role" "main_s3" {
 }
 
 resource "formal_key" "encryption_key" {
-  cloud_region = "us-east-1"
+  cloud_region = "eu-west-1"
   key_type = "aws_kms"
   managed_by = "customer_managed"
-  name = "formal-s3-demo-key"
+  name = "eu-west-1-s3-demo"
   key_id = aws_kms_key.field_encryption.id
 }

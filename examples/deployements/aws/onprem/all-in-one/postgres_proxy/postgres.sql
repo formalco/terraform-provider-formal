@@ -1,6 +1,5 @@
 CREATE TABLE "pii" (
   id SERIAL PRIMARY KEY,
-  full_name varchar(255) default NULL,
   first_name varchar(255) default NULL,
   last_name varchar(255) default NULL,
   phone_number varchar(100) default NULL,
@@ -15,7 +14,7 @@ CREATE TABLE "pii" (
 
 INSERT INTO "pii" (first_name, last_name, phone_number, email, company_name, street_address, city, zip, country, tenant_id)
 VALUES
-  ('Timothy', 'Berry', '1-746-292-9309', 'timothy.berry@dictumauguemalesuada.org', 'Vitae Mauris Sit Institute', 'Ap #403-3568 Urna. St.', 'Adrano', '7195 TV', 'United States Minor Outlying Islands', 'facebook'),
+  ('Timothy', 'Berry', '1-746-292-9309', 'timothy.berry@gmail.com', 'Vitae Mauris Sit Institute', 'Ap #403-3568 Urna. St.', 'Adrano', '7195 TV', 'United States Minor Outlying Islands', 'facebook'),
   ('Kelly', 'England', '1-746-292-9309', 'vestibulum@dictumauguemalesuada.org', 'Vitae Mauris Sit Institute', 'Ap #403-3568 Urna. St.', 'Adrano', '7195 TV', 'United States Minor Outlying Islands', 'facebook'),
   ('Lyle', 'Flores', '1-228-799-7428', 'ornare.libero@anteipsum.net', 'Nec Leo Ltd', 'P.O. Box 483, 5185 Praesent St.', 'Tranent', '39554', 'Sierra Leone', 'tesla'),
   ('Talon', 'Woodard', '1-297-715-8794', 'non.cursus.non@Pellentesqueultriciesdignissim.ca', 'Morbi Sit Institute', '402-4411 Tellus, Rd.', 'Kalyan', '19734', 'Lesotho', 'netflix'),

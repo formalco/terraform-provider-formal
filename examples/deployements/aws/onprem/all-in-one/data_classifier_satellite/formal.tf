@@ -14,5 +14,5 @@ provider "formal" {
 }
 
 resource "formal_satellite" "main" {
-  name = "formal-data-classifier"
+  name = "demo-data-classifier"
 }
