@@ -3,9 +3,9 @@ module github.com/formalco/terraform-provider-formal
 go 1.21
 
 require (
-	buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231114152905-5cd92ed5619c.2
+	buf.build/gen/go/formal/admin/protocolbuffers/go v1.31.0-20231212145611-49c4d521b76c.2
 	github.com/bufbuild/connect-go v1.10.0
-	github.com/formalco/go-sdk/sdk v1.2.9
+	github.com/formalco/go-sdk/sdk v1.2.10
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.31.0
@@ -13,7 +13,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231114152905-5cd92ed5619c.1 // indirect
+	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20231212145611-49c4d521b76c.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
