@@ -4,8 +4,6 @@ resource "aws_lb" "main" {
   load_balancer_type = "network"
   subnets            = var.public_subnets
 
-  enable_deletion_protection = true
-
   tags = {
     Name        = var.name
     Environment = var.environment

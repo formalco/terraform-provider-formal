@@ -23,7 +23,7 @@ resource "formal_sidecar" "main" {
 
 resource "formal_datastore" "instance_1" {
   technology = "ssh"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.ssh_hostname
   port       = 22
 }

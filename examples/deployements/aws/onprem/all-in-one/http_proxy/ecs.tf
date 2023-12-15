@@ -71,8 +71,8 @@ resource "aws_ecs_task_definition" "main" {
           value = "false"
         },
         {
-          name  = "ENCRYPTION_KEY_REGION"
-          value = "ap-southeast-3"
+          name = "ENCRYPTION_KEY_REGION"
+          value = "eu-west-1"
         },
         {
           name  = "HEALTH_CHECK_ON_TRAFFIC_PORT"

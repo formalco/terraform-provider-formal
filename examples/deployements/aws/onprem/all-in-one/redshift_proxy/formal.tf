@@ -24,7 +24,7 @@ resource "formal_sidecar" "main" {
 
 resource "formal_datastore" "ds" {
   technology = "redshift"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.redshift_hostname
   port       = var.main_port
 }
