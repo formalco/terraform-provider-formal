@@ -19,16 +19,19 @@ User in Formal.
 
 - `type` (String) Either 'human' or 'machine'.
 
-### Optional
-
-- `admin` (Boolean) For human users, specify if their admin.
-- `app_type` (String) If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.
+### Required for human users
 - `email` (String) For human users, their email.
-- `expire_at` (Number) When the Role should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970.
 - `first_name` (String) For human users, their first name.
 - `last_name` (String) For human users, their last name.
+
+### Required for machine users
 - `name` (String) For machine users, the name of the user.
-- `termination_protection` (Boolean) If set to true, this User cannot be deleted.
+
+### Optional
+- `admin` (Boolean) For human users, specify if their admin. Default value is false.
+- `app_type` (String) If the user is of type `machine`, this is an optional designation for the app that this user will be used for. Supported values are `metabase`, `tableau`, and `popsql`.
+- `expire_at` (Number) When the Role should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970.
+- `termination_protection` (Boolean) If set to true, this user cannot be deleted. Default value is false.
 
 ### Read-Only
 
