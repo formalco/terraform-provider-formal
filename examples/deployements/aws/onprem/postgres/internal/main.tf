@@ -29,8 +29,6 @@ module "common" {
   public_subnets     = var.public_subnets
   availability_zones = var.availability_zones
   environment        = var.environment
-  dockerhub_username = var.dockerhub_username
-  dockerhub_password = var.dockerhub_password
 }
 
 module "postgres_proxy" {
@@ -47,7 +45,6 @@ module "postgres_proxy" {
   container_cpu                  = var.container_cpu
   container_memory               = var.container_memory
   vpc_id                         = module.common.vpc_id
-  docker_hub_secret_arn          = module.common.docker_hub_secret_arn
   ecs_cluster_id                 = module.common.ecs_cluster_id
   ecs_cluster_name               = module.common.ecs_cluster_name
   private_subnets                = module.common.private_subnets
