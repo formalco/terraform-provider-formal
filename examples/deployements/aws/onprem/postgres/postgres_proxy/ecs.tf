@@ -10,6 +10,9 @@ resource "aws_ecs_task_definition" "ecs_task" {
     {
       name  = var.name
       image = var.container_image
+      repositoryCredentials = {
+        credentialsParameter = var.docker_hub_secret_arn
+      }
       essential = true
       portMappings = [
         {
@@ -24,12 +27,16 @@ resource "aws_ecs_task_definition" "ecs_task" {
       }]
       environment = [
         {
+          name  = "DATA_CLASSIFIER_SATELLITE_URI"
+          value = "${var.data_classifier_satellite_url}:${var.data_classifier_satellite_port}"
+        },
+        {
           name  = "SERVER_CONNECT_TLS"
-          value = "false"
+          value = "true"
         },
         {
           name  = "CLIENT_LISTEN_TLS"
-          value = "false"
+          value = "true"
         },
         {
           name  = "DD_VERSION"
@@ -49,7 +56,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
         },
         {
           name  = "MANAGED_TLS_CERTS"
-          value = "false"
+          value = "true"
         },
         {
           name  = "PII_SAMPLING_RATE"
