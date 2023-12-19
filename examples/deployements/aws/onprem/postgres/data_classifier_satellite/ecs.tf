@@ -1,4 +1,4 @@
-resource "aws_ecs_task_definition" "ecs_task" {
+resource "aws_ecs_task_definition" "main" {
   family                   = var.name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
@@ -10,6 +10,9 @@ resource "aws_ecs_task_definition" "ecs_task" {
     {
       name  = var.name
       image = var.container_image
+      repositoryCredentials = {
+        credentialsParameter = var.docker_hub_secret_arn
+      }
       essential = true
       portMappings = [
         {
@@ -24,43 +27,15 @@ resource "aws_ecs_task_definition" "ecs_task" {
       }]
       environment = [
         {
-          name  = "SERVER_CONNECT_TLS"
-          value = "false"
-        },
-        {
-          name  = "CLIENT_LISTEN_TLS"
-          value = "false"
-        },
-        {
-          name  = "DD_VERSION"
-          value = "1.0.0"
-        },
-        {
-          name  = "DD_ENV",
-          value = "prod"
-        },
-        {
-          name  = "ENVIRONMENT",
-          value = "prod"
-        },
-        {
-          name  = "DD_SERVICE"
-          value = var.name
-        },
-        {
-          name  = "MANAGED_TLS_CERTS"
-          value = "false"
-        },
-        {
-          name  = "PII_SAMPLING_RATE"
-          value = "8"
+          name  = "PII_DETECTION"
+          value = "formal"
         }
-      ],
+      ]
       secrets = [
         {
           name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_api_key.arn
-        },
+        }
       ],
       logConfiguration = {
         logDriver = "awsfirelens"
@@ -171,7 +146,7 @@ resource "aws_security_group" "main" {
 resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
-  task_definition                    = aws_ecs_task_definition.ecs_task.arn
+  task_definition                    = aws_ecs_task_definition.main.arn
   desired_count                      = 3
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
