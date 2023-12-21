@@ -31,7 +31,6 @@ resource "aws_iam_policy" "ecs_secrets" {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
         Resource = aws_secretsmanager_secret.formal_api_key.arn
-
       }
     ]
   })
@@ -41,6 +40,28 @@ resource "aws_iam_policy_attachment" "ecs_secrets_attachment" {
   name       = "ECSAccessToSecretsAttachment"
   roles      = [aws_iam_role.ecs_task_execution_role.name]
   policy_arn = aws_iam_policy.ecs_secrets.arn
+}
+
+resource "aws_iam_policy" "ecr_repository" {
+  name        = "ECSAccessToECRRepository"
+  description = "Grant ECS tasks access to ECR repository"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action   = ["ecr:BatchGetImage","ecr:GetDownloadUrlForLayer","ecr:GetAuthorizationToken"],
+        Effect   = "Allow",
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy_attachment" "pull_ecr_repository_attachment" {
+  name       = "ECSAccessToSecretsAttachment"
+  roles      = [aws_iam_role.ecs_task_execution_role.name]
+  policy_arn = aws_iam_policy.ecr_repository.arn
 }
 
 
@@ -108,7 +129,7 @@ EOF
 }
 
 
-resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment-sidecar-destroyer" {
+resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment-full-secrets" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.full-secrets-access.arn
 
