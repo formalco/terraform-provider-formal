@@ -52,6 +52,10 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "false"
         },
         {
+          name = "PII_DETECTION"
+          value = "aws"
+        },
+        {
           name  = "PII_SAMPLING_RATE"
           value = "8"
         }
