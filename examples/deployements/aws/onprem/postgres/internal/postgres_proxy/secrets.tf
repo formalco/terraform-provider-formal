@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "formal_api_key" {
-  name = "${var.name}-formal-api-key"
+  name = "${var.name}-formal-api-key-mysql"
 }
 
 resource "aws_secretsmanager_secret_version" "formal_api_key" {
