@@ -1,43 +1,31 @@
-resource "aws_db_instance" "default" {
+resource "aws_rds_cluster" "default" {
+  cluster_identifier              = "aurora-cluster-demo"
+  availability_zones              = var.availability_zones
+  database_name                   = "main"
+  engine                          = "aurora-mysql"
+  engine_version                  = "5.7.mysql_aurora.2.07.9"
+  master_username                 = var.mysql_username
+  master_password                 = var.mysql_password
+  db_subnet_group_name            = aws_db_subnet_group.default.name
+  db_cluster_parameter_group_name = aws_rds_cluster_parameter_group.default.name
+  vpc_security_group_ids          = [aws_security_group.default.id]
   lifecycle {
     ignore_changes = [
-      allocated_storage,
       engine_version,
-      instance_class,
-      username,
-      password,
-      multi_az,
-      publicly_accessible,
-      parameter_group_name,
-      skip_final_snapshot,
-      deletion_protection,
-      backup_retention_period,
-      vpc_security_group_ids,
-      storage_encrypted,
-      db_subnet_group_name,
-      enabled_cloudwatch_logs_exports,
-      performance_insights_enabled,
     ]
   }
-
-  identifier                      = "mysql-rds"
-  allocated_storage               = 20
-  db_name                         = "main"
-  engine                          = "mysql"
-  engine_version                  = "5.7"
-  instance_class                  = "db.t3.micro"
-  username                        = var.mysql_username
-  password                        = var.mysql_password
-  publicly_accessible             = true
-  parameter_group_name            = "aurora-mysql-custom"
-  skip_final_snapshot             = true
-  deletion_protection             = false
-  backup_retention_period         = 35
-  vpc_security_group_ids          = [aws_security_group.default.id]
-  storage_encrypted               = false
-  db_subnet_group_name            = aws_db_subnet_group.default.name
-  performance_insights_enabled    = false
 }
+
+resource "aws_rds_cluster_instance" "default" {
+  count                = 1
+  cluster_identifier   = aws_rds_cluster.default.id
+  engine               = aws_rds_cluster.default.engine
+  engine_version       = aws_rds_cluster.default.engine_version
+  instance_class       = "db.r5.large"
+  publicly_accessible  = true
+  db_subnet_group_name = aws_db_subnet_group.default.name
+}
+
 
 resource "aws_rds_cluster_parameter_group" "default" {
   name        = "aurora-mysql-custom"
@@ -163,5 +151,5 @@ resource "aws_security_group" "default" {
 }
 
 output "rds_hostname" {
-  value = aws_db_instance.default.address
+  value = aws_rds_cluster_instance.default[0].endpoint
 }

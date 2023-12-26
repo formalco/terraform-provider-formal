@@ -30,6 +30,7 @@ resource "aws_db_instance" "default" {
   password                        = var.postgres_password
   publicly_accessible             = true
   parameter_group_name            = "default.postgres13"
+  iam_database_authentication_enabled = true
   skip_final_snapshot             = true
   deletion_protection             = false
   backup_retention_period         = 35
