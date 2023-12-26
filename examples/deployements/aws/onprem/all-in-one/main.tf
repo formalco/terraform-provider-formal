@@ -224,4 +224,5 @@ module "mysql_proxy" {
   data_classifier_satellite_port = var.data_classifier_satellite_port
   mysql_username              = var.mysql_username
   mysql_password              = var.mysql_password
+  availability_zones          = var.availability_zones
 }
