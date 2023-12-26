@@ -3,6 +3,7 @@ variable "name" {}
 variable "environment" {}
 
 variable "datadog_api_key" {}
+variable "availability_zones" {}
 
 variable "health_check_port" {}
 variable "main_port" {}
