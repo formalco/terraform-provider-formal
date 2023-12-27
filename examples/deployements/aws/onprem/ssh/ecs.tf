@@ -33,9 +33,15 @@ resource "aws_ecs_task_definition" "main" {
           containerPort = var.health_check_port
           hostPort      = var.health_check_port
       }]
+      environment = [
+        {
+          name  = "LOG_LEVEL",
+          value = "debug"
+        }
+      ]
       secrets = [
         {
-          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
+          name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         }
       ],
@@ -149,7 +155,7 @@ resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = aws_ecs_cluster.main.id
   task_definition                    = aws_ecs_task_definition.main.arn
-  desired_count                      = 3
+  desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
@@ -183,7 +189,7 @@ resource "aws_ecs_service" "main" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
-  min_capacity       = 3
+  min_capacity       = 1
   resource_id        = "service/${aws_ecs_cluster.main.name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

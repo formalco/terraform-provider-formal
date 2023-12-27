@@ -7,15 +7,6 @@ variable "formal_api_key" {
   sensitive = true
 }
 
-# variable "aws_access_key" {
-#   type      = string
-#   sensitive = true
-# }
-# variable "aws_secret_key" {
-#   type      = string
-#   sensitive = true
-# }
-
 variable "name" {}
 
 variable "environment" {}
@@ -41,8 +32,13 @@ variable "dockerhub_password" {}
 
 variable "datadog_api_key" {}
 
-variable "health_check_port" {}
-variable "main_port" {}
+variable "health_check_port" {
+  default = 8080
+}
+variable "main_port" {
+  default = 2022
+}
+variable "hostname" {}
 
 variable "container_image" {}
 
