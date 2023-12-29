@@ -66,7 +66,6 @@ resource "formal_sidecar" "my_sidecar" {
   cloud_account_id   = formal_cloud_account.integrated_aws_account.id
   deployment_type    = "managed"
   fail_open          = false
-  network_type       = "internet-facing"
   dataplane_id       = var.dataplane_id
   global_kms_decrypt = false
   datastore_id       = formal_datastore.pg_datastore.id

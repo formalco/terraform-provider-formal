@@ -40,7 +40,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
         },
         {
           name = "LOG_LEVEL",
-          value = "debug"
+          value = "info"
         },
         {
           name  = "DD_VERSION"
