@@ -18,13 +18,12 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "postgres"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.postgres_sidecar_hostname
 }
 
 resource "formal_datastore" "main" {
   technology = "postgres"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.postgres_hostname
   port       = var.main_port
 }

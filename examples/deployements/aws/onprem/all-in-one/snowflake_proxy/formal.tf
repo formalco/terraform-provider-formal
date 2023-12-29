@@ -22,23 +22,23 @@ resource "formal_sidecar" "main" {
   formal_hostname    = var.snowflake_sidecar_hostname
 }
 
-# resource "formal_datastore" "main" {
-#   technology = "snowflake"
-#   name       = var.name
-#   hostname   = var.snowflake_hostname
-#   port       = var.main_port
-# }
+resource "formal_datastore" "main" {
+  technology = "snowflake"
+  name       = "${var.name}-datastore"
+  hostname   = var.snowflake_hostname
+  port       = var.main_port
+}
 
 resource "formal_sidecar_datastore_link" "main" {
-  datastore_id = "9b44bf01-dd1e-4b96-a64e-cd0338ce2a6b"
+  datastore_id = formal_datastore.main.id
   sidecar_id   = formal_sidecar.main.id
   port         = 443
 }
 
 # Native Role
-# resource "formal_native_role" "main_snowflake" {
-#   datastore_id       = formal_datastore.main.id
-#   native_role_id     = var.snowflake_username
-#   native_role_secret = var.snowflake_password
-#   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
-# }
+resource "formal_native_role" "main_snowflake" {
+  datastore_id       = formal_datastore.main.id
+  native_role_id     = var.snowflake_username
+  native_role_secret = var.snowflake_password
+  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+}

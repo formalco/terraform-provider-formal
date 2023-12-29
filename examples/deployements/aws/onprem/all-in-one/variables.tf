@@ -98,5 +98,3 @@ variable "mysql_container_image" {}
 
 variable "mysql_username" {}
 variable "mysql_password" {}
-
-variable "http_certificane_arn" {}

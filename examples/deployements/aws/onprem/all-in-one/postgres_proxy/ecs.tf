@@ -39,8 +39,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
-          name  = "LOG_LEVEL",
-          value = "debug"
+          name = "LOG_LEVEL",
+          value = "info"
         },
         {
           name  = "DD_VERSION"
@@ -69,7 +69,7 @@ resource "aws_ecs_task_definition" "ecs_task" {
       ],
       secrets = [
         {
-          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
+          name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         },
       ],
