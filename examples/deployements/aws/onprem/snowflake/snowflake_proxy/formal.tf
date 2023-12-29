@@ -18,7 +18,6 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "snowflake"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.snowflake_sidecar_hostname
 }
 

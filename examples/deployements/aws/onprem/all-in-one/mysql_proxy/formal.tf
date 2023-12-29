@@ -18,7 +18,6 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "mysql"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.mysql_sidecar_hostname
 }
 

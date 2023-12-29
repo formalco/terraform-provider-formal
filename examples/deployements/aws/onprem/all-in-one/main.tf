@@ -108,7 +108,6 @@ module "http_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.http_port
-  certificate_arn_acm            = var.http_certificane_arn
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.http_container_image
