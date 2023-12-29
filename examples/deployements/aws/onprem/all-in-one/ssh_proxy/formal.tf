@@ -16,7 +16,6 @@ resource "formal_sidecar" "main" {
   name               = var.name
   deployment_type    = "onprem"
   technology         = "ssh"
-  network_type       = "internet-facing"
   fail_open          = false
   global_kms_decrypt = false
 }

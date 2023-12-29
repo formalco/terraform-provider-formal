@@ -119,7 +119,6 @@ resource "formal_sidecar" "main" {
   fail_open          = false
   dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
-  network_type       = "internet-facing" //internal, internet-and-internal
   datastore_id       = formal_datastore.main.id
 }
 
@@ -191,7 +190,6 @@ resource "formal_sidecar" "main-redshift" {
   fail_open          = false
   dataplane_id       = formal_dataplane.main.id
   global_kms_decrypt = true
-  network_type       = "internet-facing" //internal, internet-and-internal
   datastore_id       = formal_datastore.main-redshift.id
 }
 

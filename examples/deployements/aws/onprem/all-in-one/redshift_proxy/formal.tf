@@ -18,7 +18,6 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "redshift"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.redshift_sidecar_hostname
 }
 

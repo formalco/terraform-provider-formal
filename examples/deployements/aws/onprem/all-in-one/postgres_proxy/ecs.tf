@@ -39,8 +39,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
-          name  = "LOG_LEVEL",
-          value = "debug"
+          name = "LOG_LEVEL",
+          value = "info"
         },
         {
           name  = "DD_VERSION"
