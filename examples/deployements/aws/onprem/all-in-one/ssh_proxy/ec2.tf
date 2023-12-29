@@ -29,7 +29,6 @@ resource "aws_security_group" "ec2" {
   }
 }
 
-
 resource "aws_iam_user" "aws_native_user" {
   name = "ssh-sidecar-user"
 }

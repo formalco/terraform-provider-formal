@@ -18,13 +18,12 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "redshift"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.redshift_sidecar_hostname
 }
 
 resource "formal_datastore" "ds" {
   technology = "redshift"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.redshift_hostname
   port       = var.main_port
 }

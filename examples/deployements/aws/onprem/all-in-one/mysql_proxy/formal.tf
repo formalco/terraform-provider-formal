@@ -18,13 +18,12 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "mysql"
   global_kms_decrypt = false
-  network_type       = "internet-facing"
   formal_hostname    = var.mysql_sidecar_hostname
 }
 
 resource "formal_datastore" "main" {
   technology = "mysql"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.mysql_hostname
   port       = var.main_port
 }

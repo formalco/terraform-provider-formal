@@ -16,14 +16,13 @@ resource "formal_sidecar" "main" {
   name               = var.name
   deployment_type    = "onprem"
   technology         = "ssh"
-  network_type       = "internet-facing"
   fail_open          = false
   global_kms_decrypt = false
 }
 
 resource "formal_datastore" "instance_1" {
   technology = "ssh"
-  name       = var.name
+  name       = "${var.name}-datastore"
   hostname   = var.ssh_hostname
   port       = 22
 }

@@ -108,7 +108,6 @@ module "http_proxy" {
   environment                    = var.environment
   formal_api_key                 = var.formal_api_key
   main_port                      = var.http_port
-  certificate_arn_acm            = var.http_certificane_arn
   health_check_port              = var.health_check_port
   datadog_api_key                = var.datadog_api_key
   container_image                = var.http_container_image
@@ -222,6 +221,7 @@ module "mysql_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  mysql_username                 = var.mysql_username
-  mysql_password                 = var.mysql_password
+  mysql_username              = var.mysql_username
+  mysql_password              = var.mysql_password
+  availability_zones          = var.availability_zones
 }

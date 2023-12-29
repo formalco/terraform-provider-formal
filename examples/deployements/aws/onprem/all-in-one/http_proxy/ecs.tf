@@ -71,8 +71,8 @@ resource "aws_ecs_task_definition" "main" {
           value = "false"
         },
         {
-          name  = "ENCRYPTION_KEY_REGION"
-          value = "ap-southeast-3"
+          name = "ENCRYPTION_KEY_REGION"
+          value = "eu-west-1"
         },
         {
           name  = "HEALTH_CHECK_ON_TRAFFIC_PORT"
@@ -89,7 +89,7 @@ resource "aws_ecs_task_definition" "main" {
       ],
       secrets = [
         {
-          name      = "FORMAL_CONTROL_PLANE_TLS_CERT"
+          name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
         }
       ],
