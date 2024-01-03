@@ -1,8 +1,9 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -35,18 +36,11 @@ func ResourceKey() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"org_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for your organisation.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "field is deprecated, and will be removed on a future release",
-			},
 			"key_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The ID of the key as referenced in the key management service. Required only if the `managed_by` field is `customer_managed`; otherwise Formal creates the key and retrieves this value.",
+				Description: "The ID of the key as referenced in the key management service.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				Computed:    true,
 			},
 			"cloud_region": {
@@ -67,24 +61,6 @@ func ResourceKey() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
-			"key_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Type of key based on cloud provider. Supported values at the moment are `aws_kms`.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"managed_by": {
-				// This description is used by the documentation generator and the language server.
-				Description: "How the key is managed. Supported values are `saas_managed`, `managed_cloud`, or `customer_managed`.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"cloud_account_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Formal ID of the managed Cloud Account to be used to create the key. Required if managed_by is `managed_cloud`.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
 		},
 	}
 }
@@ -97,17 +73,13 @@ func resourceKeyCreate(ctx context.Context, d *schema.ResourceData, meta interfa
 	KeyName := d.Get("name").(string)
 	KeyId := d.Get("key_id").(string)
 	CloudRegion := d.Get("cloud_region").(string)
-	KeyType := d.Get("key_type").(string)
-	ManagedBy := d.Get("managed_by").(string)
-	CloudAccountID := d.Get("cloud_account_id").(string)
 
 	res, err := c.Grpc.Sdk.KmsServiceClient.CreateKeyRegistration(ctx, connect.NewRequest(&adminv1.CreateKeyRegistrationRequest{
-		CloudRegion:    CloudRegion,
-		KeyId:          KeyId,
-		ManagedBy:      ManagedBy,
-		KeyType:        KeyType,
-		KeyName:        KeyName,
-		CloudAccountId: CloudAccountID,
+		CloudRegion: CloudRegion,
+		KeyId:       KeyId,
+		ManagedBy:   "customer_managed",
+		KeyType:     "aws_kms",
+		KeyName:     KeyName,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -143,9 +115,6 @@ func resourceKeyRead(ctx context.Context, d *schema.ResourceData, meta interface
 	d.Set("cloud_region", res.Msg.Key.CloudRegion)
 	d.Set("arn", res.Msg.Key.KeyArn)
 	d.Set("active", res.Msg.Key.Active)
-	d.Set("key_type", res.Msg.Key.KeyType)
-	d.Set("managed_by", res.Msg.Key.ManagedBy)
-	d.Set("cloud_account_id", res.Msg.Key.CloudAccountId)
 
 	d.SetId(res.Msg.Key.Id)
 
