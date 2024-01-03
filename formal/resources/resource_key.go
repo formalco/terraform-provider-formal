@@ -41,7 +41,6 @@ func ResourceKey() *schema.Resource {
 				Description: "The ID of the key as referenced in the key management service.",
 				Type:        schema.TypeString,
 				Required:    true,
-				Computed:    true,
 			},
 			"cloud_region": {
 				// This description is used by the documentation generator and the language server.

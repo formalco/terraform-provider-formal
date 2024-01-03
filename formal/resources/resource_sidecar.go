@@ -91,7 +91,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"formal_control_plane_tls_certificate": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.",
+				Description: "Control Plane TLS Certificate to add to the deployed Sidecar.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -133,6 +133,8 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		GlobalKmsDecrypt:      d.Get("global_kms_decrypt").(bool),
 		Version:               d.Get("version").(string),
 		Technology:            d.Get("technology").(string),
+		DeploymentType:        "onprem",          // TODO: Deprecate on the API
+		NetworkType:           "internet-facing", // TODO: Deprecate on the API
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 	hostname := d.Get("formal_hostname").(string)

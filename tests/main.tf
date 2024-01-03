@@ -9,18 +9,6 @@ terraform {
 
 provider "formal" {}
 
-# Deprecated
-# resource "formal_cloud_account" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane_routes" "name" {
-# }
-
 resource "formal_datastore" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
@@ -131,7 +119,6 @@ resource "formal_native_role_link" "name" {
 }
 
 resource "formal_policy" "name" {
-  active       = false
   description  = "terraform-test-policy"
   module       = <<EOT
 package formal.v2
@@ -156,11 +143,9 @@ resource "formal_satellite" "name" {
 }
 
 resource "formal_sidecar" "name" {
-  deployment_type    = "onprem"
   global_kms_decrypt = false
   name               = "terraform-test-sidecar"
   technology         = "postgres"
-  network_type       = "internal"
 }
 
 resource "formal_sidecar_datastore_link" "name" {

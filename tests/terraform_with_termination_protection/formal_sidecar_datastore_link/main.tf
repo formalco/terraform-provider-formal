@@ -28,10 +28,8 @@ resource "formal_datastore" "postgres1" {
 
 resource "formal_sidecar" "name" {
   name               = "terraformtestlocalsidecardatastorelinkwithterminationprotection"
-  deployment_type    = "onprem"
   global_kms_decrypt = false
   technology         = "postgres"
-  network_type       = "internal"
 }
 
 resource "formal_sidecar_datastore_link" "name" {
