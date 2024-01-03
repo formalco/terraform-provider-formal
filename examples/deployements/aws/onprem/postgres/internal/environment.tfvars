@@ -10,10 +10,10 @@ public_subnets     = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 
 datadog_api_key = ""
 
-health_check_port              = 8080
-postgres_port                  = 5432
+health_check_port = 8080
+postgres_port     = 5432
 
-postgres_container_image                  = ""
+postgres_container_image = ""
 
 postgres_sidecar_hostname = ""
 postgres_hostname         = ""

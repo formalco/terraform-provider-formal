@@ -18,20 +18,13 @@ Creating a key in Formal.
 ### Required
 
 - `cloud_region` (String) The cloud region that the key should be created in.
-- `key_type` (String) Type of key based on cloud provider. Supported values at the moment are `aws_kms`.
-- `managed_by` (String) How the key is managed. Supported values are `saas_managed`, `managed_cloud`, or `customer_managed`.
+- `key_id` (String) The ID of the key as referenced in the key management service.
 - `name` (String) The friendly name for this key.
-
-### Optional
-
-- `cloud_account_id` (String) Formal ID of the managed Cloud Account to be used to create the key. Required if managed_by is `managed_cloud`.
-- `key_id` (String) The ID of the key as referenced in the key management service. Required only if the `managed_by` field is `customer_managed`; otherwise Formal creates the key and retrieves this value.
 
 ### Read-Only
 
 - `active` (Boolean) Active status of the key. For data accessibility, Formal does not delete its record of created keys.
 - `arn` (String) ARN of the created key.
 - `id` (String) The Formal ID for this key.
-- `org_id` (String, Deprecated) The Formal ID for your organisation.
 
 
