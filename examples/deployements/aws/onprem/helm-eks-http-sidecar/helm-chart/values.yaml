@@ -32,3 +32,4 @@ deployDataClassifierSatellite: false
 externalSecrets:
   httpProxyKeyName : app/production/formal-external/formal-http-proxy-tls-cert
 serviceAccountDeployment: value
+podAnnotations: {}
