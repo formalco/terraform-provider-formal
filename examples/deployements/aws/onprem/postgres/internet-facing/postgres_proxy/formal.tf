@@ -19,6 +19,7 @@ resource "formal_sidecar" "main" {
   technology         = "postgres"
   global_kms_decrypt = false
   formal_hostname    = var.postgres_sidecar_hostname
+  network_type       = "internet-facing"
 }
 
 resource "formal_datastore" "main" {
