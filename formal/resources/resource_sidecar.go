@@ -96,12 +96,6 @@ func ResourceSidecar() *schema.Resource {
 				Computed:    true,
 				Sensitive:   true,
 			},
-			"version": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Version of the Sidecar to deploy for `managed`.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this Sidecar cannot be deleted.",
@@ -131,15 +125,9 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		Name:                  d.Get("name").(string),
 		FailOpen:              d.Get("fail_open").(bool),
 		GlobalKmsDecrypt:      d.Get("global_kms_decrypt").(bool),
-		Version:               d.Get("version").(string),
 		Technology:            d.Get("technology").(string),
-		DeploymentType:        "onprem",          // TODO: Deprecate on the API
-		NetworkType:           "internet-facing", // TODO: Deprecate on the API
+		FormalHostname:        d.Get("formal_hostname").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-	}
-	hostname := d.Get("formal_hostname").(string)
-	if sidecarReq.DeploymentType == "onprem" && hostname != "" {
-		sidecarReq.FormalHostname = hostname
 	}
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecar(ctx, connect.NewRequest(sidecarReq))
@@ -208,11 +196,10 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("fail_open", res.Msg.Sidecar.FailOpen)
 	d.Set("created_at", res.Msg.Sidecar.CreatedAt.AsTime().Unix())
 	d.Set("global_kms_decrypt", res.Msg.Sidecar.GlobalKmsDecrypt)
-	d.Set("version", res.Msg.Sidecar.Version)
 	d.Set("technology", res.Msg.Sidecar.Technology)
 	d.Set("termination_protection", res.Msg.Sidecar.TerminationProtection)
 
-	if res.Msg.Sidecar.DeploymentType == "onprem" && c.Grpc.ReturnSensitiveValue {
+	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarTlsCertificateById(ctx, connect.NewRequest(&adminv1.GetSidecarTlsCertificateByIdRequest{Id: sidecarId}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -234,7 +221,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname", "termination_protection"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "formal_hostname", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -256,14 +243,6 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
 		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarName(ctx, connect.NewRequest(&adminv1.UpdateSidecarNameRequest{Id: sidecarId, Name: name}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("version") {
-		version := d.Get("version").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarVersion(ctx, connect.NewRequest(&adminv1.UpdateSidecarVersionRequest{Id: sidecarId, Version: version}))
 		if err != nil {
 			return diag.FromErr(err)
 		}

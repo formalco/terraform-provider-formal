@@ -27,7 +27,6 @@ Registering a Sidecar with Formal.
 - `formal_hostname` (String) The hostname of the created sidecar.
 - `termination_protection` (Boolean) If set to true, this Sidecar cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `version` (String) Version of the Sidecar to deploy for `managed`.
 
 ### Read-Only
 
