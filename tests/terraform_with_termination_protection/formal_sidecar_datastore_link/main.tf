@@ -31,7 +31,6 @@ resource "formal_sidecar" "name" {
   deployment_type    = "onprem"
   global_kms_decrypt = false
   technology         = "postgres"
-  network_type       = "internal"
 }
 
 resource "formal_sidecar_datastore_link" "name" {

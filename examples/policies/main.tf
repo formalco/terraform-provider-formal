@@ -38,7 +38,7 @@ EOF
 
 resource "formal_policy" "mask_emails" {
   name         = "mask-email"
-  description  = "Mask any column that has the email data labal email_address."
+  description  = "Mask any column that has the data label email_address."
   owners       = ["john@company.com"]
   notification = "consumer"
   status       = "active"

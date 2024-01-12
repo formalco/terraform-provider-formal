@@ -160,7 +160,6 @@ resource "formal_sidecar" "name" {
   global_kms_decrypt = false
   name               = "terraform-test-sidecar"
   technology         = "postgres"
-  network_type       = "internal"
 }
 
 resource "formal_sidecar_datastore_link" "name" {
