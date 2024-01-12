@@ -19,6 +19,5 @@ resource "formal_sidecar" "name" {
   global_kms_decrypt     = false
   name                   = "terraform-test-local-formal-sidecar-with-termination-protection"
   technology             = "postgres"
-  network_type           = "internal"
   termination_protection = var.termination_protection
 }

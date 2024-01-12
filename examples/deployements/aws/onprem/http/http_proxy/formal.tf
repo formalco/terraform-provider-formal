@@ -18,7 +18,6 @@ resource "formal_sidecar" "main" {
   deployment_type    = "onprem"
   technology         = "http"
   global_kms_decrypt = false
-  network_type       = "internal"
   formal_hostname    = var.sidecar_hostname
 }
 
