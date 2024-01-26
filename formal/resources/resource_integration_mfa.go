@@ -74,29 +74,15 @@ func resourceIntegrationMfaCreate(ctx context.Context, d *schema.ResourceData, m
 	typeApp := d.Get("type").(string)
 
 	duoIntegrationKey := d.Get("duo_integration_key").(string)
-	ddApiKey := d.Get("dd_api_key").(string)
-	ddAccountId := d.Get("dd_account_id").(string)
-
-	splunkUrl := d.Get("splunk_url").(string)
-	splunkApiKey := d.Get("splunk_api_key").(string)
-
-	awsAccessKeyId := d.Get("aws_access_key_id").(string)
-	awsAccessKeySecret := d.Get("aws_access_key_secret").(string)
-	awsRegion := d.Get("aws_region").(string)
-	awsS3BucketName := d.Get("aws_s3_bucket_name").(string)
+	duoSecretKey := d.Get("duo_secret_key").(string)
+	duoApiHostname := d.Get("duo_api_hostname").(string)
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.CreateIntegrationLogs(ctx, connect.NewRequest(&adminv1.CreateIntegrationLogsRequest{
-		Name:               name,
-		Type:               typeApp,
-		DdSite:             duoIntegrationKey,
-		DdApiKey:           ddApiKey,
-		DdAccountId:        ddAccountId,
-		SplunkUrl:          splunkUrl,
-		SplunkApiKey:       splunkApiKey,
-		AwsAccessKeyId:     awsAccessKeyId,
-		AwsSecretAccessKey: awsAccessKeySecret,
-		AwsRegion:          awsRegion,
-		AwsS3Bucket:        awsS3BucketName,
+		Name:        name,
+		Type:        typeApp,
+		DdSite:      duoIntegrationKey,
+		DdApiKey:    duoSecretKey,
+		DdAccountId: duoApiHostname,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
