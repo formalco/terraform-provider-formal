@@ -46,7 +46,6 @@ func New(version string) func() *schema.Provider {
 			DataSourcesMap: map[string]*schema.Resource{},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_policy":                   resource.ResourcePolicy(),
-				"formal_role":                     resource.ResourceRole(),
 				"formal_group":                    resource.ResourceGroup(),
 				"formal_group_link_role":          resource.ResourceGroupLinkRole(),
 				"formal_datastore":                resource.ResourceDatastore(),
@@ -55,9 +54,6 @@ func New(version string) func() *schema.Provider {
 				"formal_key":                      resource.ResourceKey(),
 				"formal_field_encryption":         resource.ResourceFieldEncryption(),
 				"formal_default_field_encryption": resource.ResourceDefaultFieldEncryption(),
-				"formal_cloud_account":            resource.ResourceCloudAccount(),
-				"formal_dataplane":                resource.ResourceDataplane(),
-				"formal_dataplane_routes":         resource.ResourceDataplaneRoutes(),
 				"formal_native_role":              resource.ResourceNativeRole(),
 				"formal_native_role_link":         resource.ResourceNativeRoleLink(),
 				"formal_user":                     resource.ResourceUser(),

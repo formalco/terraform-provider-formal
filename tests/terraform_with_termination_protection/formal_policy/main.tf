@@ -27,7 +27,6 @@ resource "formal_datastore" "postgres1" {
 }
 
 resource "formal_policy" "name" {
-  active                 = true
   description            = "terraform-test-policy"
   module                 = <<EOT
 package formal.v2

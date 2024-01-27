@@ -32,24 +32,24 @@ module "common" {
 }
 
 module "postgres_proxy" {
-  source                         = "./postgres_proxy"
-  name                           = "${var.name}-postgres-proxy"
-  environment                    = var.environment
-  formal_api_key                 = var.formal_api_key
-  main_port                      = var.postgres_port
-  postgres_sidecar_hostname      = var.postgres_sidecar_hostname
-  postgres_hostname              = module.postgres_proxy.rds_hostname
-  health_check_port              = var.health_check_port
-  datadog_api_key                = var.datadog_api_key
-  container_image                = var.postgres_container_image
-  container_cpu                  = var.container_cpu
-  container_memory               = var.container_memory
-  vpc_id                         = module.common.vpc_id
-  ecs_cluster_id                 = module.common.ecs_cluster_id
-  ecs_cluster_name               = module.common.ecs_cluster_name
-  private_subnets                = module.common.private_subnets
-  public_subnets                 = module.common.public_subnets
-  postgres_username              = var.postgres_username
-  postgres_password              = var.postgres_password
+  source                    = "./postgres_proxy"
+  name                      = "${var.name}-postgres-proxy"
+  environment               = var.environment
+  formal_api_key            = var.formal_api_key
+  main_port                 = var.postgres_port
+  postgres_sidecar_hostname = var.postgres_sidecar_hostname
+  postgres_hostname         = module.postgres_proxy.rds_hostname
+  health_check_port         = var.health_check_port
+  datadog_api_key           = var.datadog_api_key
+  container_image           = var.postgres_container_image
+  container_cpu             = var.container_cpu
+  container_memory          = var.container_memory
+  vpc_id                    = module.common.vpc_id
+  ecs_cluster_id            = module.common.ecs_cluster_id
+  ecs_cluster_name          = module.common.ecs_cluster_name
+  private_subnets           = module.common.private_subnets
+  public_subnets            = module.common.public_subnets
+  postgres_username         = var.postgres_username
+  postgres_password         = var.postgres_password
 }
 

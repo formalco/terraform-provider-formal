@@ -20,25 +20,25 @@ resource "aws_db_instance" "default" {
     ]
   }
 
-  identifier                      = "postgres-rds"
-  allocated_storage               = 20
-  db_name                         = "main"
-  engine                          = "postgres"
-  engine_version                  = "13.10"
-  instance_class                  = "db.t3.micro"
-  username                        = var.postgres_username
-  password                        = var.postgres_password
-  publicly_accessible             = true
-  parameter_group_name            = "default.postgres13"
+  identifier                          = "postgres-rds"
+  allocated_storage                   = 20
+  db_name                             = "main"
+  engine                              = "postgres"
+  engine_version                      = "13.10"
+  instance_class                      = "db.t3.micro"
+  username                            = var.postgres_username
+  password                            = var.postgres_password
+  publicly_accessible                 = true
+  parameter_group_name                = "default.postgres13"
   iam_database_authentication_enabled = true
-  skip_final_snapshot             = true
-  deletion_protection             = false
-  backup_retention_period         = 35
-  vpc_security_group_ids          = [aws_security_group.default.id]
-  storage_encrypted               = false
-  db_subnet_group_name            = aws_db_subnet_group.default.name
-  enabled_cloudwatch_logs_exports = ["postgresql", "upgrade"]
-  performance_insights_enabled    = false
+  skip_final_snapshot                 = true
+  deletion_protection                 = false
+  backup_retention_period             = 35
+  vpc_security_group_ids              = [aws_security_group.default.id]
+  storage_encrypted                   = false
+  db_subnet_group_name                = aws_db_subnet_group.default.name
+  enabled_cloudwatch_logs_exports     = ["postgresql", "upgrade"]
+  performance_insights_enabled        = false
 }
 
 resource "aws_db_subnet_group" "default" {

@@ -1,11 +1,12 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"errors"
-	"github.com/bufbuild/connect-go"
 	"strconv"
 	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	"github.com/bufbuild/connect-go"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
@@ -55,24 +56,9 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"datastore_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Datastore ID that the new Sidecar will be attached to.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Deprecated:  "This field is deprecated. Please use formal_sidecar_datastore_link resource instead. This attribute will be removed in the next major version of the provider.",
-			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
-			"deployment_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -81,13 +67,6 @@ func ResourceSidecar() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.",
 				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"network_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
-				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 			},
@@ -110,25 +89,12 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeBool,
 				Required:    true,
 			},
-			"dataplane_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "If deployment_type is managed, this is the ID of the Dataplane",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
 			"formal_control_plane_tls_certificate": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If deployment_type is onprem, this is the Control Plane TLS Certificate to add to the deployed Sidecar.",
+				Description: "Control Plane TLS Certificate to add to the deployed Sidecar.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
-			},
-			"version": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Version of the Sidecar to deploy for `managed`.",
-				Type:        schema.TypeString,
-				Optional:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -157,18 +123,11 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarReq := &adminv1.CreateSidecarRequest{
 		Name:                  d.Get("name").(string),
-		DataplaneId:           d.Get("dataplane_id").(string),
-		DeploymentType:        d.Get("deployment_type").(string),
 		FailOpen:              d.Get("fail_open").(bool),
-		NetworkType:           d.Get("network_type").(string),
 		GlobalKmsDecrypt:      d.Get("global_kms_decrypt").(bool),
-		Version:               d.Get("version").(string),
 		Technology:            d.Get("technology").(string),
+		FormalHostname:        d.Get("formal_hostname").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-	}
-	hostname := d.Get("formal_hostname").(string)
-	if sidecarReq.DeploymentType == "onprem" && hostname != "" {
-		sidecarReq.FormalHostname = hostname
 	}
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecar(ctx, connect.NewRequest(sidecarReq))
@@ -234,17 +193,13 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	d.Set("id", res.Msg.Sidecar.Id)
 	d.Set("name", res.Msg.Sidecar.Name)
 	d.Set("formal_hostname", res.Msg.Sidecar.FormalHostname)
-	d.Set("deployment_type", res.Msg.Sidecar.DeploymentType)
 	d.Set("fail_open", res.Msg.Sidecar.FailOpen)
-	d.Set("network_type", res.Msg.Sidecar.NetworkType)
 	d.Set("created_at", res.Msg.Sidecar.CreatedAt.AsTime().Unix())
 	d.Set("global_kms_decrypt", res.Msg.Sidecar.GlobalKmsDecrypt)
-	d.Set("dataplane_id", res.Msg.Sidecar.DataplaneId)
-	d.Set("version", res.Msg.Sidecar.Version)
 	d.Set("technology", res.Msg.Sidecar.Technology)
 	d.Set("termination_protection", res.Msg.Sidecar.TerminationProtection)
 
-	if res.Msg.Sidecar.DeploymentType == "onprem" && c.Grpc.ReturnSensitiveValue {
+	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarTlsCertificateById(ctx, connect.NewRequest(&adminv1.GetSidecarTlsCertificateByIdRequest{Id: sidecarId}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -266,7 +221,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname", "termination_protection"}
+	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "formal_hostname", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -293,19 +248,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		}
 	}
 
-	if d.HasChange("version") {
-		version := d.Get("version").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarVersion(ctx, connect.NewRequest(&adminv1.UpdateSidecarVersionRequest{Id: sidecarId, Version: version}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
 	if d.HasChange("formal_hostname") {
-		if d.Get("deployment_type").(string) != "onprem" {
-			return diag.Errorf("formal_hostname can only be updated for onprem deployment types")
-		}
-
 		formalHostname := d.Get("formal_hostname").(string)
 		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarFormalHostname(ctx, connect.NewRequest(&adminv1.UpdateSidecarFormalHostnameRequest{Id: sidecarId, Hostname: formalHostname}))
 		if err != nil {

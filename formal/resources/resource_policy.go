@@ -1,9 +1,10 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"fmt"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"github.com/bufbuild/connect-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -75,27 +76,6 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"active": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Active status of this policy.",
-				Type:        schema.TypeBool,
-				Required:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"org_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for your organisation.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"expire_at": {
-				// This description is used by the documentation generator and the language server.
-				Description: "When this policy is set to expire.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.",
@@ -150,7 +130,6 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	Module := d.Get("module").(string)
 	SourceType := "terraform"
 	Notification := d.Get("notification").(string)
-	Active := d.Get("active").(bool)
 	Status := d.Get("status").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
@@ -161,7 +140,6 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		Notification:          Notification,
 		Owners:                owners,
 		SourceType:            SourceType,
-		Active:                Active,
 		Status:                Status,
 		TerminationProtection: TerminationProtection,
 	}))
@@ -199,7 +177,6 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("module", res.Msg.Policy.Code)
 	d.Set("notification", res.Msg.Policy.Notification)
 	d.Set("owners", res.Msg.Policy.Owners)
-	d.Set("active", res.Msg.Policy.Active)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -225,7 +202,6 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		Module := d.Get("module").(string)
 		Notification := d.Get("notification").(string)
 		SourceType := "terraform"
-		Active := d.Get("active").(bool)
 		Status := d.Get("status").(string)
 		TerminationProtection := d.Get("termination_protection").(bool)
 
@@ -237,7 +213,6 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			Code:                  Module,
 			Notification:          Notification,
 			Owners:                owners,
-			Active:                Active,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
 		}))

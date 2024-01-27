@@ -221,7 +221,7 @@ module "mysql_proxy" {
   public_subnets                 = module.common.public_subnets
   data_classifier_satellite_url  = module.data_classifier_satellite.url
   data_classifier_satellite_port = var.data_classifier_satellite_port
-  mysql_username              = var.mysql_username
-  mysql_password              = var.mysql_password
-  availability_zones          = var.availability_zones
+  mysql_username                 = var.mysql_username
+  mysql_password                 = var.mysql_password
+  availability_zones             = var.availability_zones
 }
