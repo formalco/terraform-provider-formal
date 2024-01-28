@@ -66,7 +66,7 @@ resource "aws_lb_listener" "main" {
 resource "aws_security_group" "public_nlb" {
   name        = "${var.name}_public_nlb"
   description = "Allow public traffic for Network Load Balancer."
-  vpc_id      = "${var.vpc_id}"
+  vpc_id      = var.vpc_id
 
   # for allowing health check traffic
   ingress {
