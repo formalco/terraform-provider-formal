@@ -71,7 +71,7 @@ resource "aws_ecs_task_definition" "main" {
           value = "false"
         },
         {
-          name = "ENCRYPTION_KEY_REGION"
+          name  = "ENCRYPTION_KEY_REGION"
           value = "eu-west-1"
         },
         {
