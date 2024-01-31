@@ -71,49 +71,18 @@ EOF
 }
 
 
-resource "aws_iam_policy" "full-secrets-access" {
-  name = "full-secrets-access_s3_sydney"
+resource "aws_iam_policy" "access" {
+  name = "access"
 
   policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
     {
-        "Effect": "Allow",
-        "Action": [
-            "ssm:StartSession",
-            "ssm:DescribeInstanceInformation",
-            "sts:GetCallerIdentity"
-        ],
-        "Resource": "*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ecs:ExecuteCommand",
-            "ecs:ListClusters",
-            "ecs:DescribeClusters",
-            "ecs:ListServices",
-            "ecs:DescribeServices",
-            "ecs:DescribeTasks",
-            "ecs:ListTasks"
-        ],
-        "Resource": "*"
-    },
-    {
-        "Effect": "Allow",
-        "Action": [
-            "ec2:DescribeRegions",
-            "ec2:DescribeInstances"
-        ],
-        "Resource": "*"
-    },
-    {
       "Sid": "VisualEditor0",
       "Effect": "Allow",
       "Action": [
-          "rekognition:DetectFaces",
-          "comprehend:DetectPiiEntities"
+          "rekognition:DetectFaces"
       ],
       "Resource": "*"
     },
@@ -134,7 +103,7 @@ EOF
 
 resource "aws_iam_role_policy_attachment" "ecs-task-role-policy-attachment-sidecar-destroyer" {
   role       = aws_iam_role.ecs_task_role.name
-  policy_arn = aws_iam_policy.full-secrets-access.arn
+  policy_arn = aws_iam_policy.access.arn
 
   depends_on = [
     aws_iam_role.ecs_task_role
