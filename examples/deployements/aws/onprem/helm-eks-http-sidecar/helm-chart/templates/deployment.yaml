@@ -14,7 +14,7 @@ spec:
         "app.kubernetes.io/instance": formal-external-web
   template:
     metadata:
-      annotations: {{ toYaml .Values.podAnnotations | indent 4 }}
+      annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
       labels:
         "app.kubernetes.io/name": formal-external
         "app.kubernetes.io/instance": formal-external-web
