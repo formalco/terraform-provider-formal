@@ -32,7 +32,7 @@ spec:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "formal-eks-secret-%s".Release.Name }}
+                  name: {{ printf "formal-eks-secret-%s" .Release.Name }}
                   key: formal-http-proxy-tls-cert
         {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
@@ -46,7 +46,7 @@ spec:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: {{ printf "formal-eks-secret-%s".Release.Name }}
+                  name: {{ printf "formal-eks-secret-%s" .Release.Name }}
                   key: formal-data-classifier-tls-cert
         {{- end }}
       restartPolicy: Always 
