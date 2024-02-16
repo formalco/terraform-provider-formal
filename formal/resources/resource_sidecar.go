@@ -75,7 +75,7 @@ func ResourceSidecar() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    false,
 			},
 			"fail_open": {
