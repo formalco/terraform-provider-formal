@@ -1,11 +1,12 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"errors"
-	"github.com/bufbuild/connect-go"
 	"strconv"
 	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	"github.com/bufbuild/connect-go"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
@@ -60,7 +61,7 @@ func ResourceSidecar() *schema.Resource {
 				Description: "The Datastore ID that the new Sidecar will be attached to.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 				Deprecated:  "This field is deprecated. Please use formal_sidecar_datastore_link resource instead. This attribute will be removed in the next major version of the provider.",
 			},
 			"technology": {
@@ -75,21 +76,21 @@ func ResourceSidecar() *schema.Resource {
 				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 			"fail_open": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.",
 				Type:        schema.TypeBool,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 			"network_type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 			"formal_hostname": {
 				// This description is used by the documentation generator and the language server.
@@ -108,14 +109,15 @@ func ResourceSidecar() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.",
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
+				ForceNew:    false,
 			},
 			"dataplane_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If deployment_type is managed, this is the ID of the Dataplane",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				ForceNew:    false,
 			},
 			"formal_control_plane_tls_certificate": {
 				// This description is used by the documentation generator and the language server.
