@@ -109,7 +109,7 @@ func ResourceSidecar() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.",
 				Type:        schema.TypeBool,
-				Required:    false,
+				Optional:    true,
 				ForceNew:    false,
 			},
 			"dataplane_id": {
