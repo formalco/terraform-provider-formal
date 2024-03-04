@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "mysql-sidecar-app-%s" .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "app.kubernetes.io/name": formal-external
+    "app.kubernetes.io/instance": formal-external-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
+  template:
+    metadata:
+      annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
+      labels:
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountDeployment }}
+      containers:
+        - name: {{ .Values.containers.mysqlSidecar.name }}
+          image: {{ .Values.containers.mysqlSidecar.image }}
+          envFrom:
+            - configMapRef:
+                name: {{ printf "mysql-sidecar-config-%s" .Release.Name }}
+          resources:
+            {{ toYaml .Values.containers.mysqlSidecar.resources | nindent 12 }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-mysql-proxy-tls-cert
+        {{- if .Values.deployDataClassifierSatellite }}
+        - name: {{ .Values.containers.dataClassifierSatellite.name }}
+          image: {{ .Values.containers.dataClassifierSatellite.image }}
+          envFrom:
+            - configMapRef:
+                name:  {{ printf "data-classifier-satellite-config-%s" .Release.Name }}
+          resources:
+            {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-data-classifier-tls-cert
+        {{- end }}
+      restartPolicy: Always 

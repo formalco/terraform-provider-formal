@@ -1,0 +1,31 @@
+replicaCount: 1
+containers:
+  mysqlSidecar:
+    name: mysql-sidecar-app
+    image: 654654333078.dkr.ecr.us-east-1.amazonaws.com/imprint-mysql-sidecar
+    resources: {}
+  dataClassifierSatellite:
+    name: data-classifier-satellite-app
+    image: 654654333078.dkr.ecr.us-east-1.amazonaws.com/imprint-data-classifier
+    resources: {}
+configMaps:
+  mysqlSidecar:
+    CLIENT_LISTEN_TLS: "false"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+    PII_SAMPLING_RATE: "8"
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+podSelector:
+  matchLabels:
+    app:  formal-external
+  labels:
+    app:  formal-external
+secretManagerRegion: us-east-1
+deployDataClassifierSatellite: false
+externalSecrets:
+  mysqlProxyKeyName: app/production/formal-external/formal-mysql-proxy-api-key
+serviceAccountDeployment: value
+podAnnotations: {}
