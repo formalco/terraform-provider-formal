@@ -2,7 +2,7 @@ replicaCount: 1
 containers:
   httpSidecar:
     name: http-sidecar-app
-    image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-http-proxy
+    image: 
     resources: {}
 configMaps:
   httpSidecar:
