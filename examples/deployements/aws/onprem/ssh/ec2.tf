@@ -2,6 +2,7 @@ resource "aws_instance" "main" {
   ami           = "ami-093cb9fb2d34920ad"
   instance_type = "t2.micro"
 
+  iam_instance_profile        = aws_iam_instance_profile.ssm_instance_profile.name
   associate_public_ip_address = true
   subnet_id                   = aws_subnet.public.*.id[0]
   vpc_security_group_ids      = [aws_security_group.ec2.id]
