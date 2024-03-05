@@ -2,34 +2,15 @@ package resource
 
 import (
 	"context"
-	"net/http"
 
-	core_connect "buf.build/gen/go/formal/core/connectrpc/go/core/v1/corev1connect"
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
+	"github.com/formalco/terraform-provider-formal/formal/apiv2"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
-
-type transport struct {
-	underlyingTransport http.RoundTripper
-	apiKey              string
-}
-
-func (t *transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Add("X-Api-Key", t.apiKey)
-	return t.underlyingTransport.RoundTrip(req)
-}
-
-func newApiClientV2(apiKey string) *http.Client {
-	httpClient := &http.Client{Transport: &transport{
-		underlyingTransport: http.DefaultTransport,
-		apiKey:              apiKey,
-	}}
-	return httpClient
-}
 
 func ResourceDataDiscoveryConfiguration() *schema.Resource {
 	return &schema.Resource{
@@ -90,8 +71,7 @@ func resourceDataDiscoveryConfigurationCreate(ctx context.Context, d *schema.Res
 	discoverySchedule := d.Get("discovery_schedule").(string)
 	deletionPolicy := d.Get("deletion_policy").(string)
 
-	httpClient := newApiClientV2(c.ApiKey)
-	client := core_connect.NewResourceServiceClient(httpClient, "https://v2api.formalcloud.net")
+	client := apiv2.NewApiClientV2(c.ApiKey)
 	res, err := client.CreateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.CreateDataDiscoveryConfigurationRequest{
 		ResourceId:     resourceId,
 		NativeUserId:   nativeUserId,
@@ -114,8 +94,7 @@ func resourceDataDiscoveryConfigurationRead(ctx context.Context, d *schema.Resou
 
 	id := d.Id()
 
-	httpClient := newApiClientV2(c.ApiKey)
-	client := core_connect.NewResourceServiceClient(httpClient, "https://v2api.formalcloud.net")
+	client := apiv2.NewApiClientV2(c.ApiKey)
 	res, err := client.GetDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.GetDataDiscoveryConfigurationRequest{
 		Id: &corev1.GetDataDiscoveryConfigurationRequest_DataDiscoveryConfigurationId{
 			DataDiscoveryConfigurationId: id,
@@ -152,8 +131,7 @@ func resourceDataDiscoveryConfigurationUpdate(ctx context.Context, d *schema.Res
 	discoverySchedule := d.Get("discovery_schedule").(string)
 	deletionPolicy := d.Get("deletion_policy").(string)
 
-	httpClient := newApiClientV2(c.ApiKey)
-	client := core_connect.NewResourceServiceClient(httpClient, "https://v2api.formalcloud.net")
+	client := apiv2.NewApiClientV2(c.ApiKey)
 	_, err := client.UpdateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.UpdateDataDiscoveryConfigurationRequest{
 		Id:             id,
 		NativeUserId:   nativeUserId,
@@ -188,8 +166,7 @@ func resourceDataDiscoveryConfigurationDelete(ctx context.Context, d *schema.Res
 
 	id := d.Id()
 
-	httpClient := newApiClientV2(c.ApiKey)
-	client := core_connect.NewResourceServiceClient(httpClient, "https://v2api.formalcloud.net")
+	client := apiv2.NewApiClientV2(c.ApiKey)
 	_, err := client.DeleteDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.DeleteDataDiscoveryConfigurationRequest{Id: id}))
 	if err != nil {
 		return diag.FromErr(err)
