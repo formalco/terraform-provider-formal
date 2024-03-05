@@ -8,12 +8,7 @@ resource "aws_iam_policy" "eks_secrets" {
       {
         Action   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"],
         Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.formal_tls_cert.arn
-      },
-      {
-        Action   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"],
-        Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.formal_data_classifier_tls_cert.arn
+        Resource = aws_secretsmanager_secret.formal_mysql_api_key.arn
       }
     ]
   })

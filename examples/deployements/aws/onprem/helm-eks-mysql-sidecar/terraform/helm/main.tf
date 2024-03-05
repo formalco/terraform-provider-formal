@@ -12,21 +12,11 @@ provider "helm" {
 }
 
 resource "helm_release" "example" {
-  name      = "formal-http-helm-chart"
+  name      = "formal-mysql-helm-chart"
   namespace = "formal-external"
   chart     = var.chart_oci
-  version   = "0.5.0"
+  version   = "0.0.1"
   values = [
     "${file("./helm/values.yaml")}"
-  ]
-}
-
-resource "helm_release" "example_2" {
-  name      = "formal-http-helm-chart-2"
-  namespace = "formal-external"
-  chart     = var.chart_oci
-  version   = "0.5.0"
-  values = [
-    "${file("./helm/values_2.yaml")}"
   ]
 }

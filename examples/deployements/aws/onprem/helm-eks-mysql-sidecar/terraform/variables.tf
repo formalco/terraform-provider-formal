@@ -1,11 +1,11 @@
 variable "region" {
-  default = "ap-southeast-2"
+  default = "us-east-1"
 }
 
-# variable "formal_api_key" {
-#   type      = string
-#   sensitive = true
-# }
+variable "formal_api_key" {
+  type      = string
+  sensitive = true
+}
 
 variable "name" {}
 variable "environment" {}
@@ -20,16 +20,21 @@ variable "public_subnets" {
   default = ["172.0.16.0/20", "172.0.48.0/20", "172.0.80.0/20"]
 }
 variable "availability_zones" {
-  default = ["ap-southeast-2a", "ap-southeast-2b", "ap-southeast-2c"]
-}
-
-variable "container_cpu" {
-  default = 2048
-}
-variable "container_memory" {
-  default = 4096
+  default = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
 
 variable "chart_oci" {
-  default = "oci://public.ecr.aws/d6o8b0b1/formal-http-helm-chart"
+  default = "oci://public.ecr.aws/d6o8b0b1/formal-mysql-helm-chart"
+}
+variable "mysql_port" {
+  default = 3306
+}
+variable "mysql_sidecar_hostname" {}
+variable "mysql_username" {
+  type = string
+  sensitive = true
+}
+variable "mysql_password" {
+  type = string
+  sensitive = true
 }

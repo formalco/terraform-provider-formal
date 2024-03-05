@@ -33,11 +33,27 @@ module "common" {
 
 module "eks" {
   source          = "./eks"
-  name            = "${var.name}-http-proxy"
+  name            = "${var.name}-mysql-proxy"
   environment     = var.environment
   vpc_id          = module.common.vpc_id
   private_subnets = module.common.private_subnets
   public_subnets  = module.common.public_subnets
+  formal_mysql_api_key = module.formal.formal_mysql_sidecar_api_key
+}
+
+module "formal" {
+  source                         = "./formal"
+  name                           = "${var.name}-mysql-proxy"
+  environment                    = var.environment
+  formal_api_key                 = var.formal_api_key
+  main_port                      = var.mysql_port
+  availability_zones             = var.availability_zones
+  mysql_sidecar_hostname         = var.mysql_sidecar_hostname
+  mysql_hostname                 = module.formal.rds_hostname
+  vpc_id                         = module.common.vpc_id
+  public_subnets                 = module.common.public_subnets
+  mysql_username                 = var.mysql_username
+  mysql_password                 = var.mysql_password
 }
 
 module "helm" {

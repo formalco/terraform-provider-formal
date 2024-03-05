@@ -19,7 +19,6 @@ spec:
         "app.kubernetes.io/name": formal-external
         "app.kubernetes.io/instance": formal-external-web
     spec:
-      serviceAccountName: {{ .Values.serviceAccountDeployment }}
       containers:
         - name: {{ .Values.containers.mysqlSidecar.name }}
           image: {{ .Values.containers.mysqlSidecar.image }}
@@ -33,7 +32,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: formal-eks-secret
-                  key: formal-mysql-proxy-tls-cert
+                  key: formal-mysql-proxy-api-key
         {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
@@ -47,6 +46,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: formal-eks-secret
-                  key: formal-data-classifier-tls-cert
+                  key: formal-data-classifier-api-key
         {{- end }}
       restartPolicy: Always 
