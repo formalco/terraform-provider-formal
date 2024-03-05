@@ -52,12 +52,7 @@ func New(version string) func() *schema.Provider {
 				"formal_datastore":                resource.ResourceDatastore(),
 				"formal_sidecar_datastore_link":   resource.ResourceSidecarDatastoreLink(),
 				"formal_sidecar":                  resource.ResourceSidecar(),
-				"formal_key":                      resource.ResourceKey(),
-				"formal_field_encryption":         resource.ResourceFieldEncryption(),
-				"formal_default_field_encryption": resource.ResourceDefaultFieldEncryption(),
 				"formal_cloud_account":            resource.ResourceCloudAccount(),
-				"formal_dataplane":                resource.ResourceDataplane(),
-				"formal_dataplane_routes":         resource.ResourceDataplaneRoutes(),
 				"formal_native_role":              resource.ResourceNativeRole(),
 				"formal_native_role_link":         resource.ResourceNativeRoleLink(),
 				"formal_user":                     resource.ResourceUser(),
@@ -67,7 +62,6 @@ func New(version string) func() *schema.Provider {
 				"formal_integration_external_api": resource.ResourceIntegrationExternalApi(),
 				"formal_integration_datahub":      resource.ResourceIntegrationDatahub(),
 				"formal_satellite":                resource.ResourceSatellite(),
-				"formal_encryption_key":           resource.ResourceEncryptionKey(),
 			},
 		}
 
@@ -90,6 +84,6 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		grpc := api.NewClient(apiKey, returnSensitiveValue)
 
-		return &clients.Clients{Grpc: grpc}, nil
+		return &clients.Clients{Grpc: grpc, ApiKey: apiKey}, nil
 	}
 }

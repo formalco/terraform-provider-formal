@@ -5,5 +5,6 @@ import (
 )
 
 type Clients struct {
-	Grpc *api.GrpcClient
+	Grpc   *api.GrpcClient
+	ApiKey string
 }
