@@ -24,12 +24,14 @@ podSelector:
     app: formal-external
   labels:
     app:  formal-external
-secretManagerRegion: us-east-1
 deployDataClassifierSatellite: false
-deploySecretStore: true
-secretStoreServiceAccount: formal-external-secrets-irsa
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store
+  region: us-east-1
+  type: SecretStore
+  serviceAccount: formal-external-secrets-irsa
 externalSecrets:
-  secretStoreName: formal-eks-secret-store
   snowflakeProxyKeyName: formal-snowflake-proxy-api-key
 service:
   type: LoadBalancer
