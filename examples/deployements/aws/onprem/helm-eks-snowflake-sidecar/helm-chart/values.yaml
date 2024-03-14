@@ -1,0 +1,36 @@
+replicaCount: 1
+containers:
+  snowflakeSidecar:
+    name: snowflake-sidecar-app
+    image: 654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-snowflake-proxy
+    resources: {}
+  dataClassifierSatellite:
+    name: data-classifier-satellite-app
+    image: 
+    resources: {}
+configMaps:
+  snowflakeSidecar:
+    CLIENT_LISTEN_TLS: "true"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+    PII_SAMPLING_RATE: "8"
+    MANAGED_TLS_CERTS: "true"
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+podSelector:
+  matchLabels:
+    app: formal-external
+  labels:
+    app:  formal-external
+secretManagerRegion: us-east-1
+deployDataClassifierSatellite: false
+deploySecretStore: true
+secretStoreServiceAccount: formal-external-secrets-irsa
+externalSecrets:
+  snowflakeProxyKeyName: formal-snowflake-proxy-api-key
+service:
+  type: LoadBalancer
+  port: 443
+podAnnotations: {}
