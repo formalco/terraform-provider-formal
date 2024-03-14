@@ -32,6 +32,7 @@ secretStore:
   type: SecretStore
   serviceAccount: formal-external-secrets-irsa
 externalSecrets:
+  secretStoreName: formal-eks-secret-store
   snowflakeProxyKeyName: formal-snowflake-proxy-api-key
 service:
   type: LoadBalancer
