@@ -6,7 +6,7 @@ import (
 	"time"
 
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
@@ -66,7 +66,7 @@ func ResourceSidecar() *schema.Resource {
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
+				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http` and `ssh`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
