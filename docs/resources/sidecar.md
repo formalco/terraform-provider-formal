@@ -19,7 +19,7 @@ Registering a Sidecar with Formal.
 
 - `deployment_type` (String) How the Sidecar should be deployed: `managed`, or `onprem`.
 - `name` (String) Friendly name for this Sidecar.
-- `technology` (String) Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.
+- `technology` (String) Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http` and `ssh`.
 
 ### Optional
 

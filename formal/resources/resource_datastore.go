@@ -1,13 +1,14 @@
 package resource
 
 import (
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	"context"
 	"fmt"
-	"github.com/bufbuild/connect-go"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"strings"
 	"time"
+
+	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	"connectrpc.com/connect"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -51,7 +52,7 @@ func ResourceDatastore() *schema.Resource {
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `http` and `ssh`.",
+				Description: "Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http` and `ssh`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,

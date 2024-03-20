@@ -1,19 +1,21 @@
 module github.com/formalco/terraform-provider-formal
 
-go 1.21
+go 1.22.0
+
+toolchain go1.22.1
 
 require (
-	buf.build/gen/go/formal/admin/protocolbuffers/go v1.32.0-20240128111555-79594517675a.1
-	github.com/bufbuild/connect-go v1.10.0
-	github.com/formalco/go-sdk/sdk v1.2.13
+	buf.build/gen/go/formal/admin/protocolbuffers/go v1.33.0-20240208053541-2fc559d58b20.1
+	connectrpc.com/connect v1.15.0
+	github.com/formalco/go-sdk/sdk v1.2.14
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.31.0
-	google.golang.org/protobuf v1.32.0
+	google.golang.org/protobuf v1.33.0
 )
 
 require (
-	buf.build/gen/go/formal/admin/bufbuild/connect-go v1.10.0-20240128111555-79594517675a.1 // indirect
+	buf.build/gen/go/formal/admin/connectrpc/go v1.15.0-20240208053541-2fc559d58b20.1 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.2 // indirect
@@ -64,10 +66,10 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
-	golang.org/x/crypto v0.16.0 // indirect
+	golang.org/x/crypto v0.19.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
-	golang.org/x/net v0.18.0 // indirect
-	golang.org/x/sys v0.15.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
