@@ -6,7 +6,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = "~>3.2.3"
+      version = "~>3.4.0"
     }
   }
 
@@ -32,28 +32,28 @@ module "common" {
 }
 
 module "eks" {
-  source          = "./eks"
-  name            = "${var.name}-snowflake-proxy"
-  environment     = var.environment
-  vpc_id          = module.common.vpc_id
-  private_subnets = module.common.private_subnets
-  public_subnets  = module.common.public_subnets
+  source                   = "./eks"
+  name                     = "${var.name}-snowflake-proxy"
+  environment              = var.environment
+  vpc_id                   = module.common.vpc_id
+  private_subnets          = module.common.private_subnets
+  public_subnets           = module.common.public_subnets
   formal_snowflake_api_key = module.formal.formal_snowflake_sidecar_api_key
 }
 
 module "formal" {
-  source                         = "./formal"
-  name                           = "${var.name}-snowflake-proxy"
-  environment                    = var.environment
-  formal_api_key                 = var.formal_api_key
-  main_port                      = var.snowflake_port
-  availability_zones             = var.availability_zones
-  snowflake_sidecar_hostname         = var.snowflake_sidecar_hostname
-  snowflake_hostname                 = var.snowflake_hostname
-  vpc_id                         = module.common.vpc_id
-  public_subnets                 = module.common.public_subnets
-  snowflake_username                 = var.snowflake_username
-  snowflake_password                 = var.snowflake_password
+  source                     = "./formal"
+  name                       = "${var.name}-snowflake-proxy"
+  environment                = var.environment
+  formal_api_key             = var.formal_api_key
+  main_port                  = var.snowflake_port
+  availability_zones         = var.availability_zones
+  snowflake_sidecar_hostname = var.snowflake_sidecar_hostname
+  snowflake_hostname         = var.snowflake_hostname
+  vpc_id                     = module.common.vpc_id
+  public_subnets             = module.common.public_subnets
+  snowflake_username         = var.snowflake_username
+  snowflake_password         = var.snowflake_password
 }
 
 module "helm" {

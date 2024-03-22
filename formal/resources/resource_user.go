@@ -7,7 +7,7 @@ import (
 	"time"
 
 	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
-	"github.com/bufbuild/connect-go"
+	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"

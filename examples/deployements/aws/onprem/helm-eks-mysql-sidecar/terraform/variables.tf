@@ -31,10 +31,10 @@ variable "mysql_port" {
 }
 variable "mysql_sidecar_hostname" {}
 variable "mysql_username" {
-  type = string
+  type      = string
   sensitive = true
 }
 variable "mysql_password" {
-  type = string
+  type      = string
   sensitive = true
 }

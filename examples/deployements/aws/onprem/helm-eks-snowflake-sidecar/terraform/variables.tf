@@ -32,10 +32,10 @@ variable "snowflake_port" {
 variable "snowflake_sidecar_hostname" {}
 variable "snowflake_hostname" {}
 variable "snowflake_username" {
-  type = string
+  type      = string
   sensitive = true
 }
 variable "snowflake_password" {
-  type = string
+  type      = string
   sensitive = true
 }
