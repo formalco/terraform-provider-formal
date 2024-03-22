@@ -34,15 +34,18 @@ You can customize the deployment through the following configurations in your `v
 
 - namespace: The deployment namespace (Default: default).
 - replicaCount: Number of replicas (Default: 1).
-- imagePullSecret: The secret containing docker registry credentials (Default: registry-test-secret).
 
 ### Containers Configurations
 
-#### [SIDECAR_TECHNOLOGY] Sidecar Container
+#### Sidecar Container
 
-- containers.[SIDECAR_TECHNOLOGY].name: Container name.
-- containers.[SIDECAR_TECHNOLOGY].image: Docker image.
-- containers.[SIDECAR_TECHNOLOGY].resources: Resource requests and limits.
+- containers.name: Container name.
+- containers.image: Docker image.
+- containers.resources: Resource requests and limits.
+
+#### Sidecar Secrets
+
+All secrets are passed via the configMap. Please refer yourself to [this documentation](https://docs.private.joinformal.com/deploying-a-sidecar/customer-managed/environment-variables).
 
 #### Data Classifier Satellite Container
 
