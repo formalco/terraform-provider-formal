@@ -12,12 +12,14 @@ spec:
   replicas: {{ $.Values.replicaCount }}
   selector:
     matchLabels:
-        {{- toYaml $val.podSelector.matchLabels | nindent 8 }}
+        "app.kubernetes.io/name": {{ $val.podSelector.labels.app }}
+        "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app .Release.Name }}
   template:
     metadata:
       annotations: {{ toYaml $.Values.podAnnotations | nindent 8 }}
       labels:
-        {{- toYaml $val.podSelector.labels | nindent 8 }}
+       "app.kubernetes.io/name": {{ $val.podSelector.labels.app }}
+       "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app .Release.Name }}
     spec:
       serviceAccountName: {{ $.Values.serviceAccountDeployment }}
       containers:
