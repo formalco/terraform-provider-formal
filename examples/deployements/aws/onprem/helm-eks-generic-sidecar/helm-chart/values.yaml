@@ -1,24 +1,24 @@
 replicaCount: 1
 sidecars: 
-  s3:
-    containers:
-      name: s3-sidecar-app
-      image: 
-      resources: {}
-    configMap:
-        CLIENT_LISTEN_TLS: "false"
-        SERVER_CONNECT_TLS: "false"
-        DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
-        CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
-        CUSTOMER_TLS_CERT_FULLCHAIN: ""
-        PII_SAMPLING_RATE: "8"
-    podSelector:
-      matchLabels:
-        app:  formal-external
-      labels:
-        app:  formal-external
-    externalSecrets:
-      s3ProxyKeyName: app/production/formal-external/formal-s3-proxy-api-key
+  # s3:
+  #   containers:
+  #     name: s3-sidecar-app
+  #     image: 
+  #     resources: {}
+  #   configMap:
+  #       CLIENT_LISTEN_TLS: "false"
+  #       SERVER_CONNECT_TLS: "false"
+  #       DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+  #       CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+  #       CUSTOMER_TLS_CERT_FULLCHAIN: ""
+  #       PII_SAMPLING_RATE: "8"
+  #   podSelector:
+  #     matchLabels:
+  #       app:  formal-external
+  #     labels:
+  #       app:  formal-external
+  #   externalSecrets:
+  #     s3ProxyKeyName: app/production/formal-external/formal-s3-proxy-api-key
   http:
     containers:
       name: http-sidecar-app
@@ -41,7 +41,8 @@ sidecars:
       labels:
         app:  formal-external
     externalSecrets:
-      httpProxyKeyName : app/production/formal-external/formal-http-proxy-api-key
+      secretKey: formal-http-proxy-api-key
+      keyName : app/production/formal-external/formal-http-proxy-api-key
 secretManagerRegion: us-west-2
-serviceAccountDeployment: formal-external-irsa
+serviceAccountDeployment: external-secrets-irsa-role-test
 podAnnotations: {}

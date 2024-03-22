@@ -2,23 +2,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "%s-%s" $val.containers.name .Release.Name }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ printf "%s-%s" $val.containers.name $.Release.Name }}
+  namespace: {{ $.Release.Namespace }}
   labels:
     "app.kubernetes.io/name": {{ $val.podSelector.labels.app }}
-    "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app .Release.Name }}
+    "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app $.Release.Name }}
 spec:
   replicas: {{ $.Values.replicaCount }}
   selector:
     matchLabels:
         "app.kubernetes.io/name": {{ $val.podSelector.labels.app }}
-        "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app .Release.Name }}
+        "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app $.Release.Name }}
   template:
     metadata:
       annotations: {{ toYaml $.Values.podAnnotations | nindent 8 }}
       labels:
        "app.kubernetes.io/name": {{ $val.podSelector.labels.app }}
-       "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app .Release.Name }}
+       "app.kubernetes.io/instance": {{ printf "%s-%s" $val.podSelector.labels.app $.Release.Name }}
     spec:
       serviceAccountName: {{ $.Values.serviceAccountDeployment }}
       containers:

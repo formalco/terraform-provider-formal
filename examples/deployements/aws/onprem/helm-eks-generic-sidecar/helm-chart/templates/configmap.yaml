@@ -2,8 +2,8 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "%s-config-%s" $val.containers.name .Release.Name }}
-  namespace: {{ .Release.Namespace }}
+  name: {{ printf "%s-config-%s" $val.containers.name $.Release.Name }}
+  namespace: {{ $.Release.Namespace }}
 data:
   {{- range $configKey, $configValue := $val.configMap }}
   {{ $configKey }}: "{{ $configValue }}"
