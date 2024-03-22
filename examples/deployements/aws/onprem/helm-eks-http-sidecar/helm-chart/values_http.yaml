@@ -29,9 +29,13 @@ podSelector:
   labels:
     appName:  formal-external
     instance:  formal-external-web
-secretManagerRegion: us-west-2
 secretStoreServiceAccount: external-secrets-irsa
-deploySecretStore: true
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store-formal-http-helm-chart
+  region: us-west-2
+  type: SecretStore
+  serviceAccount: formal-external-secrets-irsa
 deployDataClassifierSatellite: false
 externalSecrets:
   keyName: formal-http-proxy-api-key
