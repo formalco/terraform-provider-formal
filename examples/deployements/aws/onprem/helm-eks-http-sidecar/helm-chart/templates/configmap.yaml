@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ printf "http-sidecar-config-%s" .Release.Name }}
+  name: {{ printf "sidecar-config-%s" .Release.Name }}
   namespace: {{ .Release.Namespace }}
 data:
-  {{- range $key, $value := .Values.configMaps.httpSidecar }}
+  {{- range $key, $value := .Values.configMaps.sidecar }}
   {{ $key }}: "{{ $value }}"
   {{- end }}
 ---

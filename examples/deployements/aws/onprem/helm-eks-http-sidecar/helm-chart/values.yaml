@@ -1,6 +1,6 @@
 replicaCount: 1
 containers:
-  httpSidecar:
+  sidecar:
     name: http-sidecar-app
     image: 
     resources: {}
@@ -9,7 +9,7 @@ containers:
     image: 
     resources: {}
 configMaps:
-  httpSidecar:
+  sidecar:
     CLIENT_LISTEN_TLS: "false"
     SERVER_CONNECT_TLS: "false"
     DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
@@ -24,12 +24,17 @@ configMaps:
     PII_DETECTION: formal
 podSelector:
   matchLabels:
-    app:  formal-external
+    appName:  formal-external
+    instance:  formal-external-web
   labels:
-    app:  formal-external
-secretManagerRegion: ap-southeast-2
+    appName:  formal-external
+    instance:  formal-external-web
+secretManagerRegion: us-west-2
+secretStoreServiceAccount: external-secrets-irsa
+deploySecretStore: true
 deployDataClassifierSatellite: false
 externalSecrets:
-  httpProxyKeyName : app/production/formal-external/formal-http-proxy-tls-cert
-serviceAccountDeployment: value
+  keyName: formal-http-proxy-api-key
+  proxyKeyName : formal-http-proxy-tls-cert
+serviceAccountDeployment: external-secrets-irsa
 podAnnotations: {}

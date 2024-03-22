@@ -1,39 +1,39 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "http-sidecar-app-%s" .Release.Name }}
+  name: {{ printf "sidecar-app-%s" .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    "app.kubernetes.io/name": formal-external
-    "app.kubernetes.io/instance": formal-external-web
+    "app.kubernetes.io/name": {{ .Values.podSelector.labels.appName }}
+    "app.kubernetes.io/instance": {{ .Values.podSelector.labels.instance }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-        "app.kubernetes.io/name": formal-external
-        "app.kubernetes.io/instance": formal-external-web
+        "app.kubernetes.io/name": {{ .Values.podSelector.matchLabels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.matchLabels.instance }}
   template:
     metadata:
       annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
       labels:
-        "app.kubernetes.io/name": formal-external
-        "app.kubernetes.io/instance": formal-external-web
+        "app.kubernetes.io/name": {{ .Values.podSelector.labels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.labels.instance }}
     spec:
       serviceAccountName: {{ .Values.serviceAccountDeployment }}
       containers:
-        - name: {{ .Values.containers.httpSidecar.name }}
-          image: {{ .Values.containers.httpSidecar.image }}
+        - name: {{ .Values.containers.sidecar.name }}
+          image: {{ .Values.containers.sidecar.image }}
           envFrom:
             - configMapRef:
-                name: {{ printf "http-sidecar-config-%s" .Release.Name }}
+                name: {{ printf "sidecar-config-%s" .Release.Name }}
           resources:
-            {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
+            {{ toYaml .Values.containers.sidecar.resources | nindent 12 }}
           env:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "formal-eks-secret-%s" .Release.Name }}
-                  key: formal-http-proxy-tls-cert
+                  key: {{ .Values.externalSecrets.keyName }}
         {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
