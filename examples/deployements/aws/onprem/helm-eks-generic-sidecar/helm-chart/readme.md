@@ -1,11 +1,10 @@
-# HTTP Sidecar & Data Classifier Satellite Helm Chart
+# Formal Sidecars & Data Classifier Satellite Helm Chart
 
-This document provides instructions for installing and configuring the Formal
-HTTP Sidecar and Data Classifier Satellite Helm chart on your Kubernetes cluster.
+This document provides instructions for installing and configuring Formal Sidecars and Data Classifier Satellite Helm chart on your Kubernetes cluster.
 
 ## 1. Overview
 
-This Helm chart automates the deployment process of two applications, the HTTP Sidecar, and the Data Classifier Satellite, which are essential for managing and classifying HTTP data traffic within your Kubernetes environment.
+This Helm chart automates the deployment process of Formal Sidecars and Data Classifier Satellite.
 
 ## 2. Prerequisites
 
@@ -19,12 +18,12 @@ you have:
 
 ## 3. Quick Start
 
-To quickly deploy the applications on your cluster with default configurations, run the following command, replacing http-sidecar with your desired release name:
+To quickly deploy the applications on your cluster with default configurations, run the following command, replacing [SIDECAR_TECHNOLOGY]-sidecar with your desired release name:
 
 ```shell
 helm repo add formal http://localhost:8090
 
-helm install formal/http-sidecar --generate-name
+helm install formal/proxy-sidecar --generate-name
 ```
 
 ## 4. Configuration Options
@@ -39,11 +38,11 @@ You can customize the deployment through the following configurations in your `v
 
 ### Containers Configurations
 
-#### HTTP Sidecar Container
+#### [SIDECAR_TECHNOLOGY] Sidecar Container
 
-- containers.httpSidecar.name: Container name (Default: http-sidecar-app).
-- containers.httpSidecar.image: Docker image (Default: formalco/docker-prod-http-sidecar:latest).
-- containers.httpSidecar.resources: Resource requests and limits.
+- containers.[SIDECAR_TECHNOLOGY].name: Container name.
+- containers.[SIDECAR_TECHNOLOGY].image: Docker image.
+- containers.[SIDECAR_TECHNOLOGY].resources: Resource requests and limits.
 
 #### Data Classifier Satellite Container
 
@@ -53,9 +52,9 @@ You can customize the deployment through the following configurations in your `v
 
 ### Config Maps
 
-#### HTTP Sidecar ConfigMap
+#### [SIDECAR_TECHNOLOGY] Sidecar ConfigMap
 
-Customizable parameters for HTTP Sidecar behavior including TLS configuration, PII detection, server connections, and more.
+Customizable parameters for [SIDECAR_TECHNOLOGY] Sidecar behavior including TLS configuration, PII detection, server connections, and more.
 
 #### Data Classifier Satellite ConfigMap
 

@@ -13,6 +13,5 @@ The second step is to run the helm-chart script by running the following command
 1. Make sure that <name_chart> is matching the name of the chart in `Chart.yaml`
 2. Make sure that you have configure your AWS credentials when running the terraform / script file.
 3. Check the values provided in the `values.yaml` file and ensure the 3 following variables are set:
-    1. dockerconfigjson: base64 encoded credentials to access Dockerhub or ECR repository
-    2. FORMAL_CONTROL_PLANE_TLS_CERT: tls certificate for the HTTP Proxy
-    3. FORMAL_CONTROL_PLANE_TLS_CERT: tls certificate for the Data Classifier Satellite
+    1. FORMAL_CONTROL_PLANE_TLS_CERT: tls certificate for Formal Sidecar
+    2. FORMAL_CONTROL_PLANE_TLS_CERT: tls certificate for the Data Classifier Satellite
