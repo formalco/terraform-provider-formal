@@ -1,0 +1,67 @@
+replicaCount: 1
+containers:
+  httpSidecar:
+    name: http-sidecar-app
+    image: 323330447930.dkr.ecr.eu-west-1.amazonaws.com/gusto-http-proxy
+    resources: {}
+  s3Sidecar:
+    name: s3-sidecar-app
+    image: 654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-s3-proxy:3.0.5
+    resources: {}
+  dataClassifierSatellite:
+    name: data-classifier-satellite-app
+    image: 
+    resources: {}
+configMaps:
+  httpSidecar:
+    CLIENT_LISTEN_TLS: "false"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+    PII_SAMPLING_RATE: "8"
+    STRIP_VALUES_FROM_LOGS: "false"
+    LOGGED_HTTP_PAYLOAD_MAX_SIZE: "5000000"
+    HEALTH_CHECK_ON_TRAFFIC_PORT: "true"
+    HEALTH_CHECK_ON_TRAFFIC_PORT_PATH: "/health"
+  s3Sidecar:
+    CLIENT_LISTEN_TLS: "false"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+podSelector:
+  httpSidecar:
+    matchLabels:
+      appName:  formal-external
+      instance:  formal-external-web
+    labels:
+      appName:  formal-external
+      instance:  formal-external-web
+  s3Sidecar:
+    matchLabels:
+      appName:  formal-external-s3
+      instance:  formal-external-s3-web
+    labels:
+      appName:  formal-external-s3
+      instance:  formal-external-s3-web
+secretStoreServiceAccount: external-secrets-irsa
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store-formal-http-helm-chart
+  region: us-west-2
+  type: SecretStore
+  serviceAccount: external-secrets-irsa
+deployDataClassifierSatellite: false
+deployHttpSidecar: true
+deployS3Sidecar: true
+externalSecrets:
+  httpSidecar:
+    keyName: formal-http-proxy-api-key
+    proxyKeyName : formal-http-proxy-tls-cert
+  s3Sidecar:
+    keyName: formal-s3-proxy-api-key
+    proxyKeyName : formal-s3-proxy-tls-cert
+podAnnotations: {}

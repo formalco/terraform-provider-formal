@@ -1,39 +1,40 @@
+{{- if .Values.deployHttpSidecar }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ printf "sidecar-app-%s" .Release.Name }}
+  name: {{ printf "http-sidecar-app-%s" .Release.Name }}
   namespace: {{ .Release.Namespace }}
   labels:
-    "app.kubernetes.io/name": {{ .Values.podSelector.labels.appName }}
-    "app.kubernetes.io/instance": {{ .Values.podSelector.labels.instance }}
+    "app.kubernetes.io/name": {{ .Values.podSelector.httpSidecar.labels.appName }}
+    "app.kubernetes.io/instance": {{ .Values.podSelector.httpSidecar.labels.instance }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
     matchLabels:
-        "app.kubernetes.io/name": {{ .Values.podSelector.matchLabels.appName }}
-        "app.kubernetes.io/instance": {{ .Values.podSelector.matchLabels.instance }}
+        "app.kubernetes.io/name": {{ .Values.podSelector.httpSidecar.matchLabels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.httpSidecar.matchLabels.instance }}
   template:
     metadata:
       annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
       labels:
-        "app.kubernetes.io/name": {{ .Values.podSelector.labels.appName }}
-        "app.kubernetes.io/instance": {{ .Values.podSelector.labels.instance }}
+        "app.kubernetes.io/name": {{ .Values.podSelector.httpSidecar.labels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.httpSidecar.labels.instance }}
     spec:
       serviceAccountName: {{ .Values.serviceAccountDeployment }}
       containers:
-        - name: {{ .Values.containers.sidecar.name }}
-          image: {{ .Values.containers.sidecar.image }}
+        - name: {{ .Values.containers.httpSidecar.name }}
+          image: {{ .Values.containers.httpSidecar.image }}
           envFrom:
             - configMapRef:
-                name: {{ printf "sidecar-config-%s" .Release.Name }}
+                name: {{ printf "http-sidecar-config-%s" .Release.Name }}
           resources:
-            {{ toYaml .Values.containers.sidecar.resources | nindent 12 }}
+            {{ toYaml .Values.containers.httpSidecar.resources | nindent 12 }}
           env:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
                   name: {{ printf "formal-eks-secret-%s" .Release.Name }}
-                  key: {{ .Values.externalSecrets.keyName }}
+                  key: {{ .Values.externalSecrets.httpSidecar.keyName }}
         {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
           image: {{ .Values.containers.dataClassifierSatellite.image }}
@@ -50,3 +51,43 @@ spec:
                   key: formal-data-classifier-tls-cert
         {{- end }}
       restartPolicy: Always 
+---
+{{- end }}
+{{- if .Values.deployS3Sidecar }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "s3-sidecar-app-%s" .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "app.kubernetes.io/name": {{ .Values.podSelector.s3Sidecar.labels.appName }}
+    "app.kubernetes.io/instance": {{ .Values.podSelector.s3Sidecar.labels.instance }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+        "app.kubernetes.io/name": {{ .Values.podSelector.s3Sidecar.matchLabels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.s3Sidecar.matchLabels.instance }}
+  template:
+    metadata:
+      annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
+      labels:
+        "app.kubernetes.io/name": {{ .Values.podSelector.s3Sidecar.labels.appName }}
+        "app.kubernetes.io/instance": {{ .Values.podSelector.s3Sidecar.labels.instance }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccountDeployment }}
+      containers:
+        - name: {{ .Values.containers.s3Sidecar.name }}
+          image: {{ .Values.containers.s3Sidecar.image }}
+          envFrom:
+            - configMapRef:
+                name: {{ printf "s3-sidecar-config-%s" .Release.Name }}
+          resources:
+            {{ toYaml .Values.containers.s3Sidecar.resources | nindent 12 }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ printf "formal-eks-secret-%s" .Release.Name }}
+                  key: {{ .Values.externalSecrets.s3Sidecar.keyName }}
+{{- end }}
