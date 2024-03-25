@@ -1,4 +1,4 @@
-{{- if .Values.deployS3Sidecar }}
+{{- if .Values.deployHttpSidecar }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
