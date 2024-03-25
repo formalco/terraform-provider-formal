@@ -1,3 +1,4 @@
+{{- if .Values.deployHttpSidecar }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -8,6 +9,19 @@ data:
   {{ $key }}: "{{ $value }}"
   {{- end }}
 ---
+{{- end }}
+{{- if .Values.deployS3Sidecar }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ printf "s3-sidecar-config-%s" .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+data:
+  {{- range $key, $value := .Values.configMaps.s3Sidecar }}
+  {{ $key }}: "{{ $value }}"
+  {{- end }}
+---
+{{- end }}
 {{- if .Values.deployDataClassifierSatellite }}
 apiVersion: v1
 kind: ConfigMap
