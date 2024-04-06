@@ -3,7 +3,7 @@ package resource
 import (
 	"context"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -24,9 +24,9 @@ func ResourceNativeRoleLink() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"datastore_id": {
+			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Sidecar ID of the Native Role.",
+				Description: "The Resource ID of the Native Role.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -69,17 +69,15 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	datastoreId := d.Get("datastore_id").(string)
 	nativeRoleId := d.Get("native_role_id").(string)
 	formalIdentityId := d.Get("formal_identity_id").(string)
 	formalIdentityType := d.Get("formal_identity_type").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUserIdentityLinkV2(ctx, connect.NewRequest(&adminv1.CreateNativeUserIdentityLinkV2Request{
-		DataStoreId:           datastoreId,
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.CreateNativeUserIdentityLinkRequest{
 		NativeUserId:          nativeRoleId,
 		IdentityId:            formalIdentityId,
-		FormalIdentityType:    formalIdentityType,
+		IdentityType:          formalIdentityType,
 		TerminationProtection: terminationProtection,
 	}))
 	if err != nil {
@@ -98,7 +96,7 @@ func resourceNativeRoleLinkUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.NativeUserServiceClient.UpdateNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.UpdateNativeUserIdentityLinkRequest{
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.UpdateNativeUserIdentityLinkRequest{
 			Id:                    d.Id(),
 			TerminationProtection: &terminationProtection,
 		}))
@@ -116,12 +114,10 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	datastoreId := d.Get("datastore_id").(string)
-	formalIdentityId := d.Get("formal_identity_id").(string)
+	nativeUserIdentityId := d.Id()
 
-	res, err := c.Grpc.Sdk.NativeUserServiceClient.GetNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.GetNativeUserIdentityLinkRequest{
-		DataStoreId: datastoreId,
-		IdentityId:  formalIdentityId,
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.GetNativeUserIdentityLinkRequest{
+		Id: nativeUserIdentityId,
 	}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
@@ -133,15 +129,17 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	if res.Msg.Link.FormalIdentityType == "role" {
-		res.Msg.Link.FormalIdentityType = "user"
+	switch info := res.Msg.Link.Identity.(type) {
+	case *corev1.NativeUserLink_User:
+		d.Set("formal_identity_id", info.User.Id)
+	case *corev1.NativeUserLink_Group:
+		d.Set("formal_identity_id", info.Group.Id)
 	}
 
 	// Should map to all fields of
-	d.Set("datastore_id", res.Msg.Link.DataStoreId)
-	d.Set("native_role_id", res.Msg.Link.NativeUserId)
-	d.Set("formal_identity_id", res.Msg.Link.FormalIdentityId)
-	d.Set("formal_identity_type", res.Msg.Link.FormalIdentityType)
+	d.Set("resource_id", res.Msg.Link.NativeUser.ResourceId)
+	d.Set("native_role_id", res.Msg.Link.NativeUser.Id)
+	d.Set("formal_identity_type", res.Msg.Link.Identity)
 	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
 
 	d.SetId(res.Msg.Link.Id)
@@ -154,15 +152,14 @@ func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, m
 
 	var diags diag.Diagnostics
 
-	datastoreId := d.Get("datastore_id").(string)
-	formalIdentityId := d.Get("formal_identity_id").(string)
+	id := d.Id()
 	terminationProtection := d.Get("termination_protection").(bool)
 
 	if terminationProtection {
 		return diag.Errorf("Native Role Link cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUserIdentityLink(ctx, connect.NewRequest(&adminv1.DeleteNativeUserIdentityLinkRequest{DataStoreId: datastoreId, IdentityId: formalIdentityId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.DeleteNativeUserIdentityLinkRequest{Id: id}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

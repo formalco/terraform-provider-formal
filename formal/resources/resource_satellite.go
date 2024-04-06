@@ -3,11 +3,10 @@ package resource
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strconv"
 	"time"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -77,7 +76,7 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	name := d.Get("name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(&adminv1.CreateSatelliteRequest{
+	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(&corev1.CreateSatelliteRequest{
 		Name:                  name,
 		TerminationProtection: terminationProtection,
 	}))
@@ -89,7 +88,7 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdSatellite, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteById(ctx, connect.NewRequest(&adminv1.GetSatelliteByIdRequest{Id: res.Msg.Id}))
+		createdSatellite, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatellite(ctx, connect.NewRequest(&corev1.GetSatelliteRequest{Id: res.Msg.Satellite.Id}))
 		if err != nil {
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
@@ -106,16 +105,9 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 			return diag.FromErr(err)
 		}
 
-		tflog.Info(ctx, "Satellite status is: "+fmt.Sprint(createdSatellite.Msg.Satellite.Status))
-		// Check status
-		if createdSatellite.Msg.Satellite.Status == "ready" {
-			break
-		} else {
-			time.Sleep(15 * time.Second)
-		}
 	}
 
-	d.SetId(res.Msg.Id)
+	d.SetId(res.Msg.Satellite.Id)
 
 	resourceSatelliteRead(ctx, d, meta)
 
@@ -127,7 +119,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	var diags diag.Diagnostics
 
-	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteById(ctx, connect.NewRequest(&adminv1.GetSatelliteByIdRequest{
+	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatellite(ctx, connect.NewRequest(&corev1.GetSatelliteRequest{
 		Id: d.Id(),
 	}))
 	if err != nil {
@@ -138,7 +130,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
 
 	if c.Grpc.ReturnSensitiveValue {
-		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&adminv1.GetSatelliteApiKeyRequest{Id: d.Id()}))
+		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&corev1.GetSatelliteApiKeyRequest{Id: d.Id()}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -159,14 +151,27 @@ func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	satelliteId := d.Id()
 
 	if d.HasChange("termination_protection") {
-		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&adminv1.UpdateSatelliteRequest{
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&corev1.UpdateSatelliteRequest{
 			Id:                    satelliteId,
-			TerminationProtection: d.Get("termination_protection").(bool),
+			TerminationProtection: &terminationProtection,
 		}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
+
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&corev1.UpdateSatelliteRequest{
+			Id:   satelliteId,
+			Name: &name,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	resourceSatelliteRead(ctx, d, meta)
 
 	return diags
@@ -182,7 +187,7 @@ func resourceSatelliteDelete(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf("Satellite cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatellite(ctx, connect.NewRequest(&adminv1.DeleteSatelliteRequest{
+	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatellite(ctx, connect.NewRequest(&corev1.DeleteSatelliteRequest{
 		Id: d.Id(),
 	}))
 	if err != nil {

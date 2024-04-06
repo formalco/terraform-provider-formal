@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -157,20 +157,11 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	sidecarReq := &adminv1.CreateSidecarRequest{
+	sidecarReq := &corev1.CreateSidecarRequest{
 		Name:                  d.Get("name").(string),
-		DataplaneId:           d.Get("dataplane_id").(string),
-		DeploymentType:        d.Get("deployment_type").(string),
-		FailOpen:              d.Get("fail_open").(bool),
-		NetworkType:           d.Get("network_type").(string),
-		GlobalKmsDecrypt:      d.Get("global_kms_decrypt").(bool),
-		Version:               d.Get("version").(string),
+		Hostname:              d.Get("hostname").(string),
 		Technology:            d.Get("technology").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-	}
-	hostname := d.Get("formal_hostname").(string)
-	if sidecarReq.DeploymentType == "onprem" && hostname != "" {
-		sidecarReq.FormalHostname = hostname
 	}
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecar(ctx, connect.NewRequest(sidecarReq))
@@ -182,7 +173,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdSidecar, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: res.Msg.Id}))
+		createdSidecar, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: res.Msg.Sidecar.Id}))
 		if err != nil {
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
@@ -208,7 +199,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		}
 	}
 
-	d.SetId(res.Msg.Id)
+	d.SetId(res.Msg.Sidecar.Id)
 
 	resourceSidecarRead(ctx, d, meta)
 
@@ -223,7 +214,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	sidecarId := d.Id()
 
-	res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: sidecarId}))
+	res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: sidecarId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
@@ -235,26 +226,10 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	d.Set("id", res.Msg.Sidecar.Id)
 	d.Set("name", res.Msg.Sidecar.Name)
-	d.Set("formal_hostname", res.Msg.Sidecar.FormalHostname)
-	d.Set("deployment_type", res.Msg.Sidecar.DeploymentType)
-	d.Set("fail_open", res.Msg.Sidecar.FailOpen)
-	d.Set("network_type", res.Msg.Sidecar.NetworkType)
+	d.Set("formal_hostname", res.Msg.Sidecar.Hostname)
 	d.Set("created_at", res.Msg.Sidecar.CreatedAt.AsTime().Unix())
-	d.Set("global_kms_decrypt", res.Msg.Sidecar.GlobalKmsDecrypt)
-	d.Set("dataplane_id", res.Msg.Sidecar.DataplaneId)
-	d.Set("version", res.Msg.Sidecar.Version)
 	d.Set("technology", res.Msg.Sidecar.Technology)
 	d.Set("termination_protection", res.Msg.Sidecar.TerminationProtection)
-
-	if res.Msg.Sidecar.DeploymentType == "onprem" && c.Grpc.ReturnSensitiveValue {
-		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarTlsCertificateById(ctx, connect.NewRequest(&adminv1.GetSidecarTlsCertificateByIdRequest{Id: sidecarId}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
-		d.Set("formal_control_plane_tls_certificate", res.Msg.Secret)
-		d.Set("api_key", res.Msg.Secret)
-	}
 
 	d.SetId(res.Msg.Sidecar.Id)
 
@@ -274,53 +249,24 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf(err)
 	}
 
-	// Only enable updates to these fields, err otherwise
-	if d.HasChange("global_kms_decrypt") {
-		fullKmsDecryption := d.Get("global_kms_decrypt").(bool)
-		if fullKmsDecryption {
-			_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarKmsDecryptPolicy(ctx, connect.NewRequest(&adminv1.UpdateSidecarKmsDecryptPolicyRequest{Id: sidecarId, Enabled: true}))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-		} else {
-			return diag.Errorf("At the moment you cannot deactivate global_kms_decrypt once it is set to true. You can message the Formal team for assistance.")
-		}
-	}
-
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarName(ctx, connect.NewRequest(&adminv1.UpdateSidecarNameRequest{Id: sidecarId, Name: name}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("version") {
-		version := d.Get("version").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarVersion(ctx, connect.NewRequest(&adminv1.UpdateSidecarVersionRequest{Id: sidecarId, Version: version}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-
-	if d.HasChange("formal_hostname") {
-		if d.Get("deployment_type").(string) != "onprem" {
-			return diag.Errorf("formal_hostname can only be updated for onprem deployment types")
-		}
-
-		formalHostname := d.Get("formal_hostname").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarFormalHostname(ctx, connect.NewRequest(&adminv1.UpdateSidecarFormalHostnameRequest{Id: sidecarId, Hostname: formalHostname}))
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, Name: &name}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
 	if d.HasChange("termination_protection") {
-		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateTerminationProtection(ctx, connect.NewRequest(&adminv1.UpdateTerminationProtectionRequest{
-			Id:      sidecarId,
-			Enabled: terminationProtection,
-		}))
+		terminationProtection := d.Get("name").(bool)
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, TerminationProtection: &terminationProtection}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+	if d.HasChange("hostname") {
+		hostname := d.Get("name").(string)
+		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, Hostname: &hostname}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -345,7 +291,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf("Sidecar cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.SidecarServiceClient.DeleteSidecar(ctx, connect.NewRequest(&adminv1.DeleteSidecarRequest{Id: dsId}))
+	_, err := c.Grpc.Sdk.SidecarServiceClient.DeleteSidecar(ctx, connect.NewRequest(&corev1.DeleteSidecarRequest{Id: dsId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -355,7 +301,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
-		_, err = c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: dsId}))
+		_, err = c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: dsId}))
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				tflog.Info(ctx, "Sidecar deleted", map[string]interface{}{"sidecar_id": dsId})
@@ -403,7 +349,7 @@ func resourceSidecarStateUpgradeV0(ctx context.Context, rawState map[string]inte
 	c := meta.(*clients.Clients)
 
 	if val, ok := rawState["id"]; ok {
-		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarById(ctx, connect.NewRequest(&adminv1.GetSidecarByIdRequest{Id: val.(string)}))
+		res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: val.(string)}))
 		if err != nil {
 			return nil, err
 		}

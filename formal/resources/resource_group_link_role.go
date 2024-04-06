@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
@@ -33,9 +33,9 @@ func ResourceGroupLinkRole() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"role_id": {
+			"user_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID of the role to be linked.",
+				Description: "The Formal ID of the user to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -60,15 +60,15 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	roleId := d.Get("role_id").(string)
+	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.LinkUsersToGroup(ctx, connect.NewRequest(&adminv1.LinkUsersToGroupRequest{Id: groupId, UserIds: []string{roleId}}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.CreateUserGroupLink(ctx, connect.NewRequest(&corev1.CreateUserGroupLinkRequest{GroupId: groupId, UserId: userId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	terraformResourceId := groupId + roleLinkGroupTerraformIdDelimiter + roleId
+	terraformResourceId := groupId + roleLinkGroupTerraformIdDelimiter + userId
 	d.SetId(terraformResourceId)
 
 	resourceGroupLinkRoleRead(ctx, d, meta)
@@ -86,8 +86,8 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(errors.New("formal Terraform resource id for role_link_group is malformatted. Please contact Formal support"))
 	}
 	groupId := roleLinkGroupTerraformIdSplit[0]
-	roleId := roleLinkGroupTerraformIdSplit[1]
-	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroupById(ctx, connect.NewRequest(&adminv1.GetGroupByIdRequest{Id: groupId}))
+	userId := roleLinkGroupTerraformIdSplit[1]
+	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, connect.NewRequest(&corev1.ListUserGroupLinksRequest{GroupId: groupId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
@@ -98,8 +98,8 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	found := false
-	for _, userId := range res.Msg.Group.UserIds {
-		if userId == roleId {
+	for _, user := range res.Msg.UserGroupLinks {
+		if user.User.Id == userId {
 			found = true
 			break
 		}
@@ -112,7 +112,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 
 	// Should map to all fields of
 	d.Set("group_id", groupId)
-	d.Set("role_id", roleId)
+	d.Set("user_id", userId)
 
 	d.SetId(roleLinkGroupTerraformId)
 
@@ -134,10 +134,8 @@ func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, me
 	if len(roleLinkGroupTerraformIdSplit) != 2 {
 		return diag.FromErr(errors.New("formal Terraform resource id for role_link_group is malformatted. Please contact Formal support"))
 	}
-	groupId := roleLinkGroupTerraformIdSplit[0]
-	roleId := roleLinkGroupTerraformIdSplit[1]
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.UnlinkUsersFromGroup(ctx, connect.NewRequest(&adminv1.UnlinkUsersFromGroupRequest{Id: groupId, UserIds: []string{roleId}}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteUserGroupLink(ctx, connect.NewRequest(&corev1.DeleteUserGroupLinkRequest{Id: roleLinkGroupTerraformId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

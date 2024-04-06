@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -68,16 +68,23 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"splunk_url": {
+			"splunk_host": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Url of your Splunk app.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"splunk_api_key": {
+			"splunk_port": {
 				// This description is used by the documentation generator and the language server.
-				Description: "API Key of Splunk.",
+				Description: "Port of your Splunk app.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				ForceNew:    true,
+			},
+			"splunk_access_token": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Access Token of Splunk.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
@@ -116,35 +123,61 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 	var diags diag.Diagnostics
 
 	name := d.Get("name").(string)
-	typeApp := d.Get("type").(string)
 
-	ddSite := d.Get("dd_site").(string)
-	ddApiKey := d.Get("dd_api_key").(string)
-	ddAccountId := d.Get("dd_account_id").(string)
+	integrationType := d.Get("integration_type").(string)
+	var res *connect.Response[corev1.CreateIntegrationLogResponse]
+	var err error
 
-	splunkUrl := d.Get("splunk_url").(string)
-	splunkApiKey := d.Get("splunk_api_key").(string)
+	switch integrationType {
+	case "splunk":
+		integration := &corev1.CreateIntegrationLogRequest_Splunk_{
+			Splunk: &corev1.CreateIntegrationLogRequest_Splunk{
+				Host:        d.Get("splunk_host").(string),
+				Port:        int32(d.Get("splunk_port").(int)),
+				AccessToken: d.Get("splunk_access_token").(string),
+			},
+		}
+		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			Name:        name,
+			Integration: integration,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	case "aws_s3":
+		integration := &corev1.CreateIntegrationLogRequest_AwsS3_{
+			AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
+				AccessKeyId:     d.Get("aws_access_key_id").(string),
+				SecretAccessKey: d.Get("aws_access_key_secret").(string),
+				Region:          d.Get("aws_region").(string),
+				BucketName:      d.Get("aws_s3_bucket_name").(string),
+			},
+		}
+		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			Name:        name,
+			Integration: integration,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	case "datadog":
+		integration := &corev1.CreateIntegrationLogRequest_Datadog_{
+			Datadog: &corev1.CreateIntegrationLogRequest_Datadog{
+				Site:      d.Get("dd_site").(string),
+				ApiKey:    d.Get("dd_api_key").(string),
+				AccountId: d.Get("dd_account_id").(string),
+			},
+		}
+		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			Name:        name,
+			Integration: integration,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	awsAccessKeyId := d.Get("aws_access_key_id").(string)
-	awsAccessKeySecret := d.Get("aws_access_key_secret").(string)
-	awsRegion := d.Get("aws_region").(string)
-	awsS3BucketName := d.Get("aws_s3_bucket_name").(string)
-
-	res, err := c.Grpc.Sdk.LogsServiceClient.CreateIntegrationLogs(ctx, connect.NewRequest(&adminv1.CreateIntegrationLogsRequest{
-		Name:               name,
-		Type:               typeApp,
-		DdSite:             ddSite,
-		DdApiKey:           ddApiKey,
-		DdAccountId:        ddAccountId,
-		SplunkUrl:          splunkUrl,
-		SplunkApiKey:       splunkApiKey,
-		AwsAccessKeyId:     awsAccessKeyId,
-		AwsSecretAccessKey: awsAccessKeySecret,
-		AwsRegion:          awsRegion,
-		AwsS3Bucket:        awsS3BucketName,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
+	default:
+		return diag.Errorf("Unsupported integration type: %s", integrationType)
 	}
 
 	d.SetId(res.Msg.Integration.Id)
@@ -160,7 +193,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 
 	id := d.Id()
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.GetIntegrationLogById(ctx, connect.NewRequest(&adminv1.GetIntegrationLogByIdRequest{
+	res, err := c.Grpc.Sdk.IntegrationsLogServiceClient.GetIntegrationLog(ctx, connect.NewRequest(&corev1.GetIntegrationLogRequest{
 		Id: id,
 	}))
 	if err != nil {
@@ -168,11 +201,9 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 	}
 
 	d.Set("name", res.Msg.Integration.Name)
-	d.Set("type", res.Msg.Integration.Type)
-	d.Set("dd_site", res.Msg.Integration.DdSite)
-	d.Set("dd_account_id", res.Msg.Integration.DdAccountId)
-	d.Set("splunk_url", res.Msg.Integration.SplunkUrl)
-	d.Set("aws_s3_bucket_name", res.Msg.Integration.AwsS3BucketName)
+	d.Set("integration", res.Msg.Integration.Integration)
+	d.Set("termination_protection", res.Msg.Integration.TerminationProtection)
+	d.Set("created_at", res.Msg.Integration.CreatedAt.AsTime().Unix())
 
 	d.SetId(res.Msg.Integration.Id)
 
@@ -186,7 +217,7 @@ func resourceIntegrationLogsDelete(ctx context.Context, d *schema.ResourceData, 
 
 	id := d.Id()
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteIntegrationLogs(ctx, connect.NewRequest(&adminv1.DeleteIntegrationLogsRequest{
+	_, err := c.Grpc.Sdk.IntegrationsLogServiceClient.DeleteIntegrationLog(ctx, connect.NewRequest(&corev1.DeleteIntegrationLogRequest{
 		Id: id,
 	}))
 	if err != nil {
