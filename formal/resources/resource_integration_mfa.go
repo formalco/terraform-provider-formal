@@ -67,6 +67,7 @@ func ResourceIntegrationMfa() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+				ForceNew:    true,
 			},
 		},
 	}

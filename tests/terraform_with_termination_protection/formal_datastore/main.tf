@@ -14,7 +14,7 @@ variable "termination_protection" {
   description = "Whether termination protection is enabled for the resource."
 }
 
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "test-local.formal-datastore-with-termination-protection"
   name                       = "terraform-test-local-formal_datastore-with-termination-protection"
   technology                 = "postgres"

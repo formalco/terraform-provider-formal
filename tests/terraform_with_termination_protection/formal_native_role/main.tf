@@ -14,7 +14,7 @@ variable "termination_protection" {
   description = "Whether termination protection is enabled for the resource."
 }
 
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-local.formal-native-role.with-termination-protection"
   name                       = "terraform-test-local-formal_native_role-with-termination-protection"
   technology                 = "postgres"
@@ -27,7 +27,7 @@ resource "formal_datastore" "postgres1" {
 }
 
 resource "formal_native_role" "name" {
-  datastore_id           = formal_datastore.postgres1.id
+  resource_id           = formal_resource.postgres1.id
   native_role_id         = "postgres"
   native_role_secret     = "postgres"
   use_as_default         = true

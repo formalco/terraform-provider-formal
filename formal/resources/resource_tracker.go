@@ -34,12 +34,14 @@ func ResourceTracker() *schema.Resource {
 				Description: "Tracker linked to the following resource id.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"path": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Path associated with this tracker.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"id": {
 				// This description is used by the documentation generator and the language server.
@@ -65,6 +67,7 @@ func ResourceTracker() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+				ForceNew:    true,
 			},
 		},
 	}

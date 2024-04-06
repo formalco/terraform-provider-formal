@@ -14,7 +14,7 @@ variable "termination_protection" {
   description = "Whether termination protection is enabled for the resource."
 }
 
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-local.formal-integration-log-link.with-termination-protection"
   name                       = "terraform-test-local-formal_integration_log_link-with-termination-protection"
   technology                 = "postgres"
@@ -35,6 +35,6 @@ resource "formal_integration_log" "name" {
 
 resource "formal_integration_log_link" "name" {
   integration_id         = formal_integration_log.name.id
-  datastore_id           = formal_datastore.postgres1.id
+  resource_id           = formal_resource.postgres1.id
   termination_protection = var.termination_protection
 }

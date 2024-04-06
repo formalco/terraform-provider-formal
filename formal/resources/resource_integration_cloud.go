@@ -50,6 +50,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Description: "Region of the cloud provider.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"aws_region": {
 				// This description is used by the documentation generator and the language server.
