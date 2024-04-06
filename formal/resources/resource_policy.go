@@ -76,27 +76,6 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"active": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Active status of this policy.",
-				Type:        schema.TypeBool,
-				Required:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"org_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for your organisation.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"expire_at": {
-				// This description is used by the documentation generator and the language server.
-				Description: "When this policy is set to expire.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.",
