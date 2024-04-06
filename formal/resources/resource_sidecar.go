@@ -56,9 +56,9 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"datastore_id": {
+			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Datastore ID that the new Sidecar will be attached to.",
+				Description: "The Resource ID that the new Sidecar will be attached to.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    false,

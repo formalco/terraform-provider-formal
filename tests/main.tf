@@ -125,7 +125,6 @@ resource "formal_native_role_link" "name" {
 }
 
 resource "formal_policy" "name" {
-  active       = false
   description  = "terraform-test-policy"
   module       = <<EOT
 package formal.v2

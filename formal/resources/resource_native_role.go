@@ -24,9 +24,9 @@ func ResourceNativeRole() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"datastore_id": {
+			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Sidecar ID for the datastore this Native Role is for.",
+				Description: "The Sidecar ID for the resource this Native Role is for.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -69,14 +69,14 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	DatastoreId := d.Get("resource_id").(string)
+	ResourceId := d.Get("resource_id").(string)
 	Username := d.Get("username").(string)
 	Secret := d.Get("secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUser(ctx, connect.NewRequest(&corev1.CreateNativeUserRequest{
-		ResourceId:            DatastoreId,
+		ResourceId:            ResourceId,
 		Username:              Username,
 		Secret:                Secret,
 		UseAsDefault:          UseAsDefault,
