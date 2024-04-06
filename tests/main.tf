@@ -64,7 +64,7 @@ resource "formal_group_link_role" "name" {
   user_id  = formal_user.name.id
 }
 
-resource "formal_integration_app" "name" {
+resource "formal_integration_bi" "name" {
   name              = "terraform-test-integration-app"
   type              = "metabase"
   linked_db_user_id = "postgres"
