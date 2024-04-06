@@ -61,7 +61,7 @@ resource "formal_group" "name" {
 
 resource "formal_group_link_role" "name" {
   group_id = formal_group.name.id
-  role_id  = formal_user.name.id
+  user_id  = formal_user.name.id
 }
 
 resource "formal_integration_app" "name" {
