@@ -38,6 +38,7 @@ func ResourceIntegrationDataCatalog() *schema.Resource {
 				Description: "Type of the Integration mfa app: `datahub`",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"webhook_secret": {
 				// This description is used by the documentation generator and the language server.
