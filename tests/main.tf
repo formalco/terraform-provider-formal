@@ -21,7 +21,7 @@ provider "formal" {}
 # resource "formal_dataplane_routes" "name" {
 # }
 
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
   technology                 = "postgres"
@@ -48,7 +48,7 @@ resource "formal_datastore" "postgres1" {
 
 # resource "formal_field_encryption" "name" {
 #   alg          = "aes_deterministic"
-#   datastore_id = formal_datastore.postgres1.id
+#   resource_id = formal_datastore.postgres1.id
 #   key_id       = formal_encryption_key.name.id
 #   key_storage  = "control_plane_only"
 #   path         = "postgres.public.users.id"
@@ -81,13 +81,6 @@ resource "formal_integration_app" "name" {
 #   synced_entities = ["tags"]
 # }
 
-resource "formal_integration_external_api" "name" {
-  auth_type = "basic"
-  name      = "terraform-test-integration-external-api"
-  type      = "custom"
-  url       = "https://zendesk.com"
-}
-
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
   type           = "splunk"
@@ -113,7 +106,7 @@ resource "formal_integration_log" "s3" {
 # }
 
 resource "formal_native_role" "name" {
-  datastore_id       = formal_datastore.postgres1.id
+  resource_id       = formal_datastore.postgres1.id
   native_role_id     = "postgres1"
   native_role_secret = "postgres1"
 }
@@ -124,7 +117,7 @@ resource "formal_user" "name" {
 }
 
 resource "formal_native_role_link" "name" {
-  datastore_id         = formal_datastore.postgres1.id
+  resource_id         = formal_datastore.postgres1.id
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
   native_role_id       = formal_native_role.name.native_role_id
@@ -163,7 +156,12 @@ resource "formal_sidecar" "name" {
 }
 
 resource "formal_sidecar_datastore_link" "name" {
-  datastore_id = formal_datastore.postgres1.id
+  resource_id = formal_datastore.postgres1.id
   port         = 5432
   sidecar_id   = formal_sidecar.name.id
+}
+
+resource "formal_resource_health_check" "name" {
+  resource_id = formal_resource.postgres1.id
+  database_name = "test-1"
 }
