@@ -84,8 +84,9 @@ resource "formal_integration_bi" "name" {
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
   type           = "splunk"
-  splunk_api_key = "aaaaa"
-  splunk_url     = "https://splunk.com"
+  splunk_access_token = "aaaaa"
+  splunk_port = 443
+  splunk_host     = "https://splunk.com"
 }
 
 resource "formal_integration_log" "s3" {
@@ -106,7 +107,7 @@ resource "formal_integration_log" "s3" {
 # }
 
 resource "formal_native_role" "name" {
-  resource_id       = formal_datastore.postgres1.id
+  resource_id       = formal_resource.postgres1.id
   native_role_id     = "postgres1"
   native_role_secret = "postgres1"
 }
@@ -117,7 +118,7 @@ resource "formal_user" "name" {
 }
 
 resource "formal_native_role_link" "name" {
-  resource_id         = formal_datastore.postgres1.id
+  resource_id         = formal_resource.postgres1.id
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
   native_role_id       = formal_native_role.name.native_role_id
@@ -135,7 +136,7 @@ pre_request := {
   "action": "block",
   "type": "block_with_formal_message"
 } if {
-  input.datastore.id == "${formal_datastore.postgres1.id}"
+  input.datastore.id == "${formal_resource.postgres1.id}"
 }
 EOT
   name         = "terraform-test-policy"
@@ -155,8 +156,8 @@ resource "formal_sidecar" "name" {
   technology         = "postgres"
 }
 
-resource "formal_sidecar_datastore_link" "name" {
-  resource_id = formal_datastore.postgres1.id
+resource "formal_sidecar_resource_link" "name" {
+  resource_id = formal_resource.postgres1.id
   port         = 5432
   sidecar_id   = formal_sidecar.name.id
 }
