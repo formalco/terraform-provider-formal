@@ -68,7 +68,7 @@ resource "formal_integration_log" "s3" {
 
 resource "formal_native_role" "name" {
   resource_id       = formal_resource.postgres1.id
-  native_role_username     = "postgres1"
+  native_role_id     = "postgres1"
   native_role_secret = "postgres1"
 }
 
