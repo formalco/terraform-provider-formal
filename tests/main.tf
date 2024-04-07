@@ -41,7 +41,6 @@ resource "formal_integration_bi" "name" {
 }
 
 resource "formal_integration_data_catalog" "name" {
-  active = true
   type = "datahub"
   api_key = "api_key_datahub_placeholder"
   generalized_metadata_service_url = "https://datahub.com"
@@ -128,10 +127,14 @@ resource "formal_resource_health_check" "name" {
 
 resource "formal_data_domain" "name" {
   active = true
-  type = "datahub"
-  api_key = "api_key_datahub_placeholder"
-  generalized_metadata_service_url = "https://datahub.com"
-  sync_direction = "bidirectional"
+  name = "name"
+  description = "description"
+  included_paths = ["main.path"]
+  excluded_paths = ["main.path2"]
+  owners = [{
+      object_type = "firstObjectType"
+      object_id = "firstObjectId"
+  }]
 }
 
 resource "formal_tracker" "name" {
