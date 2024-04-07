@@ -124,7 +124,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 
 	name := d.Get("name").(string)
 
-	integrationType := d.Get("integration_type").(string)
+	integrationType := d.Get("type").(string)
 	var res *connect.Response[corev1.CreateIntegrationLogResponse]
 	var err error
 

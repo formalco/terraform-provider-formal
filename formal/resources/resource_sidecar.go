@@ -70,45 +70,17 @@ func ResourceSidecar() *schema.Resource {
 				Required:    true,
 				ForceNew:    false,
 			},
-			"fail_open": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Configure DNS failover from the sidecar to the original datastore. In the unlikely case where the sidecar is unhealthy, having this value of `true` will forward traffic to the original database. Default `false`.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    false,
-			},
-			"network_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Configure the sidecar network type. Value can be `internet-facing`, `internal` or `internet-and-internal`.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    false,
-			},
-			"formal_hostname": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The hostname of the created sidecar.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Optional:    true,
-			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Creation time of the sidecar.",
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"global_kms_decrypt": {
+			"hostname": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Enable all Field Encryptions created by this sidecar to be decrypted by other sidecars.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    false,
-			},
-			"dataplane_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "If deployment_type is managed, this is the ID of the Dataplane",
+				Description: "The hostname of the created sidecar.",
 				Type:        schema.TypeString,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    false,
 			},
 			"formal_control_plane_tls_certificate": {
