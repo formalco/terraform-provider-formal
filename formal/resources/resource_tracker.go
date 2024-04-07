@@ -81,11 +81,6 @@ func resourceTrackerCreate(ctx context.Context, d *schema.ResourceData, meta int
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	var owners []*corev1.Owner
-	for _, owner := range d.Get("owners").([]*corev1.Owner) {
-		owners = append(owners, owner)
-	}
-
 	// Maps to user-defined fields
 	ResourceId := d.Get("resource_id").(string)
 	Path := d.Get("path").(string)
