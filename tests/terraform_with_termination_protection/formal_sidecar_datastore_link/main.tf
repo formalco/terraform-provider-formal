@@ -27,10 +27,10 @@ resource "formal_resource" "postgres1" {
 }
 
 resource "formal_sidecar" "name" {
-  name               = "terraformtestlocalsidecardatastorelinkwithterminationprotection"
-  deployment_type    = "onprem"
-  global_kms_decrypt = false
-  technology         = "postgres"
+  name                   = "terraformtestlocalsidecardatastorelinkwithterminationprotection"
+  technology             = "postgres"
+  hostname               = "test.com"
+  termination_protection = false
 }
 
 resource "formal_sidecar_resource_link" "name" {

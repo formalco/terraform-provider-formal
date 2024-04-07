@@ -108,10 +108,10 @@ resource "formal_satellite" "name" {
 }
 
 resource "formal_sidecar" "name" {
-  deployment_type    = "onprem"
-  global_kms_decrypt = false
   name               = "terraform-test-sidecar"
+  hostname               = "test.com"
   technology         = "postgres"
+  termination_protection = false
 }
 
 resource "formal_sidecar_resource_link" "name" {
