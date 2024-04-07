@@ -41,6 +41,7 @@ resource "formal_integration_bi" "name" {
 }
 
 resource "formal_integration_data_catalog" "name" {
+  name = "test-integration-data-catalog"
   type = "datahub"
   api_key = "api_key_datahub_placeholder"
   generalized_metadata_service_url = "https://datahub.com"

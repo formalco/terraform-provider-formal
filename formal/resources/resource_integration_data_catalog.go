@@ -87,6 +87,7 @@ func resourceIntegrationDataCatalogCreate(ctx context.Context, d *schema.Resourc
 		syncedEntities = append(syncedEntities, syncedEntity.(string))
 	}
 
+	Name := d.Get("name").(string)
 	SyncDirection := d.Get("sync_direction").(string)
 	typeDataCatalog := d.Get("type").(string)
 
@@ -103,6 +104,7 @@ func resourceIntegrationDataCatalogCreate(ctx context.Context, d *schema.Resourc
 			},
 		}
 		res, err = c.Grpc.Sdk.IntegrationDataCatalogServiceClient.CreateDataCatalogIntegration(ctx, connect.NewRequest(&corev1.CreateDataCatalogIntegrationRequest{
+			Name:          Name,
 			SyncDirection: SyncDirection,
 			Catalog:       datahub,
 		}))
