@@ -126,15 +126,19 @@ resource "formal_resource_health_check" "name" {
 }
 
 resource "formal_data_domain" "name" {
-  active = true
   name = "name"
   description = "description"
   included_paths = ["main.path"]
   excluded_paths = ["main.path2"]
-  owners = [{
-      object_type = "firstObjectType"
-      object_id = "firstObjectId"
-  }]
+    dynamic "owners" {
+    for_each = [
+      { object_type = "firstObjectType", object_id = "firstObjectId" }
+    ]
+    content {
+      object_type = owners.value.object_type
+      object_id = owners.value.object_id
+    }
+  }
 }
 
 resource "formal_tracker" "name" {
