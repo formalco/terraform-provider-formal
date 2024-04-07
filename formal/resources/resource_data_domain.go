@@ -108,9 +108,27 @@ func resourceDataDomainCreate(ctx context.Context, d *schema.ResourceData, meta 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	ownersInterface := d.Get("owners").([]interface{}) // Retrieve the interface slice.
 	var Owners []*corev1.DomainOwner
-	for _, owner := range d.Get("owners").([]*corev1.DomainOwner) {
-		Owners = append(Owners, owner)
+	for _, ownerInterface := range ownersInterface {
+		ownerMap, ok := ownerInterface.(map[string]interface{}) // Perform type assertion.
+		if !ok {
+			// Handle the error where the type assertion fails.
+			diags = append(diags, diag.Diagnostic{
+				Severity: diag.Error,
+				Summary:  "Error reading owner",
+				Detail:   "An unexpected type was encountered while reading an owner, expected 'map[string]interface{}'",
+			})
+			continue
+		}
+
+		// Assuming 'object_type' and 'object_id' are the keys and they are of type string.
+		// You need to adjust the logic below if the structure is different or more complex.
+		owner := corev1.DomainOwner{
+			ObjectType: ownerMap["object_type"].(string), // Direct type assertion; consider error handling here.
+			ObjectId:   ownerMap["object_id"].(string),   // Direct type assertion; consider error handling here.
+		}
+		Owners = append(Owners, &owner)
 	}
 
 	// Maps to user-defined fields
