@@ -6,6 +6,7 @@ import (
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -16,6 +17,7 @@ func ResourceTracker() *schema.Resource {
 		Description: "Creating a Policy in Formal.",
 
 		CreateContext: resourceTrackerCreate,
+		ReadContext:   resourceTrackerRead,
 		DeleteContext: resourceTrackerDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -101,6 +103,35 @@ func resourceTrackerCreate(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId(res.Msg.RowLevelTracker.Id)
 
 	resourcePolicyRead(ctx, d, meta)
+	return diags
+}
+
+func resourceTrackerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	// use the meta value to retrieve your client from the provider configure method
+	c := meta.(*clients.Clients)
+
+	var diags diag.Diagnostics
+
+	trackerId := d.Id()
+
+	res, err := c.Grpc.Sdk.RowLevelTrackerServiceClient.GetRowLevelTracker(ctx, connect.NewRequest(&corev1.GetRowLevelTrackerRequest{Id: trackerId}))
+	if err != nil {
+		if connect.CodeOf(err) == connect.CodeNotFound {
+			tflog.Warn(ctx, "The Tracker was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
+		return diag.FromErr(err)
+	}
+
+	d.Set("id", res.Msg.RowLevelTacker.Id)
+	d.Set("resource_id", res.Msg.RowLevelTacker.ResourceId)
+	d.Set("path", res.Msg.RowLevelTacker.Path)
+	d.Set("created_at", res.Msg.RowLevelTacker.CreatedAt.AsTime().Unix())
+	d.Set("allow_clear_text_value", res.Msg.RowLevelTacker.AllowClearTextValue)
+
+	d.SetId(res.Msg.RowLevelTacker.Id)
+
 	return diags
 }
 
