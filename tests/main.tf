@@ -147,8 +147,3 @@ resource "formal_data_discovery" "name" {
   database = "main"
   deletion_policy = "mark_for_deletion"
 }
-
-resource "formal_resource_health_check" "name" {
-  resource_id = formal_resource.postgres1.id
-  database_name = "main"
-}
