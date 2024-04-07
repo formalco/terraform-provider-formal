@@ -29,8 +29,9 @@ Registering a Integration Logs app.
 - `dd_account_id` (String) Account ID of Datadog.
 - `dd_api_key` (String) API Key of Datadog.
 - `dd_site` (String) Url of your Datadog app.
-- `splunk_api_key` (String) API Key of Splunk.
-- `splunk_url` (String) Url of your Splunk app.
+- `splunk_access_token` (String) Access Token of Splunk.
+- `splunk_host` (String) Url of your Splunk app.
+- `splunk_port` (Number) Port of your Splunk app.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

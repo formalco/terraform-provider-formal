@@ -18,7 +18,7 @@ Linking a Role to a Group in Formal.
 ### Required
 
 - `group_id` (String) The Formal ID for the group to be linked.
-- `role_id` (String) The Formal ID of the role to be linked.
+- `user_id` (String) The Formal ID of the user to be linked.
 
 ### Read-Only
 
