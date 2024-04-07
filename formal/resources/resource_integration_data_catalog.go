@@ -73,12 +73,6 @@ func ResourceIntegrationDataCatalog() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
-			"organization_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Organization ID of the Integration.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -103,7 +97,6 @@ func resourceIntegrationDataCatalogCreate(ctx context.Context, d *schema.Resourc
 	case "datahub":
 		datahub := &corev1.CreateDataCatalogIntegrationRequest_Datahub{
 			Datahub: &corev1.Datahub{
-				WebhookSecret:                 d.Get("webhook_secret").(string),
 				ApiKey:                        d.Get("api_key").(string),
 				GeneralizedMetadataServiceUrl: d.Get("generalized_metadata_service_url").(string),
 				SyncedEntities:                syncedEntities,

@@ -9,18 +9,6 @@ terraform {
 
 provider "formal" {}
 
-# Deprecated
-# resource "formal_cloud_account" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane_routes" "name" {
-# }
-
 resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
@@ -32,27 +20,6 @@ resource "formal_resource" "postgres1" {
     create = "1m"
   }
 }
-
-# Deprecated
-# resource "formal_default_field_encryption" "name" {
-#   data_key_storage = "control_plane_only"
-#   encryption_alg   = "aes_deterministic"
-#   kms_key_id       = formal_encryption_key.name.id
-# }
-
-# resource "formal_encryption_key" "name" {
-#   cloud_region = "us-west-1"
-#   key_id       = "terraform-test-encryption-key-id"
-#   key_name     = "terraform-test-encryption-key-local"
-# }
-
-# resource "formal_field_encryption" "name" {
-#   alg          = "aes_deterministic"
-#   resource_id = formal_datastore.postgres1.id
-#   key_id       = formal_encryption_key.name.id
-#   key_storage  = "control_plane_only"
-#   path         = "postgres.public.users.id"
-# }
 
 resource "formal_group" "name" {
   description = "terraform-test-group"
@@ -73,13 +40,14 @@ resource "formal_integration_bi" "name" {
   metabase_username = "metabaseusername"
 }
 
-# resource "formal_integration_datahub" "name" {
-#   active = true
-#   api_key = "api_key_datahub_placeholder"
-#   generalized_metadata_service_url = "https://datahub.com"
-#   sync_direction = "bidirectional"
-#   synced_entities = ["tags"]
-# }
+resource "formal_integration_data_catalog" "name" {
+  active = true
+  type = "datahub"
+  api_key = "api_key_datahub_placeholder"
+  generalized_metadata_service_url = "https://datahub.com"
+  sync_direction = "bidirectional"
+  synced_entities = ["tags"]
+}
 
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
@@ -97,14 +65,6 @@ resource "formal_integration_log" "s3" {
   aws_region            = "us-west-1"
   aws_s3_bucket_name    = "terraform-test-integration-log-s3"
 }
-
-# resource "formal_key" "name" {
-#   cloud_region = "eu-west-1"
-#   key_type     = "aws_kms"
-#   managed_by   = "customer_managed"
-#   name         = "terraform-test-key-aws-kms"
-#   key_id       = formal_encryption_key.name.id
-# }
 
 resource "formal_native_role" "name" {
   resource_id       = formal_resource.postgres1.id
@@ -164,4 +124,31 @@ resource "formal_sidecar_resource_link" "name" {
 resource "formal_resource_health_check" "name" {
   resource_id = formal_resource.postgres1.id
   database_name = "test-1"
+}
+
+resource "formal_data_domain" "name" {
+  active = true
+  type = "datahub"
+  api_key = "api_key_datahub_placeholder"
+  generalized_metadata_service_url = "https://datahub.com"
+  sync_direction = "bidirectional"
+}
+
+resource "formal_tracker" "name" {
+  resource_id = formal_resource.postgres1.id
+  path = "dummy.path"
+  allow_clear_text_value = true
+}
+
+resource "formal_data_discovery" "name" {
+  resource_id = formal_resource.postgres1.id
+  native_user_id = formal_native_role.name.native_role_id
+  schedule = "12h"
+  database = "main"
+  deletion_policy = "mark_for_deletion"
+}
+
+resource "formal_resource_health_check" "name" {
+  resource_id = formal_resource.postgres1.id
+  database_name = "main"
 }
