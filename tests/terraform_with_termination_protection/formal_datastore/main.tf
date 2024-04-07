@@ -15,7 +15,7 @@ variable "termination_protection" {
 }
 
 resource "formal_resource" "postgres1" {
-  hostname                   = "test-local.formal-datastore-with-termination-protection"
+  hostname                   = "test-local.formal-datastore-with-termination-protection-${var.termination_protection ? "enabled" : "disabled"}"
   name                       = "terraform-test-local-formal_datastore-with-termination-protection"
   technology                 = "postgres"
   db_discovery_job_wait_time = "6h"
