@@ -19,9 +19,10 @@ Registering a Data Catalog integration.
 
 - `api_key` (String) Api Key for the GMS server.
 - `generalized_metadata_service_url` (String) Generalized Metadata Service URL of the Integration.
+- `name` (String) Name of the Integration
 - `sync_direction` (String) Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_DataCatalog', 'DataCatalog_to_formal'.
 - `synced_entities` (List of String) Synced entities of the Integration: currently supported values are 'tags', 'data_labels'.
-- `type` (String) Type of the Integration mfa app: `datahub`
+- `type` (String) Type of the data catalog Integration: `datahub`
 
 ### Optional
 

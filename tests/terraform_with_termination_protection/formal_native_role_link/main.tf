@@ -28,8 +28,8 @@ resource "formal_resource" "postgres1" {
 
 resource "formal_native_role" "name" {
   resource_id       = formal_resource.postgres1.id
-  native_role_id     = "postgres"
-  native_role_secret = "postgres"
+  native_role_username         = "postgres"
+  native_role_secret     = "postgres"
 }
 
 resource "formal_user" "name" {

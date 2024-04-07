@@ -17,8 +17,8 @@ This resource creates a Native Role.
 
 ### Required
 
-- `native_role_id` (String) The username of the Native Role.
 - `native_role_secret` (String, Sensitive) The password of the Native Role.
+- `native_role_username` (String) The username of the Native Role.
 - `resource_id` (String) The Sidecar ID for the resource this Native Role is for.
 
 ### Optional

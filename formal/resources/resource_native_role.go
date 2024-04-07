@@ -31,7 +31,7 @@ func ResourceNativeRole() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"native_role_id": {
+			"native_role_username": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The username of the Native Role.",
 				Type:        schema.TypeString,
@@ -70,8 +70,8 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	// Maps to user-defined fields
 	ResourceId := d.Get("resource_id").(string)
-	Username := d.Get("username").(string)
-	Secret := d.Get("secret").(string)
+	Username := d.Get("native_role_username").(string)
+	Secret := d.Get("native_role_secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
