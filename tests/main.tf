@@ -58,7 +58,7 @@ resource "formal_integration_log" "splunk" {
 
 resource "formal_integration_log" "s3" {
   name                  = "terraform-test-integration-log-s3"
-  type                  = "s3"
+  type                  = "aws_s3"
   aws_access_key_id     = "aaaaa"
   aws_access_key_secret = "aaaaa"
   aws_region            = "us-west-1"
