@@ -63,13 +63,6 @@ func ResourceSidecar() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"deployment_type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "How the Sidecar should be deployed: `managed`, or `onprem`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    false,
-			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Creation time of the sidecar.",
