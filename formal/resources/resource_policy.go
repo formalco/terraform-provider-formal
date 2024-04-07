@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"net/mail"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
@@ -120,8 +121,31 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	var diags diag.Diagnostics
 
 	var owners []*corev1.Owner
-	for _, owner := range d.Get("owners").([]*corev1.Owner) {
-		owners = append(owners, owner)
+	for _, owner := range d.Get("owners").([]interface{}) {
+		parsedEmail, _ := mail.ParseAddress(owner.(string))
+		if parsedEmail != nil {
+			userOwner := corev1.Owner_User{
+				User: &corev1.User{
+					Info: &corev1.User_Human_{
+						Human: &corev1.User_Human{
+							Email: owner.(string),
+						},
+					},
+				},
+			}
+			owners = append(owners, &corev1.Owner{
+				Owner: &userOwner,
+			})
+		} else {
+			groupOwner := corev1.Owner_Group{
+				Group: &corev1.Group{
+					Name: owner.(string),
+				},
+			}
+			owners = append(owners, &corev1.Owner{
+				Owner: &groupOwner,
+			})
+		}
 	}
 
 	// Maps to user-defined fields
@@ -191,8 +215,31 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
 
 		var owners []*corev1.Owner
-		for _, owner := range d.Get("owners").([]*corev1.Owner) {
-			owners = append(owners, owner)
+		for _, owner := range d.Get("owners").([]interface{}) {
+			parsedEmail, _ := mail.ParseAddress(owner.(string))
+			if parsedEmail != nil {
+				userOwner := corev1.Owner_User{
+					User: &corev1.User{
+						Info: &corev1.User_Human_{
+							Human: &corev1.User_Human{
+								Email: owner.(string),
+							},
+						},
+					},
+				}
+				owners = append(owners, &corev1.Owner{
+					Owner: &userOwner,
+				})
+			} else {
+				groupOwner := corev1.Owner_Group{
+					Group: &corev1.Group{
+						Name: owner.(string),
+					},
+				}
+				owners = append(owners, &corev1.Owner{
+					Owner: &groupOwner,
+				})
+			}
 		}
 
 		Name := d.Get("name").(string)

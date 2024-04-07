@@ -199,12 +199,6 @@ func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	policyId := d.Id()
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("owners") || d.HasChange("included_paths") || d.HasChange("excluded_paths") {
-
-		var owners []*corev1.Owner
-		for _, owner := range d.Get("owners").([]*corev1.Owner) {
-			owners = append(owners, owner)
-		}
-
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 
@@ -218,11 +212,22 @@ func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			ExcludedPaths = append(ExcludedPaths, excludedPath.(string))
 		}
 
+		ownersInterface := d.Get("owners").([]interface{}) // Retrieve the interface slice.
 		var Owners []*corev1.DomainOwner
-		for _, owner := range d.Get("owners").([]*corev1.DomainOwner) {
-			Owners = append(Owners, owner)
-		}
+		for _, ownerInterface := range ownersInterface {
+			ownerMap, ok := ownerInterface.(map[string]interface{}) // Perform type assertion.
+			if !ok {
+				continue
+			}
 
+			// Assuming 'object_type' and 'object_id' are the keys and they are of type string.
+			// You need to adjust the logic below if the structure is different or more complex.
+			owner := corev1.DomainOwner{
+				ObjectType: ownerMap["object_type"].(string), // Direct type assertion; consider error handling here.
+				ObjectId:   ownerMap["object_id"].(string),   // Direct type assertion; consider error handling here.
+			}
+			Owners = append(Owners, &owner)
+		}
 		_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateDataDomain(ctx, connect.NewRequest(&corev1.UpdateDataDomainRequest{
 			Id:            policyId,
 			Name:          Name,
