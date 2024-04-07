@@ -33,9 +33,15 @@ func ResourceIntegrationDataCatalog() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"name": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Name of the Integration",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration mfa app: `datahub`",
+				Description: "Type of the data catalog Integration: `datahub`",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
