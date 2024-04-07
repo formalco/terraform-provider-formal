@@ -56,14 +56,6 @@ func ResourceSidecar() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"resource_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Resource ID that the new Sidecar will be attached to.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    false,
-				Deprecated:  "This field is deprecated. Please use formal_sidecar_datastore_link resource instead. This attribute will be removed in the next major version of the provider.",
-			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Technology of the Datastore: supported values are`snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http` and `ssh`.",
