@@ -24,6 +24,12 @@ func ResourceNativeRole() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The ID of the Native User.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"resource_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Sidecar ID for the resource this Native Role is for.",
