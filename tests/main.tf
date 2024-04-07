@@ -35,7 +35,7 @@ resource "formal_integration_bi" "name" {
   name              = "terraform-test-integration-app"
   type              = "metabase"
   linked_db_user_id = "postgres"
-  metabase_hostname = "https://metabase.com"
+  metabase_hostname = "metabase.com"
   metabase_password = "metabasepassword"
   metabase_username = "metabaseusername"
 }
@@ -53,7 +53,7 @@ resource "formal_integration_log" "splunk" {
   type           = "splunk"
   splunk_access_token = "aaaaa"
   splunk_port = 443
-  splunk_host     = "https://splunk.com"
+  splunk_host     = "splunk.com"
 }
 
 resource "formal_integration_log" "s3" {
