@@ -41,6 +41,6 @@ resource "formal_native_role_link" "name" {
   resource_id           = formal_resource.postgres1.id
   formal_identity_id     = formal_user.name.id
   formal_identity_type   = "user"
-  native_role_id         = formal_native_role.name.native_role_id
+  native_role_id         = formal_native_role.name.id
   termination_protection = var.termination_protection
 }

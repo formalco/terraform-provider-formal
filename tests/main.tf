@@ -60,7 +60,7 @@ resource "formal_user" "name" {
 resource "formal_native_role_link" "name" {
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
-  native_role_id       = formal_native_role.name.native_role_id
+  native_role_id       = formal_native_role.name.id
 }
 
 resource "formal_policy" "name" {
@@ -130,7 +130,7 @@ resource "formal_tracker" "name" {
 
 resource "formal_data_discovery" "name" {
   resource_id = formal_resource.postgres1.id
-  native_user_id = formal_native_role.name.native_role_id
+  native_user_id = formal_native_role.name.id
   schedule = "12h"
   deletion_policy = "mark_for_deletion"
 }
