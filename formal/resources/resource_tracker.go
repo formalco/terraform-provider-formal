@@ -71,6 +71,13 @@ func ResourceTracker() *schema.Resource {
 				Default:     false,
 				ForceNew:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Tracker cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }

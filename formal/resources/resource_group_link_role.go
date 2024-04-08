@@ -47,6 +47,13 @@ func ResourceGroupLinkRole() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"termination_protection": {
+				// This description is used by the documentation generator and the language server.
+				Description: "If set to true, this Link cannot be deleted.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+			},
 		},
 	}
 }
@@ -63,13 +70,12 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.CreateUserGroupLink(ctx, connect.NewRequest(&corev1.CreateUserGroupLinkRequest{GroupId: groupId, UserId: userId}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.CreateUserGroupLink(ctx, connect.NewRequest(&corev1.CreateUserGroupLinkRequest{GroupId: groupId, UserId: userId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	terraformResourceId := groupId + roleLinkGroupTerraformIdDelimiter + userId
-	d.SetId(terraformResourceId)
+	d.SetId(res.Msg.UserGroupLink.Id)
 
 	resourceGroupLinkRoleRead(ctx, d, meta)
 	return diags

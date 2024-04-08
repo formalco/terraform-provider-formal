@@ -97,6 +97,7 @@ EOT
 
 resource "formal_satellite" "name" {
   name = "terraform-test-satellite"
+  termination_protection = false
 }
 
 resource "formal_sidecar" "name" {
