@@ -51,12 +51,6 @@ func ResourceDataDiscovery() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"database": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Database name to use for health checks. Default `postgres`.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Creation time of the Data Discovery.",
@@ -99,14 +93,12 @@ func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, me
 	ResourceId := d.Get("resource_id").(string)
 	NativeUserId := d.Get("native_user_id").(string)
 	Schedule := d.Get("schedule").(string)
-	Database := d.Get("database").(string)
 	DeletionPolicy := d.Get("deletion_policy").(string)
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.CreateDataDiscoveryConfigurationRequest{
 		ResourceId:     ResourceId,
 		NativeUserId:   NativeUserId,
 		Schedule:       Schedule,
-		Database:       Database,
 		DeletionPolicy: DeletionPolicy,
 	}))
 	if err != nil {
@@ -147,18 +139,17 @@ func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"native_user_id", "database", "schedule", "deletion_policy"}
+	fieldsThatCanChange := []string{"native_user_id", "schedule", "deletion_policy"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
 	nativeUserId := d.Get("native_user_id").(string)
-	database := d.Get("database").(string)
 	schedule := d.Get("schedule").(string)
 	deletionPolicy := d.Get("deletion_policy").(string)
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.UpdateDataDiscoveryConfigurationRequest{Id: dataDiscoveryId, NativeUserId: nativeUserId, Database: database, Schedule: schedule, DeletionPolicy: deletionPolicy}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.UpdateDataDiscoveryConfigurationRequest{Id: dataDiscoveryId, NativeUserId: nativeUserId, Schedule: schedule, DeletionPolicy: deletionPolicy}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

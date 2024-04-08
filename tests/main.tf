@@ -13,22 +13,11 @@ resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {
     create = "1m"
   }
-}
-
-resource "formal_group" "name" {
-  description = "terraform-test-group"
-  name        = "terraform-test-group"
-}
-
-resource "formal_group_link_role" "name" {
-  group_id = formal_group.name.id
-  user_id  = formal_user.name.id
 }
 
 resource "formal_integration_bi" "name" {
@@ -69,7 +58,6 @@ resource "formal_user" "name" {
 }
 
 resource "formal_native_role_link" "name" {
-  resource_id         = formal_resource.postgres1.id
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
   native_role_id       = formal_native_role.name.native_role_id
@@ -144,6 +132,15 @@ resource "formal_data_discovery" "name" {
   resource_id = formal_resource.postgres1.id
   native_user_id = formal_native_role.name.native_role_id
   schedule = "12h"
-  database = "main"
   deletion_policy = "mark_for_deletion"
+}
+
+resource "formal_group" "name" {
+  description = "terraform-test-group"
+  name        = "terraform-test-group"
+}
+
+resource "formal_group_link_role" "name" {
+  group_id = formal_group.name.id
+  user_id  = formal_user.name.id
 }

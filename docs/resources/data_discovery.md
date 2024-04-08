@@ -17,7 +17,6 @@ Registering a Data Discovery with Formal.
 
 ### Required
 
-- `database` (String) Database name to use for health checks. Default `postgres`.
 - `deletion_policy` (String) Deletion policy of the Data Discovery. Possible values: `delete`, `mark_for_deletion`.
 - `native_user_id` (String) Hostname of the Datastore.
 - `resource_id` (String) Resource ID linked to this Data Discovery.
