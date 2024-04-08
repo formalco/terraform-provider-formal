@@ -19,6 +19,7 @@ func ResourceTracker() *schema.Resource {
 		CreateContext: resourceTrackerCreate,
 		ReadContext:   resourceTrackerRead,
 		DeleteContext: resourceTrackerDelete,
+		UpdateContext: resourceTrackerUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -158,4 +159,8 @@ func resourceTrackerDelete(ctx context.Context, d *schema.ResourceData, meta int
 	d.SetId("")
 
 	return diags
+}
+
+func resourceTrackerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return diag.Errorf("Row Level Trackers are immutable. Please create a new tracker.")
 }

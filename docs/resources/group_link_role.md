@@ -20,6 +20,10 @@ Linking a Role to a Group in Formal.
 - `group_id` (String) The Formal ID for the group to be linked.
 - `user_id` (String) The Formal ID of the user to be linked.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Link cannot be deleted.
+
 ### Read-Only
 
 - `id` (String) The Formal ID of this link.

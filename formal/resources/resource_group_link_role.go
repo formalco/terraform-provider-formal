@@ -21,7 +21,7 @@ func ResourceGroupLinkRole() *schema.Resource {
 
 		CreateContext: resourceGroupLinkRoleCreate,
 		ReadContext:   resourceGroupLinkRoleRead,
-		// UpdateContext: resourceGroupLinkRoleUpdate,
+		UpdateContext: resourceGroupLinkRoleUpdate,
 		DeleteContext: resourceGroupLinkRoleDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
@@ -125,9 +125,9 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-// func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
-// 	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
-// }
+func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
+}
 
 func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)

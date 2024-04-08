@@ -23,6 +23,7 @@ Creating a Policy in Formal.
 ### Optional
 
 - `allow_clear_text_value` (Boolean) If set to true, this Tracker allow clear text value.
+- `termination_protection` (Boolean) If set to true, this Tracker cannot be deleted.
 
 ### Read-Only
 
