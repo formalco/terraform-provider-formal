@@ -57,6 +57,15 @@ resource "formal_user" "name" {
   name = "terraform-test-user"
 }
 
+resource "formal_user" "human" {
+  type = "human"
+  name = "terraform-test-human-user"
+  first_name = "test2"
+  last_name = "test2"
+  email = "test@test-formal.com"
+  admin = true
+}
+
 resource "formal_native_role_link" "name" {
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
@@ -79,7 +88,7 @@ pre_request := {
 EOT
   name         = "terraform-test-policy"
   notification = "none"
-  owners       = ["loris@test-formal.com"]
+  owners       = [formal_user.human.email]
   status       = "draft"
 }
 
