@@ -40,15 +40,6 @@ resource "formal_integration_bi" "name" {
   metabase_username = "metabaseusername"
 }
 
-resource "formal_integration_data_catalog" "name" {
-  name = "test-integration-data-catalog"
-  type = "datahub"
-  api_key = "api_key_datahub_placeholder"
-  generalized_metadata_service_url = "https://datahub.com"
-  sync_direction = "bidirectional"
-  synced_entities = ["tags"]
-}
-
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
   type           = "splunk"
