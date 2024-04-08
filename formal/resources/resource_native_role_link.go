@@ -28,8 +28,7 @@ func ResourceNativeRoleLink() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Resource ID of the Native Role.",
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Computed:    true,
 			},
 			"native_role_id": {
 				// This description is used by the documentation generator and the language server.

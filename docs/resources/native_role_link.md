@@ -20,7 +20,6 @@ This resource creates assigns a Native Role to a Formal Identity.
 - `formal_identity_id` (String) The Formal ID for the Role or Group to be linked.
 - `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `role` and `group`.
 - `native_role_id` (String) The Native Role ID of the Native Role.
-- `resource_id` (String) The Resource ID of the Native Role.
 
 ### Optional
 
@@ -29,5 +28,6 @@ This resource creates assigns a Native Role to a Formal Identity.
 ### Read-Only
 
 - `id` (String) The ID of this resource.
+- `resource_id` (String) The Resource ID of the Native Role.
 
 
