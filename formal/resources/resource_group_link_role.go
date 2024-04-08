@@ -134,14 +134,9 @@ func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, me
 
 	var diags diag.Diagnostics
 
-	roleLinkGroupTerraformId := d.Id()
-	// Split
-	roleLinkGroupTerraformIdSplit := strings.Split(roleLinkGroupTerraformId, roleLinkGroupTerraformIdDelimiter)
-	if len(roleLinkGroupTerraformIdSplit) != 2 {
-		return diag.FromErr(errors.New("formal Terraform resource id for role_link_group is malformatted. Please contact Formal support"))
-	}
+	linkId := d.Id()
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteUserGroupLink(ctx, connect.NewRequest(&corev1.DeleteUserGroupLinkRequest{Id: roleLinkGroupTerraformId}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteUserGroupLink(ctx, connect.NewRequest(&corev1.DeleteUserGroupLinkRequest{Id: linkId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
