@@ -79,14 +79,14 @@ pre_request := {
 EOT
   name         = "terraform-test-policy"
   notification = "none"
-  owners       = ["farid@joinformal.com"]
+  owners       = ["loris@test-formal.com"]
   status       = "draft"
 }
 
-resource "formal_satellite" "name" {
-  name = "terraform-test-satellite"
-  termination_protection = false
-}
+# resource "formal_satellite" "name" {
+#   name = "terraform-test-satellite"
+#   termination_protection = false
+# }
 
 resource "formal_sidecar" "name" {
   name               = "terraform-test-sidecar"
