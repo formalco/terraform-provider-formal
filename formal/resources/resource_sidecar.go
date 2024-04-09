@@ -126,36 +126,6 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.FromErr(err)
 	}
 
-	const ErrorTolerance = 5
-	currentErrors := 0
-	for {
-		// Retrieve status
-		createdSidecar, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: res.Msg.Sidecar.Id}))
-		if err != nil {
-			if currentErrors >= ErrorTolerance {
-				return diag.FromErr(err)
-			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving Sidecar: ", map[string]interface{}{"err": err})
-				currentErrors += 1
-				time.Sleep(15 * time.Second)
-				continue
-			}
-		}
-
-		if createdSidecar == nil {
-			err = errors.New("sidecar with the given ID not found. It may have been deleted")
-			return diag.FromErr(err)
-		}
-
-		tflog.Info(ctx, "Sidecar Deployed state is: "+fmt.Sprint(createdSidecar.Msg.Sidecar.Deployed))
-		// Check status
-		if createdSidecar.Msg.Sidecar.Deployed {
-			break
-		} else {
-			time.Sleep(15 * time.Second)
-		}
-	}
-
 	d.SetId(res.Msg.Sidecar.Id)
 
 	resourceSidecarRead(ctx, d, meta)
@@ -200,33 +170,19 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 
 	sidecarId := d.Id()
 
-	fieldsThatCanChange := []string{"global_kms_decrypt", "name", "version", "formal_hostname", "termination_protection"}
+	fieldsThatCanChange := []string{"name", "hostname", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	if d.HasChange("name") {
-		name := d.Get("name").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, Name: &name}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
+	name := d.Get("name").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
+	hostname := d.Get("hostname").(string)
 
-	if d.HasChange("termination_protection") {
-		terminationProtection := d.Get("name").(bool)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, TerminationProtection: &terminationProtection}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	}
-	if d.HasChange("hostname") {
-		hostname := d.Get("name").(string)
-		_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, Hostname: &hostname}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecar(ctx, connect.NewRequest(&corev1.UpdateSidecarRequest{Id: sidecarId, Name: &name, TerminationProtection: &terminationProtection, Hostname: &hostname}))
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	resourceSidecarRead(ctx, d, meta)

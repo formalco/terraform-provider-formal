@@ -15,8 +15,8 @@ variable "termination_protection" {
 }
 
 resource "formal_sidecar" "name" {
-  name                   = "terraform-test-local-formal-sidecar-with-termination-protection"
-  technology             = "postgres"
-  hostname               = "test.com"
+  name                   = "test-formal-sidecar-with-termination-protection"
+  technology             = "http"
+  hostname               = "echo.com"
   termination_protection = var.termination_protection
 }
