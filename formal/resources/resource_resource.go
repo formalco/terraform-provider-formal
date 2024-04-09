@@ -192,15 +192,8 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf(err)
 	}
 
-	var name string
-	var terminationProtection bool
-	if d.HasChange("name") {
-		name = d.Get("name").(string)
-	}
-
-	if d.HasChange("termination_protection") {
-		terminationProtection = d.Get("termination_protection").(bool)
-	}
+	name := d.Get("name").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{Id: datastoreId, Name: &name, TerminationProtection: &terminationProtection}))
 	if err != nil {
