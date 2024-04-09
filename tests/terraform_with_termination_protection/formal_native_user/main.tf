@@ -15,7 +15,7 @@ variable "termination_protection" {
 }
 
 resource "formal_resource" "postgres1" {
-  hostname                   = "terraform-test-local.formal-native-role.with-termination-protection"
+  hostname                   = "terraform-test-local.formal-native-role.with-termination-protection.com"
   name                       = "terraform-test-local-formal_native_role-with-termination-protection"
   technology                 = "postgres"
   environment                = "DEV"
