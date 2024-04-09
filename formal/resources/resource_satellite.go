@@ -2,15 +2,12 @@ package resource
 
 import (
 	"context"
-	"errors"
-	"strconv"
 	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -82,29 +79,6 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}))
 	if err != nil {
 		return diag.FromErr(err)
-	}
-
-	const ErrorTolerance = 5
-	currentErrors := 0
-	for {
-		// Retrieve status
-		createdSatellite, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatellite(ctx, connect.NewRequest(&corev1.GetSatelliteRequest{Id: res.Msg.Satellite.Id}))
-		if err != nil {
-			if currentErrors >= ErrorTolerance {
-				return diag.FromErr(err)
-			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving Satellite: ", map[string]interface{}{"err": err})
-				currentErrors += 1
-				time.Sleep(15 * time.Second)
-				continue
-			}
-		}
-
-		if createdSatellite.Msg.Satellite == nil {
-			err = errors.New("satellite with the given ID not found. It may have been deleted")
-			return diag.FromErr(err)
-		}
-
 	}
 
 	d.SetId(res.Msg.Satellite.Id)
