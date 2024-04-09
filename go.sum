@@ -6,12 +6,16 @@ buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240325021114-a12d8b513eb0.1
 buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240325021114-a12d8b513eb0.1/go.mod h1:CHbIr91JyPOfugJw0cwkd3kcttGxuFYJYMS8Vp2m7AE=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240407123134-8fe773202da8.1 h1:Oh1B3IVa8z8c999yIEAtfFBJTfqkx//iHoq6GOrYeGU=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240407123134-8fe773202da8.1/go.mod h1:9gBfMAKeQPE/M0B9u+/WETUJaiRXAFvUuWpXC3nm0pk=
+buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240409151744-e50b9d83afbe.1 h1:068gPoyS2YsuZo4FgOmUFJEYt8G4Pld5wkbfeX+co8k=
+buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240409151744-e50b9d83afbe.1/go.mod h1:PD6I0VNUCsTdgYvwNfM22BXSqUqRVPNmIq6UV9jcTWc=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240325021114-a12d8b513eb0.1 h1:FF7w18PdpRGAJ0oOMrJysrLLDhHyQv4j84aMGEFgtxA=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240325021114-a12d8b513eb0.1/go.mod h1:KtxCb4xltxpHkSj5t5HRYHuGIeeQqUxixGOL6r47WeQ=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240407121336-cbbe0e6ff599.1 h1:884x9XYEq6Qr+UDhcOBzA1Q0Gz5FTD8outOlDAzzjAo=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240407121336-cbbe0e6ff599.1/go.mod h1:KtxCb4xltxpHkSj5t5HRYHuGIeeQqUxixGOL6r47WeQ=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240407123134-8fe773202da8.1 h1:o52/NSEQvGNEAzQVdhuI7IRC20WCjLX73TVNJVVhUDg=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240407123134-8fe773202da8.1/go.mod h1:V6fa/S38xSUqoNjx5QX53fscq8qtIjNkb2dWRQleKu8=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240409151744-e50b9d83afbe.1 h1:ay+QrtyR7cH/acKK6BHD3zzJU5qmkbuZtAb+q9JQzyw=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.33.0-20240409151744-e50b9d83afbe.1/go.mod h1:KtxCb4xltxpHkSj5t5HRYHuGIeeQqUxixGOL6r47WeQ=
 connectrpc.com/connect v1.16.0 h1:rdtfQjZ0OyFkWPTegBNcH7cwquGAN1WzyJy80oFNibg=
 connectrpc.com/connect v1.16.0/go.mod h1:XpZAduBQUySsb4/KO5JffORVkDI4B6/EYPi7N8xpNZw=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
@@ -57,6 +61,8 @@ github.com/formalco/go-sdk/sdk/v2 v2.0.0 h1:fBiAW4gImAiUHUOkWMBsUGLHQOCrFd9a/0Kb
 github.com/formalco/go-sdk/sdk/v2 v2.0.0/go.mod h1:AvqtICj5wIGQaXrH4OqTSAzskuZOMeu3UnmqdVOu8zw=
 github.com/formalco/go-sdk/sdk/v2 v2.0.1 h1:kuJc6sRRkYkFneDMOlDVz1pcMBXxJK+/drWmOKutOP8=
 github.com/formalco/go-sdk/sdk/v2 v2.0.1/go.mod h1:GdVr5rlBYQ2oMy5SfVYlp67n7EPk5gJufQLseQnrQrk=
+github.com/formalco/go-sdk/sdk/v2 v2.0.2 h1:DlgQSlBDhT/F8C43B9GsihPPBDv3r3KBGQ5y49hw7sE=
+github.com/formalco/go-sdk/sdk/v2 v2.0.2/go.mod h1:C/e5CyP9Jo3hjA4SZEri9bYxP1KDAblvlTPqxFo6c+E=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
 github.com/frankban/quicktest v1.14.3/go.mod h1:mgiwOwqx65TmIk1wJ6Q7wvnVMocbUorkibMOrVTHZps=
 github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 h1:+zs/tPmkDkHx3U66DAb0lQFJrpS6731Oaa12ikc+DiI=

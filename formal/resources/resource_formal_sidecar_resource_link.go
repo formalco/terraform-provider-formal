@@ -2,6 +2,8 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
@@ -18,6 +20,7 @@ func ResourceSidecarResourceLink() *schema.Resource {
 		CreateContext: resourceSidecarResourceLinkCreate,
 		ReadContext:   resourceSidecarResourceLinkRead,
 		DeleteContext: resourceSidecarResourceLinkDelete,
+		UpdateContext: resourceSidecarResourceLinkUpdate,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -48,7 +51,6 @@ func ResourceSidecarResourceLink() *schema.Resource {
 				Description: "Port.",
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -56,7 +58,6 @@ func ResourceSidecarResourceLink() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
-				ForceNew:    true,
 			},
 		},
 	}
@@ -69,9 +70,10 @@ func resourceSidecarResourceLinkCreate(ctx context.Context, d *schema.ResourceDa
 	var diags diag.Diagnostics
 
 	res, err := c.Grpc.Sdk.SidecarServiceClient.CreateSidecarResourceLink(ctx, connect.NewRequest(&corev1.CreateSidecarResourceLinkRequest{
-		ResourceId: d.Get("resource_id").(string),
-		SidecarId:  d.Get("sidecar_id").(string),
-		Port:       int32(d.Get("port").(int)),
+		ResourceId:            d.Get("resource_id").(string),
+		SidecarId:             d.Get("sidecar_id").(string),
+		Port:                  int32(d.Get("port").(int)),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -123,6 +125,31 @@ func resourceSidecarResourceLinkDelete(ctx context.Context, d *schema.ResourceDa
 	}
 
 	d.SetId("")
+
+	return diags
+}
+
+func resourceSidecarResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+
+	var diags diag.Diagnostics
+
+	sidecarResourceLinkId := d.Id()
+
+	fieldsThatCanChange := []string{"termination_protection"}
+	if d.HasChangesExcept(fieldsThatCanChange...) {
+		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
+		return diag.Errorf(err)
+	}
+
+	terminationProtection := d.Get("termination_protection").(bool)
+
+	_, err := c.Grpc.Sdk.SidecarServiceClient.UpdateSidecarResourceLink(ctx, connect.NewRequest(&corev1.UpdateSidecarResourceLinkRequest{Id: sidecarResourceLinkId, TerminationProtection: &terminationProtection}))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	resourceSidecarResourceLinkRead(ctx, d, meta)
 
 	return diags
 }
