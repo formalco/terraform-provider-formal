@@ -107,7 +107,7 @@ func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(res.Msg.DataDiscoveryConfiguration.Id)
 
-	resourceDatastoreRead(ctx, d, meta)
+	resourceDataDiscoveryRead(ctx, d, meta)
 
 	return diags
 }
@@ -121,12 +121,12 @@ func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta
 		DataDiscoveryConfigurationId: d.Id(),
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.GetDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.GetDataDiscoveryConfigurationRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.GetDataDiscoveryConfigurationRequest{Id: &id}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId("")
+	d.SetId(res.Msg.DataDiscoveryConfiguration.Id)
 
 	return diags
 }

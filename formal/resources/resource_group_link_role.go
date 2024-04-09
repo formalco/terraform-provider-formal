@@ -2,8 +2,6 @@ package resource
 
 import (
 	"context"
-	"errors"
-	"strings"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
@@ -75,6 +73,9 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
+	d.Set("user_id", res.Msg.UserGroupLink.User.Id)
+	d.Set("group_id", res.Msg.UserGroupLink.Group.Id)
+
 	d.SetId(res.Msg.UserGroupLink.Id)
 
 	resourceGroupLinkRoleRead(ctx, d, meta)
@@ -85,14 +86,11 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	roleLinkGroupTerraformId := d.Id()
-	// Split
-	roleLinkGroupTerraformIdSplit := strings.Split(roleLinkGroupTerraformId, roleLinkGroupTerraformIdDelimiter)
-	if len(roleLinkGroupTerraformIdSplit) != 2 {
-		return diag.FromErr(errors.New("formal Terraform resource id for role_link_group is malformatted. Please contact Formal support"))
-	}
-	groupId := roleLinkGroupTerraformIdSplit[0]
-	userId := roleLinkGroupTerraformIdSplit[1]
+	groupLinkId := d.Id()
+	// Maps to user-defined fields
+	userId := d.Get("user_id").(string)
+	groupId := d.Get("group_id").(string)
+
 	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, connect.NewRequest(&corev1.ListUserGroupLinksRequest{GroupId: groupId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
@@ -105,7 +103,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 	found := false
 	for _, user := range res.Msg.UserGroupLinks {
-		if user.User.Id == userId {
+		if user.User.Id == groupLinkId {
 			found = true
 			break
 		}
@@ -120,7 +118,7 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("group_id", groupId)
 	d.Set("user_id", userId)
 
-	d.SetId(roleLinkGroupTerraformId)
+	d.SetId(groupLinkId)
 
 	return diags
 }

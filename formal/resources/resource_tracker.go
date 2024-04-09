@@ -105,7 +105,7 @@ func resourceTrackerCreate(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.SetId(res.Msg.RowLevelTracker.Id)
 
-	resourcePolicyRead(ctx, d, meta)
+	resourceTrackerRead(ctx, d, meta)
 	return diags
 }
 

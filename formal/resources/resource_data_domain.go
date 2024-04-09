@@ -158,7 +158,7 @@ func resourceDataDomainCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(res.Msg.Domain.Id)
 
-	resourcePolicyRead(ctx, d, meta)
+	resourceDataDomainRead(ctx, d, meta)
 	return diags
 }
 
@@ -172,7 +172,7 @@ func resourceDataDomainRead(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Policy with ID "+domainId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Domain with ID "+domainId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -196,7 +196,7 @@ func resourceDataDomainRead(ctx context.Context, d *schema.ResourceData, meta in
 func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	policyId := d.Id()
+	domainId := d.Id()
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("owners") || d.HasChange("included_paths") || d.HasChange("excluded_paths") {
 		Name := d.Get("name").(string)
@@ -229,7 +229,7 @@ func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Owners = append(Owners, &owner)
 		}
 		_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateDataDomain(ctx, connect.NewRequest(&corev1.UpdateDataDomainRequest{
-			Id:            policyId,
+			Id:            domainId,
 			Name:          Name,
 			Description:   Description,
 			Owners:        Owners,
@@ -241,7 +241,7 @@ func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			return diag.FromErr(err)
 		}
 
-		return resourcePolicyRead(ctx, d, meta)
+		return resourceDataDomainRead(ctx, d, meta)
 	} else {
 		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
 	}
@@ -253,12 +253,6 @@ func resourceDataDomainDelete(ctx context.Context, d *schema.ResourceData, meta 
 	var diags diag.Diagnostics
 
 	domainId := d.Id()
-
-	terminationProtection := d.Get("termination_protection").(bool)
-
-	if terminationProtection {
-		return diag.Errorf("Policy cannot be deleted because termination_protection is set to true")
-	}
 
 	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteDataDomain(ctx, connect.NewRequest(&corev1.DeleteDataDomainRequest{Id: domainId}))
 	if err != nil {

@@ -81,7 +81,7 @@ func resourceHealthCheckCreate(ctx context.Context, d *schema.ResourceData, meta
 
 	d.SetId(res.Msg.ResourceHealthCheck.Id)
 
-	resourcePolicyRead(ctx, d, meta)
+	resourceHealthCheckRead(ctx, d, meta)
 	return diags
 }
 
@@ -94,12 +94,12 @@ func resourceHealthCheckRead(ctx context.Context, d *schema.ResourceData, meta i
 		ResourceHealthCheckId: d.Id(),
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHealthCheck(ctx, connect.NewRequest(&corev1.GetResourceHealthCheckRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHealthCheck(ctx, connect.NewRequest(&corev1.GetResourceHealthCheckRequest{Id: &id}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId("")
+	d.SetId(res.Msg.ResourceHealthCheck.Id)
 
 	return diags
 }
