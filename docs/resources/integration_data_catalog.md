@@ -17,21 +17,28 @@ Registering a Data Catalog integration.
 
 ### Required
 
-- `api_key` (String) Api Key for the GMS server.
-- `generalized_metadata_service_url` (String) Generalized Metadata Service URL of the Integration.
 - `name` (String) Name of the Integration
-- `sync_direction` (String) Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_DataCatalog', 'DataCatalog_to_formal'.
+- `sync_direction` (String) Sync direction of the Integration: supported values are 'bidirectional', 'formal_to_datahub', 'datahub_to_formal'.
 - `synced_entities` (List of String) Synced entities of the Integration: currently supported values are 'tags', 'data_labels'.
-- `type` (String) Type of the data catalog Integration: `datahub`
 
 ### Optional
 
+- `datahub` (Block Set, Max: 1) Configuration block for Datahub integration. This block is optional and may be omitted if not configuring a Datahub integration. (see [below for nested schema](#nestedblock--datahub))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the Integration.
-- `webhook_secret` (String) Webhook secret of the Integration.
+
+<a id="nestedblock--datahub"></a>
+### Nested Schema for `datahub`
+
+Required:
+
+- `api_key` (String) Api Key for the Datahub instance.
+- `generalized_metadata_service_url` (String) Generalized metadata service url for the Datahub instance.
+- `webhook_secret` (String) Webhook secret of the Datahub instance.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

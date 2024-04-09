@@ -32,13 +32,6 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration mfa app: `datahub`",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Webhook secret of the Integration.",
@@ -52,35 +45,41 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"aws_region": {
-				// This description is used by the documentation generator and the language server.
-				Description: "AWS Region.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"aws_account_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Account ID of AWS account.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"aws_formal_iam_role": {
-				// This description is used by the documentation generator and the language server.
-				Description: "AWS Iam Role used by Formal.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"aws_formal_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "AWS Formal ID.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"aws_formal_stack_name": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Cloud formation stack name.",
-				Type:        schema.TypeString,
-				Computed:    true,
+			"aws": {
+				Description: "AWS cloud configuration.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"region": {
+							Description: "AWS Region.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"account_id": {
+							Description: "Account ID of AWS account.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"formal_iam_role": {
+							Description: "AWS Iam Role used by Formal.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"formal_id": {
+							Description: "AWS Formal ID.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"formal_stack_name": {
+							Description: "Cloud formation stack name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -131,11 +130,20 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 
 	switch data := res.Msg.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
-		d.Set("aws_region", data.Aws.AwsCloudRegion)
-		d.Set("aws_account_id", data.Aws.AwsAccountId)
-		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
-		d.Set("aws_formal_id", data.Aws.AwsFormalId)
-		d.Set("aws_formal_stack_name", data.Aws.AwsFormalStackName)
+		awsConfig := map[string]interface{}{
+			"region":            data.Aws.AwsCloudRegion,
+			"account_id":        data.Aws.AwsAccountId,
+			"formal_iam_role":   data.Aws.AwsFormalIamRole,
+			"formal_id":         data.Aws.AwsFormalId,
+			"formal_stack_name": data.Aws.AwsFormalStackName,
+		}
+
+		// Create a set with the aws configuration
+		awsSet := schema.NewSet(schema.HashResource(ResourceIntegrationCloud()), []interface{}{awsConfig})
+		// Set the aws set in the ResourceData
+		if err := d.Set("aws", awsSet); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	d.SetId(res.Msg.Cloud.Id)

@@ -33,32 +33,11 @@ func ResourceIntegrationMfa() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"type": {
+			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration mfa app: `duo`",
+				Description: "Name of the Integration",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
-			},
-			"duo_integration_key": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Duo Integration Key.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"duo_secret_key": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Duo Secret Key.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"duo_api_hostname": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Duo API Hostname.",
-				Type:        schema.TypeString,
-				Optional:    true,
 				ForceNew:    true,
 			},
 			"termination_protection": {
@@ -69,6 +48,32 @@ func ResourceIntegrationMfa() *schema.Resource {
 				Default:     false,
 				ForceNew:    true,
 			},
+			"duo": {
+				Description: "Configuration block for Duo integration. This block is optional and may be omitted if not configuring a Duo integration.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				ForceNew:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"integration_key": {
+							Description: "Duo Integration Key.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"secret_key": {
+							Description: "Duo Secret Key.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"api_hostname": {
+							Description: "Duo API Hostname.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -78,30 +83,36 @@ func resourceIntegrationMfaCreate(ctx context.Context, d *schema.ResourceData, m
 
 	var diags diag.Diagnostics
 
-	typeApp := d.Get("type").(string)
-
 	var res *connect.Response[corev1.CreateIntegrationMfaResponse]
 	var err error
 
-	switch typeApp {
-	case "duo":
-		duo := &corev1.CreateIntegrationMfaRequest_Duo_{
-			Duo: &corev1.CreateIntegrationMfaRequest_Duo{
-				IntegrationKey: d.Get("duo_integration_key").(string),
-				SecretKey:      d.Get("duo_secret_key").(string),
-				ApiHostname:    d.Get("duo_api_hostname").(string),
-			},
-		}
-		res, err = c.Grpc.Sdk.IntegrationMfaServiceClient.CreateIntegrationMfa(ctx, connect.NewRequest(&corev1.CreateIntegrationMfaRequest{
-			Name: d.Get("name").(string),
-			Mfa:  duo,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	// Check if the 'duo' configuration block is present
+	if v, ok := d.GetOk("duo"); ok {
+		duoConfigs := v.(*schema.Set).List()
+		if len(duoConfigs) > 0 {
+			// Assuming there's only one 'duo' configuration block
+			duoConfig := duoConfigs[0].(map[string]interface{})
 
-	default:
-		return diag.Errorf("Unsupported mfa type: %s", typeApp)
+			duo := &corev1.CreateIntegrationMfaRequest_Duo_{
+				Duo: &corev1.CreateIntegrationMfaRequest_Duo{
+					IntegrationKey: duoConfig["integration_key"].(string),
+					SecretKey:      duoConfig["secret_key"].(string),
+					ApiHostname:    duoConfig["api_hostname"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationMfaServiceClient.CreateIntegrationMfa(ctx, connect.NewRequest(&corev1.CreateIntegrationMfaRequest{
+				Name: d.Get("name").(string),
+				Mfa:  duo,
+			}))
+		} else {
+			return diag.Errorf("Duo configuration is required.")
+		}
+	} else {
+		return diag.Errorf("No MFA configuration found.")
+	}
+
+	if err != nil {
+		return diag.FromErr(err)
 	}
 
 	d.SetId(res.Msg.Integration.Id)
@@ -124,9 +135,20 @@ func resourceIntegrationMfaRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
-	switch data := res.Msg.Integration.Mfa.(type) {
-	case *corev1.IntegrationMfa_Duo_:
-		d.Set("duo_api_hostname", data.Duo.ApiHostname)
+	if data, ok := res.Msg.Integration.Mfa.(*corev1.IntegrationMfa_Duo_); ok {
+		// Construct a map for the 'duo' configuration
+		duoConfig := map[string]interface{}{
+			"api_hostname": data.Duo.ApiHostname,
+		}
+
+		// Create a new set for the 'duo' configuration
+		duoSet := schema.NewSet(schema.HashResource(ResourceIntegrationMfa()), []interface{}{duoConfig})
+		if err := d.Set("duo", duoSet); err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		// If not a Duo MFA type or not set, ensure the 'duo' field in Terraform state is cleared or handled as needed
+		d.Set("duo", nil)
 	}
 
 	d.Set("termination_protection", res.Msg.Integration.TerminationProtection)

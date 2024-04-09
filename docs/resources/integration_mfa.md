@@ -17,19 +17,27 @@ Registering a Integration MFA app.
 
 ### Required
 
-- `type` (String) Type of the Integration mfa app: `duo`
+- `name` (String) Name of the Integration
 
 ### Optional
 
-- `duo_api_hostname` (String) Duo API Hostname.
-- `duo_integration_key` (String) Duo Integration Key.
-- `duo_secret_key` (String) Duo Secret Key.
+- `duo` (Block Set, Max: 1) Configuration block for Duo integration. This block is optional and may be omitted if not configuring a Duo integration. (see [below for nested schema](#nestedblock--duo))
 - `termination_protection` (Boolean) If set to true, this Integration MFA cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the Integration Mfa.
+
+<a id="nestedblock--duo"></a>
+### Nested Schema for `duo`
+
+Required:
+
+- `api_hostname` (String) Duo API Hostname.
+- `integration_key` (String) Duo Integration Key.
+- `secret_key` (String) Duo Secret Key.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

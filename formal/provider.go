@@ -36,7 +36,7 @@ func New(version string) func() *schema.Provider {
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_policy":                        resource.ResourcePolicy(),
 				"formal_group":                         resource.ResourceGroup(),
-				"formal_group_link_user":               resource.ResourceGroupLinkUser(),
+				"formal_group_user_link":               resource.ResourceGroupLinkUser(),
 				"formal_resource":                      resource.ResourceResource(),
 				"formal_sidecar_resource_link":         resource.ResourceSidecarResourceLink(),
 				"formal_sidecar":                       resource.ResourceSidecar(),

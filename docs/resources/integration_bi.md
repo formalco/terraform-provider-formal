@@ -18,21 +18,25 @@ Registering a BI App.
 ### Required
 
 - `name` (String) Friendly name for the App.
-- `type` (String) Type of the App: `metabase` or `fivetran`
 
 ### Optional
 
-- `fivetran_api_key` (String) API Key of Fivetran app.
-- `fivetran_api_secret` (String) Secret of Fivetran app.
-- `linked_db_user_id` (String) Linked DB User ID of the App.
-- `metabase_hostname` (String) Hostname of the Metabase app.
-- `metabase_password` (String) Password of the Metabase app.
-- `metabase_username` (String) Username of the Metabase app.
+- `metabase` (Block Set, Max: 1) Configuration block for Metabase integration. This block is optional and may be omitted if not configuring a Metabase integration. (see [below for nested schema](#nestedblock--metabase))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the App.
+
+<a id="nestedblock--metabase"></a>
+### Nested Schema for `metabase`
+
+Required:
+
+- `hostname` (String) Hostname of the Metabase instance.
+- `password` (String) Password for the Metabase instance.
+- `username` (String) Username for the Metabase instance.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

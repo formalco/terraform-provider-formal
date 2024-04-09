@@ -18,21 +18,28 @@ Registering a Cloud integration.
 ### Required
 
 - `region` (String) Region of the cloud provider.
-- `type` (String) Type of the Integration mfa app: `datahub`
 
 ### Optional
 
+- `aws` (Block Set, Max: 1) AWS cloud configuration. (see [below for nested schema](#nestedblock--aws))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
-- `aws_account_id` (String) Account ID of AWS account.
-- `aws_formal_iam_role` (String) AWS Iam Role used by Formal.
-- `aws_formal_id` (String) AWS Formal ID.
-- `aws_formal_stack_name` (String) Cloud formation stack name.
-- `aws_region` (String) AWS Region.
 - `id` (String) The ID of the Integration.
 - `name` (String) Webhook secret of the Integration.
+
+<a id="nestedblock--aws"></a>
+### Nested Schema for `aws`
+
+Required:
+
+- `account_id` (String) Account ID of AWS account.
+- `formal_iam_role` (String) AWS Iam Role used by Formal.
+- `formal_id` (String) AWS Formal ID.
+- `formal_stack_name` (String) Cloud formation stack name.
+- `region` (String) AWS Region.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

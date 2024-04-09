@@ -18,25 +18,48 @@ Registering a Integration Logs app.
 ### Required
 
 - `name` (String) Friendly name for the Integration app.
-- `type` (String) Type of the Integration app: `datadog`, `splunk` or `s3`.
 
 ### Optional
 
-- `aws_access_key_id` (String) AWS Access Key ID. Required if type is s3.
-- `aws_access_key_secret` (String) AWS Access Key Secret. Required if type is s3.
-- `aws_region` (String) AWS Region. Required if type is s3.
-- `aws_s3_bucket_name` (String) AWS S3 Bucket Name. Required if type is s3.
-- `dd_account_id` (String) Account ID of Datadog.
-- `dd_api_key` (String) API Key of Datadog.
-- `dd_site` (String) Url of your Datadog app.
-- `splunk_access_token` (String) Access Token of Splunk.
-- `splunk_host` (String) Url of your Splunk app.
-- `splunk_port` (Number) Port of your Splunk app.
+- `aws_s3` (Block Set, Max: 1) Configuration block for AWS S3 integration. (see [below for nested schema](#nestedblock--aws_s3))
+- `datadog` (Block Set, Max: 1) Configuration block for Datadog integration. (see [below for nested schema](#nestedblock--datadog))
+- `splunk` (Block Set, Max: 1) Configuration block for Splunk integration. (see [below for nested schema](#nestedblock--splunk))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the App.
+
+<a id="nestedblock--aws_s3"></a>
+### Nested Schema for `aws_s3`
+
+Required:
+
+- `access_key_id` (String) AWS Access Key ID.
+- `access_key_secret` (String) AWS Access Key Secret.
+- `region` (String) AWS Region.
+- `s3_bucket_name` (String) AWS S3 Bucket Name.
+
+
+<a id="nestedblock--datadog"></a>
+### Nested Schema for `datadog`
+
+Required:
+
+- `account_id` (String) Account ID of Datadog.
+- `api_key` (String) API Key of Datadog.
+- `site` (String) URL of your Datadog app.
+
+
+<a id="nestedblock--splunk"></a>
+### Nested Schema for `splunk`
+
+Required:
+
+- `access_token` (String) Access Token of Splunk.
+- `host` (String) URL of your Splunk app.
+- `port` (Number) Port of your Splunk app.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

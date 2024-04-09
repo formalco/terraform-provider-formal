@@ -40,78 +40,91 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration app: `datadog`, `splunk` or `s3`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+			"datadog": {
+				Description:   "Configuration block for Datadog integration.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"splunk", "aws_s3"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"site": {
+							Description: "URL of your Datadog app.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"api_key": {
+							Description: "API Key of Datadog.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"account_id": {
+							Description: "Account ID of Datadog.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
 			},
-			"dd_site": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Url of your Datadog app.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+			"splunk": {
+				Description:   "Configuration block for Splunk integration.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"datadog", "aws_s3"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"host": {
+							Description: "URL of your Splunk app.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"port": {
+							Description: "Port of your Splunk app.",
+							Type:        schema.TypeInt,
+							Required:    true,
+						},
+						"access_token": {
+							Description: "Access Token of Splunk.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
 			},
-			"dd_api_key": {
-				// This description is used by the documentation generator and the language server.
-				Description: "API Key of Datadog.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"dd_account_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Account ID of Datadog.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"splunk_host": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Url of your Splunk app.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"splunk_port": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Port of your Splunk app.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"splunk_access_token": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Access Token of Splunk.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"aws_access_key_id": {
-				Description: "AWS Access Key ID. Required if type is s3.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"aws_access_key_secret": {
-				Description: "AWS Access Key Secret. Required if type is s3.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"aws_region": {
-				Description: "AWS Region. Required if type is s3.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-			},
-			"aws_s3_bucket_name": {
-				Description: "AWS S3 Bucket Name. Required if type is s3.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+			"aws_s3": {
+				Description:   "Configuration block for AWS S3 integration.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"splunk", "datadog"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"access_key_id": {
+							Description: "AWS Access Key ID.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"access_key_secret": {
+							Description: "AWS Access Key Secret.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"region": {
+							Description: "AWS Region.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"s3_bucket_name": {
+							Description: "AWS S3 Bucket Name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -124,60 +137,78 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 
 	name := d.Get("name").(string)
 
-	integrationType := d.Get("type").(string)
 	var res *connect.Response[corev1.CreateIntegrationLogResponse]
 	var err error
 
-	switch integrationType {
-	case "splunk":
-		integration := &corev1.CreateIntegrationLogRequest_Splunk_{
-			Splunk: &corev1.CreateIntegrationLogRequest_Splunk{
-				Host:        d.Get("splunk_host").(string),
-				Port:        int32(d.Get("splunk_port").(int)),
-				AccessToken: d.Get("splunk_access_token").(string),
-			},
-		}
-		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
-			Name:        name,
-			Integration: integration,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	case "aws_s3":
-		integration := &corev1.CreateIntegrationLogRequest_AwsS3_{
-			AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
-				AccessKeyId:     d.Get("aws_access_key_id").(string),
-				SecretAccessKey: d.Get("aws_access_key_secret").(string),
-				Region:          d.Get("aws_region").(string),
-				BucketName:      d.Get("aws_s3_bucket_name").(string),
-			},
-		}
-		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
-			Name:        name,
-			Integration: integration,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-	case "datadog":
-		integration := &corev1.CreateIntegrationLogRequest_Datadog_{
-			Datadog: &corev1.CreateIntegrationLogRequest_Datadog{
-				Site:      d.Get("dd_site").(string),
-				ApiKey:    d.Get("dd_api_key").(string),
-				AccountId: d.Get("dd_account_id").(string),
-			},
-		}
-		res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
-			Name:        name,
-			Integration: integration,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+	// Check if Datadog is configured
+	if v, ok := d.GetOk("datadog"); ok {
+		ddConfigs := v.(*schema.Set).List()
+		if len(ddConfigs) > 0 {
+			ddConfig := ddConfigs[0].(map[string]interface{})
 
-	default:
-		return diag.Errorf("Unsupported integration type: %s", integrationType)
+			integration := &corev1.CreateIntegrationLogRequest_Datadog_{
+				Datadog: &corev1.CreateIntegrationLogRequest_Datadog{
+					Site:      ddConfig["site"].(string),
+					ApiKey:    ddConfig["api_key"].(string),
+					AccountId: ddConfig["account_id"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			}))
+		}
+	}
+
+	// Check if Splunk is configured
+	if v, ok := d.GetOk("splunk"); ok {
+		splunkConfigs := v.(*schema.Set).List()
+		if len(splunkConfigs) > 0 {
+			splunkConfig := splunkConfigs[0].(map[string]interface{})
+
+			integration := &corev1.CreateIntegrationLogRequest_Splunk_{
+				Splunk: &corev1.CreateIntegrationLogRequest_Splunk{
+					Host:        splunkConfig["host"].(string),
+					Port:        int32(splunkConfig["port"].(int)),
+					AccessToken: splunkConfig["access_token"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			}))
+		}
+	}
+
+	// Check if AWS S3 is configured
+	if v, ok := d.GetOk("aws_s3"); ok {
+		awsConfigs := v.(*schema.Set).List()
+		if len(awsConfigs) > 0 {
+			awsConfig := awsConfigs[0].(map[string]interface{})
+
+			integration := &corev1.CreateIntegrationLogRequest_AwsS3_{
+				AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
+					AccessKeyId:     awsConfig["access_key_id"].(string),
+					SecretAccessKey: awsConfig["access_key_secret"].(string),
+					Region:          awsConfig["region"].(string),
+					BucketName:      awsConfig["s3_bucket_name"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			}))
+		}
+	}
+
+	// Handle error if any
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	// Assuming you need to handle a situation where none are configured
+	if res == nil {
+		return diag.Errorf("No integration configuration found")
 	}
 
 	d.SetId(res.Msg.Integration.Id)

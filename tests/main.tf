@@ -22,28 +22,48 @@ resource "formal_resource" "postgres1" {
 
 resource "formal_integration_bi" "name" {
   name              = "terraform-test-integration-app"
-  type              = "metabase"
-  linked_db_user_id = "postgres"
-  metabase_hostname = "metabase.com"
-  metabase_password = "metabasepassword"
-  metabase_username = "metabaseusername"
+  metabase {
+    hostname = "metabase.com"
+    password = "metabasepassword"
+    username = "metabaseusername"
+  }
+}
+
+resource "formal_integration_log" "datadog" {
+  name           = "terraform-test-integration-log-datadog"
+  datadog {
+    site = "test.com"
+    api_key = "test"
+    account_id = "test"
+  }
 }
 
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
-  type           = "splunk"
-  splunk_access_token = "aaaaa"
-  splunk_port = 443
-  splunk_host     = "splunk.com"
+  splunk {
+    access_token = "aaaaa"
+    port = 443
+    host     = "splunk.com"
+  }
 }
 
 resource "formal_integration_log" "s3" {
   name                  = "terraform-test-integration-log-s3"
-  type                  = "aws_s3"
-  aws_access_key_id     = "aaaaa"
-  aws_access_key_secret = "aaaaa"
-  aws_region            = "us-west-1"
-  aws_s3_bucket_name    = "terraform-test-integration-log-s3"
+  aws_s3 {
+    access_key_id     = "aaaaa"
+    access_key_secret = "aaaaa"
+    region            = "us-west-1"
+    s3_bucket_name    = "terraform-test-integration-log-s3"
+  }
+}
+
+resource "formal_integration_mfa" "duo" {
+  name = "test"
+  duo {
+    api_hostname     = "key.com"
+    secret_key = "key"
+    integration_key = "key"
+  }
 }
 
 resource "formal_native_user" "name" {
@@ -149,7 +169,7 @@ resource "formal_group" "name" {
   name        = "terraform-test-group"
 }
 
-resource "formal_group_link_user" "name" {
+resource "formal_group_user_link" "name" {
   group_id = formal_group.name.id
   user_id  = formal_user.name.id
 }
