@@ -54,6 +54,7 @@ func New(version string) func() *schema.Provider {
 				"formal_tracker":                  resource.ResourceTracker(),
 				"formal_data_discovery":           resource.ResourceDataDiscovery(),
 				"formal_resource_health_check":    resource.ResourceHealthCheck(),
+				"formal_external_data_loader":     resource.ResourceExternalDataLoader(),
 			},
 		}
 

@@ -92,10 +92,10 @@ EOT
   status       = "draft"
 }
 
-# resource "formal_satellite" "name" {
-#   name = "terraform-test-satellite"
-#   termination_protection = false
-# }
+resource "formal_satellite" "name" {
+  name = "terraform-test-satellite"
+  termination_protection = false
+}
 
 resource "formal_sidecar" "name" {
   name               = "terraform-test-sidecar"
@@ -152,4 +152,13 @@ resource "formal_group" "name" {
 resource "formal_group_link_role" "name" {
   group_id = formal_group.name.id
   user_id  = formal_user.name.id
+}
+
+resource "formal_external_data_loader" "name" {
+  name = "test-external-data-loader-2"
+  host = "formal.zendesk.com"
+  port = 443
+  auth_type = "basic"
+  basic_auth_username = "basic"
+  basic_auth_password = "basic"
 }
