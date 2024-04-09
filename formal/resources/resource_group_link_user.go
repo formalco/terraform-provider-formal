@@ -12,15 +12,15 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceGroupLinkRole() *schema.Resource {
+func ResourceGroupLinkUser() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Linking a Role to a Group in Formal.",
+		Description: "Linking a User to a Group in Formal.",
 
-		CreateContext: resourceGroupLinkRoleCreate,
-		ReadContext:   resourceGroupLinkRoleRead,
-		UpdateContext: resourceGroupLinkRoleUpdate,
-		DeleteContext: resourceGroupLinkRoleDelete,
+		CreateContext: resourceGroupLinkUserCreate,
+		ReadContext:   resourceGroupLinkUserRead,
+		UpdateContext: resourceGroupLinkUserUpdate,
+		DeleteContext: resourceGroupLinkUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -58,7 +58,7 @@ func ResourceGroupLinkRole() *schema.Resource {
 
 const roleLinkGroupTerraformIdDelimiter = "#_#"
 
-func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -78,11 +78,11 @@ func resourceGroupLinkRoleCreate(ctx context.Context, d *schema.ResourceData, me
 
 	d.SetId(res.Msg.UserGroupLink.Id)
 
-	resourceGroupLinkRoleRead(ctx, d, meta)
+	resourceGroupLinkUserRead(ctx, d, meta)
 	return diags
 }
 
-func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -123,11 +123,11 @@ func resourceGroupLinkRoleRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceGroupLinkRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
 }
 
-func resourceGroupLinkRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

@@ -25,10 +25,10 @@ resource "formal_resource" "postgres1" {
   }
 }
 
-resource "formal_native_role" "name" {
+resource "formal_native_user" "name" {
   resource_id           = formal_resource.postgres1.id
-  native_role_id         = "postgres"
-  native_role_secret     = "postgres"
+  native_user_id         = "postgres"
+  native_user_secret     = "postgres"
   use_as_default         = true
   termination_protection = var.termination_protection
 }

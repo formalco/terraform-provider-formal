@@ -24,8 +24,8 @@ resource "formal_user" "name" {
   name = "terraform-test-local-formal_group_link_role-with-termination-protection"
 }
 
-resource "formal_group_link_role" "name" {
+resource "formal_group_link_user" "name" {
   group_id               = formal_group.name.id
-  role_id                = formal_user.name.id
+  user_id                = formal_user.name.id
   termination_protection = var.termination_protection
 }

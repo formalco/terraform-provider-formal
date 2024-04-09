@@ -46,10 +46,10 @@ resource "formal_integration_log" "s3" {
   aws_s3_bucket_name    = "terraform-test-integration-log-s3"
 }
 
-resource "formal_native_role" "name" {
+resource "formal_native_user" "name" {
   resource_id       = formal_resource.postgres1.id
-  native_role_id     = "postgres1"
-  native_role_secret = "postgres1"
+  native_user_id     = "postgres1"
+  native_user_secret = "postgres1"
 }
 
 resource "formal_user" "name" {
@@ -66,10 +66,10 @@ resource "formal_user" "human" {
   admin = true
 }
 
-resource "formal_native_role_link" "name" {
+resource "formal_native_user_link" "name" {
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
-  native_role_id       = formal_native_role.name.id
+  native_user_id       = formal_native_user.name.id
 }
 
 resource "formal_policy" "name" {
@@ -139,7 +139,7 @@ resource "formal_tracker" "name" {
 
 resource "formal_data_discovery" "name" {
   resource_id = formal_resource.postgres1.id
-  native_user_id = formal_native_role.name.id
+  native_user_id = formal_native_user.name.id
   schedule = "12h"
   deletion_policy = "mark_for_deletion"
 }
@@ -149,7 +149,7 @@ resource "formal_group" "name" {
   name        = "terraform-test-group"
 }
 
-resource "formal_group_link_role" "name" {
+resource "formal_group_link_user" "name" {
   group_id = formal_group.name.id
   user_id  = formal_user.name.id
 }

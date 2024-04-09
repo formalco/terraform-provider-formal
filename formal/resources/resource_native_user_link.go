@@ -11,35 +11,35 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceNativeRoleLink() *schema.Resource {
+func ResourceNativeUserLink() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "This resource creates assigns a Native Role to a Formal Identity.",
+		Description: "This resource creates assigns a Native User to a Formal Identity.",
 
-		CreateContext: resourceNativeRoleLinkCreate,
-		ReadContext:   resourceNativeRoleLinkRead,
-		UpdateContext: resourceNativeRoleLinkUpdate,
-		DeleteContext: resourceNativeRoleLinkDelete,
+		CreateContext: resourceNativeUserLinkCreate,
+		ReadContext:   resourceNativeUserLinkRead,
+		UpdateContext: resourceNativeUserLinkUpdate,
+		DeleteContext: resourceNativeUserLinkDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Resource ID of the Native Role.",
+				Description: "The Resource ID of the Native User.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"native_role_id": {
+			"native_user_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Native Role ID of the Native Role.",
+				Description: "The Native User ID of the Native User.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
 			"formal_identity_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for the Role or Group to be linked.",
+				Description: "The Formal ID for the User or Group to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -52,7 +52,7 @@ func ResourceNativeRoleLink() *schema.Resource {
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, this Native Role link cannot be deleted.",
+				Description: "If set to true, this Native User link cannot be deleted.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -61,20 +61,20 @@ func ResourceNativeRoleLink() *schema.Resource {
 	}
 }
 
-func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	nativeRoleId := d.Get("native_role_id").(string)
+	nativeUserId := d.Get("native_user_id").(string)
 	formalIdentityId := d.Get("formal_identity_id").(string)
 	formalIdentityType := d.Get("formal_identity_type").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.CreateNativeUserIdentityLinkRequest{
-		NativeUserId:          nativeRoleId,
+		NativeUserId:          nativeUserId,
 		IdentityId:            formalIdentityId,
 		IdentityType:          formalIdentityType,
 		TerminationProtection: terminationProtection,
@@ -85,11 +85,11 @@ func resourceNativeRoleLinkCreate(ctx context.Context, d *schema.ResourceData, m
 
 	d.SetId(res.Msg.Link.Id)
 
-	resourceNativeRoleLinkRead(ctx, d, meta)
+	resourceNativeUserLinkRead(ctx, d, meta)
 	return diags
 }
 
-func resourceNativeRoleLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -104,12 +104,12 @@ func resourceNativeRoleLinkUpdate(ctx context.Context, d *schema.ResourceData, m
 		}
 	}
 
-	resourceNativeRoleLinkRead(ctx, d, meta)
+	resourceNativeUserLinkRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -121,7 +121,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
-			tflog.Warn(ctx, "The Native Role Link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Native User Link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -137,7 +137,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 
 	// Should map to all fields of
 	d.Set("resource_id", res.Msg.Link.NativeUser.ResourceId)
-	d.Set("native_role_id", res.Msg.Link.NativeUser.Id)
+	d.Set("native_user_id", res.Msg.Link.NativeUser.Id)
 	d.Set("formal_identity_type", res.Msg.Link.Identity)
 	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
 
@@ -146,7 +146,7 @@ func resourceNativeRoleLinkRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -155,7 +155,7 @@ func resourceNativeRoleLinkDelete(ctx context.Context, d *schema.ResourceData, m
 	terminationProtection := d.Get("termination_protection").(bool)
 
 	if terminationProtection {
-		return diag.Errorf("Native Role Link cannot be deleted because termination_protection is set to true")
+		return diag.Errorf("Native User Link cannot be deleted because termination_protection is set to true")
 	}
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.DeleteNativeUserIdentityLinkRequest{Id: id}))
