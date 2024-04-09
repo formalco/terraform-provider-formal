@@ -154,7 +154,7 @@ resource "formal_group_link_role" "name" {
   user_id  = formal_user.name.id
 }
 
-resource "formal_external_data_loader" "name" {
+resource "formal_policies_external_data_loader" "name" {
   name = "test-external-data-loader-2"
   host = "formal.zendesk.com"
   port = 443

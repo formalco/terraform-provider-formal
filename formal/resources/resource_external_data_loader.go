@@ -11,13 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceExternalDataLoader() *schema.Resource {
+func ResourcePoliciesExternalDataLoader() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description:   "Registering a External Data Loader External Api.",
-		CreateContext: resourceExternalDataLoaderCreate,
-		ReadContext:   resourceExternalDataLoaderRead,
-		DeleteContext: resourceExternalDataLoaderDelete,
+		CreateContext: resourcePoliciesExternalDataLoaderCreate,
+		ReadContext:   resourcePoliciesExternalDataLoaderRead,
+		DeleteContext: resourcePoliciesExternalDataLoaderDelete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
@@ -78,7 +78,7 @@ func ResourceExternalDataLoader() *schema.Resource {
 	}
 }
 
-func resourceExternalDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePoliciesExternalDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -108,11 +108,11 @@ func resourceExternalDataLoaderCreate(ctx context.Context, d *schema.ResourceDat
 
 	d.SetId(externalApi.Msg.ExternalDataLoader.Id)
 
-	resourceExternalDataLoaderRead(ctx, d, meta)
+	resourcePoliciesExternalDataLoaderRead(ctx, d, meta)
 	return diags
 }
 
-func resourceExternalDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePoliciesExternalDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -132,7 +132,7 @@ func resourceExternalDataLoaderRead(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceExternalDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePoliciesExternalDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
