@@ -57,12 +57,6 @@ func ResourceResource() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"health_check_db_name": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Database name to use for health checks. Default `postgres`.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The port your Resource is listening on.",
@@ -75,18 +69,6 @@ func ResourceResource() *schema.Resource {
 				Description: "Creation time of the Resource.",
 				Type:        schema.TypeInt,
 				Computed:    true,
-			},
-			"db_discovery_native_role_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The `native_role_id` of the Native Role to be used for the discovery job.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"db_discovery_job_wait_time": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The wait time for the discovery job.",
-				Type:        schema.TypeString,
-				Optional:    true,
 			},
 			"environment": {
 				// This description is used by the documentation generator and the language server.
