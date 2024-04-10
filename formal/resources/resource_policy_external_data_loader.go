@@ -54,25 +54,33 @@ func ResourcePolicyExternalDataLoader() *schema.Resource {
 				ForceNew:    true,
 			},
 			"auth_type": {
-				// This description is used by the documentation generator and the language server.
 				Description: "Auth type of the ExternalApi: basic or oauth",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"basic_auth_username": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Username of the ExternalApi.",
-				Type:        schema.TypeString,
+			"basic_auth": {
+				Type:        schema.TypeSet, // Use TypeList or TypeSet based on whether the order matters or uniqueness is required
 				Optional:    true,
 				ForceNew:    true,
-			},
-			"basic_auth_password": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Password of the ExternalApi.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				MaxItems:    1, // Ensures only one object is provided
+				Description: "Basic authentication credentials.",
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"username": {
+							Description: "Username of the ExternalApi.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+						"password": {
+							Description: "Password of the ExternalApi.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -86,20 +94,29 @@ func ResourcePolicyExternalDataLoaderCreate(ctx context.Context, d *schema.Resou
 	name := d.Get("name").(string)
 	host := d.Get("host").(string)
 	authType := d.Get("auth_type").(string)
-	basicAuthUsername := d.Get("basic_auth_username").(string)
-	basicAuthPassword := d.Get("basic_auth_password").(string)
 	port := d.Get("port").(int)
+
+	var basicAuth *corev1.Auth_Basic
+	if v, ok := d.GetOk("basic_auth"); ok {
+		basicAuthList := v.(*schema.Set).List()
+		if len(basicAuthList) > 0 {
+			basicAuthMap := basicAuthList[0].(map[string]interface{})
+			basicAuthUsername := basicAuthMap["username"].(string)
+			basicAuthPassword := basicAuthMap["password"].(string)
+			basicAuth = &corev1.Auth_Basic{
+				Username: basicAuthUsername,
+				Password: basicAuthPassword,
+			}
+		}
+	}
 
 	externalApi, err := c.Grpc.Sdk.PolicyServiceClient.CreateExternalDataLoader(ctx, connect.NewRequest(&corev1.CreateExternalDataLoaderRequest{
 		Name: name,
 		Host: host,
 		Port: int32(port),
 		Auth: &corev1.Auth{
-			Type: authType,
-			Basic: &corev1.Auth_Basic{
-				Username: basicAuthUsername,
-				Password: basicAuthPassword,
-			},
+			Type:  authType,
+			Basic: basicAuth,
 		},
 	}))
 	if err != nil {

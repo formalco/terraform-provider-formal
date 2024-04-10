@@ -179,6 +179,8 @@ resource "formal_policy_external_data_loader" "name" {
   host = "formal.zendesk.com"
   port = 443
   auth_type = "basic"
-  basic_auth_username = "basic"
-  basic_auth_password = "basic"
+  basic_auth {
+    username = "basic"
+    password = "basic"
+  }
 }

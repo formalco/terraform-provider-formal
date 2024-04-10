@@ -24,13 +24,21 @@ Registering a External Data Loader External Api.
 
 ### Optional
 
-- `basic_auth_password` (String) Password of the ExternalApi.
-- `basic_auth_username` (String) Username of the ExternalApi.
+- `basic_auth` (Block Set, Max: 1) Basic authentication credentials. (see [below for nested schema](#nestedblock--basic_auth))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the Policy External Data Loader.
+
+<a id="nestedblock--basic_auth"></a>
+### Nested Schema for `basic_auth`
+
+Required:
+
+- `password` (String) Password of the ExternalApi.
+- `username` (String) Username of the ExternalApi.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
