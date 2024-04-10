@@ -14,11 +14,10 @@ variable "termination_protection" {
   description = "Whether termination protection is enabled for the resource."
 }
 
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-local.formal-policy.with-termination-protection"
   name                       = "terraform-test-local-formal_policy-with-termination-protection"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {
@@ -26,8 +25,16 @@ resource "formal_datastore" "postgres1" {
   }
 }
 
+resource "formal_user" "human" {
+  type = "human"
+  name = "terraform-test-policy-human-user"
+  first_name = "test2"
+  last_name = "test2"
+  email = "test@test-formal.com"
+  admin = true
+}
+
 resource "formal_policy" "name" {
-  active                 = true
   description            = "terraform-test-policy"
   module                 = <<EOT
 package formal.v2
@@ -38,12 +45,12 @@ pre_request := {
   "action": "block",
   "type": "block_with_formal_message"
 } if {
-  input.datastore.id == "${formal_datastore.postgres1.id}"
+  input.datastore.id == "${formal_resource.postgres1.id}"
 }
 EOT
   name                   = "terraform-test-local-formal_policy-with-termination-protection"
   notification           = "none"
-  owners                 = ["farid@joinformal.com"]
+  owners       = [formal_user.human.email]
   status                 = "active"
   termination_protection = var.termination_protection
 }

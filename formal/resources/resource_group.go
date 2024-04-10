@@ -3,7 +3,7 @@ package resource
 import (
 	"context"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -64,7 +64,7 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	Description := d.Get("description").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, connect.NewRequest(&adminv1.CreateGroupRequest{
+	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, connect.NewRequest(&corev1.CreateGroupRequest{
 		Name:                  Name,
 		Description:           Description,
 		TerminationProtection: TerminationProtection,
@@ -85,7 +85,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta interfa
 
 	groupId := d.Id()
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroupById(ctx, connect.NewRequest(&adminv1.GetGroupByIdRequest{Id: groupId}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, connect.NewRequest(&corev1.GetGroupRequest{Id: groupId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Group was deleted
@@ -117,7 +117,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	//groupDesc := d.Get("description").(string)
 	groupTermProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&adminv1.UpdateGroupRequest{Name: groupName, Id: groupId, TerminationProtection: &groupTermProtection}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&corev1.UpdateGroupRequest{Name: &groupName, Id: groupId, TerminationProtection: &groupTermProtection}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -139,7 +139,7 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta inter
 	}
 
 	groupId := d.Id()
-	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, connect.NewRequest(&adminv1.DeleteGroupRequest{Id: groupId}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, connect.NewRequest(&corev1.DeleteGroupRequest{Id: groupId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

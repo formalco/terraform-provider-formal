@@ -3,8 +3,9 @@ package resource
 import (
 	"context"
 	"fmt"
+	"net/mail"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
+	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -76,27 +77,6 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"active": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Active status of this policy.",
-				Type:        schema.TypeBool,
-				Required:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"org_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for your organisation.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
-			"expire_at": {
-				// This description is used by the documentation generator and the language server.
-				Description: "When this policy is set to expire.",
-				Type:        schema.TypeString,
-				Computed:    true,
-				Deprecated:  "This field is deprecated. it will be removed in a future release.",
-			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.",
@@ -140,29 +120,48 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	var owners []string
+	var owners []*corev1.Owner
 	for _, owner := range d.Get("owners").([]interface{}) {
-		owners = append(owners, owner.(string))
+		parsedEmail, _ := mail.ParseAddress(owner.(string))
+		if parsedEmail != nil {
+			userOwner := corev1.Owner_User{
+				User: &corev1.User{
+					Info: &corev1.User_Human_{
+						Human: &corev1.User_Human{
+							Email: owner.(string),
+						},
+					},
+				},
+			}
+			owners = append(owners, &corev1.Owner{
+				Owner: &userOwner,
+			})
+		} else {
+			groupOwner := corev1.Owner_Group{
+				Group: &corev1.Group{
+					Name: owner.(string),
+				},
+			}
+			owners = append(owners, &corev1.Owner{
+				Owner: &groupOwner,
+			})
+		}
 	}
 
 	// Maps to user-defined fields
 	Name := d.Get("name").(string)
 	Description := d.Get("description").(string)
 	Module := d.Get("module").(string)
-	SourceType := "terraform"
 	Notification := d.Get("notification").(string)
-	Active := d.Get("active").(bool)
 	Status := d.Get("status").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicyV2(ctx, connect.NewRequest(&adminv1.CreatePolicyV2Request{
+	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicy(ctx, connect.NewRequest(&corev1.CreatePolicyRequest{
 		Name:                  Name,
 		Description:           Description,
 		Code:                  Module,
 		Notification:          Notification,
 		Owners:                owners,
-		SourceType:            SourceType,
-		Active:                Active,
 		Status:                Status,
 		TerminationProtection: TerminationProtection,
 	}))
@@ -182,7 +181,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	policyId := d.Id()
 
-	res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicyV2(ctx, connect.NewRequest(&adminv1.GetPolicyV2Request{PolicyId: policyId}))
+	res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: policyId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
@@ -200,7 +199,6 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("module", res.Msg.Policy.Code)
 	d.Set("notification", res.Msg.Policy.Notification)
 	d.Set("owners", res.Msg.Policy.Owners)
-	d.Set("active", res.Msg.Policy.Active)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -216,29 +214,48 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
 
-		var owners []string
+		var owners []*corev1.Owner
 		for _, owner := range d.Get("owners").([]interface{}) {
-			owners = append(owners, owner.(string))
+			parsedEmail, _ := mail.ParseAddress(owner.(string))
+			if parsedEmail != nil {
+				userOwner := corev1.Owner_User{
+					User: &corev1.User{
+						Info: &corev1.User_Human_{
+							Human: &corev1.User_Human{
+								Email: owner.(string),
+							},
+						},
+					},
+				}
+				owners = append(owners, &corev1.Owner{
+					Owner: &userOwner,
+				})
+			} else {
+				groupOwner := corev1.Owner_Group{
+					Group: &corev1.Group{
+						Name: owner.(string),
+					},
+				}
+				owners = append(owners, &corev1.Owner{
+					Owner: &groupOwner,
+				})
+			}
 		}
 
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 		Module := d.Get("module").(string)
 		Notification := d.Get("notification").(string)
-		SourceType := "terraform"
-		Active := d.Get("active").(bool)
 		Status := d.Get("status").(string)
 		TerminationProtection := d.Get("termination_protection").(bool)
 
-		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicyV2(ctx, connect.NewRequest(&adminv1.UpdatePolicyV2Request{
+		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicy(ctx, connect.NewRequest(&corev1.UpdatePolicyRequest{
 			Id:                    policyId,
-			SourceType:            SourceType,
 			Name:                  Name,
 			Description:           Description,
 			Code:                  Module,
 			Notification:          Notification,
 			Owners:                owners,
-			Active:                Active,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
 		}))
@@ -266,7 +283,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Policy cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.PolicyServiceClient.DeletePolicy(ctx, connect.NewRequest(&adminv1.DeletePolicyRequest{Id: policyId}))
+	_, err := c.Grpc.Sdk.PolicyServiceClient.DeletePolicy(ctx, connect.NewRequest(&corev1.DeletePolicyRequest{Id: policyId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -295,7 +312,7 @@ func resourcePolicyStateUpgradeV0(ctx context.Context, rawState map[string]inter
 	c := meta.(*clients.Clients)
 
 	if val, ok := rawState["id"]; ok {
-		res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicyV2(ctx, connect.NewRequest(&adminv1.GetPolicyV2Request{PolicyId: val.(string)}))
+		res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: val.(string)}))
 		if err != nil {
 			return nil, err
 		}

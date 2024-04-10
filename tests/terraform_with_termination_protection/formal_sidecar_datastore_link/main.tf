@@ -14,28 +14,24 @@ variable "termination_protection" {
   description = "Whether termination protection is enabled for the resource."
 }
 
-resource "formal_datastore" "postgres1" {
-  hostname                   = "terraform-test-local.formal-sidecar-datastore-link.with-termination-protection"
+resource "formal_resource" "postgres1" {
+  hostname                   = "terraform-test-local.formal-sidecar-datastore-link.with-termination-protection.com"
   name                       = "terraform-test-local-formal-sidecar-datastore-link-with-termination-protection"
-  technology                 = "postgres"
-  db_discovery_job_wait_time = "6h"
+  technology                 = "http"
   environment                = "DEV"
-  port                       = 5432
-  timeouts {
-    create = "1m"
-  }
+  port                       = 443
 }
 
 resource "formal_sidecar" "name" {
-  name               = "terraformtestlocalsidecardatastorelinkwithterminationprotection"
-  deployment_type    = "onprem"
-  global_kms_decrypt = false
-  technology         = "postgres"
+  name                   = "terraform-test-sidecar-resource-link-with-termination-protection"
+  technology             = "http"
+  hostname               = "test.com"
+  termination_protection = false
 }
 
-resource "formal_sidecar_datastore_link" "name" {
-  datastore_id           = formal_datastore.postgres1.id
-  port                   = 5432
+resource "formal_sidecar_resource_link" "name" {
+  resource_id           = formal_resource.postgres1.id
+  port                   = 443
   sidecar_id             = formal_sidecar.name.id
   termination_protection = var.termination_protection
 }

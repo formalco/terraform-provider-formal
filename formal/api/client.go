@@ -3,7 +3,7 @@ package api
 import (
 	"os"
 
-	"github.com/formalco/go-sdk/sdk"
+	"github.com/formalco/go-sdk/sdk/v2"
 )
 
 type GrpcClient struct {

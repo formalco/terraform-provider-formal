@@ -9,23 +9,10 @@ terraform {
 
 provider "formal" {}
 
-# Deprecated
-# resource "formal_cloud_account" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane" "name" {
-# }
-
-# Deprecated
-# resource "formal_dataplane_routes" "name" {
-# }
-
-resource "formal_datastore" "postgres1" {
+resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
   technology                 = "postgres"
-  db_discovery_job_wait_time = "6h"
   environment                = "DEV"
   port                       = 5432
   timeouts {
@@ -33,89 +20,56 @@ resource "formal_datastore" "postgres1" {
   }
 }
 
-# Deprecated
-# resource "formal_default_field_encryption" "name" {
-#   data_key_storage = "control_plane_only"
-#   encryption_alg   = "aes_deterministic"
-#   kms_key_id       = formal_encryption_key.name.id
-# }
-
-# resource "formal_encryption_key" "name" {
-#   cloud_region = "us-west-1"
-#   key_id       = "terraform-test-encryption-key-id"
-#   key_name     = "terraform-test-encryption-key-local"
-# }
-
-# resource "formal_field_encryption" "name" {
-#   alg          = "aes_deterministic"
-#   datastore_id = formal_datastore.postgres1.id
-#   key_id       = formal_encryption_key.name.id
-#   key_storage  = "control_plane_only"
-#   path         = "postgres.public.users.id"
-# }
-
-resource "formal_group" "name" {
-  description = "terraform-test-group"
-  name        = "terraform-test-group"
-}
-
-resource "formal_group_link_role" "name" {
-  group_id = formal_group.name.id
-  role_id  = formal_user.name.id
-}
-
-resource "formal_integration_app" "name" {
+resource "formal_integration_bi" "name" {
   name              = "terraform-test-integration-app"
-  type              = "metabase"
-  linked_db_user_id = "postgres"
-  metabase_hostname = "https://metabase.com"
-  metabase_password = "metabasepassword"
-  metabase_username = "metabaseusername"
+  metabase {
+    hostname = "metabase.com"
+    password = "metabasepassword"
+    username = "metabaseusername"
+  }
 }
 
-# resource "formal_integration_datahub" "name" {
-#   active = true
-#   api_key = "api_key_datahub_placeholder"
-#   generalized_metadata_service_url = "https://datahub.com"
-#   sync_direction = "bidirectional"
-#   synced_entities = ["tags"]
-# }
-
-resource "formal_integration_external_api" "name" {
-  auth_type = "basic"
-  name      = "terraform-test-integration-external-api"
-  type      = "custom"
-  url       = "https://zendesk.com"
+resource "formal_integration_log" "datadog" {
+  name           = "terraform-test-integration-log-datadog"
+  datadog {
+    site = "test.com"
+    api_key = "test"
+    account_id = "test"
+  }
 }
 
 resource "formal_integration_log" "splunk" {
   name           = "terraform-test-integration-log-splunk"
-  type           = "splunk"
-  splunk_api_key = "aaaaa"
-  splunk_url     = "https://splunk.com"
+  splunk {
+    access_token = "aaaaa"
+    port = 443
+    host     = "splunk.com"
+  }
 }
 
 resource "formal_integration_log" "s3" {
   name                  = "terraform-test-integration-log-s3"
-  type                  = "s3"
-  aws_access_key_id     = "aaaaa"
-  aws_access_key_secret = "aaaaa"
-  aws_region            = "us-west-1"
-  aws_s3_bucket_name    = "terraform-test-integration-log-s3"
+  aws_s3 {
+    access_key_id     = "aaaaa"
+    access_key_secret = "aaaaa"
+    region            = "us-west-1"
+    s3_bucket_name    = "terraform-test-integration-log-s3"
+  }
 }
 
-# resource "formal_key" "name" {
-#   cloud_region = "eu-west-1"
-#   key_type     = "aws_kms"
-#   managed_by   = "customer_managed"
-#   name         = "terraform-test-key-aws-kms"
-#   key_id       = formal_encryption_key.name.id
-# }
+resource "formal_integration_mfa" "duo" {
+  name = "test"
+  duo {
+    api_hostname     = "key.com"
+    secret_key = "key"
+    integration_key = "key"
+  }
+}
 
-resource "formal_native_role" "name" {
-  datastore_id       = formal_datastore.postgres1.id
-  native_role_id     = "postgres1"
-  native_role_secret = "postgres1"
+resource "formal_native_user" "name" {
+  resource_id       = formal_resource.postgres1.id
+  native_user_id     = "postgres1"
+  native_user_secret = "postgres1"
 }
 
 resource "formal_user" "name" {
@@ -123,15 +77,22 @@ resource "formal_user" "name" {
   name = "terraform-test-user"
 }
 
-resource "formal_native_role_link" "name" {
-  datastore_id         = formal_datastore.postgres1.id
+resource "formal_user" "human" {
+  type = "human"
+  name = "terraform-test-human-user"
+  first_name = "test2"
+  last_name = "test2"
+  email = "test@test-formal.com"
+  admin = true
+}
+
+resource "formal_native_user_link" "name" {
   formal_identity_id   = formal_user.name.id
   formal_identity_type = "user"
-  native_role_id       = formal_native_role.name.native_role_id
+  native_user_id       = formal_native_user.name.id
 }
 
 resource "formal_policy" "name" {
-  active       = false
   description  = "terraform-test-policy"
   module       = <<EOT
 package formal.v2
@@ -142,28 +103,84 @@ pre_request := {
   "action": "block",
   "type": "block_with_formal_message"
 } if {
-  input.datastore.id == "${formal_datastore.postgres1.id}"
+  input.datastore.id == "${formal_resource.postgres1.id}"
 }
 EOT
   name         = "terraform-test-policy"
   notification = "none"
-  owners       = ["farid@joinformal.com"]
+  owners       = [formal_user.human.email]
   status       = "draft"
 }
 
 resource "formal_satellite" "name" {
   name = "terraform-test-satellite"
+  termination_protection = false
 }
 
 resource "formal_sidecar" "name" {
-  deployment_type    = "onprem"
-  global_kms_decrypt = false
   name               = "terraform-test-sidecar"
+  hostname               = "test.com"
   technology         = "postgres"
+  termination_protection = false
 }
 
-resource "formal_sidecar_datastore_link" "name" {
-  datastore_id = formal_datastore.postgres1.id
+resource "formal_sidecar_resource_link" "name" {
+  resource_id = formal_resource.postgres1.id
   port         = 5432
   sidecar_id   = formal_sidecar.name.id
+}
+
+resource "formal_resource_health_check" "name" {
+  resource_id = formal_resource.postgres1.id
+  database_name = "test-1"
+}
+
+resource "formal_data_domain" "name" {
+  name = "name"
+  description = "description"
+  included_paths = ["main.path"]
+  excluded_paths = ["main.path2"]
+    dynamic "owners" {
+    for_each = [
+      { object_type = "firstObjectType", object_id = "firstObjectId" }
+    ]
+    content {
+      object_type = owners.value.object_type
+      object_id = owners.value.object_id
+    }
+  }
+}
+
+resource "formal_tracker" "name" {
+  resource_id = formal_resource.postgres1.id
+  path = "dummy.path"
+  allow_clear_text_value = true
+}
+
+resource "formal_data_discovery" "name" {
+  resource_id = formal_resource.postgres1.id
+  native_user_id = formal_native_user.name.id
+  schedule = "12h"
+  deletion_policy = "mark_for_deletion"
+}
+
+resource "formal_group" "name" {
+  description = "terraform-test-group"
+  name        = "terraform-test-group"
+}
+
+resource "formal_group_user_link" "name" {
+  group_id = formal_group.name.id
+  user_id  = formal_user.name.id
+}
+
+resource "formal_policy_external_data_loader" "name" {
+  name = "test-external-data-loader-2"
+  host = "formal.zendesk.com"
+  port = 443
+  auth_type = "basic"
+  basic_auth {
+    username = "basic"
+    password = "basic"
+  }
 }

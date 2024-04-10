@@ -4,7 +4,7 @@ echo "$(basename $(pwd)): Cleaning up the Terraform state if exists"
 rm -f .terraform.lock.hcl terraform.tfstate terraform.tfstate.backup output.txt
 rm -rf .terraform
 
-expected_error="Sidecar Resource Link cannot be deleted because termination_protection is set to true"
+expected_error="Native User cannot be deleted because termination_protection is set to true"
 
 echo "$(basename $(pwd)): Initializing Terraform"
 output=$(terraform init 2>&1)

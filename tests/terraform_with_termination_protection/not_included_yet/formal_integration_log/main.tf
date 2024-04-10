@@ -17,7 +17,8 @@ variable "termination_protection" {
 resource "formal_integration_log" "name" {
   name                   = "terraform-test-local-formal_integration_log-with-termination-protection"
   type                   = "splunk"
-  splunk_api_key         = "aaaaa"
-  splunk_url             = "https://splunk.com"
+  splunk_access_token = "aaaaa"
+  splunk_port = 443
+  splunk_host     = "https://splunk.com"
   termination_protection = var.termination_protection
 }
