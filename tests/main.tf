@@ -175,12 +175,12 @@ resource "formal_group_user_link" "name" {
 }
 
 resource "formal_policy_external_data_loader" "name" {
-  name = "test-external-data-loader-2"
-  host = "formal.zendesk.com"
+  name = "external-data-loader"
+  host = ""
   port = 443
   auth_type = "basic"
   basic_auth {
-    username = "basic"
-    password = "basic"
+    username = ""
+    password = ""
   }
 }
