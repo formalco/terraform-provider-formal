@@ -11,13 +11,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourcePoliciesExternalDataLoader() *schema.Resource {
+func ResourcePolicyExternalDataLoader() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
 		Description:   "Registering a External Data Loader External Api.",
-		CreateContext: resourcePoliciesExternalDataLoaderCreate,
-		ReadContext:   resourcePoliciesExternalDataLoaderRead,
-		DeleteContext: resourcePoliciesExternalDataLoaderDelete,
+		CreateContext: ResourcePolicyExternalDataLoaderCreate,
+		ReadContext:   ResourcePolicyExternalDataLoaderRead,
+		DeleteContext: ResourcePolicyExternalDataLoaderDelete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
@@ -28,20 +28,20 @@ func ResourcePoliciesExternalDataLoader() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The ID of the External Data Loader.",
+				Description: "The ID of the Policy External Data Loader.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Friendly name for the External Data Loader.",
+				Description: "Friendly name for the Policy External Data Loader.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
 			"host": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Host of the External Data Loader.",
+				Description: "Host of the Policy External Data Loader.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
@@ -78,7 +78,7 @@ func ResourcePoliciesExternalDataLoader() *schema.Resource {
 	}
 }
 
-func resourcePoliciesExternalDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourcePolicyExternalDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -108,11 +108,11 @@ func resourcePoliciesExternalDataLoaderCreate(ctx context.Context, d *schema.Res
 
 	d.SetId(externalApi.Msg.ExternalDataLoader.Id)
 
-	resourcePoliciesExternalDataLoaderRead(ctx, d, meta)
+	ResourcePolicyExternalDataLoaderRead(ctx, d, meta)
 	return diags
 }
 
-func resourcePoliciesExternalDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourcePolicyExternalDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -132,7 +132,7 @@ func resourcePoliciesExternalDataLoaderRead(ctx context.Context, d *schema.Resou
 	return diags
 }
 
-func resourcePoliciesExternalDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func ResourcePolicyExternalDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
