@@ -2,6 +2,8 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -58,6 +60,17 @@ func ResourcePolicyExternalDataLoader() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					validTypes := []string{"basic", "oauth"}
+					for _, t := range validTypes {
+						if v == t {
+							return
+						}
+					}
+					errs = append(errs, fmt.Errorf("%q must be one of [%s], got %q", key, strings.Join(validTypes, ", "), v))
+					return
+				},
 			},
 			"basic_auth": {
 				Type:        schema.TypeSet, // Use TypeList or TypeSet based on whether the order matters or uniqueness is required
