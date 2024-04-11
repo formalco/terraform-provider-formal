@@ -2,7 +2,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.4.0"
+      version = "~>4.0.0"
     }
   }
 
@@ -15,29 +15,27 @@ provider "formal" {
 
 resource "formal_sidecar" "main" {
   name               = var.name
-  deployment_type    = "onprem"
   technology         = "mysql"
-  global_kms_decrypt = false
-  formal_hostname    = var.mysql_sidecar_hostname
+  hostname    = var.mysql_sidecar_hostname
 }
 
-resource "formal_datastore" "main" {
+resource "formal_resource" "main" {
   technology = "mysql"
-  name       = "${var.name}-datastore"
+  name       = "${var.name}-resource"
   hostname   = var.mysql_hostname
   port       = var.main_port
 }
 
-resource "formal_sidecar_datastore_link" "main" {
-  datastore_id = formal_datastore.main.id
+resource "formal_sidecar_resource_link" "main" {
+  resource_id = formal_resource.main.id
   sidecar_id   = formal_sidecar.main.id
   port         = 3306
 }
 
 # Native Role
-resource "formal_native_role" "main_mysql" {
-  datastore_id       = formal_datastore.main.id
-  native_role_id     = var.mysql_username
-  native_role_secret = var.mysql_password
+resource "formal_native_user" "main_mysql" {
+  resource_id       = formal_resource.main.id
+  native_user_id     = var.mysql_username
+  native_user_secret = var.mysql_password
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }

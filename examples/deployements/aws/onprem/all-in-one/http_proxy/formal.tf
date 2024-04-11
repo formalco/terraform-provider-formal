@@ -2,7 +2,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.4.0"
+      version = "~>4.0.0"
     }
   }
 
@@ -15,35 +15,33 @@ provider "formal" {
 
 resource "formal_sidecar" "main" {
   name               = var.name
-  deployment_type    = "onprem"
   technology         = "http"
-  global_kms_decrypt = false
-  formal_hostname    = var.sidecar_hostname
+  hostname    = var.sidecar_hostname
 }
 
-# resource "formal_datastore" "main" {
+# resource "formal_resource" "main" {
 #   technology = "http"
 #   name       = var.name
 #   hostname   = "zzzzz.fly.dev"
 #   port       = var.main_port
 # }
 
-resource "formal_datastore" "main" {
+resource "formal_resource" "main" {
   technology = "http"
-  name       = "${var.name}-datastore"
+  name       = "${var.name}-resource"
   hostname   = "api.stripe.com"
   port       = var.main_port
 }
 
 
-# resource "formal_sidecar_datastore_link" "main" {
-#   datastore_id = formal_datastore.main.id
+# resource "formal_sidecar_resource_link" "main" {
+#   resource_id = formal_resource.main.id
 #   sidecar_id   = formal_sidecar.main.id
 #   port         = 443
 # }
 
-# resource "formal_sidecar_datastore_link" "stripe" {
-#   datastore_id = formal_datastore.stripe.id
+# resource "formal_sidecar_resource_link" "stripe" {
+#   resource_id = formal_resource.stripe.id
 #   sidecar_id   = formal_sidecar.main.id
 #   port         = 444
 # }

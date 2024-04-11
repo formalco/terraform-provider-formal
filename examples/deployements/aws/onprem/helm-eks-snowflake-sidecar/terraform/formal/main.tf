@@ -2,7 +2,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~>3.3.17"
+      version = "~>4.0.0"
     }
   }
 
@@ -15,29 +15,27 @@ provider "formal" {
 
 resource "formal_sidecar" "main" {
   name               = var.name
-  deployment_type    = "onprem"
   technology         = "snowflake"
-  global_kms_decrypt = false
-  formal_hostname    = var.snowflake_sidecar_hostname
+  hostname    = var.snowflake_sidecar_hostname
 }
 
-resource "formal_datastore" "main" {
+resource "formal_resource" "main" {
   technology = "snowflake"
   name       = "${var.name}-datastore"
   hostname   = var.snowflake_hostname
   port       = var.main_port
 }
 
-resource "formal_sidecar_datastore_link" "main" {
-  datastore_id = formal_datastore.main.id
+resource "formal_sidecar_resource_link" "main" {
+  resource_id = formal_resource.main.id
   sidecar_id   = formal_sidecar.main.id
   port         = 443
 }
 
 # Native Role
-resource "formal_native_role" "main_snowflake" {
-  datastore_id       = formal_datastore.main.id
-  native_role_id     = var.snowflake_username
-  native_role_secret = var.snowflake_password
+resource "formal_native_user" "main_snowflake" {
+  resource_id       = formal_resource.main.id
+  native_user_id     = var.snowflake_username
+  native_user_secret = var.snowflake_password
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
