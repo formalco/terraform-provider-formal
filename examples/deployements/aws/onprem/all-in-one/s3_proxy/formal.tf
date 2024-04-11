@@ -14,9 +14,9 @@ provider "formal" {
 }
 
 resource "formal_sidecar" "main" {
-  name               = var.name
-  technology         = "s3"
-  hostname    = var.s3_sidecar_hostname
+  name       = var.name
+  technology = "s3"
+  hostname   = var.s3_sidecar_hostname
 }
 
 resource "formal_resource" "main" {
@@ -28,13 +28,13 @@ resource "formal_resource" "main" {
 
 resource "formal_sidecar_resource_link" "main" {
   resource_id = formal_resource.main.id
-  sidecar_id   = formal_sidecar.main.id
-  port         = 0
+  sidecar_id  = formal_sidecar.main.id
+  port        = 0
 }
 
 # Native Role
 resource "formal_native_user" "main_s3" {
-  resource_id       = formal_resource.main.id
+  resource_id        = formal_resource.main.id
   native_user_id     = var.iam_user_key_id
   native_user_secret = var.iam_user_secret_key
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.

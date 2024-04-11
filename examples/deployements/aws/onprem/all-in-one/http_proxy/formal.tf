@@ -14,9 +14,9 @@ provider "formal" {
 }
 
 resource "formal_sidecar" "main" {
-  name               = var.name
-  technology         = "http"
-  hostname    = var.sidecar_hostname
+  name       = var.name
+  technology = "http"
+  hostname   = var.sidecar_hostname
 }
 
 # resource "formal_resource" "main" {

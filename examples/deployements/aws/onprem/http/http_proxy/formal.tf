@@ -14,9 +14,9 @@ provider "formal" {
 }
 
 resource "formal_sidecar" "main" {
-  name               = var.name
-  technology         = "http"
-  hostname    = var.sidecar_hostname
+  name       = var.name
+  technology = "http"
+  hostname   = var.sidecar_hostname
 }
 
 resource "formal_resource" "main" {
@@ -28,6 +28,6 @@ resource "formal_resource" "main" {
 
 resource "formal_sidecar_resource_link" "main" {
   resource_id = formal_resource.main.id
-  sidecar_id   = formal_sidecar.main.id
-  port         = 443
+  sidecar_id  = formal_sidecar.main.id
+  port        = 443
 }
