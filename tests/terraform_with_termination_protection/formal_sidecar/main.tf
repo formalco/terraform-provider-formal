@@ -15,7 +15,7 @@ variable "termination_protection" {
 }
 
 resource "formal_sidecar" "name" {
-  name                   = "test-formal-sidecar-with-termination-protection"
+  name                   = "test-sidecar-with-term-protection"
   technology             = "http"
   hostname               = "echo.com"
   termination_protection = var.termination_protection

@@ -91,7 +91,7 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, connect.NewRequest(&corev1.ListUserGroupLinksRequest{GroupId: groupId}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, connect.NewRequest(&corev1.ListUserGroupLinksRequest{GroupId: groupId, Limit: 500}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted

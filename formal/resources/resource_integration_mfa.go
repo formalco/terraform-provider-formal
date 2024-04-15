@@ -65,11 +65,13 @@ func ResourceIntegrationMfa() *schema.Resource {
 							Description: "Duo Secret Key.",
 							Type:        schema.TypeString,
 							Required:    true,
+							Sensitive:   true,
 						},
 						"api_hostname": {
 							Description: "Duo API Hostname.",
 							Type:        schema.TypeString,
 							Required:    true,
+							Sensitive:   true,
 						},
 					},
 				},
