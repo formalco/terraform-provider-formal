@@ -34,9 +34,9 @@ Registering a Integration MFA app.
 
 Required:
 
-- `api_hostname` (String) Duo API Hostname.
+- `api_hostname` (String, Sensitive) Duo API Hostname.
 - `integration_key` (String) Duo Integration Key.
-- `secret_key` (String) Duo Secret Key.
+- `secret_key` (String, Sensitive) Duo Secret Key.
 
 
 <a id="nestedblock--timeouts"></a>
