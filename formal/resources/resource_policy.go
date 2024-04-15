@@ -94,6 +94,15 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"owners": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Owners of this policy.",
+				Type:        schema.TypeList,
+				Required:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this Policy cannot be deleted.",
@@ -175,7 +184,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("description", res.Msg.Policy.Description)
 	d.Set("module", res.Msg.Policy.Code)
 	d.Set("notification", res.Msg.Policy.Notification)
-	d.Set("owner", res.Msg.Policy.Owners)
+	d.Set("owners", res.Msg.Policy.Owners)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -189,7 +198,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owner") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
 
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
@@ -229,7 +238,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 		return resourcePolicyRead(ctx, d, meta)
 	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
+		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owner and active status. Please delete and recreate the Policy")
 	}
 }
 
