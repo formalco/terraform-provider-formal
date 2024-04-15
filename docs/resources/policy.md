@@ -22,7 +22,6 @@ Creating a Policy in Formal.
 - `name` (String) Policy Name
 - `notification` (String) Notification settings for this policy.
 - `owner` (String) Owner of this policy: it can be either a group name or a user email.
-- `owners` (List of String) Owners of this policy.
 - `status` (String) Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.
 
 ### Optional
@@ -33,6 +32,7 @@ Creating a Policy in Formal.
 
 - `created_at` (String) When the policy was created.
 - `id` (String) ID of this Policy.
+- `owners` (List of String) Owners of this policy.
 - `updated_at` (String) Last update time.
 
 
