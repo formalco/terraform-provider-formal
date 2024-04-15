@@ -94,15 +94,6 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"owners": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Owners of this policy.",
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this Policy cannot be deleted.",
@@ -137,16 +128,15 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		TerminationProtection: TerminationProtection,
 	}
 
-	for _, owner := range d.Get("owner").([]interface{}) {
-		parsedEmail, _ := mail.ParseAddress(owner.(string))
-		if parsedEmail != nil {
-			newPolicy.Owner = &corev1.CreatePolicyRequest_UserEmail{
-				UserEmail: owner.(string),
-			}
-		} else {
-			newPolicy.Owner = &corev1.CreatePolicyRequest_GroupName{
-				GroupName: owner.(string),
-			}
+	owner := d.Get("owner").(string)
+	parsedEmail, _ := mail.ParseAddress(owner)
+	if parsedEmail != nil {
+		newPolicy.Owner = &corev1.CreatePolicyRequest_UserEmail{
+			UserEmail: owner,
+		}
+	} else {
+		newPolicy.Owner = &corev1.CreatePolicyRequest_GroupName{
+			GroupName: owner,
 		}
 	}
 
@@ -184,7 +174,6 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("description", res.Msg.Policy.Description)
 	d.Set("module", res.Msg.Policy.Code)
 	d.Set("notification", res.Msg.Policy.Notification)
-	d.Set("owners", res.Msg.Policy.Owners)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -199,7 +188,6 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 	policyId := d.Id()
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owner") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
-
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 		Module := d.Get("module").(string)
@@ -217,16 +205,15 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			TerminationProtection: TerminationProtection,
 		}
 
-		for _, owner := range d.Get("owner").([]interface{}) {
-			parsedEmail, _ := mail.ParseAddress(owner.(string))
-			if parsedEmail != nil {
-				updatedPolicy.Owner = &corev1.UpdatePolicyRequest_UserEmail{
-					UserEmail: owner.(string),
-				}
-			} else {
-				updatedPolicy.Owner = &corev1.UpdatePolicyRequest_GroupName{
-					GroupName: owner.(string),
-				}
+		owner := d.Get("owner").(string)
+		parsedEmail, _ := mail.ParseAddress(owner)
+		if parsedEmail != nil {
+			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_UserEmail{
+				UserEmail: owner,
+			}
+		} else {
+			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_GroupName{
+				GroupName: owner,
 			}
 		}
 
