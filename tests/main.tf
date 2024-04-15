@@ -108,7 +108,7 @@ pre_request := {
 EOT
   name         = "terraform-test-policy"
   notification = "none"
-  owners       = [formal_user.human.email]
+  owner       = formal_user.human.email
   status       = "draft"
 }
 

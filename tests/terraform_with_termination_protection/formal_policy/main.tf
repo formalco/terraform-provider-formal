@@ -50,7 +50,7 @@ pre_request := {
 EOT
   name                   = "terraform-test-local-formal_policy-with-termination-protection"
   notification           = "none"
-  owners       = [formal_user.human.email]
+  owner       = formal_user.human.email
   status                 = "active"
   termination_protection = var.termination_protection
 }

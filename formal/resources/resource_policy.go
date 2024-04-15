@@ -59,12 +59,6 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"created_by": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Who the policy was created by.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
 				Description: "When the policy was created.",
@@ -94,14 +88,11 @@ func ResourcePolicy() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"owners": {
+			"owner": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Owners of this policy.",
-				Type:        schema.TypeList,
+				Description: "Owner of this policy: it can be either a group name or a user email.",
+				Type:        schema.TypeString,
 				Required:    true,
-				Elem: &schema.Schema{
-					Type: schema.TypeString,
-				},
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -120,34 +111,6 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	var owners []*corev1.Owner
-	for _, owner := range d.Get("owners").([]interface{}) {
-		parsedEmail, _ := mail.ParseAddress(owner.(string))
-		if parsedEmail != nil {
-			userOwner := corev1.Owner_User{
-				User: &corev1.User{
-					Info: &corev1.User_Human_{
-						Human: &corev1.User_Human{
-							Email: owner.(string),
-						},
-					},
-				},
-			}
-			owners = append(owners, &corev1.Owner{
-				Owner: &userOwner,
-			})
-		} else {
-			groupOwner := corev1.Owner_Group{
-				Group: &corev1.Group{
-					Name: owner.(string),
-				},
-			}
-			owners = append(owners, &corev1.Owner{
-				Owner: &groupOwner,
-			})
-		}
-	}
-
 	// Maps to user-defined fields
 	Name := d.Get("name").(string)
 	Description := d.Get("description").(string)
@@ -156,15 +119,28 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 	Status := d.Get("status").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicy(ctx, connect.NewRequest(&corev1.CreatePolicyRequest{
+	newPolicy := &corev1.CreatePolicyRequest{
 		Name:                  Name,
 		Description:           Description,
 		Code:                  Module,
 		Notification:          Notification,
-		Owners:                owners,
 		Status:                Status,
 		TerminationProtection: TerminationProtection,
-	}))
+	}
+
+	owner := d.Get("owner").(string)
+	parsedEmail, _ := mail.ParseAddress(owner)
+	if parsedEmail != nil {
+		newPolicy.Owner = &corev1.CreatePolicyRequest_UserEmail{
+			UserEmail: owner,
+		}
+	} else {
+		newPolicy.Owner = &corev1.CreatePolicyRequest_GroupName{
+			GroupName: owner,
+		}
+	}
+
+	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicy(ctx, connect.NewRequest(newPolicy))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -198,7 +174,6 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 	d.Set("description", res.Msg.Policy.Description)
 	d.Set("module", res.Msg.Policy.Code)
 	d.Set("notification", res.Msg.Policy.Notification)
-	d.Set("owners", res.Msg.Policy.Owners)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -212,36 +187,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owners") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
-
-		var owners []*corev1.Owner
-		for _, owner := range d.Get("owners").([]interface{}) {
-			parsedEmail, _ := mail.ParseAddress(owner.(string))
-			if parsedEmail != nil {
-				userOwner := corev1.Owner_User{
-					User: &corev1.User{
-						Info: &corev1.User_Human_{
-							Human: &corev1.User_Human{
-								Email: owner.(string),
-							},
-						},
-					},
-				}
-				owners = append(owners, &corev1.Owner{
-					Owner: &userOwner,
-				})
-			} else {
-				groupOwner := corev1.Owner_Group{
-					Group: &corev1.Group{
-						Name: owner.(string),
-					},
-				}
-				owners = append(owners, &corev1.Owner{
-					Owner: &groupOwner,
-				})
-			}
-		}
-
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owner") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 		Module := d.Get("module").(string)
@@ -249,16 +195,29 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		Status := d.Get("status").(string)
 		TerminationProtection := d.Get("termination_protection").(bool)
 
-		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicy(ctx, connect.NewRequest(&corev1.UpdatePolicyRequest{
+		updatedPolicy := &corev1.UpdatePolicyRequest{
 			Id:                    policyId,
 			Name:                  Name,
 			Description:           Description,
 			Code:                  Module,
 			Notification:          Notification,
-			Owners:                owners,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
-		}))
+		}
+
+		owner := d.Get("owner").(string)
+		parsedEmail, _ := mail.ParseAddress(owner)
+		if parsedEmail != nil {
+			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_UserEmail{
+				UserEmail: owner,
+			}
+		} else {
+			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_GroupName{
+				GroupName: owner,
+			}
+		}
+
+		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
 
 		if err != nil {
 			return diag.FromErr(err)
@@ -266,7 +225,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 
 		return resourcePolicyRead(ctx, d, meta)
 	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
+		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owner and active status. Please delete and recreate the Policy")
 	}
 }
 

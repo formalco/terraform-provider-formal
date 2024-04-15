@@ -23,7 +23,7 @@ resource "formal_resource" "postgres1" {
 }
 
 resource "formal_sidecar" "name" {
-  name                   = "terraform-test-sidecar-resource-link-with-termination-protection"
+  name                   = "test-sidecar-resource-link-with-term-protection"
   technology             = "http"
   hostname               = "test.com"
   termination_protection = false
