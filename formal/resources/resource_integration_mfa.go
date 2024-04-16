@@ -137,10 +137,22 @@ func resourceIntegrationMfaRead(ctx context.Context, d *schema.ResourceData, m i
 		return diag.FromErr(err)
 	}
 
+	resSecrets, err := c.Grpc.Sdk.IntegrationMfaServiceClient.GetIntegrationMFASecrets(ctx, connect.NewRequest(&corev1.GetIntegrationMFASecretsRequest{
+		Id: id,
+	}))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	if data, ok := res.Msg.Integration.Mfa.(*corev1.IntegrationMfa_Duo_); ok {
 		// Construct a map for the 'duo' configuration
 		duoConfig := map[string]interface{}{
 			"api_hostname": data.Duo.ApiHostname,
+		}
+
+		if secrets, ok := resSecrets.Msg.Mfa.(*corev1.GetIntegrationMFASecretsResponse_Duo_); ok {
+			duoConfig["secret_key"] = secrets.Duo.SecretKey
+			duoConfig["integration_key"] = secrets.Duo.IntegrationKey
 		}
 
 		// Create a new set for the 'duo' configuration

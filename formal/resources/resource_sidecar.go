@@ -153,11 +153,6 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	resApiKey, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecarApiKey(ctx, connect.NewRequest(&corev1.GetSidecarApiKeyRequest{Id: sidecarId}))
 	if err != nil {
-		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Sidecar Api key was not found.", map[string]interface{}{"err": err})
-			d.Set("api_key", "")
-			return diags
-		}
 		return diag.FromErr(err)
 	}
 
