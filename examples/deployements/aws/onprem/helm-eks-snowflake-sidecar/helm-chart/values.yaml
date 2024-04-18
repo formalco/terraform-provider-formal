@@ -2,7 +2,7 @@ replicaCount: 1
 containers:
   snowflakeSidecar:
     name: snowflake-sidecar-app
-    image: 654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-snowflake-proxy
+    image: 
     resources: {}
   dataClassifierSatellite:
     name: data-classifier-satellite-app
