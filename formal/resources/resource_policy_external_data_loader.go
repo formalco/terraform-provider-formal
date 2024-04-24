@@ -123,7 +123,7 @@ func ResourcePolicyExternalDataLoaderCreate(ctx context.Context, d *schema.Resou
 		}
 	}
 
-	externalApi, err := c.Grpc.Sdk.PolicyServiceClient.CreateExternalDataLoader(ctx, connect.NewRequest(&corev1.CreateExternalDataLoaderRequest{
+	externalApi, err := c.Grpc.Sdk.PoliciesServiceClient.CreateExternalDataLoader(ctx, connect.NewRequest(&corev1.CreateExternalDataLoaderRequest{
 		Name: name,
 		Host: host,
 		Port: int32(port),
@@ -147,7 +147,7 @@ func ResourcePolicyExternalDataLoaderRead(ctx context.Context, d *schema.Resourc
 
 	var diags diag.Diagnostics
 
-	externalApi, err := c.Grpc.Sdk.PolicyServiceClient.GetExternalDataLoader(ctx, connect.NewRequest(&corev1.GetExternalDataLoaderRequest{
+	externalApi, err := c.Grpc.Sdk.PoliciesServiceClient.GetExternalDataLoader(ctx, connect.NewRequest(&corev1.GetExternalDataLoaderRequest{
 		Id: d.Id(),
 	}))
 	if err != nil {
@@ -167,7 +167,7 @@ func ResourcePolicyExternalDataLoaderDelete(ctx context.Context, d *schema.Resou
 
 	var diags diag.Diagnostics
 
-	_, err := c.Grpc.Sdk.PolicyServiceClient.DeleteExternalDataLoader(ctx, connect.NewRequest(&corev1.DeleteExternalDataLoaderRequest{
+	_, err := c.Grpc.Sdk.PoliciesServiceClient.DeleteExternalDataLoader(ctx, connect.NewRequest(&corev1.DeleteExternalDataLoaderRequest{
 		Id: d.Id(),
 	}))
 	if err != nil {
