@@ -65,12 +65,6 @@ func ResourceUser() *schema.Resource {
 				Optional:    true,
 				ForceNew:    true,
 			},
-			"admin": {
-				Description: "For human users, specify if their admin.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				ForceNew:    true,
-			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "For machine users, the name of the user.",
@@ -125,7 +119,6 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 				FirstName: d.Get("first_name").(string),
 				LastName:  d.Get("last_name").(string),
 				Email:     d.Get("email").(string),
-				Admin:     d.Get("admin").(bool),
 			},
 		}
 		res, err = c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, connect.NewRequest(&corev1.CreateUserRequest{
@@ -222,7 +215,6 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		d.Set("first_name", info.Human.FirstName)
 		d.Set("last_name", info.Human.LastName)
 		d.Set("email", info.Human.Email)
-		d.Set("admin", info.Human.Admin)
 	case *corev1.User_Machine_:
 		d.Set("name", info.Machine.Name)
 	}

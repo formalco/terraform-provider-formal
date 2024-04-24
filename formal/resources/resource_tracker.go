@@ -14,7 +14,7 @@ import (
 func ResourceTracker() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Creating a Policy in Formal.",
+		Description: "Creating a Tracker in Formal.",
 
 		CreateContext: resourceTrackerCreate,
 		ReadContext:   resourceTrackerRead,
@@ -94,7 +94,7 @@ func resourceTrackerCreate(ctx context.Context, d *schema.ResourceData, meta int
 	Path := d.Get("path").(string)
 	AllowClearTextValue := d.Get("allow_clear_text_value").(bool)
 
-	res, err := c.Grpc.Sdk.RowLevelTrackerServiceClient.CreateRowLevelTracker(ctx, connect.NewRequest(&corev1.CreateRowLevelTrackerRequest{
+	res, err := c.Grpc.Sdk.TrackersServiceClient.CreateRowLevelTracker(ctx, connect.NewRequest(&corev1.CreateRowLevelTrackerRequest{
 		ResourceId:          ResourceId,
 		Path:                Path,
 		AllowClearTextValue: AllowClearTextValue,
@@ -117,7 +117,7 @@ func resourceTrackerRead(ctx context.Context, d *schema.ResourceData, meta inter
 
 	trackerId := d.Id()
 
-	res, err := c.Grpc.Sdk.RowLevelTrackerServiceClient.GetRowLevelTracker(ctx, connect.NewRequest(&corev1.GetRowLevelTrackerRequest{Id: trackerId}))
+	res, err := c.Grpc.Sdk.TrackersServiceClient.GetRowLevelTracker(ctx, connect.NewRequest(&corev1.GetRowLevelTrackerRequest{Id: trackerId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Tracker was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
@@ -151,7 +151,7 @@ func resourceTrackerDelete(ctx context.Context, d *schema.ResourceData, meta int
 		return diag.Errorf("Policy cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.RowLevelTrackerServiceClient.DeleteRowLevelTracker(ctx, connect.NewRequest(&corev1.DeleteRowLevelTrackerRequest{Id: trackerId}))
+	_, err := c.Grpc.Sdk.TrackersServiceClient.DeleteRowLevelTracker(ctx, connect.NewRequest(&corev1.DeleteRowLevelTrackerRequest{Id: trackerId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}

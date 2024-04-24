@@ -140,7 +140,7 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 	}
 
-	res, err := c.Grpc.Sdk.PolicyServiceClient.CreatePolicy(ctx, connect.NewRequest(newPolicy))
+	res, err := c.Grpc.Sdk.PoliciesServiceClient.CreatePolicy(ctx, connect.NewRequest(newPolicy))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,7 +157,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta interf
 
 	policyId := d.Id()
 
-	res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: policyId}))
+	res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: policyId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
@@ -217,7 +217,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 			}
 		}
 
-		_, err := c.Grpc.Sdk.PolicyServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
+		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
 
 		if err != nil {
 			return diag.FromErr(err)
@@ -242,7 +242,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta inte
 		return diag.Errorf("Policy cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.PolicyServiceClient.DeletePolicy(ctx, connect.NewRequest(&corev1.DeletePolicyRequest{Id: policyId}))
+	_, err := c.Grpc.Sdk.PoliciesServiceClient.DeletePolicy(ctx, connect.NewRequest(&corev1.DeletePolicyRequest{Id: policyId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -271,7 +271,7 @@ func resourcePolicyStateUpgradeV0(ctx context.Context, rawState map[string]inter
 	c := meta.(*clients.Clients)
 
 	if val, ok := rawState["id"]; ok {
-		res, err := c.Grpc.Sdk.PolicyServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: val.(string)}))
+		res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: val.(string)}))
 		if err != nil {
 			return nil, err
 		}

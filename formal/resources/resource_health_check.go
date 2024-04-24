@@ -15,7 +15,7 @@ import (
 func ResourceHealthCheck() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Creating a Policy in Formal.",
+		Description: "Creating a Health Check in Formal.",
 
 		CreateContext: resourceHealthCheckCreate,
 		ReadContext:   resourceHealthCheckRead,

@@ -3,12 +3,12 @@
 page_title: "formal_tracker Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Creating a Policy in Formal.
+  Creating a Tracker in Formal.
 ---
 
 # formal_tracker (Resource)
 
-Creating a Policy in Formal.
+Creating a Tracker in Formal.
 
 
 

@@ -83,7 +83,6 @@ resource "formal_user" "human" {
   first_name = "test2"
   last_name = "test2"
   email = "test@test-formal.com"
-  admin = true
 }
 
 resource "formal_native_user_link" "name" {

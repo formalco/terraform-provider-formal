@@ -3,12 +3,12 @@
 page_title: "formal_resource_health_check Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Creating a Policy in Formal.
+  Creating a Health Check in Formal.
 ---
 
 # formal_resource_health_check (Resource)
 
-Creating a Policy in Formal.
+Creating a Health Check in Formal.
 
 
 
