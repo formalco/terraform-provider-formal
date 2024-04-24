@@ -1,10 +1,6 @@
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.33.0-20240212200630-3014d81c3a48.1/go.mod h1:Tgn5bgL220vkFOI0KPStlcClPeOJzAv4uT+V8JXGUnw=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.33.0-20240401165935-b983156c5e99.1 h1:2IGhRovxlsOIQgx2ekZWo4wTPAYpck41+18ICxs37is=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.33.0-20240401165935-b983156c5e99.1/go.mod h1:Tgn5bgL220vkFOI0KPStlcClPeOJzAv4uT+V8JXGUnw=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240409151744-e50b9d83afbe.1 h1:068gPoyS2YsuZo4FgOmUFJEYt8G4Pld5wkbfeX+co8k=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240409151744-e50b9d83afbe.1/go.mod h1:PD6I0VNUCsTdgYvwNfM22BXSqUqRVPNmIq6UV9jcTWc=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240415104927-e011f022840f.1 h1:lU2ono/eNbEVM3dyqu/4OMEz9EzGhByoXSDfsOmMR0w=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240415104927-e011f022840f.1/go.mod h1:vvKoBVKN35FA52y074IjaN/81tvZ+Yy3jI5PgaIZ78w=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240415234248-6e140f7286cc.1 h1:8iE71Q0ZGFPOiAOygXIb1bs53phVsBw259KXMEKWqtE=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.0-20240415234248-6e140f7286cc.1/go.mod h1:k6f23Ezr/FS5SmLtVqFsqFyLE5uELEd7ev6MAekTETE=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.1-20240424031542-92b286ad7f8b.1 h1:G6Ts7yvGJO2HQYwbjiVCe6PmWfzILzs0NxUS94mFhiQ=
@@ -60,10 +56,6 @@ github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5Kwzbycv
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
-github.com/formalco/go-sdk/sdk/v2 v2.0.2 h1:DlgQSlBDhT/F8C43B9GsihPPBDv3r3KBGQ5y49hw7sE=
-github.com/formalco/go-sdk/sdk/v2 v2.0.2/go.mod h1:C/e5CyP9Jo3hjA4SZEri9bYxP1KDAblvlTPqxFo6c+E=
-github.com/formalco/go-sdk/sdk/v2 v2.0.3 h1:NOdAWYclduX5pXdJWHkayI3aczA0ACk5mVGCpu+uZhw=
-github.com/formalco/go-sdk/sdk/v2 v2.0.3/go.mod h1:dfEcbyEgCwnLpukRZUfHO48KAzTk62SIZl4jHhsWbO4=
 github.com/formalco/go-sdk/sdk/v2 v2.0.4 h1:ShjOQZDeBTneboPvyU2hZodeQb72DlWbxOfWD9Y+qng=
 github.com/formalco/go-sdk/sdk/v2 v2.0.4/go.mod h1:fcRS8Dsqu/6NAiiXbe0YQ9b+QZr0O+DQnexCOzwFY+E=
 github.com/formalco/go-sdk/sdk/v2 v2.0.5 h1:K/b8pqKhF/TTuepLe1E/8qd7muSN2Ag9UgOt2xICeM0=
