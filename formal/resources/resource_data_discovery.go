@@ -46,7 +46,7 @@ func ResourceDataDiscovery() *schema.Resource {
 			},
 			"native_user_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Hostname of the Datastore.",
+				Description: "Native user ID linked to this Data Discovery.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
