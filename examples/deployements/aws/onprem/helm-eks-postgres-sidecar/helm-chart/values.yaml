@@ -32,4 +32,5 @@ externalSecrets:
 service:
   type: LoadBalancer
   port: 5432
+  scheme: internal
 podAnnotations: {}
