@@ -18,7 +18,7 @@ Registering a Data Discovery with Formal.
 ### Required
 
 - `deletion_policy` (String) Deletion policy of the Data Discovery. Possible values: `delete`, `mark_for_deletion`.
-- `native_user_id` (String) Hostname of the Datastore.
+- `native_user_id` (String) Native user ID linked to this Data Discovery.
 - `resource_id` (String) Resource ID linked to this Data Discovery.
 - `schedule` (String) Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `24h`, `48h`.
 
