@@ -23,9 +23,7 @@ podSelector:
     app: formal-external
   labels:
     app:  formal-external
-secretManagerRegion: us-east-1
 deployDataClassifierSatellite: false
-deploySecretStore: true
 secretStore:
   deploy: true
   name: formal-eks-secret-store
