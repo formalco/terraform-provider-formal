@@ -26,7 +26,12 @@ podSelector:
 secretManagerRegion: us-east-1
 deployDataClassifierSatellite: false
 deploySecretStore: true
-secretStoreServiceAccount: formal-external-secrets-irsa
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store
+  region: us-east-1
+  type: SecretStore
+  serviceAccount: formal-external-secrets-irsa
 externalSecrets:
   postgresProxyKeyName: formal-postgres-proxy-api-key
 service:
