@@ -9,6 +9,17 @@ terraform {
 
 provider "formal" {}
 
+resource "formal_resource" "http1" {
+  hostname                   = "terraform-test-http.com"
+  name                       = "terraform-test-http"
+  technology                 = "http"
+  environment                = "DEV"
+  port                       = 443
+  timeouts {
+    create = "1m"
+  }
+}
+
 resource "formal_resource" "postgres1" {
   hostname                   = "terraform-test-postgres1"
   name                       = "terraform-test-postgres1"
