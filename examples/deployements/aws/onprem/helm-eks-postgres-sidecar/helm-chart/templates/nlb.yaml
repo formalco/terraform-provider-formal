@@ -4,13 +4,7 @@ metadata:
   name: postgres-sidecar-service
   namespace: {{ .Release.Namespace }}
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "external"
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: instance
-    service.beta.kubernetes.io/aws-load-balancer-scheme: {{ .Values.service.scheme }}
-    service.beta.kubernetes.io/aws-load-balancer-type: nlb-ip
-    service.beta.kubernetes.io/aws-load-balancer-healthcheck-protocol: HTTP
-    service.beta.kubernetes.io/aws-load-balancer-healthcheck-path: "/health"
-    service.beta.kubernetes.io/aws-load-balancer-healthcheck-port: "8080"
+  {{ toYaml .Values.service.annotations | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
   selector:
