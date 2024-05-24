@@ -30,6 +30,7 @@ secretStore:
   region: us-east-1
   type: SecretStore
   serviceAccount: formal-external-secrets-irsa
+  targetName: formal-eks-secret
 externalSecrets:
   postgresProxyKeyName: formal-postgres-proxy-api-key
 service:
