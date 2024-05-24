@@ -31,7 +31,7 @@ spec:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: formal-eks-secret
+                  name: {{ .Values.secretStore.targetName }}
                   key: formal-postgres-proxy-api-key
         {{- if .Values.deployDataClassifierSatellite }}
         - name: {{ .Values.containers.dataClassifierSatellite.name }}
@@ -45,7 +45,7 @@ spec:
             - name: FORMAL_CONTROL_PLANE_API_KEY
               valueFrom:
                 secretKeyRef:
-                  name: formal-eks-secret
+                  name: {{ .Values.secretStore.targetName }}
                   key: formal-data-classifier-api-key
         {{- end }}
       restartPolicy: Always 
