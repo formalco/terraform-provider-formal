@@ -3,7 +3,6 @@ package resource
 import (
 	"context"
 
-	adminv1 "buf.build/gen/go/formal/admin/protocolbuffers/go/admin/v1"
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -12,49 +11,55 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceNativeRole() *schema.Resource {
+func ResourceNativeUser() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "This resource creates a Native Role.",
+		Description: "This resource creates a Native User.",
 
-		CreateContext: resourceNativeRoleCreate,
-		ReadContext:   resourceNativeRoleRead,
-		UpdateContext: resourceNativeRoleUpdate,
-		DeleteContext: resourceNativeRoleDelete,
+		CreateContext: resourceNativeUserCreate,
+		ReadContext:   resourceNativeUserRead,
+		UpdateContext: resourceNativeUserUpdate,
+		DeleteContext: resourceNativeUserDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
-			"datastore_id": {
+			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Sidecar ID for the datastore this Native Role is for.",
+				Description: "The ID of the Native User.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"resource_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The Sidecar ID for the resource this Native User is for.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"native_role_id": {
+			"native_user_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The username of the Native Role.",
+				Description: "The username of the Native User.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"native_role_secret": {
+			"native_user_secret": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The password of the Native Role.",
+				Description: "The password of the Native User.",
 				Type:        schema.TypeString,
 				Required:    true,
 				Sensitive:   true,
 			},
 			"use_as_default": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The password of the Native Role.",
+				Description: "The password of the Native User.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, this Native Role cannot be deleted.",
+				Description: "If set to true, this Native User cannot be deleted.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -63,23 +68,22 @@ func ResourceNativeRole() *schema.Resource {
 	}
 }
 
-func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
 	// Maps to user-defined fields
-	DatastoreId := d.Get("datastore_id").(string)
-	NativeRoleId := d.Get("native_role_id").(string)
-	NativeRoleSecret := d.Get("native_role_secret").(string)
+	ResourceId := d.Get("resource_id").(string)
+	Username := d.Get("native_user_id").(string)
+	Secret := d.Get("native_user_secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
 	TerminationProtection := d.Get("termination_protection").(bool)
-
-	res, err := c.Grpc.Sdk.NativeUserServiceClient.CreateNativeUser(ctx, connect.NewRequest(&adminv1.CreateNativeUserRequest{
-		DataStoreId:           DatastoreId,
-		NativeUserId:          NativeRoleId,
-		NativeUserSecret:      NativeRoleSecret,
+	res, err := c.Grpc.SdkV2.ResourceServiceClient.CreateNativeUser(ctx, connect.NewRequest(&corev1.CreateNativeUserRequest{
+		ResourceId:            ResourceId,
+		Username:              Username,
+		Secret:                Secret,
 		UseAsDefault:          UseAsDefault,
 		TerminationProtection: TerminationProtection,
 	}))
@@ -89,12 +93,12 @@ func resourceNativeRoleCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	d.SetId(res.Msg.NativeUser.Id)
 
-	resourceNativeRoleRead(ctx, d, meta)
+	resourceNativeUserRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -104,7 +108,7 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 	res, err := c.Grpc.SdkV2.ResourceServiceClient.GetNativeUser(ctx, connect.NewRequest(&corev1.GetNativeUserRequest{Id: id}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			// Native user was deleted
+			// Policy was deleted
 			tflog.Warn(ctx, "The Native User "+id+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
@@ -112,10 +116,10 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 		return diag.FromErr(err)
 	}
 
-	// Should map to all fields of RoleOrgItem
-	d.Set("datastore_id", res.Msg.NativeUser.ResourceId)
-	d.Set("native_role_id", res.Msg.NativeUser.Username)
-	d.Set("native_role_secret", res.Msg.NativeUser.Secret)
+	// Should map to all fields of UserOrgItem
+	d.Set("resource_id", res.Msg.NativeUser.ResourceId)
+	d.Set("native_user_id", res.Msg.NativeUser.Username)
+	d.Set("native_user_secret", res.Msg.NativeUser.Secret)
 	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
 	d.Set("termination_protection", res.Msg.NativeUser.TerminationProtection)
 
@@ -124,35 +128,33 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 	return diags
 }
 
-func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	// if d.HasChangesExcept("use_as_default", "native_role_secret") {
-	// 	return diag.Errorf("Native Roles can only be updated for use_as_default and native_role_secret. Please create a new Native Role.")
+	// if d.HasChangesExcept("use_as_default", "native_User_secret") {
+	// 	return diag.Errorf("Native Users can only be updated for use_as_default and native_User_secret. Please create a new Native User.")
 	// }
 
-	datastoreId := d.Get("datastore_id").(string)
-	nativeRoleId := d.Get("native_role_id").(string)
+	id := d.Id()
 
 	if d.HasChange("use_as_default") {
 		useAsDefault := d.Get("use_as_default").(bool)
 		if useAsDefault {
-			_, err := c.Grpc.Sdk.NativeUserServiceClient.SetNativeUserAsDefault(ctx, connect.NewRequest(&adminv1.SetNativeUserAsDefaultRequest{
-				DataStoreId:  datastoreId,
-				NativeUserId: nativeRoleId,
+			_, err := c.Grpc.SdkV2.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+				Id:           id,
+				UseAsDefault: &useAsDefault,
 			}))
 			if err != nil {
 				return diag.FromErr(err)
 			}
 		}
 	}
-	if d.HasChange("native_role_secret") {
-		nativeRoleSecret := d.Get("native_role_secret").(string)
-		_, err := c.Grpc.Sdk.NativeUserServiceClient.UpdateNativeUserSecret(ctx, connect.NewRequest(&adminv1.UpdateNativeUserSecretRequest{
-			DataStoreId:      datastoreId,
-			NativeUserId:     nativeRoleId,
-			NativeUserSecret: nativeRoleSecret,
+	if d.HasChange("secret") {
+		secret := d.Get("secret").(string)
+		_, err := c.Grpc.SdkV2.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+			Id:     id,
+			Secret: &secret,
 		}))
 		if err != nil {
 			return diag.FromErr(err)
@@ -161,34 +163,32 @@ func resourceNativeRoleUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.NativeUserServiceClient.SetNativeUserTerminationProtection(ctx, connect.NewRequest(&adminv1.SetNativeUserTerminationProtectionRequest{
-			Id:                    d.Id(),
-			TerminationProtection: terminationProtection,
+		_, err := c.Grpc.SdkV2.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+			Id:                    id,
+			TerminationProtection: &terminationProtection,
 		}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 	}
 
-	resourceNativeRoleRead(ctx, d, meta)
+	resourceNativeUserRead(ctx, d, meta)
 
 	return diags
 }
 
-func resourceNativeRoleDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	datastoreId := d.Get("datastore_id").(string)
-	nativeRoleId := d.Get("native_role_id").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
 	if terminationProtection {
-		return diag.Errorf("Native Role cannot be deleted because termination_protection is set to true")
+		return diag.Errorf("Native User cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.NativeUserServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&adminv1.DeleteNativeUserRequest{DataStoreId: datastoreId, NativeUserId: nativeRoleId}))
+	_, err := c.Grpc.SdkV2.ResourceServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&corev1.DeleteNativeUserRequest{Id: d.Id()}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
