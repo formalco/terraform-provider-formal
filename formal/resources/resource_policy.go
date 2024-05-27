@@ -78,7 +78,7 @@ func ResourcePolicy() *schema.Resource {
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"draft",
-					"dry-run",
+					"dry_run",
 					"active",
 				}, false),
 			},

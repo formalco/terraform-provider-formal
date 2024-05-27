@@ -111,6 +111,26 @@ EOT
   status       = "draft"
 }
 
+resource "formal_policy" "name-2" {
+  description  = "terraform-test-policy-dry-run"
+  module       = <<EOT
+package formal.v2
+
+import future.keywords.if
+
+pre_request := {
+  "action": "block",
+  "type": "block_with_formal_message"
+} if {
+  input.datastore.id == "${formal_resource.postgres1.id}"
+}
+EOT
+  name         = "terraform-test-policy-dry-run"
+  notification = "none"
+  owner       = formal_user.human.email
+  status       = "dry_run"
+}
+
 resource "formal_satellite" "name" {
   name = "terraform-test-satellite"
   termination_protection = false
