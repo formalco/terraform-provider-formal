@@ -14,7 +14,7 @@ resource "formal_resource" "postgres1" {
   name                       = "terraform-test-postgres1"
   technology                 = "postgres"
   environment                = "DEV"
-  port                       = 5432
+  port                       = 5433
   timeouts {
     create = "1m"
   }
