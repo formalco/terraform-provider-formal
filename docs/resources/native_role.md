@@ -28,6 +28,6 @@ This resource creates a Native Role.
 
 ### Read-Only
 
-- `id` (String) The ID of this resource.
+- `id` (String) The ID of the Native User.
 
 

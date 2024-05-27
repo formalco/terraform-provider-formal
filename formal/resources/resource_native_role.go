@@ -25,6 +25,12 @@ func ResourceNativeRole() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
+			"id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The ID of the Native User.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"datastore_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The Sidecar ID for the datastore this Native Role is for.",
@@ -100,7 +106,6 @@ func resourceNativeRoleRead(ctx context.Context, d *schema.ResourceData, meta in
 	var diags diag.Diagnostics
 
 	id := d.Get("id").(string)
-
 	res, err := c.Grpc.SdkV2.ResourceServiceClient.GetNativeUser(ctx, connect.NewRequest(&corev1.GetNativeUserRequest{Id: id}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {

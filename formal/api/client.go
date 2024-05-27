@@ -18,5 +18,5 @@ func NewClient(apiKey string, returnSensitiveValue bool) *GrpcClient {
 		url := os.Getenv("FORMAL_DEV_URL")
 		return &GrpcClient{Sdk: sdk.NewWithUrl(apiKey, url), SdkV2: v2.NewWithUrl(apiKey, url), ReturnSensitiveValue: returnSensitiveValue}
 	}
-	return &GrpcClient{Sdk: sdk.New(apiKey), ReturnSensitiveValue: returnSensitiveValue}
+	return &GrpcClient{Sdk: sdk.New(apiKey), SdkV2: v2.New(apiKey), ReturnSensitiveValue: returnSensitiveValue}
 }
