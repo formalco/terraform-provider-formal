@@ -98,8 +98,8 @@ func resourceSidecarResourceLinkRead(ctx context.Context, d *schema.ResourceData
 
 	// Should map to all fields of
 	d.Set("id", res.Msg.Link.Id)
-	d.Set("resource_id", res.Msg.Link.Resource)
-	d.Set("sidecar_id", res.Msg.Link.Sidecar)
+	d.Set("resource_id", res.Msg.Link.Resource.Id)
+	d.Set("sidecar_id", res.Msg.Link.Sidecar.Id)
 	d.Set("port", res.Msg.Link.Port)
 
 	d.SetId(res.Msg.Link.Id)
