@@ -99,6 +99,9 @@ func resourceHealthCheckRead(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(err)
 	}
 
+	d.Set("resource_id", res.Msg.ResourceHealthCheck.ResourceId)
+	d.Set("database_name", res.Msg.ResourceHealthCheck.Database)
+
 	d.SetId(res.Msg.ResourceHealthCheck.Id)
 
 	return diags
