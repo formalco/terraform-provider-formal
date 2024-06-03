@@ -27,5 +27,3 @@ Creating a Group in Formal.
 ### Read-Only
 
 - `id` (String) The Formal ID for this Group.
-
-

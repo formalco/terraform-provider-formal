@@ -27,5 +27,3 @@ Linking a User to a Group in Formal.
 ### Read-Only
 
 - `id` (String) The Formal ID of this link.
-
-

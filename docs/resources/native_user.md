@@ -29,5 +29,3 @@ This resource creates a Native User.
 ### Read-Only
 
 - `id` (String) The ID of the Native User.
-
-

@@ -39,5 +39,3 @@ Required:
 
 - `object_id` (String)
 - `object_type` (String)
-
-

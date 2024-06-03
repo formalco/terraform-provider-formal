@@ -29,5 +29,3 @@ This resource creates assigns a Native User to a Formal Identity.
 
 - `id` (String) The ID of this resource.
 - `resource_id` (String) The Resource ID of the Native User.
-
-

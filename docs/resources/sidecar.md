@@ -40,5 +40,3 @@ Registering a Sidecar with Formal.
 Optional:
 
 - `create` (String)
-
-
