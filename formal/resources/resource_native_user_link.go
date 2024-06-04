@@ -45,7 +45,7 @@ func ResourceNativeUserLink() *schema.Resource {
 			},
 			"formal_identity_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of Formal Identity to be linked. Accepted values are `role` and `group`.",
+				Description: "The type of Formal Identity to be linked. Accepted values are `user` and `group`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,

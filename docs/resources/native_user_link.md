@@ -18,7 +18,7 @@ This resource creates assigns a Native User to a Formal Identity.
 ### Required
 
 - `formal_identity_id` (String) The Formal ID for the User or Group to be linked.
-- `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `role` and `group`.
+- `formal_identity_type` (String) The type of Formal Identity to be linked. Accepted values are `user` and `group`.
 - `native_user_id` (String) The Native User ID of the Native User.
 
 ### Optional
