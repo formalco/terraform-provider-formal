@@ -23,6 +23,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       -
         name: Unshallow
         run: git fetch --prune --unshallow
@@ -42,7 +44,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v6.0.0
+        uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
           version: latest
