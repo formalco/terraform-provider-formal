@@ -151,8 +151,8 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 	}
-	if d.HasChange("secret") {
-		secret := d.Get("secret").(string)
+	if d.HasChange("native_user_secret") {
+		secret := d.Get("native_user_secret").(string)
 		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
 			Id:     id,
 			Secret: &secret,
