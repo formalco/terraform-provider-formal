@@ -1,0 +1,35 @@
+replicaCount: 1
+containers:
+  bigQuerySidecar:
+    name: bigquery-sidecar-app
+    image: 
+    resources: {}
+  dataClassifierSatellite:
+    name: data-classifier-satellite-app
+    image: 
+    resources: {}
+configMaps:
+  bigQuerySidecar:
+    CLIENT_LISTEN_TLS: "false"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+    PII_SAMPLING_RATE: "8"
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+podSelector:
+  matchLabels:
+    app: formal-external
+  labels:
+    app:  formal-external
+secretManagerRegion: us-east-1
+deployDataClassifierSatellite: false
+deploySecretStore: true
+secretStoreServiceAccount: formal-external-secrets-irsa
+externalSecrets:
+  bigQueryProxyKeyName: formal-bigquery-proxy-api-key
+service:
+  type: LoadBalancer
+  port: 443
+podAnnotations: {}

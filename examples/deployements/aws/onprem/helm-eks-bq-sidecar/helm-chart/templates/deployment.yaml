@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "bigquery-sidecar-app-%s" .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    "app.kubernetes.io/name": formal-external
+    "app.kubernetes.io/instance": formal-external-web
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
+  template:
+    metadata:
+      annotations: {{ toYaml .Values.podAnnotations | nindent 8 }}
+      labels:
+        "app.kubernetes.io/name": formal-external
+        "app.kubernetes.io/instance": formal-external-web
+    spec:
+      containers:
+        - name: {{ .Values.containers.bigQuerySidecar.name }}
+          image: {{ .Values.containers.bigQuerySidecar.image }}
+          envFrom:
+            - configMapRef:
+                name: {{ printf "bigquery-sidecar-config-%s" .Release.Name }}
+          resources:
+            {{ toYaml .Values.containers.bigQuerySidecar.resources | nindent 12 }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-bigquery-proxy-api-key
+        {{- if .Values.deployDataClassifierSatellite }}
+        - name: {{ .Values.containers.dataClassifierSatellite.name }}
+          image: {{ .Values.containers.dataClassifierSatellite.image }}
+          envFrom:
+            - configMapRef:
+                name:  {{ printf "data-classifier-satellite-config-%s" .Release.Name }}
+          resources:
+            {{ toYaml .Values.containers.dataClassifierSatellite.resources | nindent 12 }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: formal-eks-secret
+                  key: formal-data-classifier-api-key
+        {{- end }}
+      restartPolicy: Always 
