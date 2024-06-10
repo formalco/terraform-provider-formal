@@ -32,26 +32,26 @@ module "common" {
 }
 
 module "eks" {
-  source               = "./eks"
-  name                 = "${var.name}-bigquery-proxy"
-  environment          = var.environment
-  vpc_id               = module.common.vpc_id
-  private_subnets      = module.common.private_subnets
-  public_subnets       = module.common.public_subnets
+  source                  = "./eks"
+  name                    = "${var.name}-bigquery-proxy"
+  environment             = var.environment
+  vpc_id                  = module.common.vpc_id
+  private_subnets         = module.common.private_subnets
+  public_subnets          = module.common.public_subnets
   formal_bigquery_api_key = module.formal.formal_bigquery_sidecar_api_key
 }
 
 module "formal" {
-  source                 = "./formal"
-  name                   = "${var.name}-bigquery-proxy"
-  environment            = var.environment
-  formal_api_key         = var.formal_api_key
-  main_port              = var.bigquery_port
-  availability_zones     = var.availability_zones
+  source                    = "./formal"
+  name                      = "${var.name}-bigquery-proxy"
+  environment               = var.environment
+  formal_api_key            = var.formal_api_key
+  main_port                 = var.bigquery_port
+  availability_zones        = var.availability_zones
   bigquery_sidecar_hostname = var.bigquery_sidecar_hostname
   bigquery_hostname         = "bigquery.googleapis.com"
-  vpc_id                 = module.common.vpc_id
-  public_subnets         = module.common.public_subnets
+  vpc_id                    = module.common.vpc_id
+  public_subnets            = module.common.public_subnets
   bigquery_username         = var.bigquery_username
   bigquery_password         = var.bigquery_password
 }

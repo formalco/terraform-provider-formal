@@ -19,12 +19,12 @@ you have:
 
 ## 3. Quick Start
 
-To quickly deploy the applications on your cluster with default configurations, run the following command, replacing bq-sidecar with your desired release name:
+To quickly deploy the applications on your cluster with default configurations, run the following command, replacing formalco/bigquery-sidecar with your desired release name:
 
 ```shell
 helm repo add formal http://localhost:8090
 
-helm install formal/bq-sidecar --generate-name
+helm install formalco/bigquery-sidecar --generate-name
 ```
 
 ## 4. Configuration Options
