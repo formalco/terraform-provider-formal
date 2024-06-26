@@ -28,5 +28,3 @@ Linking a Resource to a Sidecar in Formal.
 ### Read-Only
 
 - `id` (String) Resource ID
-
-

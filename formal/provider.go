@@ -4,12 +4,12 @@ import (
 	"context"
 	"os"
 
-	"github.com/formalco/terraform-provider-formal/formal/clients"
-
-	"github.com/formalco/terraform-provider-formal/formal/api"
-	resource "github.com/formalco/terraform-provider-formal/formal/resources"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/formalco/terraform-provider-formal/formal/api"
+	"github.com/formalco/terraform-provider-formal/formal/clients"
+	resource "github.com/formalco/terraform-provider-formal/formal/resources"
 )
 
 func init() {
@@ -49,6 +49,7 @@ func New(version string) func() *schema.Provider {
 				"formal_integration_bi":              resource.ResourceIntegrationBI(),
 				"formal_integration_data_catalog":    resource.ResourceIntegrationDataCatalog(),
 				"formal_integration_cloud":           resource.ResourceIntegrationCloud(),
+				"formal_integration_mdm":             resource.ResourceIntegrationMDM(),
 				"formal_satellite":                   resource.ResourceSatellite(),
 				"formal_data_domain":                 resource.ResourceDataDomain(),
 				"formal_tracker":                     resource.ResourceTracker(),

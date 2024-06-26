@@ -47,5 +47,3 @@ Required:
 Optional:
 
 - `create` (String)
-
-

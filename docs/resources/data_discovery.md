@@ -37,5 +37,3 @@ Registering a Data Discovery with Formal.
 Optional:
 
 - `create` (String)
-
-

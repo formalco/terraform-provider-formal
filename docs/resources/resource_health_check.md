@@ -24,5 +24,3 @@ Creating a Health Check in Formal.
 
 - `created_at` (String) When the policy was created.
 - `id` (String) ID of the Health Check.
-
-

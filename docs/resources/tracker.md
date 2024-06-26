@@ -30,5 +30,3 @@ Creating a Tracker in Formal.
 - `created_at` (String) When the policy was created.
 - `id` (String) ID of this Tracker.
 - `updated_at` (String) Last update time.
-
-

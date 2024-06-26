@@ -39,5 +39,3 @@ Registering a Resource with Formal.
 Optional:
 
 - `create` (String)
-
-

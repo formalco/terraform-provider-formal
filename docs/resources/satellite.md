@@ -36,5 +36,3 @@ Registering a Satellite
 Optional:
 
 - `create` (String)
-
-

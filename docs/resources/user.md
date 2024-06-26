@@ -34,5 +34,3 @@ User in Formal.
 - `db_username` (String) The username that the user will use to access the sidecar.
 - `id` (String) User ID
 - `machine_user_access_token` (String, Sensitive) If the user is of type `machine`, this is the accesss token (database password) of this user.
-
-

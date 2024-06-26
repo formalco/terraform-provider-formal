@@ -33,5 +33,3 @@ Creating a Policy in Formal.
 - `created_at` (String) When the policy was created.
 - `id` (String) ID of this Policy.
 - `updated_at` (String) Last update time.
-
-
