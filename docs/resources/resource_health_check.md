@@ -20,7 +20,10 @@ Creating a Health Check in Formal.
 - `database_name` (String) Database associated with the health check.
 - `resource_id` (String) Resource ID linked to the following health check.
 
+### Optional
+
+- `termination_protection` (Boolean) If set to true, this Resource Health Check cannot be deleted.
+
 ### Read-Only
 
-- `created_at` (String) When the policy was created.
 - `id` (String) ID of the Health Check.

@@ -8,6 +8,7 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
+	"github.com/bufbuild/protovalidate-go"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -99,21 +100,31 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.FromErr(fmt.Errorf("error reading port"))
 	}
 
-	Name := d.Get("name").(string)
-	OriginalHostname := d.Get("hostname").(string)
-	Port := portInt
-	Technology := d.Get("technology").(string)
-	Environment := d.Get("environment").(string)
-	TerminationProtection := d.Get("termination_protection").(bool)
+	name := d.Get("name").(string)
+	hostname := d.Get("hostname").(string)
+	port := portInt
+	technology := d.Get("technology").(string)
+	environment := d.Get("environment").(string)
+	terminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResource(ctx, connect.NewRequest(&corev1.CreateResourceRequest{
-		Name:                  Name,
-		Hostname:              OriginalHostname,
-		Port:                  int32(Port),
-		Technology:            Technology,
-		Environment:           Environment,
-		TerminationProtection: TerminationProtection,
-	}))
+	msg := &corev1.CreateResourceRequest{
+		Name:                  name,
+		Hostname:              hostname,
+		Port:                  int32(port),
+		Technology:            technology,
+		Environment:           environment,
+		TerminationProtection: terminationProtection,
+	}
+
+	v, err := protovalidate.New()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err = v.Validate(msg); err != nil {
+		return diag.FromErr(err)
+	}
+
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResource(ctx, connect.NewRequest(msg))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -134,9 +145,6 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, connect.NewRequest(&corev1.GetResourceRequest{Id: datastoreId}))
 	if err != nil {
-		return diag.FromErr(err)
-	}
-	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Datastore was deleted
 			tflog.Warn(ctx, "The datastore was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
@@ -151,7 +159,6 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("hostname", res.Msg.Resource.Hostname)
 	d.Set("port", res.Msg.Resource.Port)
 	d.Set("technology", res.Msg.Resource.Technology)
-	d.Set("created_at", res.Msg.Resource.CreatedAt.AsTime().Unix())
 	d.Set("environment", res.Msg.Resource.Environment)
 	d.Set("termination_protection", res.Msg.Resource.TerminationProtection)
 
