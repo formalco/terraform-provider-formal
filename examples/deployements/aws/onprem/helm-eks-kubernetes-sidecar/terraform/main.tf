@@ -32,26 +32,26 @@ module "common" {
 }
 
 module "eks" {
-  source                   = "./eks"
-  name                     = "${var.name}-kubernetes-proxy"
-  environment              = var.environment
-  vpc_id                   = module.common.vpc_id
-  private_subnets          = module.common.private_subnets
-  public_subnets           = module.common.public_subnets
+  source                    = "./eks"
+  name                      = "${var.name}-kubernetes-proxy"
+  environment               = var.environment
+  vpc_id                    = module.common.vpc_id
+  private_subnets           = module.common.private_subnets
+  public_subnets            = module.common.public_subnets
   formal_kubernetes_api_key = module.formal.formal_kubernetes_sidecar_api_key
 }
 
 module "formal" {
-  source                     = "./formal"
-  name                       = "${var.name}-kubernetes-proxy"
-  environment                = var.environment
-  formal_api_key             = var.formal_api_key
-  main_port                  = var.kubernetes_port
-  availability_zones         = var.availability_zones
+  source                      = "./formal"
+  name                        = "${var.name}-kubernetes-proxy"
+  environment                 = var.environment
+  formal_api_key              = var.formal_api_key
+  main_port                   = var.kubernetes_port
+  availability_zones          = var.availability_zones
   kubernetes_sidecar_hostname = var.kubernetes_sidecar_hostname
   kubernetes_hostname         = var.kubernetes_hostname
-  vpc_id                     = module.common.vpc_id
-  public_subnets             = module.common.public_subnets
+  vpc_id                      = module.common.vpc_id
+  public_subnets              = module.common.public_subnets
   kubernetes_username         = var.kubernetes_username
   kubernetes_password         = var.kubernetes_password
 }
