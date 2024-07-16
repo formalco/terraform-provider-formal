@@ -1,0 +1,36 @@
+replicaCount: 1
+containers:
+  kubernetesSidecar:
+    name: kubernetes-sidecar-app
+    image: 
+    resources: {}
+configMaps:
+  kubernetesSidecar:
+    CLIENT_LISTEN_TLS: "true"
+    SERVER_CONNECT_TLS: "false"
+    DATA_CLASSIFIER_SATELLITE_URI: "localhost:50055"
+    CUSTOMER_TLS_CERT_PRIVATE_KEY: ""
+    CUSTOMER_TLS_CERT_FULLCHAIN: ""
+    PII_SAMPLING_RATE: "8"
+    MANAGED_TLS_CERTS: "true"
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+podSelector:
+  matchLabels:
+    app: formal-external
+  labels:
+    app:  formal-external
+deployDataClassifierSatellite: false
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store
+  region: us-east-1
+  type: SecretStore
+  serviceAccount: formal-external-secrets-irsa
+externalSecrets:
+  secretStoreName: formal-eks-secret-store
+  kubernetesProxyKeyName: formal-kubernetes-proxy-api-key
+service:
+  type: LoadBalancer
+  port: 443
+podAnnotations: {}
