@@ -37,6 +37,12 @@ func ResourceConnectorListener() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"name": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The name of the connector listener.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The listening port for this connector listener.",
@@ -62,7 +68,8 @@ func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData
 	var diags diag.Diagnostics
 
 	req := &corev1.CreateConnectorListenerRequest{
-		Port:                  d.Get("port").(int32),
+		Name:                  d.Get("name").(string),
+		Port:                  int32(d.Get("port").(int)),
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
@@ -97,6 +104,7 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	d.Set("id", res.Msg.ConnectorListener.Id)
+	d.Set("name", res.Msg.ConnectorListener.Name)
 	d.Set("port", res.Msg.ConnectorListener.Port)
 	d.Set("termination_protection", res.Msg.ConnectorListener.TerminationProtection)
 
@@ -118,7 +126,7 @@ func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf(err)
 	}
 
-	port := d.Get("port").(int32)
+	port := int32(d.Get("port").(int))
 	terminationProtection := d.Get("termination_protection").(bool)
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListener(ctx, connect.NewRequest(&corev1.UpdateConnectorListenerRequest{

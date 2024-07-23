@@ -17,7 +17,7 @@ Registering a Connector Listener Rule with Formal.
 
 ### Required
 
-- `connector_listener_id` (Number) The ID of the listener this rule is associated with.
+- `connector_listener_id` (String) The ID of the listener this rule is associated with.
 - `rule` (String) The rule to apply to the listener.
 - `type` (String) The type of the rule.
 
