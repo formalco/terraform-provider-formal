@@ -2,8 +2,8 @@ buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-2024050820065
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240508200655-46a4cf4ba109.2/go.mod h1:ylS4c28ACSI59oJrOdW4pHS4n0Hw4TgSPHn8rpHl4Yw=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240716043122-7c4df6b22678.1 h1:X5kb6wj3igO0uiKYx8UeWDI8UCsxP/Y8OG0B96d2RYM=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240716043122-7c4df6b22678.1/go.mod h1:EY592TodDY3DIqfK10CT7xVmWwSM/04dE8mT4WByhKY=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240716043122-7c4df6b22678.2 h1:kAQ5Vfqg/h14jcK4BUS/1mZDqM0fXX20p+6WaL00OHk=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240716043122-7c4df6b22678.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240725161449-d352c28aae41.2 h1:Pg7Hdouc61p3aAo9W3YlSKoCUcUxBrAKZ9+owcv9TmM=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240725161449-d352c28aae41.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
 connectrpc.com/connect v1.16.2 h1:ybd6y+ls7GOlb7Bh5C8+ghA6SvCBajHwxssO2CGFjqE=
 connectrpc.com/connect v1.16.2/go.mod h1:n2kgwskMHXC+lVqb18wngEpF95ldBHXjZYJussz5FRc=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
