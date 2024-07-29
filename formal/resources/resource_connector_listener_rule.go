@@ -40,7 +40,7 @@ func ResourceConnectorListenerRule() *schema.Resource {
 			"connector_listener_id": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The ID of the listener this rule is associated with.",
-				Type:        schema.TypeInt,
+				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"type": {

@@ -17,6 +17,7 @@ Registering a Connector Listener with Formal.
 
 ### Required
 
+- `name` (String) The name of the connector listener.
 - `port` (Number) The listening port for this connector listener.
 
 ### Optional

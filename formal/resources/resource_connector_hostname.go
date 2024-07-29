@@ -101,7 +101,9 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	connectorHostnameId := d.Id()
 
 	req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
-		Id: connectorHostnameId,
+		Id: &corev1.GetConnectorHostnameRequest_HostnameId{
+			HostnameId: connectorHostnameId,
+		},
 	})
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
