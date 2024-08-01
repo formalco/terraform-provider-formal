@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -50,6 +51,10 @@ func ResourceDataLabel() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    false,
 				Default:     false,
+				ValidateFunc: validation.StringInSlice([]string{
+					"regex",
+					"prompt",
+				}, false),
 			},
 			"classifier_data": {
 				// This description is used by the documentation generator and the language server.
