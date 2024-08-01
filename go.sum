@@ -4,6 +4,8 @@ buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240722102734-863e1e51ff84.1
 buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240722102734-863e1e51ff84.1/go.mod h1:6sZugOPBaIJfuvyJCqNlNrnKL8tUqQBrY1SqYjIPDDw=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240723014339-399ffeaa9563.2 h1:ApMR1CKx93EFIrX7pEvTDMdrm2vZug/6HSG/UjBPMmo=
 buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240723014339-399ffeaa9563.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240731063106-7d8931f7bd20.2 h1:iW7o3UF2cQWtCWbfF043bRmcmxX7CiuUNzDyYVd0TdM=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240731063106-7d8931f7bd20.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
 connectrpc.com/connect v1.16.2 h1:ybd6y+ls7GOlb7Bh5C8+ghA6SvCBajHwxssO2CGFjqE=
 connectrpc.com/connect v1.16.2/go.mod h1:n2kgwskMHXC+lVqb18wngEpF95ldBHXjZYJussz5FRc=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
