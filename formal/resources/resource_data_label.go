@@ -40,7 +40,6 @@ func ResourceDataLabel() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Optional:    false,
-				Default:     false,
 			},
 			"classifier_type": {
 				// This description is used by the documentation generator and the language server.
@@ -48,7 +47,6 @@ func ResourceDataLabel() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Optional:    false,
-				Default:     false,
 				ValidateFunc: validation.StringInSlice([]string{
 					"regex",
 					"prompt",
@@ -60,7 +58,6 @@ func ResourceDataLabel() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				Optional:    false,
-				Default:     false,
 			},
 		},
 	}
