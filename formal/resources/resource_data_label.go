@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
@@ -25,9 +24,6 @@ func ResourceDataLabel() *schema.Resource {
 		UpdateContext: resourceDataLabelUpdate,
 		DeleteContext: resourceDataLabelDelete,
 		SchemaVersion: 1,
-		Timeouts: &schema.ResourceTimeout{
-			Create: schema.DefaultTimeout(25 * time.Minute),
-		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
@@ -42,6 +38,7 @@ func ResourceDataLabel() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Friendly name for this data label.",
 				Type:        schema.TypeString,
+				Required:    true,
 				Optional:    false,
 				Default:     false,
 			},
@@ -49,6 +46,7 @@ func ResourceDataLabel() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of classifier for the data label (regex or prompt)",
 				Type:        schema.TypeString,
+				Required:    true,
 				Optional:    false,
 				Default:     false,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -60,6 +58,7 @@ func ResourceDataLabel() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Data for the classifier (pattern for regex or label name for prompt).",
 				Type:        schema.TypeString,
+				Required:    true,
 				Optional:    false,
 				Default:     false,
 			},
