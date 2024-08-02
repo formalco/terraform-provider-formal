@@ -133,15 +133,15 @@ func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		return diag.Errorf(err)
 	}
 
-	name := d.Get("name").(bool)
-	classifier_type := d.Get("classifier_type").(bool)
-	classifier_data := d.Get("classifier_data").(bool)
+	name := d.Get("name").(string)
+	classifier_type := d.Get("classifier_type").(string)
+	classifier_data := d.Get("classifier_data").(string)
 
 	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateDataLabel(ctx, connect.NewRequest(&corev1.UpdateDataLabelRequest{
 		Id:             dataLabelId,
-		Name:           &name,
-		ClassifierType: &classifier_type,
-		ClassifierData: &classifier_data,
+		Name:           name,
+		ClassifierType: classifier_type,
+		ClassifierData: classifier_data,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
