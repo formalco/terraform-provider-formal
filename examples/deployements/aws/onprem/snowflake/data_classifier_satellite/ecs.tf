@@ -10,9 +10,6 @@ resource "aws_ecs_task_definition" "main" {
     {
       name  = var.name
       image = var.container_image
-      repositoryCredentials = {
-        credentialsParameter = var.docker_hub_secret_arn
-      }
       essential = true
       portMappings = [
         {

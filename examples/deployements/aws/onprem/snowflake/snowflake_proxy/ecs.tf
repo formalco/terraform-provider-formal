@@ -10,9 +10,6 @@ resource "aws_ecs_task_definition" "main" {
     {
       name  = var.name
       image = var.container_image
-      repositoryCredentials = {
-        credentialsParameter = var.docker_hub_secret_arn
-      }
       essential = true
       portMappings = [
         {
@@ -62,7 +59,11 @@ resource "aws_ecs_task_definition" "main" {
       secrets = [
         {
           name      = "FORMAL_CONTROL_PLANE_API_KEY"
-          valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
+          valueFrom = aws_secretsmanager_secret_version.formal_snowflake_api_key.arn
+        },
+        {
+          name      = "ENV:SNOWFLAKE_PASSWORD"
+          valueFrom = aws_secretsmanager_secret_version.formal_snowflake_pwd.arn
         }
       ],
       logConfiguration = {

@@ -14,7 +14,6 @@ variable "container_cpu" {}
 variable "container_memory" {}
 
 variable "vpc_id" {}
-variable "docker_hub_secret_arn" {}
 variable "formal_api_key" {}
 
 variable "ecs_cluster_id" {}
