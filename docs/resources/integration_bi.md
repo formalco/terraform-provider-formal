@@ -18,6 +18,7 @@ Registering a BI App.
 ### Required
 
 - `name` (String) Friendly name for the App.
+- `sync` (Boolean) Auto synchronize users from Metabase to Formal (occurs every hour). Note that a lambda worker will need to be deployed in your infrastructure to synchronise users.
 
 ### Optional
 
