@@ -62,7 +62,7 @@ resource "aws_ecs_task_definition" "main" {
           valueFrom = aws_secretsmanager_secret_version.formal_snowflake_api_key.arn
         },
         {
-          name      = "ENV:SNOWFLAKE_PASSWORD"
+          name      = "SNOWFLAKE_PASSWORD"
           valueFrom = aws_secretsmanager_secret_version.formal_snowflake_pwd.arn
         }
       ],
