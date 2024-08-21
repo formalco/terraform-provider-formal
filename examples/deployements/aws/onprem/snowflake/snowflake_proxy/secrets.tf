@@ -1,8 +1,17 @@
-resource "aws_secretsmanager_secret" "formal_tls_cert" {
-  name = "${var.name}-formal-tls-cert"
+resource "aws_secretsmanager_secret" "formal_snowflake_api_key" {
+  name = "${var.name}-formal-snowflake-api-key"
 }
 
-resource "aws_secretsmanager_secret_version" "formal_tls_cert" {
-  secret_id     = aws_secretsmanager_secret.formal_tls_cert.id
-  secret_string = formal_sidecar.main.formal_control_plane_tls_certificate
+resource "aws_secretsmanager_secret_version" "formal_snowflake_api_key" {
+  secret_id     = aws_secretsmanager_secret.formal_snowflake_api_key.id
+  secret_string = formal_sidecar.main.api_key
+}
+
+resource "aws_secretsmanager_secret" "formal_snowflake_pwd" {
+  name = "${var.name}-formal-snowflake-pwd"
+}
+
+resource "aws_secretsmanager_secret_version" "formal_snowflake_pwd" {
+  secret_id     = aws_secretsmanager_secret.formal_snowflake_pwd.id
+  secret_string = var.snowflake_password
 }

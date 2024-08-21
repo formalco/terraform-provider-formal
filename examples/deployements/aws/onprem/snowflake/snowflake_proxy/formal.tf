@@ -36,6 +36,6 @@ resource "formal_sidecar_resource_link" "main" {
 resource "formal_native_user" "main_snowflake" {
   resource_id        = formal_resource.main.id
   native_user_id     = var.snowflake_username
-  native_user_secret = var.snowflake_password
+  native_user_secret = "ENV:SNOWFLAKE_PASSWORD"
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }

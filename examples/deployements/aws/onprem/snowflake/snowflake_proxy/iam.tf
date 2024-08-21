@@ -30,14 +30,12 @@ resource "aws_iam_policy" "ecs_secrets" {
       {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
-        Resource = var.docker_hub_secret_arn
-
+        Resource = aws_secretsmanager_secret.formal_snowflake_pwd.arn
       },
       {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.formal_tls_cert.arn
-
+        Resource = aws_secretsmanager_secret.formal_snowflake_api_key.arn
       }
     ]
   })
