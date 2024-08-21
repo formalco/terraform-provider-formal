@@ -27,7 +27,7 @@ resource "aws_iam_policy" "ecs_secrets" {
   policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
-       {
+      {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
         Resource = aws_secretsmanager_secret.formal_snowflake_pwd.arn
