@@ -1,15 +1,9 @@
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2 h1:SZRVx928rbYZ6hEKUIN+vtGDkl7uotABRWGY4OAg5gM=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240717164558-a6c49f84cc0f.2/go.mod h1:ylS4c28ACSI59oJrOdW4pHS4n0Hw4TgSPHn8rpHl4Yw=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240722102734-863e1e51ff84.1 h1:68rbVFeae1gQHuKSomPdfPMN/b50ZEEn7Vfeq6bmBlE=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240722102734-863e1e51ff84.1/go.mod h1:6sZugOPBaIJfuvyJCqNlNrnKL8tUqQBrY1SqYjIPDDw=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240802082850-06e0dde75832.1 h1:MjakbDKOn+66SiYtIsQgHiOtUWuBMAkZ06TyjEdP67I=
 buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20240802082850-06e0dde75832.1/go.mod h1:yHzD7UHTwxdIZ+hYaoHulJ++3xsIFHP/0ugHBY9BymY=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240723014339-399ffeaa9563.2 h1:ApMR1CKx93EFIrX7pEvTDMdrm2vZug/6HSG/UjBPMmo=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240723014339-399ffeaa9563.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240731063106-7d8931f7bd20.2 h1:iW7o3UF2cQWtCWbfF043bRmcmxX7CiuUNzDyYVd0TdM=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240731063106-7d8931f7bd20.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240802082850-06e0dde75832.2 h1:NNd+2ns8+LKEpBAiEo7cYyN1fCBWX6m7ls7gDyCC1as=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240802082850-06e0dde75832.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240822155002-cb064c9c3548.2 h1:MKKU2c59BqbRPfVTz+vkBs3D2hfuK3mZGNi3qaMdgYk=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240822155002-cb064c9c3548.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
 connectrpc.com/connect v1.16.2 h1:ybd6y+ls7GOlb7Bh5C8+ghA6SvCBajHwxssO2CGFjqE=
 connectrpc.com/connect v1.16.2/go.mod h1:n2kgwskMHXC+lVqb18wngEpF95ldBHXjZYJussz5FRc=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
@@ -59,8 +53,6 @@ github.com/envoyproxy/protoc-gen-validate v1.0.4/go.mod h1:qys6tmnRsYrQqIhm2bvKZ
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
-github.com/formalco/go-sdk/sdk/v2 v2.3.2 h1:/r0tYThmgebVV9aKh7UdrZwYGKB2IhSGL6FlanIQjoA=
-github.com/formalco/go-sdk/sdk/v2 v2.3.2/go.mod h1:gJ0lcS436Ec6nK5+kbFP1wApQRaStur/Ebh3w3FBzWg=
 github.com/formalco/go-sdk/sdk/v2 v2.4.0 h1:oF02Za0Sll+PyPP0xn0eg/xywOUuR46ILgLZC5NL3bI=
 github.com/formalco/go-sdk/sdk/v2 v2.4.0/go.mod h1:gJ0lcS436Ec6nK5+kbFP1wApQRaStur/Ebh3w3FBzWg=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
