@@ -6,7 +6,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = "4.0.13"
+      version = "4.0.15"
     }
   }
   cloud {
