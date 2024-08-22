@@ -239,19 +239,7 @@ resource "aws_ecs_service" "main" {
   load_balancer {
     target_group_arn = aws_lb_target_group.connector_https.arn
     container_name   = var.name
-    container_port   = var.connector_https_port
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.connector_clickhouse.arn
-    container_name   = var.name
-    container_port   = var.connector_clickhouse_port
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.connector_s3_browser.arn
-    container_name   = var.name
-    container_port   = var.connector_s3_browser_port
+    container_port   = var.connector_kubernetes_listener_port
   }
 
   # we ignore task_definition changes as the revision changes on deploy
