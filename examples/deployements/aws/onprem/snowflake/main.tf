@@ -126,6 +126,10 @@ module "snowflake_proxy" {
   ]
   ecs_enviroment_variables = [
     {
+      name  = "DATA_CLASSIFIER_SATELLITE_URI"
+      value = "${module.data_classifier_satellite.url}:${var.data_classifier_satellite_port}"
+    },
+    {
       name  = "SERVER_CONNECT_TLS"
       value = "true"
     },
