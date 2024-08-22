@@ -56,7 +56,7 @@ resource "aws_iam_policy" "ecr_access" {
     Version = "2012-10-17",
     Statement = [
       {
-        Action   = ["ecr:BatchGetImage","ecr:GetDownloadUrlForLayer","ecr:GetAuthorizationToken"],
+        Action   = ["ecr:BatchGetImage", "ecr:GetDownloadUrlForLayer", "ecr:GetAuthorizationToken"],
         Effect   = "Allow",
         Resource = "*"
       }
