@@ -24,18 +24,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
         },
         {
           protocol      = "tcp"
-          containerPort = var.connector_https_port
-          hostPort      = var.connector_https_port
-        },
-        {
-          protocol      = "tcp"
-          containerPort = var.connector_clickhouse_port
-          hostPort      = var.connector_clickhouse_port
-        },
-        {
-          protocol      = "tcp"
-          containerPort = var.connector_s3_browser_port
-          hostPort      = var.connector_s3_browser_port
+          containerPort = var.connector_kubernetes_listener_port
+          hostPort      = var.connector_kubernetes_listener_port
         },
         {
           protocol      = "tcp"
@@ -237,7 +227,7 @@ resource "aws_ecs_service" "main" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.connector_https.arn
+    target_group_arn = aws_lb_target_group.connector_kubernetes.arn
     container_name   = var.name
     container_port   = var.connector_kubernetes_listener_port
   }
