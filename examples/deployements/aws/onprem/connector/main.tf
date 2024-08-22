@@ -9,12 +9,6 @@ terraform {
       version = "4.0.15"
     }
   }
-  cloud {
-    organization = "formalcloud"
-    workspaces {
-      name = "demo-formal-deployment"
-    }
-  }
   required_version = ">= 0.14.9"
 }
 
