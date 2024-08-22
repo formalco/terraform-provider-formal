@@ -48,9 +48,6 @@ module "demo_connector" {
   connector_kubernetes_listener_name = var.connector_kubernetes_port
   connector_kubernetes_listener_port = var.connector_kubernetes_port
   connector_mysql_port               = var.connector_mysql_port
-  connector_https_port               = var.connector_https_port
-  connector_clickhouse_port          = var.connector_clickhouse_port
-  connector_s3_browser_port          = var.connector_s3_browser_port
   health_check_port                  = var.health_check_port
   environment                        = var.environment
   container_image                    = var.demo_connector_container_image

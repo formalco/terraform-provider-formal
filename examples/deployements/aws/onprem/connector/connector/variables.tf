@@ -30,10 +30,6 @@ variable "connector_postgres_listener_name" {}
 variable "connector_postgres_listener_port" {}
 
 variable "connector_mysql_port" {}
-variable "connector_https_port" {}
-
-variable "connector_clickhouse_port" {}
-variable "connector_s3_browser_port" {}
 
 variable "connector_kubernetes_listener_name" {}
 variable "connector_kubernetes_listener_port" {
