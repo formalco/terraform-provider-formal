@@ -28,7 +28,7 @@ variable "snowflake_username" {}
 variable "snowflake_password" {}
 
 variable "log_configuration" {
-    default = null
+  default = null
 }
 
 variable "sidecar_container_dependencies" {

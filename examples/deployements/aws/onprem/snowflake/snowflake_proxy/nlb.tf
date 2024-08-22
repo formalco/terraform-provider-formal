@@ -70,17 +70,17 @@ resource "aws_security_group" "public_nlb" {
 
   # for allowing health check traffic
   ingress {
-    from_port = var.health_check_port  
-    to_port     = var.health_check_port 
+    from_port   = var.health_check_port
+    to_port     = var.health_check_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = var.main_port
-    to_port   = var.main_port
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    from_port   = var.main_port
+    to_port     = var.main_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # allow all traffic

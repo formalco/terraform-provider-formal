@@ -28,7 +28,7 @@ locals {
         }
       ]
       logConfiguration = var.log_configuration
-      dependsOn = var.sidecar_container_dependencies
+      dependsOn        = var.sidecar_container_dependencies
     }
   ]
 }
@@ -42,8 +42,8 @@ resource "aws_ecs_task_definition" "main" {
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions = jsonencode(concat(
-      local.base_container_definition,
-      var.sidecar_container_definitions
+    local.base_container_definition,
+    var.sidecar_container_definitions
   ))
 
   tags = {
@@ -58,17 +58,17 @@ resource "aws_security_group" "main" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port = var.health_check_port  
-    to_port     = var.health_check_port 
+    from_port   = var.health_check_port
+    to_port     = var.health_check_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port = var.main_port
-    to_port   = var.main_port
-    protocol  = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] 
+    from_port   = var.main_port
+    to_port     = var.main_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
