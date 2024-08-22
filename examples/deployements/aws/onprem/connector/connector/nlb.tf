@@ -110,9 +110,9 @@ resource "aws_lb_listener" "connector_mysql" {
   }
 }
 
-resource "aws_lb_target_group" "connector_https" {
-  name              = "${var.name}-https"
-  port              = var.connector_https_port
+resource "aws_lb_target_group" "connector_kubernetes" {
+  name              = "${var.name}-kubernetes"
+  port              = var.connector_kubernetes_listener_port
   protocol          = "TCP"
   vpc_id            = var.vpc_id
   proxy_protocol_v2 = false
@@ -140,9 +140,9 @@ resource "aws_lb_target_group" "connector_https" {
 }
 
 # Redirect traffic to target group
-resource "aws_lb_listener" "connector_https" {
+resource "aws_lb_listener" "connector_kubernetes" {
   load_balancer_arn = aws_lb.main.id
-  port              = var.connector_https_port
+  port              = var.connector_kubernetes_listener_port
   protocol          = "TCP"
 
   ssl_policy      = null
@@ -151,105 +151,7 @@ resource "aws_lb_listener" "connector_https" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_https.arn
-  }
-
-  lifecycle {
-    ignore_changes = [default_action]
-  }
-}
-
-resource "aws_lb_target_group" "connector_clickhouse" {
-  name              = "${var.name}-clhouse"
-  port              = var.connector_clickhouse_port
-  protocol          = "TCP"
-  vpc_id            = var.vpc_id
-  proxy_protocol_v2 = false
-  target_type       = "ip"
-
-  health_check {
-    healthy_threshold   = "3"
-    interval            = "10"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = var.health_check_port
-    timeout             = "6"
-    path                = "/health"
-    unhealthy_threshold = "3"
-  }
-
-  tags = {
-    Name        = var.name
-    Environment = var.environment
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Redirect traffic to target group
-resource "aws_lb_listener" "connector_clickhouse" {
-  load_balancer_arn = aws_lb.main.id
-  port              = var.connector_clickhouse_port
-  protocol          = "TCP"
-
-  ssl_policy      = null
-  certificate_arn = null
-  alpn_policy     = null
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_clickhouse.arn
-  }
-
-  lifecycle {
-    ignore_changes = [default_action]
-  }
-}
-
-resource "aws_lb_target_group" "connector_s3_browser" {
-  name              = "${var.name}-browser"
-  port              = var.connector_s3_browser_port
-  protocol          = "TCP"
-  vpc_id            = var.vpc_id
-  proxy_protocol_v2 = false
-  target_type       = "ip"
-
-  health_check {
-    healthy_threshold   = "3"
-    interval            = "10"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = var.health_check_port
-    timeout             = "6"
-    path                = "/health"
-    unhealthy_threshold = "3"
-  }
-
-  tags = {
-    Name        = var.name
-    Environment = var.environment
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Redirect traffic to target group
-resource "aws_lb_listener" "connector_s3_browser" {
-  load_balancer_arn = aws_lb.main.id
-  port              = var.connector_s3_browser_port
-  protocol          = "TCP"
-
-  ssl_policy      = null
-  certificate_arn = null
-  alpn_policy     = null
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_s3_browser.arn
+    target_group_arn = aws_lb_target_group.connector_kubernetes.arn
   }
 
   lifecycle {
