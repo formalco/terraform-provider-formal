@@ -18,8 +18,8 @@ Registering a Connector Listener Rule with Formal.
 ### Required
 
 - `connector_listener_id` (String) The ID of the listener this rule is associated with.
-- `rule` (String) The rule to apply to the listener.
-- `type` (String) The type of the rule.
+- `rule` (String) The rule to apply to the listener. It should be either the id of the resource or the name of the technology.
+- `type` (String) The type of the rule. It can be either `resource` or `technology`
 
 ### Optional
 
