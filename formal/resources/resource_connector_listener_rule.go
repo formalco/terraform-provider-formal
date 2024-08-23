@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
 
 func ResourceConnectorListenerRule() *schema.Resource {
@@ -45,15 +47,23 @@ func ResourceConnectorListenerRule() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of the rule.",
+				Description: "The type of the rule. It can be either `resource` or `technology`",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"resource",
+					"technology",
+				}, false),
 			},
 			"rule": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The rule to apply to the listener.",
+				Description: "The rule to apply to the listener. It should be either the id of the resource or the name of the technology.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ValidateFunc: validation.StringMatch(
+					regexp.MustCompile(`^(resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes)$`),
+					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb)",
+				),
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
