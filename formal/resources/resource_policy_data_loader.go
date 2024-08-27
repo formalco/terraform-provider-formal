@@ -124,7 +124,7 @@ func resourcePolicyDataLoaderCreate(ctx context.Context, d *schema.ResourceData,
 		WorkerCode:            d.Get("worker_code").(string),
 		WorkerSchedule:        d.Get("worker_schedule").(string),
 		Status:                d.Get("status").(string),
-		TerminationProtection: d.Get("terminationProtection").(bool),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
 	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.CreatePolicyDataLoader(ctx, connect.NewRequest(req))
