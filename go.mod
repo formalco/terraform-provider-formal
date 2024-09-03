@@ -5,13 +5,14 @@ go 1.22.0
 toolchain go1.22.1
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240824095049-39ca25c4c48b.2
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240903145239-f508b9facf26.2
 	connectrpc.com/connect v1.16.2
 	github.com/bufbuild/protovalidate-go v0.6.3
 	github.com/formalco/go-sdk/sdk/v2 v2.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
+	github.com/robfig/cron/v3 v3.0.1
 	google.golang.org/protobuf v1.34.2
 )
 
@@ -67,7 +68,6 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
