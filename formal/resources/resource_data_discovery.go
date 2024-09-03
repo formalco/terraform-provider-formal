@@ -60,7 +60,7 @@ func ResourceDataDiscovery() *schema.Resource {
 			},
 			"schedule": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `24h`, `48h`.",
+				Description: "Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `18h`, `24h` or a valid cron expression, for example `0 4,16 * * *` to run daily at 04:00 and 16:00 UTC.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
