@@ -1,11 +1,11 @@
-resource "aws_ecs_task_definition" "main" {
+resource "aws_ecs_task_definition" "ecs_task" {
   family                   = var.name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = var.container_cpu
-  memory                   = var.container_memory
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn            = aws_iam_role.ecs_task_role.arn
+  cpu                      = 8192
+  memory                   = 16384
+  execution_role_arn       = var.ecs_task_execution_role_arn
+  task_role_arn            = var.ecs_task_role_arn
   container_definitions = jsonencode([
     {
       name      = var.name
@@ -14,8 +14,18 @@ resource "aws_ecs_task_definition" "main" {
       portMappings = [
         {
           protocol      = "tcp"
-          containerPort = var.main_port
-          hostPort      = var.main_port
+          containerPort = var.connector_postgres_listener_port
+          hostPort      = var.connector_postgres_listener_port
+        },
+        {
+          protocol      = "tcp"
+          containerPort = var.connector_mysql_port
+          hostPort      = var.connector_mysql_port
+        },
+        {
+          protocol      = "tcp"
+          containerPort = var.connector_kubernetes_listener_port
+          hostPort      = var.connector_kubernetes_listener_port
         },
         {
           protocol      = "tcp"
@@ -24,15 +34,55 @@ resource "aws_ecs_task_definition" "main" {
       }]
       environment = [
         {
-          name  = "PII_DETECTION"
-          value = "formal"
+          name  = "DATA_CLASSIFIER_SATELLITE_URI"
+          value = "${var.data_classifier_satellite_url}:${var.data_classifier_satellite_port}"
+        },
+        {
+          name  = "SERVER_CONNECT_TLS"
+          value = "true"
+        },
+        {
+          name  = "CLIENT_LISTEN_TLS"
+          value = "true"
+        },
+        {
+          name  = "LOG_LEVEL",
+          value = "debug"
+        },
+        {
+          name  = "DD_VERSION"
+          value = "1.0.0"
+        },
+        {
+          name  = "DD_ENV",
+          value = "prod"
+        },
+        {
+          name  = "ENVIRONMENT",
+          value = "prod"
+        },
+        {
+          name  = "DD_SERVICE"
+          value = var.name
+        },
+        {
+          name  = "MANAGED_TLS_CERTS"
+          value = "true"
+        },
+        {
+          name  = "PII_SAMPLING_RATE"
+          value = "8"
+        },
+        {
+          name  = "S3_BROWSER_PORT"
+          value = tostring(var.connector_s3_browser_port)
         }
-      ]
+      ],
       secrets = [
         {
           name      = "FORMAL_CONTROL_PLANE_API_KEY"
-          valueFrom = aws_secretsmanager_secret_version.formal_tls_cert.arn
-        }
+          valueFrom = aws_secretsmanager_secret_version.formal_connector_api_key.arn
+        },
       ],
       logConfiguration = {
         logDriver = "awsfirelens"
@@ -58,6 +108,8 @@ resource "aws_ecs_task_definition" "main" {
       firelensConfiguration = {
         "type" = "fluentbit",
         "options" = {
+          "config-file-type"        = "file"
+          "config-file-value"       = "/fluent-bit/configs/parse-json.conf"
           "enable-ecs-log-metadata" = "true"
         }
       },
@@ -143,7 +195,7 @@ resource "aws_security_group" "main" {
 resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
-  task_definition                    = aws_ecs_task_definition.main.arn
+  task_definition                    = aws_ecs_task_definition.ecs_task.arn
   desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
@@ -163,9 +215,21 @@ resource "aws_ecs_service" "main" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.main.arn
+    target_group_arn = aws_lb_target_group.connector_postgres.arn
     container_name   = var.name
-    container_port   = var.main_port
+    container_port   = var.connector_postgres_listener_port
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.connector_mysql.arn
+    container_name   = var.name
+    container_port   = var.connector_mysql_port
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.connector_kubernetes.arn
+    container_name   = var.name
+    container_port   = var.connector_kubernetes_listener_port
   }
 
   # we ignore task_definition changes as the revision changes on deploy
@@ -178,7 +242,7 @@ resource "aws_ecs_service" "main" {
 
 resource "aws_appautoscaling_target" "ecs_target" {
   max_capacity       = 20
-  min_capacity       = 3
+  min_capacity       = 1
   resource_id        = "service/${var.ecs_cluster_name}/${aws_ecs_service.main.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"

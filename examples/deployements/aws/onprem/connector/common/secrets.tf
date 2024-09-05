@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "dockerhub_credentials" {
-  name = "${var.name}-dockerhub-credentials"
+  name = "${var.name}-dockerhub-credentials-common-demo"
 }
 
 resource "aws_secretsmanager_secret_version" "dockerhub_credentials" {

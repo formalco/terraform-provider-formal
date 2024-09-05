@@ -111,6 +111,17 @@ EOT
   status       = "draft"
 }
 
+resource "formal_policy_data_loader" "name" {
+  name = "test-policy-data-loader"
+  description = "description"
+  key = "test"
+  status = "draft"
+  worker_code = "console.log({})"
+  worker_runtime = "nodejs18.x"
+  worker_schedule = "0 0 * * * *"
+  termination_protection = false
+}
+
 resource "formal_satellite" "name" {
   name = "terraform-test-satellite"
   termination_protection = false
@@ -171,15 +182,4 @@ resource "formal_group" "name" {
 resource "formal_group_user_link" "name" {
   group_id = formal_group.name.id
   user_id  = formal_user.name.id
-}
-
-resource "formal_policy_external_data_loader" "name" {
-  name = "test-external-data-loader-2"
-  host = "formal.zendesk.com"
-  port = 443
-  auth_type = "basic"
-  basic_auth {
-    username = "basic"
-    password = "basic"
-  }
 }

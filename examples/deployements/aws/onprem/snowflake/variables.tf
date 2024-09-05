@@ -23,10 +23,9 @@ variable "availability_zones" {
   default = ["us-west-2a", "us-west-2b", "us-west-2c"]
 }
 
-variable "datadog_api_key" {}
-
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
+variable "datadog_api_key" {
+  default = ""
+}
 
 variable "container_cpu" {
   default = 2048

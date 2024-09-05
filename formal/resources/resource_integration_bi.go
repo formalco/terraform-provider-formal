@@ -39,6 +39,13 @@ func ResourceIntegrationBI() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"sync": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Auto synchronize users from Metabase to Formal (occurs every hour). Note that a lambda worker will need to be deployed in your infrastructure to synchronise users.",
+				Type:        schema.TypeBool,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"metabase": {
 				Description: "Configuration block for Metabase integration. This block is optional and may be omitted if not configuring a Metabase integration.",
 				Type:        schema.TypeSet,
@@ -78,41 +85,54 @@ func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, me
 	var diags diag.Diagnostics
 
 	Name := d.Get("name").(string)
+	Sync := d.Get("sync").(bool)
 
 	var res *connect.Response[corev1.CreateBIIntegrationResponse]
 	var err error
 
-	if v, ok := d.GetOk("metabase"); ok {
-		metabaseSet := v.(*schema.Set)
-
-		// As we expect only one item in the set, we can iterate through the set
-		// Though not typical for sets, this is a pattern in Terraform when a set is used to ensure uniqueness
-		for _, metabaseConfig := range metabaseSet.List() {
-			config := metabaseConfig.(map[string]interface{})
-
-			metabase := &corev1.CreateBIIntegrationRequest_Metabase_{
-				Metabase: &corev1.CreateBIIntegrationRequest_Metabase{
-					Hostname: config["hostname"].(string),
-					Username: config["username"].(string),
-					Password: config["password"].(string),
-				},
-			}
-			res, err = c.Grpc.Sdk.IntegrationBIServiceClient.CreateBIIntegration(ctx, connect.NewRequest(&corev1.CreateBIIntegrationRequest{
-				Name: Name,
-				Type: metabase,
-			}))
-			if err != nil {
-				return diag.FromErr(err)
-			}
-			// Proceed with using the 'metabase' variable for your request
-			// Since we expect only one metabase configuration block,
-			// we can break the loop after processing the first item
-			break
+	if !Sync {
+		res, err = c.Grpc.Sdk.IntegrationBIServiceClient.CreateBIIntegration(ctx, connect.NewRequest(&corev1.CreateBIIntegrationRequest{
+			Name: Name,
+			Sync: Sync,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
 		}
-	} else {
-		return diag.Errorf("Unsupported bi type")
-	}
 
+	} else {
+		if v, ok := d.GetOk("metabase"); ok {
+			metabaseSet := v.(*schema.Set)
+
+			// As we expect only one item in the set, we can iterate through the set
+			// Though not typical for sets, this is a pattern in Terraform when a set is used to ensure uniqueness
+			for _, metabaseConfig := range metabaseSet.List() {
+				config := metabaseConfig.(map[string]interface{})
+
+				metabase := &corev1.CreateBIIntegrationRequest_Metabase_{
+					Metabase: &corev1.CreateBIIntegrationRequest_Metabase{
+						Hostname: config["hostname"].(string),
+						Username: config["username"].(string),
+						Password: config["password"].(string),
+					},
+				}
+				res, err = c.Grpc.Sdk.IntegrationBIServiceClient.CreateBIIntegration(ctx, connect.NewRequest(&corev1.CreateBIIntegrationRequest{
+					Name: Name,
+					Sync: Sync,
+					Type: metabase,
+				}))
+				if err != nil {
+					return diag.FromErr(err)
+				}
+				// Proceed with using the 'metabase' variable for your request
+				// Since we expect only one metabase configuration block,
+				// we can break the loop after processing the first item
+				break
+			}
+		} else {
+			return diag.Errorf("Unsupported bi type")
+		}
+
+	}
 	d.SetId(res.Msg.Integration.Id)
 
 	resourceIntegrationBIRead(ctx, d, meta)
@@ -133,6 +153,7 @@ func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta
 	}
 
 	d.Set("name", res.Msg.Integration.Name)
+	d.Set("sync", res.Msg.Integration.Sync)
 
 	switch data := res.Msg.Integration.Type.(type) {
 	case *corev1.BIIntegration_Metabase_:

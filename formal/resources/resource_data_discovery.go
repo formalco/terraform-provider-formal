@@ -9,6 +9,7 @@ import (
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/robfig/cron/v3"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -59,15 +60,25 @@ func ResourceDataDiscovery() *schema.Resource {
 			},
 			"schedule": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `24h`, `48h`.",
+				Description: "Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `18h`, `24h` or a valid cron expression, for example `0 4,16 * * *` to run daily at 04:00 and 16:00 UTC.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"6h",
-					"12h",
-					"24h",
-					"48h",
-				}, false),
+				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+					v := val.(string)
+					predefinedSchedules := map[string]bool{
+						"6h":  true,
+						"12h": true,
+						"18h": true,
+						"24h": true,
+					}
+					if predefinedSchedules[v] {
+						return
+					}
+					if _, err := cron.ParseStandard(v); err != nil {
+						errs = append(errs, fmt.Errorf("%q must be a valid cron expression or one of the predefined schedules ('6h', '12h', '18h', '24h')", key))
+					}
+					return
+				},
 			},
 			"deletion_policy": {
 				// This description is used by the documentation generator and the language server.

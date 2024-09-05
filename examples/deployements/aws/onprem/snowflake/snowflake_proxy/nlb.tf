@@ -70,29 +70,17 @@ resource "aws_security_group" "public_nlb" {
 
   # for allowing health check traffic
   ingress {
-    from_port = 32768 # ephemeral port range: https://docs.aws.amazon.com/AmazonECS/latest/APIReference/API_PortMapping.html
-    # to_port     = 61000
-    to_port     = 65535
+    from_port   = var.health_check_port
+    to_port     = var.health_check_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] // anywhere
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   ingress {
-    from_port   = 80
-    to_port     = 80
+    from_port   = var.main_port
+    to_port     = var.main_port
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] // anywhere
-  }
-
-  ingress {
-    # TLS (change to whatever ports you need)
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
-
-    # Please restrict your ingress to only necessary IPs and ports.
-    # Opening to 0.0.0.0/0 can lead to security vulnerabilities.
-    cidr_blocks = ["0.0.0.0/0"] # add a CIDR block here
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   # allow all traffic
