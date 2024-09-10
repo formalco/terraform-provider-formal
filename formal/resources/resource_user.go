@@ -8,11 +8,12 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceUser() *schema.Resource {
@@ -79,7 +80,7 @@ func ResourceUser() *schema.Resource {
 			},
 			"machine_user_access_token": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If the user is of type `machine`, this is the accesss token (database password) of this user.",
+				Description: "If the user is of type `machine`, this is the access token (database password) of this user.",
 				Type:        schema.TypeString,
 				Computed:    true,
 				Sensitive:   true,
@@ -209,6 +210,14 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	d.Set("db_username", res.Msg.User.DbUsername)
 	d.Set("expire_at", res.Msg.User.ExpireAt.AsTime().Unix())
 	d.Set("termination_protection", res.Msg.User.TerminationProtection)
+
+	if res.Msg.User.Type == "machine" {
+		res, err := c.Grpc.Sdk.UserServiceClient.GetMachineUserCredentials(ctx, connect.NewRequest(&corev1.GetMachineUserCredentialsRequest{Id: userId}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		d.Set("machine_user_access_token", res.Msg.Password)
+	}
 
 	switch info := res.Msg.User.Info.(type) {
 	case *corev1.User_Human_:
