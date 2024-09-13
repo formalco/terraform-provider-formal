@@ -77,12 +77,10 @@ func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m
 
 			request := corev1.CreateIntegrationMDMRequest{
 				Name: kandjiConfig["name"].(string),
-				Integration: &corev1.IntegrationMDM{
-					Integration: &corev1.IntegrationMDM_Kandji_{
-						Kandji: &corev1.IntegrationMDM_Kandji{
-							ApiKey: kandjiConfig["api_key"].(string),
-							ApiUrl: kandjiConfig["api_url"].(string),
-						},
+				Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
+					Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
+						ApiKey: kandjiConfig["api_key"].(string),
+						ApiUrl: kandjiConfig["api_url"].(string),
 					},
 				},
 			}
