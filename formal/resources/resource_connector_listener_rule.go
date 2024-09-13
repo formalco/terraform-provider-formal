@@ -44,12 +44,14 @@ func ResourceConnectorListenerRule() *schema.Resource {
 				Description: "The ID of the listener this rule is associated with.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The type of the rule. It can be either `resource` or `technology`",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"resource",
 					"technology",
@@ -60,6 +62,7 @@ func ResourceConnectorListenerRule() *schema.Resource {
 				Description: "The rule to apply to the listener. It should be either the id of the resource or the name of the technology.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 				ValidateFunc: validation.StringMatch(
 					regexp.MustCompile(`^(resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes)$`),
 					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb)",
@@ -144,7 +147,7 @@ func resourceConnectorListenerRuleUpdate(ctx context.Context, d *schema.Resource
 
 	connectorListenerRuleId := d.Id()
 
-	fieldsThatCanChange := []string{"connector_listener_id", "type", "rule", "termination_protection"}
+	fieldsThatCanChange := []string{"termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
