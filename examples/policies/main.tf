@@ -114,17 +114,3 @@ pre_request := { "action": "mask", "type": "hash.with_salt", "columns": columns 
 }
 EOF
 }
-
-
-resource "formal_policy_data_loader" "policy_data_loader" {
-  name            = "Current year"
-  description     = "Add the current year to the policy data store"
-  key             = "year"
-  status          = "active"
-  worker_schedule = "0 0 * * * *"
-  worker_runtime  = "nodejs18.x"
-  worker_code     = <<-EOF
-const currentYear = new Date().getFullYear()
-console.log(currentYear)
-EOF
-}
