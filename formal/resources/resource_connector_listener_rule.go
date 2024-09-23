@@ -48,11 +48,12 @@ func ResourceConnectorListenerRule() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of the rule. It can be either `resource` or `technology`",
+				Description: "The type of the rule. It can be either `any`, `resource` or `technology`",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
+					"any",
 					"resource",
 					"technology",
 				}, false),
@@ -64,8 +65,8 @@ func ResourceConnectorListenerRule() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile(`^(resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes)$`),
-					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb)",
+					regexp.MustCompile(`^(any|resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes)$`),
+					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb) or 'any'",
 				),
 			},
 			"termination_protection": {
