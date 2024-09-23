@@ -42,6 +42,7 @@ func ResourceConnectorListener() *schema.Resource {
 				Description: "The name of the connector listener.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
 			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
