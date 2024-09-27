@@ -17,17 +17,18 @@ Registering a Connector with Formal.
 
 ### Required
 
-- `name` (String) Friendly name for this connector.
+- `name` (String) Friendly name for this Connector.
 
 ### Optional
 
-- `termination_protection` (Boolean) If set to true, this connector cannot be deleted.
+- `space_id` (String) The ID of the Space to create the Connector in.
+- `termination_protection` (Boolean) If set to true, this Connector cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `api_key` (String, Sensitive) Api key for the deployed Connector.
-- `id` (String) The ID of this connector.
+- `id` (String) The ID of this Connector.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

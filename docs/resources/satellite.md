@@ -21,6 +21,7 @@ Registering a Satellite
 
 ### Optional
 
+- `space_id` (String) The ID of the Space to create the Satellite in.
 - `termination_protection` (Boolean) If set to true, this Satellite cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
