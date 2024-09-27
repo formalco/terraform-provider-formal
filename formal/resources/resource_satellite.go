@@ -61,6 +61,13 @@ func ResourceSatellite() *schema.Resource {
 				Optional:    true,
 				Default:     false,
 			},
+			"space_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The ID of the Space to create the Satellite in.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+			},
 		},
 	}
 }
@@ -72,10 +79,12 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 
 	name := d.Get("name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
+	spaceId := d.Get("space_id").(string)
 
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(&corev1.CreateSatelliteRequest{
 		Name:                  name,
 		TerminationProtection: terminationProtection,
+		SpaceId:               spaceId,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
@@ -102,6 +111,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.Set("name", res.Msg.Satellite.Name)
 	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
+	d.Set("space_id", res.Msg.Satellite.SpaceId)
 
 	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&corev1.GetSatelliteApiKeyRequest{Id: d.Id()}))
@@ -140,6 +150,17 @@ func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&corev1.UpdateSatelliteRequest{
 			Id:   satelliteId,
 			Name: &name,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("space_id") {
+		spaceId := d.Get("space_id").(string)
+		_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatellite(ctx, connect.NewRequest(&corev1.UpdateSatelliteRequest{
+			Id:      satelliteId,
+			SpaceId: &spaceId,
 		}))
 		if err != nil {
 			return diag.FromErr(err)

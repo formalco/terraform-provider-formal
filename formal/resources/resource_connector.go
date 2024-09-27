@@ -33,13 +33,13 @@ func ResourceConnector() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The ID of this connector.",
+				Description: "The ID of this Connector.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Friendly name for this connector.",
+				Description: "Friendly name for this Connector.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -52,10 +52,17 @@ func ResourceConnector() *schema.Resource {
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, this connector cannot be deleted.",
+				Description: "If set to true, this Connector cannot be deleted.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
+			},
+			"space_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The ID of the Space to create the Connector in.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
 			},
 		},
 	}
@@ -68,12 +75,13 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, meta i
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	sidecarReq := &corev1.CreateConnectorRequest{
+	connectorReq := &corev1.CreateConnectorRequest{
 		Name:                  d.Get("name").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
+		SpaceId:               d.Get("space_id").(string),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnector(ctx, connect.NewRequest(sidecarReq))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnector(ctx, connect.NewRequest(connectorReq))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -112,6 +120,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", res.Msg.Connector.Name)
 	d.Set("api_key", resApiKey.Msg.Secret)
 	d.Set("termination_protection", res.Msg.Connector.TerminationProtection)
+	d.Set("space_id", res.Msg.Connector.SpaceId)
 
 	d.SetId(res.Msg.Connector.Id)
 
@@ -125,17 +134,19 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	connectorId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "termination_protection"}
+	fieldsThatCanChange := []string{"name", "termination_protection", "space_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
 	terminationProtection := d.Get("termination_protection").(bool)
+	spaceId := d.Get("space_id").(string)
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnector(ctx, connect.NewRequest(&corev1.UpdateConnectorRequest{
 		Id:                    connectorId,
 		TerminationProtection: &terminationProtection,
+		SpaceId:               &spaceId,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
