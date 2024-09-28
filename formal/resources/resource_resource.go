@@ -185,24 +185,39 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "health_check_db_name", "db_discovery_job_wait_time", "db_discovery_native_role_id", "termination_protection"}
+	fieldsThatCanChange := []string{"name", "health_check_db_name", "db_discovery_job_wait_time", "db_discovery_native_role_id", "termination_protection", "space_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	name := d.Get("name").(string)
-	terminationProtection := d.Get("termination_protection").(bool)
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
+			Id:   datastoreId,
+			Name: &name,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{Id: datastoreId, Name: &name, TerminationProtection: &terminationProtection}))
-	if err != nil {
-		return diag.FromErr(err)
+	}
+
+	if d.HasChange("termination_protection") {
+		terminationProtection := d.Get("termination_protection").(bool)
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
+			Id:                    datastoreId,
+			TerminationProtection: &terminationProtection,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	if d.HasChange("space_id") {
 		spaceId := d.Get("space_id").(string)
 		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
-			Id:      spaceId,
+			Id:      datastoreId,
 			SpaceId: &spaceId,
 		}))
 		if err != nil {

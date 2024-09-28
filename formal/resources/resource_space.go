@@ -53,7 +53,7 @@ func ResourceSpace() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Description of the Space.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
