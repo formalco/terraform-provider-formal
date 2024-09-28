@@ -18,6 +18,7 @@ resource "formal_resource" "postgres1" {
   timeouts {
     create = "1m"
   }
+  space_id = formal_space.name.id
 }
 
 resource "formal_integration_bi" "name" {
@@ -27,6 +28,7 @@ resource "formal_integration_bi" "name" {
     password = "metabasepassword"
     username = "metabaseusername"
   }
+  sync = true
 }
 
 resource "formal_integration_log" "datadog" {
@@ -122,9 +124,11 @@ resource "formal_policy_data_loader" "name" {
   termination_protection = false
 }
 
+
 resource "formal_satellite" "name" {
   name = "terraform-test-satellite"
   termination_protection = false
+  space_id = formal_space.name.id
 }
 
 resource "formal_sidecar" "name" {
@@ -182,4 +186,8 @@ resource "formal_group" "name" {
 resource "formal_group_user_link" "name" {
   group_id = formal_group.name.id
   user_id  = formal_user.name.id
+}
+
+resource "formal_space" "name" {
+  name = "terraform-test-space"
 }
