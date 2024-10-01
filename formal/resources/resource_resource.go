@@ -122,7 +122,10 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Technology:            technology,
 		Environment:           environment,
 		TerminationProtection: terminationProtection,
-		SpaceId:               spaceId,
+	}
+
+	if spaceId != "" {
+		msg.SpaceId = &spaceId
 	}
 
 	v, err := protovalidate.New()
@@ -170,8 +173,9 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("technology", res.Msg.Resource.Technology)
 	d.Set("environment", res.Msg.Resource.Environment)
 	d.Set("termination_protection", res.Msg.Resource.TerminationProtection)
-	d.Set("space_id", res.Msg.Resource.SpaceId)
-
+	if res.Msg.Resource.Space != nil {
+		d.Set("space_id", res.Msg.Resource.Space.Id)
+	}
 	d.SetId(res.Msg.Resource.Id)
 
 	return diags

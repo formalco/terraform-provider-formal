@@ -78,7 +78,10 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, meta i
 	connectorReq := &corev1.CreateConnectorRequest{
 		Name:                  d.Get("name").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-		SpaceId:               d.Get("space_id").(string),
+	}
+	if d.Get("space_id").(string) != "" {
+		spaceId := d.Get("space_id").(string)
+		connectorReq.SpaceId = &spaceId
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnector(ctx, connect.NewRequest(connectorReq))
@@ -120,8 +123,9 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", res.Msg.Connector.Name)
 	d.Set("api_key", resApiKey.Msg.Secret)
 	d.Set("termination_protection", res.Msg.Connector.TerminationProtection)
-	d.Set("space_id", res.Msg.Connector.SpaceId)
-
+	if res.Msg.Connector.Space != nil {
+		d.Set("space_id", res.Msg.Connector.Space.Id)
+	}
 	d.SetId(res.Msg.Connector.Id)
 
 	return diags
