@@ -7,7 +7,7 @@ toolchain go1.22.1
 require (
 	buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20241001032559-74fcd20110f8.2
 	connectrpc.com/connect v1.17.0
-	github.com/bufbuild/protovalidate-go v0.7.0
+	github.com/bufbuild/protovalidate-go v0.7.1
 	github.com/formalco/go-sdk/sdk/v2 v2.6.2
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-log v0.9.0
