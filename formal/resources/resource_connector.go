@@ -123,7 +123,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("name", res.Msg.Connector.Name)
 	d.Set("api_key", resApiKey.Msg.Secret)
 	d.Set("termination_protection", res.Msg.Connector.TerminationProtection)
-	if res.Msg.Connector.Space.Id != "" {
+	if res.Msg.Connector.Space != nil {
 		d.Set("space_id", res.Msg.Connector.Space.Id)
 	}
 	d.SetId(res.Msg.Connector.Id)
