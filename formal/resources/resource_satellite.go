@@ -81,11 +81,15 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
 
-	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(&corev1.CreateSatelliteRequest{
+	r := &corev1.CreateSatelliteRequest{
 		Name:                  name,
 		TerminationProtection: terminationProtection,
-		SpaceId:               spaceId,
-	}))
+	}
+	if spaceId != "" {
+		r.SpaceId = &spaceId
+	}
+
+	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatellite(ctx, connect.NewRequest(r))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -111,8 +115,9 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.Set("name", res.Msg.Satellite.Name)
 	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
-	d.Set("space_id", res.Msg.Satellite.SpaceId)
-
+	if res.Msg.Satellite.Space != nil {
+		d.Set("space_id", res.Msg.Satellite.Space.Id)
+	}
 	if c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteApiKey(ctx, connect.NewRequest(&corev1.GetSatelliteApiKeyRequest{Id: d.Id()}))
 		if err != nil {
@@ -121,7 +126,6 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 		d.Set("api_key", res.Msg.ApiKey)
 		d.Set("tls_cert", res.Msg.ApiKey)
 	}
-
 	d.SetId(res.Msg.Satellite.Id)
 
 	return diags
