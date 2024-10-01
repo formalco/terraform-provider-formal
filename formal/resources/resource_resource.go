@@ -125,7 +125,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	if spaceId != "" {
-		spaceId := spaceId
 		msg.SpaceId = &spaceId
 	}
 
