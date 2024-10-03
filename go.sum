@@ -1,13 +1,9 @@
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240920164238-5a7b106cbb87.2 h1:hl0FrmGlNpQZIGvU1/jDz0lsPDd0BhCE0QDRwPfLZcA=
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.34.2-20240920164238-5a7b106cbb87.2/go.mod h1:ylS4c28ACSI59oJrOdW4pHS4n0Hw4TgSPHn8rpHl4Yw=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20241001032559-74fcd20110f8.1 h1:xa2ThJF/cRw0XBsBiIWqvneFlmpxpDBrq0p5hW1Kx48=
-buf.build/gen/go/formal/core/connectrpc/go v1.16.2-20241001032559-74fcd20110f8.1/go.mod h1:WefS0OeqJydhAAHBHjVMfh7ipmQutKfCEJkJknAUCZ0=
 buf.build/gen/go/formal/core/connectrpc/go v1.17.0-20240927170128-26909b47e343.1 h1:CzYo7cWA/wD3XGVP85Ko/8n5kAdhP6DKdTw2W8k0hPk=
 buf.build/gen/go/formal/core/connectrpc/go v1.17.0-20240927170128-26909b47e343.1/go.mod h1:Mbq4cZxCAm185qnnyTC0yfqoad1ux+HFqHKh6OIF/hE=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240930220339-4fcea107ea92.2 h1:2S5B82esbP8JbcPuX6EzwdR/h/ZKVJvI14LSRtHEFbw=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20240930220339-4fcea107ea92.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20241001032559-74fcd20110f8.2 h1:KQZJROJ1qd8+Lfl8t5hEBzkFQ45APaBSk76qEMe/ydI=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20241001032559-74fcd20110f8.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20241003093648-d9c3a671588d.2 h1:CtjGXqGLfZ6drRMobrsAOY19yfRARc8nAQ85cKE/h5U=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.34.2-20241003093648-d9c3a671588d.2/go.mod h1:BRxD4gyxLxZWBF3k8YaS1y8FixerWCiju0Zo8Ve8Enk=
 connectrpc.com/connect v1.17.0 h1:W0ZqMhtVzn9Zhn2yATuUokDLO5N+gIuBWMOnsQrfmZk=
 connectrpc.com/connect v1.17.0/go.mod h1:0292hj1rnx8oFrStN7cB4jjVBeqs+Yx5yDIC2prWDO8=
 dario.cat/mergo v1.0.0 h1:AGCNq9Evsj31mOgNPcLyXc+4PNABt905YmuqPYYpBWk=
@@ -57,7 +53,6 @@ github.com/envoyproxy/protoc-gen-validate v1.1.0/go.mod h1:sXRDRVmzEbkM7CVcM06s9
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
-github.com/formalco/go-sdk/sdk/v2 v2.5.0/go.mod h1:PHd89VQWqsA0QT4mByTDiVe3cKKH4m3MiFqqAWRiaAI=
 github.com/formalco/go-sdk/sdk/v2 v2.6.2 h1:DRLfoBNpmY+12xo+EukKDnUb/+Wy8HcMN8qvGrwIBnk=
 github.com/formalco/go-sdk/sdk/v2 v2.6.2/go.mod h1:Ejkk68HhGU+owOlwszFMQucCpb1fF9mEW7kTd1G52/8=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
