@@ -65,7 +65,7 @@ func ResourceConnectorListenerRule() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile(`^(any|resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes)$`),
+					regexp.MustCompile(`^(any|resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes|clickhouse)$`),
 					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb) or 'any'",
 				),
 			},
