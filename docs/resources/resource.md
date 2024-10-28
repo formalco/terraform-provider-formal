@@ -19,7 +19,7 @@ Registering a Resource with Formal.
 
 - `hostname` (String) Hostname of the Resource.
 - `name` (String) Friendly name for the Resource.
-- `technology` (String) Technology of the Resource: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http` and `ssh`.
+- `technology` (String) Technology of the Resource: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `clickhouse` and `ssh`.
 
 ### Optional
 
