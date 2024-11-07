@@ -1,5 +1,0 @@
-apiVersion: v2
-name: formalco-bigquery-helm-chart
-description: A Helm chart for deploying Formal BigQuery Sidecar
-version: 0.1.0
-appVersion: "1.0"

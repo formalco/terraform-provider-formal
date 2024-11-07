@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ printf "kubernetes-sidecar-config-%s" .Release.Name }}
-  namespace: {{ .Release.Namespace }}
-data:
-  {{- range $key, $value := .Values.configMaps.kubernetesSidecar }}
-  {{ $key }}: "{{ $value }}"
-  {{- end }}

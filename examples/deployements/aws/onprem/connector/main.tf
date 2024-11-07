@@ -39,8 +39,8 @@ module "demo_connector" {
   connector_hostname                 = var.demo_connector_hostname
   connector_postgres_listener_name   = var.demo_connector_postgres_listener_name
   connector_postgres_listener_port   = var.demo_connector_postgres_listener_port
-  connector_kubernetes_listener_name = var.connector_kubernetes_port
-  connector_kubernetes_listener_port = var.connector_kubernetes_port
+  connector_kubernetes_listener_name = var.demo_connector_kubernetes_listener_name
+  connector_kubernetes_listener_port = var.demo_connector_kubernetes_listener_port
   connector_mysql_port               = var.connector_mysql_port
   health_check_port                  = var.health_check_port
   environment                        = var.environment
