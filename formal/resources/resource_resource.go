@@ -62,7 +62,7 @@ func ResourceResource() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "The port your Resource is listening on.",
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Required:    true,
 				ForceNew:    true,
 			},
 			"created_at": {
