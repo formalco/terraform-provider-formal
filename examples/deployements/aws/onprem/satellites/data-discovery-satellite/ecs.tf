@@ -8,8 +8,8 @@ resource "aws_ecs_task_definition" "main" {
   task_role_arn            = aws_iam_role.ecs_task_role.arn
   container_definitions = jsonencode([
     {
-      name  = var.name
-      image = var.container_image
+      name      = var.name
+      image     = var.container_image
       essential = true
       portMappings = [
         {
