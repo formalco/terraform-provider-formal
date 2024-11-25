@@ -23,7 +23,7 @@ Registering a Resource with Formal.
 
 ### Optional
 
-- `environment` (String) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
+- `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `port` (Number) The port your Resource is listening on.
 - `space_id` (String) The ID of the Space to create the Resource in.
 - `termination_protection` (Boolean) If set to true, the Resource cannot be deleted.
