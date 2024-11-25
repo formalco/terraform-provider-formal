@@ -1,0 +1,63 @@
+replicaCount: 1
+containers:
+  snowflakeSidecar:
+    name: snowflake-sidecar-app
+    image: 
+    resources:
+      requests:
+        ephemeral-storage: "2Gi"  
+      limits:
+        ephemeral-storage: "4Gi"  
+  dataClassifierSatellite:
+    name: data-classifier-satellite-app
+    image: 
+    resources:
+      requests:
+        ephemeral-storage: "2Gi"  
+      limits:
+        ephemeral-storage: "4Gi"  
+  dataDiscovery:
+    name: data-discovery-app
+    image: 
+    resources:
+      requests:
+        ephemeral-storage: "2Gi" 
+      limits:
+        ephemeral-storage: "4Gi" 
+configMaps:
+  snowflakeSidecar:
+    CLIENT_LISTEN_TLS: "true"
+    SERVER_CONNECT_TLS: "true"
+    DATA_CLASSIFIER_SATELLITE_URI: ""
+    PII_SAMPLING_RATE: "8"
+    MANAGED_TLS_CERTS: "true"
+    LOG_LEVEL: "info"
+  dataClassifierSatellite:
+    PII_DETECTION: formal
+    LOG_LEVEL: "info"
+  dataDiscovery:
+    DATA_CLASSIFIER_SATELLITE_URI: ""
+    PII_SAMPLING_RATE: "8"
+    SERVER_CONNECT_TLS: "true"
+    LOG_LEVEL: "info"
+podSelector:
+  matchLabels:
+    app: formal-external
+  labels:
+    app:  formal-external
+deployDataClassifierSatellite: true
+deployDataDiscovery: true
+secretStore:
+  deploy: true
+  name: formal-eks-secret-store
+  region: eu-west-1
+  type: SecretStore
+  serviceAccount: external-secrets-irsa
+externalSecrets:
+  snowflakeProxyKeyName: formal-snowflake-proxy-api-key
+  dataClassifierSatelliteKeyName: formal-data-classifier-api-key
+  dataDiscoveryKeyName: formal-data-discovery-api-key
+service:
+  type: LoadBalancer
+  port: 443
+podAnnotations: {}
