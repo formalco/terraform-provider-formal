@@ -52,30 +52,6 @@ spec:
       name: etcd-peer
       targetPort: 2380
 ---
-{{- if .Values.deployDataClassifierSatellite }}
-# data-classifier-service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: data-classifier-service
-  namespace: {{ .Release.Namespace }}
-spec:
-  type: ClusterIP
-  clusterIP: None
-  selector:
-    "app.kubernetes.io/name": formal-external-classifier
-    "app.kubernetes.io/instance": formal-external-classifier
-  ports:
-    - port: 8080
-      name: healthcheck
-      targetPort: 8080
-      protocol: TCP
-    - port: 50055
-      name: dc-satellite
-      targetPort: 50055
-      protocol: TCP
-{{- end }}
----
 {{- if .Values.deployDataDiscovery }}
 # data-discovery-service.yaml
 apiVersion: v1
