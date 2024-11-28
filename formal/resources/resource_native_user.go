@@ -120,7 +120,6 @@ func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 	// Should map to all fields of UserOrgItem
 	d.Set("resource_id", res.Msg.NativeUser.ResourceId)
 	d.Set("native_user_id", res.Msg.NativeUser.Username)
-	d.Set("native_user_secret", res.Msg.NativeUser.Secret)
 	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
 	d.Set("termination_protection", res.Msg.NativeUser.TerminationProtection)
 
