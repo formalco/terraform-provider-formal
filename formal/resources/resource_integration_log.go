@@ -103,23 +103,18 @@ func ResourceIntegrationLogs() *schema.Resource {
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
-						"access_key_id": {
-							Description: "AWS Access Key ID.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"access_key_secret": {
-							Description: "AWS Access Key Secret.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
 						"region": {
 							Description: "AWS Region.",
 							Type:        schema.TypeString,
-							Required:    true,
+							Computed:    true,
 						},
 						"s3_bucket_name": {
 							Description: "AWS S3 Bucket Name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"cloud_integration_id": {
+							Description: "Cloud Integration ID.",
 							Type:        schema.TypeString,
 							Required:    true,
 						},
@@ -188,10 +183,8 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 
 			integration := &corev1.CreateIntegrationLogRequest_AwsS3_{
 				AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
-					AccessKeyId:     awsConfig["access_key_id"].(string),
-					SecretAccessKey: awsConfig["access_key_secret"].(string),
-					Region:          awsConfig["region"].(string),
-					BucketName:      awsConfig["s3_bucket_name"].(string),
+					CloudIntegrationId: awsConfig["cloud_integration_id"].(string),
+					BucketName:         awsConfig["s3_bucket_name"].(string),
 				},
 			}
 			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{

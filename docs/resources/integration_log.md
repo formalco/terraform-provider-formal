@@ -35,10 +35,12 @@ Registering a Integration Logs app.
 
 Required:
 
-- `access_key_id` (String) AWS Access Key ID.
-- `access_key_secret` (String) AWS Access Key Secret.
-- `region` (String) AWS Region.
+- `cloud_integration_id` (String) Cloud Integration ID.
 - `s3_bucket_name` (String) AWS S3 Bucket Name.
+
+Read-Only:
+
+- `region` (String) AWS Region.
 
 
 <a id="nestedblock--datadog"></a>
