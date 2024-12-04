@@ -7,6 +7,7 @@ import (
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
@@ -32,54 +33,46 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"type": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Type of the Integration. (Supported: aws)",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Webhook secret of the Integration.",
+				Description: "Name of the Integration.",
 				Type:        schema.TypeString,
-				Computed:    true,
+				Required:    true,
+				ForceNew:    true,
 			},
-			"region": {
+			"cloud_region": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Region of the cloud provider.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"aws": {
-				Description: "AWS cloud configuration.",
-				Type:        schema.TypeSet,
-				Optional:    true,
-				ForceNew:    true,
-				MaxItems:    1,
-				Elem: &schema.Resource{
-					Schema: map[string]*schema.Schema{
-						"region": {
-							Description: "AWS Region.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"account_id": {
-							Description: "Account ID of AWS account.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"formal_iam_role": {
-							Description: "AWS Iam Role used by Formal.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"formal_id": {
-							Description: "AWS Formal ID.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-						"formal_stack_name": {
-							Description: "Cloud formation stack name.",
-							Type:        schema.TypeString,
-							Required:    true,
-						},
-					},
-				},
+			"aws_template_body": {
+				Description: "The template body of the CloudFormation stack.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"aws_formal_stack_name": {
+				Description: "A generated name for your CloudFormation stack.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"aws_formal_iam_role": {
+				Description: "The IAM role ID Formal will use to access your resources.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"aws_formal_pingback_arn": {
+				Description: "The SNS topic ARN CloudFormation can use to send events to Formal.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 		},
 	}
@@ -88,65 +81,49 @@ func ResourceIntegrationCloud() *schema.Resource {
 func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	var diags diag.Diagnostics
-
-	Name := d.Get("name").(string)
-	Type := d.Get("type").(string)
-	Region := d.Get("region").(string)
-
 	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
-		Name:        Name,
-		Type:        Type,
-		CloudRegion: Region,
+		Name:        d.Get("name").(string),
+		Type:        d.Get("type").(string),
+		CloudRegion: d.Get("cloud_region").(string),
 	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(res.Msg.Cloud.Id)
+	d.SetId(res.Msg.Id)
 
-	resourceIntegrationCloudRead(ctx, d, meta)
-	return diags
+	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
 func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	appId := d.Id()
+	integrationId := d.Id()
 
 	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.GetIntegrationCloud(ctx, connect.NewRequest(&corev1.GetIntegrationCloudRequest{
-		Id: appId,
+		Id: integrationId,
 	}))
 	if err != nil {
+		if connect.CodeOf(err) == connect.CodeNotFound {
+			tflog.Warn(ctx, "The Integration was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			d.SetId("")
+			return diags
+		}
 		return diag.FromErr(err)
 	}
 
-	if res.Msg.Cloud == nil {
-		d.SetId("")
-		return diags
-	}
-
+	d.SetId(res.Msg.Cloud.Id)
 	d.Set("name", res.Msg.Cloud.Name)
 
 	switch data := res.Msg.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
-		awsConfig := map[string]interface{}{
-			"region":            data.Aws.AwsCloudRegion,
-			"account_id":        data.Aws.AwsAccountId,
-			"formal_iam_role":   data.Aws.AwsFormalIamRole,
-			"formal_id":         data.Aws.AwsFormalId,
-			"formal_stack_name": data.Aws.AwsFormalStackName,
-		}
-
-		// Create a set with the aws configuration
-		awsSet := schema.NewSet(schema.HashResource(ResourceIntegrationCloud()), []interface{}{awsConfig})
-		// Set the aws set in the ResourceData
-		if err := d.Set("aws", awsSet); err != nil {
-			return diag.FromErr(err)
-		}
+		d.Set("type", "aws")
+		d.Set("cloud_region", data.Aws.AwsCloudRegion)
+		d.Set("aws_template_body", data.Aws.TemplateBody)
+		d.Set("aws_formal_stack_name", data.Aws.AwsFormalStackName)
+		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
+		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
 	}
-
-	d.SetId(res.Msg.Cloud.Id)
 	return diags
 }
 
@@ -154,15 +131,13 @@ func resourceIntegrationCloudDelete(ctx context.Context, d *schema.ResourceData,
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	appId := d.Id()
+	integrationId := d.Id()
 
-	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.DeleteCloudIntegration(ctx, connect.NewRequest(&corev1.DeleteCloudIntegrationRequest{Id: appId}))
-
+	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.DeleteCloudIntegration(ctx, connect.NewRequest(&corev1.DeleteCloudIntegrationRequest{Id: integrationId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId("")
-
 	return diags
 }
