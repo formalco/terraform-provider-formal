@@ -12,16 +12,18 @@ terraform {
   required_version = ">= 0.14.9"
 }
 
-provider "formal" {}
+provider "formal" {
+  api_key = var.formal_api_key
+}
 
 provider "aws" {
-  region = "eu-west-1"
+  region = var.region
 }
 
 resource "formal_integration_cloud" "demo" {
-  name         = "tf-demo-integration"
+  name         = "${var.name}-demo-integration"
   type         = "aws"
-  cloud_region = "eu-west-1"
+  cloud_region = var.region
 }
 
 resource "aws_cloudformation_stack" "demo" {
@@ -36,12 +38,12 @@ resource "aws_cloudformation_stack" "demo" {
 }
 
 resource "aws_s3_bucket" "demo" {
-  bucket        = "tf-demo-integration"
+  bucket        = "${var.name}-demo-integration"
   force_destroy = true
 }
 
 resource "formal_integration_log" "demo" {
-  name = "tf-demo-integration"
+  name = "${var.name}-demo-integration"
 
   aws_s3 {
     s3_bucket_name       = aws_s3_bucket.demo.bucket
