@@ -23,7 +23,7 @@ Registering a Connector Hostname with Formal.
 
 ### Optional
 
-- `termination_protection` (Boolean) If set to true, this connector cannot be deleted.
+- `termination_protection` (Boolean) If set to true, this connector hostname cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

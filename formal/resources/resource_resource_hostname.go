@@ -15,14 +15,14 @@ import (
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
-func ResourceConnectorHostname() *schema.Resource {
+func ResourceResourceHostname() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description:   "Registering a Connector Hostname with Formal.",
-		CreateContext: resourceConnectorHostnameCreate,
-		ReadContext:   resourceConnectorHostnameRead,
-		UpdateContext: resourceConnectorHostnameUpdate,
-		DeleteContext: resourceConnectorHostnameDelete,
+		Description:   "Registering a Resource Hostname with Formal.",
+		CreateContext: resourceResourceHostnameCreate,
+		ReadContext:   resourceResourceHostnameRead,
+		UpdateContext: resourceResourceHostnameUpdate,
+		DeleteContext: resourceResourceHostnameDelete,
 		SchemaVersion: 1,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
@@ -33,33 +33,33 @@ func ResourceConnectorHostname() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The ID of this Connector Hostname.",
+				Description: "The ID of this Resource Hostname.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"connector_id": {
+			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The ID of the Connector this hostname is linked to.",
+				Description: "The ID of the Resource this hostname is linked to.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+			},
+			"name": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The name of this Resource Hostname.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"hostname": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The hostname for this Connector hostname.",
+				Description: "The hostname for this Resource hostname.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
-			"managed_tls": {
-				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, Formal will manage the TLS certificate for this hostname.",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, this connector hostname cannot be deleted.",
+				Description: "If set to true, this resource hostname cannot be deleted.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -68,116 +68,116 @@ func ResourceConnectorHostname() *schema.Resource {
 	}
 }
 
-func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	req := &corev1.CreateConnectorHostnameRequest{
-		ConnectorId:           d.Get("connector_id").(string),
+	req := &corev1.CreateResourceHostnameRequest{
+		ResourceId:            d.Get("resource_id").(string),
+		Name:                  d.Get("name").(string),
 		Hostname:              d.Get("hostname").(string),
-		ManagedTls:            d.Get("managed_tls").(bool),
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorHostname(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceHostname(ctx, connect.NewRequest(req))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorHostname.Id)
-	resourceConnectorHostnameRead(ctx, d, meta)
+	d.SetId(res.Msg.ResourceHostname.Id)
+	resourceResourceHostnameRead(ctx, d, meta)
 	return diags
 }
 
-func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	connectorHostnameId := d.Id()
+	resourceHostnameId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
-		Id: &corev1.GetConnectorHostnameRequest_HostnameId{
-			HostnameId: connectorHostnameId,
-		},
+	req := connect.NewRequest(&corev1.GetResourceHostnameRequest{
+		Id: resourceHostnameId,
 	})
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHostname(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Resource Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
 			d.SetId("")
 			return diags
 		}
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorHostname.Id)
-	d.Set("connector_id", res.Msg.ConnectorHostname.Connector.Id)
-	d.Set("hostname", res.Msg.ConnectorHostname.Hostname)
-	d.Set("managed_tls", res.Msg.ConnectorHostname.ManagedTls)
+	d.Set("id", res.Msg.ResourceHostname.Id)
+	d.Set("resource_id", res.Msg.ResourceHostname.Resource.Id)
+	d.Set("hostname", res.Msg.ResourceHostname.Hostname)
+	d.Set("name", res.Msg.ResourceHostname.Name)
 
-	d.SetId(res.Msg.ConnectorHostname.Id)
+	d.SetId(res.Msg.ResourceHostname.Id)
 
 	return diags
 }
 
-func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	connectorHostnameId := d.Id()
+	resourceHostnameId := d.Id()
 
-	fieldsThatCanChange := []string{"managed_tls", "termination_protection"}
+	fieldsThatCanChange := []string{"hostname", "name", "termination_protection"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	managedTls := d.Get("managed_tls").(bool)
+	hostname := d.Get("hostname").(string)
+	name := d.Get("name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	req := connect.NewRequest(&corev1.UpdateConnectorHostnameRequest{
-		Id:                    connectorHostnameId,
-		ManagedTls:            &managedTls,
+	req := connect.NewRequest(&corev1.UpdateResourceHostnameRequest{
+		Id:                    resourceHostnameId,
+		Name:                  &name,
+		Hostname:              &hostname,
 		TerminationProtection: &terminationProtection,
 	})
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorHostname(ctx, req)
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	resourceConnectorHostnameRead(ctx, d, meta)
+	resourceResourceHostnameRead(ctx, d, meta)
 	return diags
 }
 
-func resourceConnectorHostnameDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	connectorHostnameId := d.Id()
+	resourceHostnameId := d.Id()
 
 	terminationProtection := d.Get("termination_protection").(bool)
 	if terminationProtection {
-		return diag.Errorf("Connector Hostname cannot be deleted because termination_protection is set to true")
+		return diag.Errorf("Resource Hostname cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteConnectorHostnameRequest{
-		Id: connectorHostnameId,
+	req := connect.NewRequest(&corev1.DeleteResourceHostnameRequest{
+		Id: resourceHostnameId,
 	})
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorHostname(ctx, req)
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}

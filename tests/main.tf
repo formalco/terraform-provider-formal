@@ -21,6 +21,12 @@ resource "formal_resource" "postgres1" {
   space_id = formal_space.name.id
 }
 
+resource "formal_resource_hostname" "name" {
+  resource_id = formal_resource.postgres1.id
+  hostname = "terraform-test-hostname-postgres1"
+  name = "terraform-test-name-postgres1"
+}
+
 resource "formal_integration_bi" "name" {
   name              = "terraform-test-integration-app"
   metabase {

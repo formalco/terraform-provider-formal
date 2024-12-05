@@ -23,6 +23,8 @@ variable "private_subnets" {}
 variable "public_subnets" {}
 
 variable "postgres_hostname" {}
+variable "postgres_extra_hostname" {}
+variable "postgres_extra_name" {}
 
 variable "postgres_sidecar_hostname" {}
 
