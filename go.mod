@@ -5,10 +5,10 @@ go 1.22.0
 toolchain go1.22.1
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.35.2-20241205133641-9e318da01eb8.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.35.2-20241207024844-382ecefa636e.1
 	connectrpc.com/connect v1.17.0
 	github.com/bufbuild/protovalidate-go v0.7.3
-	github.com/formalco/go-sdk/sdk/v2 v2.6.5
+	github.com/formalco/go-sdk/sdk/v2 v2.6.7
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
@@ -18,7 +18,7 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.35.2-20241127180247-a33202765966.1 // indirect
-	buf.build/gen/go/formal/core/connectrpc/go v1.17.0-20241205031422-4024bf7e9c24.1 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.17.0-20241207024844-382ecefa636e.1 // indirect
 	cel.dev/expr v0.19.0 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect

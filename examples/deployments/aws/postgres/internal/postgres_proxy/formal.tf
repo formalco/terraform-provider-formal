@@ -50,3 +50,15 @@ resource "formal_native_user" "main_postgres" {
   native_user_secret = var.postgres_password
   use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
 }
+
+resource "formal_native_user" "main_postgres_extra" {
+  resource_id        = formal_resource.main.id
+  native_user_id     = var.postgres_extra_username
+  native_user_secret = var.postgres_extra_password
+}
+
+resource "formal_native_user_link" "main" {
+  formal_identity_id   = formal_resource.main.id
+  formal_identity_type = "resource_hostname"
+  native_user_id       = formal_native_user.main_postgres_extra.id
+}
