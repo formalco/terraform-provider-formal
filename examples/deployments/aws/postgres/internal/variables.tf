@@ -46,3 +46,5 @@ variable "postgres_sidecar_hostname" {}
 
 variable "postgres_username" {}
 variable "postgres_password" {}
+variable "postgres_extra_username" {}
+variable "postgres_extra_password" {}

@@ -39,13 +39,13 @@ func ResourceNativeUserLink() *schema.Resource {
 			},
 			"formal_identity_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The Formal ID for the User or Group to be linked.",
+				Description: "The Formal ID for the User, Group, or Resource Hostname to be linked.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
 			"formal_identity_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of Formal Identity to be linked. Accepted values are `user` and `group`.",
+				Description: "The type of Formal Identity to be linked. Accepted values are `user`, `group`, and `resource_hostname`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
