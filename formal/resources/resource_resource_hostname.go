@@ -55,7 +55,6 @@ func ResourceResourceHostname() *schema.Resource {
 				Description: "The hostname for this Resource hostname.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
