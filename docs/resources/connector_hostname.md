@@ -29,6 +29,7 @@ Registering a Connector Hostname with Formal.
 
 ### Read-Only
 
+- `dns_record_status` (String) The status of the DNS record for this hostname. Accepted values are `none`, `pending`, `success` and `failed`.
 - `id` (String) The ID of this Connector Hostname.
 - `tls_certificate_status` (String) The status of the TLS certificate for this hostname. Accepted values are `none`, `issuing`, and `issued`.
 

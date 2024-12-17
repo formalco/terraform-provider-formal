@@ -10,6 +10,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -76,6 +77,12 @@ func ResourceConnectorHostname() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"dns_record_status": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The status of the DNS record for this hostname. Accepted values are `none`, `pending`, `success` and `failed`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -113,6 +120,56 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 
 	connectorHostnameId := d.Id()
 
+	stateConf := &retry.StateChangeConf{
+		Pending: []string{"tls_issuing", "dns_record_pending"}, // States we wait on
+		Target:  []string{"ready"},                             // Custom target state
+		Refresh: func() (interface{}, string, error) {
+			req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
+				Id: &corev1.GetConnectorHostnameRequest_HostnameId{
+					HostnameId: connectorHostnameId,
+				},
+			})
+
+			res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
+			if err != nil {
+				if connect.CodeOf(err) == connect.CodeNotFound {
+					tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+					d.SetId("")
+					return nil, "", fmt.Errorf("resource not found")
+				}
+				return nil, "", err
+			}
+
+			// Check TlsCertificateStatus and DnsRecordStatus
+			tlsStatus := res.Msg.ConnectorHostname.TlsCertificateStatus
+			dnsStatus := res.Msg.ConnectorHostname.DnsRecordStatus
+
+			tflog.Info(ctx, "Polling for TLS and DNS readiness", map[string]interface{}{
+				"tls_certificate_status": tlsStatus,
+				"dns_record_status":      dnsStatus,
+			})
+
+			if tlsStatus == "issuing" {
+				return res, "tls_issuing", nil
+			}
+			if dnsStatus == "pending" {
+				return res, "dns_record_pending", nil
+			}
+
+			// Both statuses are ready
+			return res, "ready", nil
+		},
+		Timeout:                   10 * time.Minute, // Set a timeout for the wait
+		Delay:                     10 * time.Second, // Poll every 10 seconds
+		MinTimeout:                5 * time.Second,
+		ContinuousTargetOccurence: 1,
+	}
+
+	_, err := stateConf.WaitForStateContext(ctx)
+	if err != nil {
+		return diag.Errorf("Error waiting for TLS certificate and DNS record to become active: %s", err)
+	}
+
 	req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
 		Id: &corev1.GetConnectorHostnameRequest_HostnameId{
 			HostnameId: connectorHostnameId,
@@ -136,16 +193,8 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("termination_protection", res.Msg.ConnectorHostname.TerminationProtection)
 	d.Set("tls_certificate_status", res.Msg.ConnectorHostname.TlsCertificateStatus)
 	d.Set("dns_record", res.Msg.ConnectorHostname.DnsRecord)
+	d.Set("dns_record_status", res.Msg.ConnectorHostname.DnsRecordStatus)
 	d.SetId(res.Msg.ConnectorHostname.Id)
-
-	if res.Msg.ConnectorHostname.TlsCertificateStatus == "issuing" {
-		return diag.Diagnostics{
-			{
-				Severity: diag.Warning,
-				Summary:  "TLS certificate is still being issued",
-			},
-		}
-	}
 
 	return diags
 }
