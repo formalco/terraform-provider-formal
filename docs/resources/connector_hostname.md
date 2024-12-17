@@ -23,12 +23,15 @@ Registering a Connector Hostname with Formal.
 
 ### Optional
 
+- `dns_record` (String) The DNS record for this hostname.
 - `termination_protection` (Boolean) If set to true, this connector hostname cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
+- `dns_record_status` (String) The status of the DNS record for this hostname. Accepted values are `none`, `pending`, `success` and `failed`.
 - `id` (String) The ID of this Connector Hostname.
+- `tls_certificate_status` (String) The status of the TLS certificate for this hostname. Accepted values are `none`, `issuing`, and `issued`.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
