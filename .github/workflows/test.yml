@@ -7,6 +7,8 @@ on:
     paths-ignore:
       - 'README.md'
   push:
+    branches:
+      - main
     paths-ignore:
       - 'README.md'
   # For systems with an upstream API that could drift unexpectedly (like most SaaS systems, etc.),
@@ -47,6 +49,7 @@ jobs:
         with:
           go-version: '1.21'
       - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
       - run: go generate ./...
       - name: git diff
         run: |
