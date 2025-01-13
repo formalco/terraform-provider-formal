@@ -5,21 +5,22 @@ go 1.22.0
 toolchain go1.22.1
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.0-20241217025140-d3fe4cb0531a.1
-	connectrpc.com/connect v1.17.0
-	github.com/bufbuild/protovalidate-go v0.8.0
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.2-20250113152329-6053f24202c5.1
+	connectrpc.com/connect v1.18.1
+	github.com/bufbuild/protovalidate-go v0.8.2
 	github.com/formalco/go-sdk/sdk/v2 v2.6.8
 	github.com/hashicorp/terraform-plugin-docs v0.19.4
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.34.0
 	github.com/robfig/cron/v3 v3.0.1
-	google.golang.org/protobuf v1.36.0
+	google.golang.org/protobuf v1.36.2
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.0-20241127180247-a33202765966.1 // indirect
-	buf.build/gen/go/formal/core/connectrpc/go v1.17.0-20241217025140-d3fe4cb0531a.1 // indirect
-	cel.dev/expr v0.19.0 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.2-20241127180247-a33202765966.1 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.18.1-20250113152329-6053f24202c5.1 // indirect
+	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.2-20240617172850-a48fcebcf8f1.1 // indirect
+	cel.dev/expr v0.19.1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -79,17 +80,17 @@ require (
 	github.com/yuin/goldmark-meta v1.1.0 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	go.abhg.dev/goldmark/frontmatter v0.2.0 // indirect
-	golang.org/x/crypto v0.30.0 // indirect
-	golang.org/x/exp v0.0.0-20241204233417-43b7b7cde48d // indirect
+	golang.org/x/crypto v0.32.0 // indirect
+	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
 	golang.org/x/mod v0.22.0 // indirect
-	golang.org/x/net v0.32.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/tools v0.28.0 // indirect
+	golang.org/x/tools v0.29.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20241202173237-19429a94021a // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20241202173237-19429a94021a // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20250106144421-5f5ef82da422 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250106144421-5f5ef82da422 // indirect
 	google.golang.org/grpc v1.67.1 // indirect
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
