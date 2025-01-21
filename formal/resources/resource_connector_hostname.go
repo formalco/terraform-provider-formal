@@ -56,7 +56,9 @@ func ResourceConnectorHostname() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, Formal will manage the TLS certificate for this hostname.",
 				Type:        schema.TypeBool,
-				Required:    true,
+				Optional:    true,
+				Default:     false,
+				Deprecated:  "This field is deprecated and has no effect. It will be removed in a future release.",
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -97,7 +99,6 @@ func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData
 	req := &corev1.CreateConnectorHostnameRequest{
 		ConnectorId:           d.Get("connector_id").(string),
 		Hostname:              d.Get("hostname").(string),
-		ManagedTls:            d.Get("managed_tls").(bool),
 		TerminationProtection: d.Get("termination_protection").(bool),
 		DnsRecord:             d.Get("dns_record").(string),
 	}
@@ -189,7 +190,6 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("id", res.Msg.ConnectorHostname.Id)
 	d.Set("connector_id", res.Msg.ConnectorHostname.Connector.Id)
 	d.Set("hostname", res.Msg.ConnectorHostname.Hostname)
-	d.Set("managed_tls", res.Msg.ConnectorHostname.ManagedTls)
 	d.Set("termination_protection", res.Msg.ConnectorHostname.TerminationProtection)
 	d.Set("tls_certificate_status", res.Msg.ConnectorHostname.TlsCertificateStatus)
 	d.Set("dns_record", res.Msg.ConnectorHostname.DnsRecord)
@@ -208,18 +208,16 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 
 	connectorHostnameId := d.Id()
 
-	fieldsThatCanChange := []string{"managed_tls", "termination_protection"}
+	fieldsThatCanChange := []string{"termination_protection", "dns_record"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	managedTls := d.Get("managed_tls").(bool)
 	terminationProtection := d.Get("termination_protection").(bool)
 	dnsRecord := d.Get("dns_record").(string)
 	req := connect.NewRequest(&corev1.UpdateConnectorHostnameRequest{
 		Id:                    connectorHostnameId,
-		ManagedTls:            &managedTls,
 		TerminationProtection: &terminationProtection,
 		DnsRecord:             &dnsRecord,
 	})
