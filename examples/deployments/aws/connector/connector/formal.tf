@@ -20,7 +20,7 @@ resource "formal_connector" "main" {
 resource "formal_connector_hostname" "main" {
   connector_id = formal_connector.main.id
   hostname     = var.connector_hostname
-  managed_tls  = true
+  dns_record   = var.connector_dns_record
 }
 
 ## Add postgres listener for every postgres resources
