@@ -76,6 +76,7 @@ func ResourceResource() *schema.Resource {
 				Description: "Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  "This field is deprecated and will be removed in a future release.",
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
