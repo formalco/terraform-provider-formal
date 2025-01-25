@@ -19,11 +19,11 @@ Registering a Connector Hostname with Formal.
 
 - `connector_id` (String) The ID of the Connector this hostname is linked to.
 - `hostname` (String) The hostname for this Connector hostname.
-- `managed_tls` (Boolean) If set to true, Formal will manage the TLS certificate for this hostname.
 
 ### Optional
 
 - `dns_record` (String) The DNS record for this hostname.
+- `managed_tls` (Boolean, Deprecated) Deprecated: If set to true, Formal will manage the TLS certificate for this hostname.
 - `termination_protection` (Boolean) If set to true, this connector hostname cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
