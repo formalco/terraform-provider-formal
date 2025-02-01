@@ -57,8 +57,8 @@ github.com/envoyproxy/protoc-gen-validate v1.1.0/go.mod h1:sXRDRVmzEbkM7CVcM06s9
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
-github.com/formalco/go-sdk/sdk/v2 v2.6.8 h1:LZFBfN6iTeB0MWs51udp8i44P5uT4NFK5oL1Xod8n/8=
-github.com/formalco/go-sdk/sdk/v2 v2.6.8/go.mod h1:mvbaOm62zCx+dSeaLnCvPF4K8lN9Qep+Uuj9QqCva9Q=
+github.com/formalco/go-sdk/sdk/v2 v2.7.0 h1:BZKEOENZyyG+M+OAlD5/Ye+0+BxhP79Tr6+0di5IDJk=
+github.com/formalco/go-sdk/sdk/v2 v2.7.0/go.mod h1:mvbaOm62zCx+dSeaLnCvPF4K8lN9Qep+Uuj9QqCva9Q=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
 github.com/frankban/quicktest v1.14.3/go.mod h1:mgiwOwqx65TmIk1wJ6Q7wvnVMocbUorkibMOrVTHZps=
 github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 h1:+zs/tPmkDkHx3U66DAb0lQFJrpS6731Oaa12ikc+DiI=
