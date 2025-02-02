@@ -35,6 +35,8 @@ website/vendor
 *.winfile eol=crlf
 .terraform.tfstate.lock.info
 .terraform.lock.hcl
+*.tfstate*
+*.tfvars
 build.sh
 dev
 

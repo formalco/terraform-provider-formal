@@ -1,0 +1,62 @@
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  repository: 654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector
+  pullPolicy: Always
+  tag: "latest"
+
+formalAPIKey: ""
+googleServiceAccount: ""
+
+ports:
+  postgres: null
+  kubernetes: null
+  ssh: null
+  bigquery: null
+  healthCheck: 8080
+
+replicaCount: 2
+resources:
+  requests:
+    cpu: 4
+    memory: 8Gi
+  limits:
+    cpu: 8
+    memory: 16Gi
+
+service:
+  type: LoadBalancer
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+    # By default, Google Cloud Load Balancer's forwarding rule has
+    # global access disabled: client VMs, Cloud VPN tunnels, or Cloud
+    # Interconnect attachments (VLANs) must be located in the same
+    # region as the internal passthrough Network Load Balancer. To
+    # support clients in all regions, uncomment the following line:
+    # networking.gke.io/internal-load-balancer-allow-global-access: "true"
+
+  # Optional: specify IP if you want a static IP
+  loadBalancerIP: ""
+
+  # Optional: restrict source IPs that can access the service
+  loadBalancerSourceRanges: []
+    # - 10.0.0.0/8
+    # - 172.16.0.0/12
+    # - 192.168.0.0/16
+
+secrets:
+  ecrAccessKeyId: ""
+  ecrSecretAccessKey: ""
+
+ecrCredentials:
+  region: "eu-west-1"
+  schedule: "0 */6 * * *"
+  registryUrl: "654654333078.dkr.ecr.eu-west-1.amazonaws.com"
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+
+securityContext: {}
+podSecurityContext: {}
+podAnnotations:
+  cluster-autoscaler.kubernetes.io/safe-to-evict: "true"

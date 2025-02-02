@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "connector.fullname" . }}
+  labels:
+    {{- include "connector.labels" . | nindent 4 }}
+  {{- with .Values.service.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ .Values.service.type }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP }}
+  {{- end }}
+  {{- with .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  ports:
+    {{- if .Values.ports.postgres }}
+    - port: {{ .Values.ports.postgres }}
+      targetPort: postgres
+      protocol: TCP
+      name: postgres
+    {{- end }}
+    {{- if .Values.ports.kubernetes }}
+    - port: {{ .Values.ports.kubernetes }}
+      targetPort: kubernetes
+      protocol: TCP
+      name: kubernetes
+    {{- end }}
+    {{- if .Values.ports.ssh }}
+    - port: {{ .Values.ports.ssh }}
+      targetPort: ssh
+      protocol: TCP
+      name: ssh
+    {{- end }}
+    {{- if .Values.ports.bigquery }}
+    - port: {{ .Values.ports.bigquery }}
+      targetPort: bigquery
+      protocol: TCP
+      name: bigquery
+    {{- end }}
+  selector:
+    {{- include "connector.selectorLabels" . | nindent 4 }}
