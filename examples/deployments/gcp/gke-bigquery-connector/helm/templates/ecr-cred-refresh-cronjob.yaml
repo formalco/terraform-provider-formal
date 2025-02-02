@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "connector.fullname" . }}-ecr-cred-refresh
+  labels:
+    {{- include "connector.labels" . | nindent 4 }}
+spec:
+  schedule: {{ .Values.ecrCredentials.schedule | quote }}
+  successfulJobsHistoryLimit: {{ .Values.ecrCredentials.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.ecrCredentials.failedJobsHistoryLimit }}
+  jobTemplate:
+    spec:
+      {{- include "connector.ecrJob" . | nindent 6 }}

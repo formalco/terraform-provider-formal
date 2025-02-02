@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "connector.fullname" . }}
+  labels:
+    {{- include "connector.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "connector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "connector.selectorLabels" . | nindent 8 }}
+      annotations:
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            {{- if .Values.ports.postgres }}
+            - name: postgres
+              containerPort: {{ .Values.ports.postgres }}
+            {{- end }}
+            {{- if .Values.ports.kubernetes }}
+            - name: kubernetes
+              containerPort: {{ .Values.ports.kubernetes }}
+            {{- end }}
+            {{- if .Values.ports.ssh }}
+            - name: ssh
+              containerPort: {{ .Values.ports.ssh }}
+            {{- end }}
+            {{- if .Values.ports.bigquery }}
+            - name: bigquery
+              containerPort: {{ .Values.ports.bigquery }}
+            {{- end }}
+            - name: health
+              containerPort: {{ .Values.ports.healthCheck }}
+          env:
+            - name: FORMAL_CONTROL_PLANE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "connector.fullname" . }}
+                  key: formal-api-key
+            - name: SERVER_CONNECT_TLS
+              value: "true"
+            - name: CLIENT_LISTEN_TLS
+              value: "false"
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      imagePullSecrets:
+        - name: formal-ecr-secret
+      {{- if .Values.googleServiceAccount }}
+      serviceAccountName: {{ include "connector.fullname" . }}
+      {{- end }}
