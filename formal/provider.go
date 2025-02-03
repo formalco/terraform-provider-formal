@@ -39,6 +39,7 @@ func New(version string) func() *schema.Provider {
 				"formal_connector_listener":         resource.ResourceConnectorListener(),
 				"formal_connector_listener_rule":    resource.ResourceConnectorListenerRule(),
 				"formal_connector_listener_link":    resource.ResourceConnectorListenerLink(),
+				"formal_permission":                 resource.ResourcePermission(),
 				"formal_policy":                     resource.ResourcePolicy(),
 				"formal_policy_data_loader":         resource.ResourcePolicyDataLoader(),
 				"formal_group":                      resource.ResourceGroup(),
