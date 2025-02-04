@@ -17,9 +17,9 @@ provider "formal" {
 }
 
 resource "formal_permission" "read_only" {
-  name         = "logs read-only"
-  description  = "read only permission for logs"
-  module       = <<-EOF
+  name        = "logs read-only"
+  description = "read only permission for logs"
+  module      = <<-EOF
 package formal.app
 
 import future.keywords.if
