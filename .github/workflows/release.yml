@@ -50,3 +50,278 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  generate-changelog:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.DOCUSAURUS_PAT }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    outputs:
+      changelog_content: ${{ steps.generate-changelog.outputs.changelog_content }}
+      component: ${{ steps.generate-changelog.outputs.component }}
+      version: ${{ steps.generate-changelog.outputs.version }}
+    
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Install dependencies
+        run: npm install semver axios
+
+      - name: Generate Changelog
+        id: generate-changelog
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.DOCUSAURUS_PAT }}
+          script: |
+            const fs = require('fs');
+            const semver = require('semver');
+            const axios = require('axios');
+
+            const components = {
+              'provider': { label: 'provider', color: 'f29513' },
+            };
+
+            const tag = context.ref.split('/').pop();
+            console.log(`Processing tag: ${tag}`);
+            const [tagComponent, version] = tag.split('-');
+            
+            const config = components[tagComponent];
+            if (!config) {
+              console.log(`Unknown component: ${tagComponent}`);
+              core.setFailed('Unknown component');
+              return;
+            }
+
+            // Get previous tag
+            const tags = await github.rest.git.listMatchingRefs({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: `tags/${tagComponent}-`
+            });
+            
+            const sortedTags = tags.data
+              .map(tag => tag.ref.split('/').pop())
+              .filter(tag => tag.startsWith(`${tagComponent}-`))
+              .sort((a, b) => {
+                const vA = a.split('-')[1];
+                const vB = b.split('-')[1];
+                return -semver.compare(vA, vB);
+              });
+
+            const currentIndex = sortedTags.indexOf(tag);
+            const previousTag = currentIndex < sortedTags.length - 1 ? sortedTags[currentIndex + 1] : null;
+            console.log(`Previous tag: ${previousTag}`);
+            let since = '';
+            if (previousTag) {
+              try {
+                const prevTagData = await github.rest.git.getRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `tags/${previousTag}`
+                });
+                console.log(`Previous tag data:`, prevTagData.data);
+
+                let commitSha = prevTagData.data.object.sha;
+                
+                // If the tag object is an annotated tag, fetch the tag details to get the commit SHA
+                if (prevTagData.data.object.type === 'tag') {
+                  const tagData = await github.rest.git.getTag({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    tag_sha: commitSha
+                  });
+                  commitSha = tagData.data.object.sha; // The commit SHA from the annotated tag
+                }
+
+                const prevTagCommit = await github.rest.git.getCommit({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  commit_sha: commitSha
+                });
+                since = prevTagCommit.data.author.date;
+              } catch (error) {
+                console.error(`Error fetching previous tag commit: ${error.message}`);
+                core.setFailed('Failed to fetch previous tag commit');
+                return;
+              }
+            }
+            console.log(`Since: ${since}`);
+            // Fetch PRs for this component
+            const searchQuery = `repo:${context.repo.owner}/${context.repo.repo} is:pr is:merged base:main label:${config.label} ${since ? `merged:>${since}` : ''}`;
+            console.log(`Search query: ${searchQuery}`);
+            
+            const result = await github.rest.search.issuesAndPullRequests({ 
+              q: searchQuery,
+              per_page: 100
+            });
+
+            if (result.data.items.length === 0) {
+              console.log(`No PRs found for ${tagComponent}`);
+              core.setOutput('changelog_content', `# ${tagComponent} ${version}\n\nNo changes in this release.`);
+              core.setOutput('component', tagComponent);
+              core.setOutput('version', version);
+              return;
+            }
+
+            // Prepare PR data for OpenAI
+            const prData = result.data.items.map(pr => ({
+              title: pr.title,
+              number: pr.number,
+              url: pr.html_url,
+              labels: pr.labels.map(l => l.name.toLowerCase()),
+              body: pr.body
+            }));
+
+            // Generate changelog using OpenAI
+            const openaiPrompt = {
+              model: "gpt-4",
+              messages: [{
+                role: "system",
+                content: "You are a technical writer responsible for generating clear and concise changelog entries. Follow these exact rules:\n\n" +
+                 "1. **Format:**\n" +
+                 "   - Use the following section headers, but only if there are changes:\n" +
+                 "     - `### New`\n" +
+                 "     - `### Fixed`\n" +
+                 "     - `### Changed`\n" +
+                 "   - Each entry must be a bullet point starting with a verb in the present tense (e.g., 'Add', 'Fix', 'Update', 'Implement', 'Integrate').\n\n" +
+                 "2. **Content Extraction:**\n" +
+                 "   - Use all available metadata, including the PR title, commit messages, and git diff.\n" +
+                 "   - Focus on capturing meaningful changes relevant to the Terraform Provider.\n" +
+                 "   - Ignore unrelated or redundant details.\n\n" +
+                 "3. **Writing Guidelines:**\n" +
+                 "   - Clearly explain both **what changed** and **why it matters**.\n" +
+                 "   - Do **not** include PR numbers.\n" +
+                 "   - Do **not** add any extra content beyond what is requested.\n" +
+                 "   - If a category has no changes, exclude that section entirely.\n" +
+                 "   - Do not include any other text than the changelog entries."
+              }, {
+                role: "user",
+                content: `Generate a changelog for ${tagComponent} version ${version} based on these Pull Requests:\n${JSON.stringify(prData, null, 2)}`
+              }]
+            };
+
+            try {
+              const openaiResponse = await axios.post('https://api.openai.com/v1/chat/completions', openaiPrompt, {
+                headers: {
+                  'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+                  'Content-Type': 'application/json'
+                }
+              });
+
+              const today = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+              }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2');
+
+              let changelogContent = openaiResponse.data.choices[0].message.content;
+              
+              // Only remove title if it starts with # but not with ###
+              if (changelogContent.startsWith('#') && !changelogContent.startsWith('###')) {
+                const firstSectionIndex = changelogContent.indexOf('### ');
+                if (firstSectionIndex !== -1) {
+                  changelogContent = changelogContent.substring(firstSectionIndex);
+                }
+              }
+
+              // Format the changelog entry with the correct title format
+              let formattedChangelog = `## ${version} (${today})\n\n${changelogContent.trim()}`;
+
+              // Force removal of any remaining backticks
+              formattedChangelog = formattedChangelog.replace(/`/g, ''); 
+
+              core.setOutput('changelog_content', formattedChangelog);
+              core.setOutput('component', tagComponent);
+              core.setOutput('version', version);
+
+            } catch (error) {
+              console.error('OpenAI API Error:', error.response?.data || error);
+              core.setFailed('Failed to generate changelog with OpenAI');
+            }
+
+  create-changelog-pr:
+    needs: generate-changelog
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Changelog PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.DOCUSAURUS_PAT }}
+          commit-message: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
+          title: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
+          body: ${{ needs.generate-changelog.outputs.changelog_content }}
+          branch: "changelog/${{ needs.generate-changelog.outputs.component }}-${{ needs.generate-changelog.outputs.version }}"
+          base: main
+
+  sync-to-docs:
+    needs: [generate-changelog, create-changelog-pr]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout docs repo
+        uses: actions/checkout@v3
+        with:
+          repository: formalco/docusaurus-documentation
+          token: ${{ secrets.DOCUSAURUS_PAT }}
+          path: docusaurus-documentation
+
+      - name: Add Changelog
+        run: |
+          # Define the mapping of components to their changelog files
+          declare -A changelog_files=(
+            ["provider"]="docs/changelogs/provider-changelog.md"
+          )
+          
+          # Get the target file for this component
+          target_file="docusaurus-documentation/${changelog_files[${{ needs.generate-changelog.outputs.component }}]}"
+          
+          # Create directory if it doesn't exist
+          mkdir -p "$(dirname "$target_file")"
+          
+          # Create file if it doesn't exist
+          if [ ! -f "$target_file" ]; then
+            echo "# Changelog" > "$target_file"
+            echo "" >> "$target_file"
+          fi
+          
+          # Create a temporary file for the new changelog content
+          new_content_file=$(mktemp)
+          echo "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
+
+          # Create another temporary file for the updated changelog
+          temp_file=$(mktemp)
+
+          # Ensure `sed` inserts content safely with a blank line for formatting
+          sed "/^# Changelog$/ {
+              a\\
+              
+              r $new_content_file
+          }" "$target_file" > "$temp_file"
+
+          # Move the updated content back into the changelog file
+          mv "$temp_file" "$target_file"
+
+          # Clean up the temporary file
+          rm -f "$new_content_file"
+
+      - name: Create Docs PR
+        uses: peter-evans/create-pull-request@v4
+        with:
+          token: ${{ secrets.DOCUSAURUS_PAT }}
+          path: docusaurus-documentation
+          commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
+          title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
+          body: "This PR updates the changelog for ${{ needs.generate-changelog.outputs.component }} version ${{ needs.generate-changelog.outputs.version }}"
+          branch: "changelog/${{ needs.generate-changelog.outputs.component }}-${{ needs.generate-changelog.outputs.version }}"
+          base: main
