@@ -86,13 +86,14 @@ jobs:
             const axios = require('axios');
 
             const components = {
-              'provider': { label: 'provider', color: 'f29513' },
+              'v': { label: 'provider', color: 'f29513' },
             };
 
             const tag = context.ref.split('/').pop();
             console.log(`Processing tag: ${tag}`);
-            const [tagComponent, version] = tag.split('-');
-            
+            const tagComponent = tag.charAt(0);
+            const version = tag.substring(1);
+
             const config = components[tagComponent];
             if (!config) {
               console.log(`Unknown component: ${tagComponent}`);
@@ -185,26 +186,52 @@ jobs:
               model: "gpt-4",
               messages: [{
                 role: "system",
-                content: "You are a technical writer responsible for generating clear and concise changelog entries. Follow these exact rules:\n\n" +
-                 "1. **Format:**\n" +
-                 "   - Use the following section headers, but only if there are changes:\n" +
-                 "     - `### New`\n" +
-                 "     - `### Fixed`\n" +
-                 "     - `### Changed`\n" +
-                 "   - Each entry must be a bullet point starting with a verb in the present tense (e.g., 'Add', 'Fix', 'Update', 'Implement', 'Integrate').\n\n" +
-                 "2. **Content Extraction:**\n" +
-                 "   - Use all available metadata, including the PR title, commit messages, and git diff.\n" +
-                 "   - Focus on capturing meaningful changes relevant to the Terraform Provider.\n" +
-                 "   - Ignore unrelated or redundant details.\n\n" +
-                 "3. **Writing Guidelines:**\n" +
-                 "   - Clearly explain both **what changed** and **why it matters**.\n" +
-                 "   - Do **not** include PR numbers.\n" +
-                 "   - Do **not** add any extra content beyond what is requested.\n" +
-                 "   - If a category has no changes, exclude that section entirely.\n" +
-                 "   - Do not include any other text than the changelog entries."
+               content: "You are a technical writer creating an external-facing changelog for our customers. Your goal is to communicate **high-level functionality changes**, not internal implementation details like code refactors, function changes, or technical restructuring.\n\n" +
+                "### Changelog Format:\n" +
+                "- Each release must include only the relevant sections: \n" +
+                "  - **### New** (for new features)\n" +
+                "  - **### Fixed** (for bug fixes)\n" +
+                "  - **### Changed** (for modifications to existing functionality)\n" +
+                "- Omit any section that has no changes.\n" +
+                "- Each bullet point should be **short, clear, and impact-focused**.\n" +
+                "- Keep bullet points between 15-120 characters.\n" +
+                "- Use a single line per change; only use two lines for complex changes that cannot be simplified further.\n\n" +
+                
+                "### What to Include:\n" +
+                "1. Extract only customer-facing changes of PRs.\n" +
+                "2. **Choose only one category per change** (do not list the same item in multiple sections).\n" +
+                "3. **Explain why the change matters** to users, avoiding technical jargon.\n" +
+                "4. **Do not include PR numbers, internal function names, or implementation details.**\n" +
+                "5. **Start each bullet point with a verb** in present tense (e.g., 'Add', 'Fix', 'Update').\n" +
+                "6. **Group related changes** under a single bullet point to avoid fragmentation.\n\n" +
+                
+                "### Grouping Related Changes:\n" +
+                "- Combine related changes into a single, comprehensive bullet point\n" +
+                "- Include all relevant aspects of the feature or change\n" +
+                "- Use commas or 'with' to connect related components\n\n" +
+                
+                "Example of good grouping:\n" +
+                "✓ Add PDF export with custom headers, watermarks, and page numbering\n" +
+                "✗ Add PDF export\n" +
+                "✗ Add custom headers to PDF export\n" +
+                "✗ Add watermarks to PDF export\n" +
+                "✗ Add page numbering to PDF export\n\n" +
+                
+                "### Example Output:\n" +
+                "```\n" +
+                "## 1.12.37 (2025-02-06)\n" +
+                "\n" +
+                "### New\n" +
+                "- Add support for masking policies on columns with shared paths in Snowflake, improving data security and compliance.\n" +
+                "\n" +
+                "### Changed\n" +
+                "- Improve masking policy enforcement for better consistency across similar columns, reducing manual configuration.\n" +
+                "```\n" +
+                "\n" +
+                "Follow this structure strictly. The focus should always be on how the changes affect customers, **not on how the changes were implemented.**"
               }, {
                 role: "user",
-                content: `Generate a changelog for ${tagComponent} version ${version} based on these Pull Requests:\n${JSON.stringify(prData, null, 2)}`
+                content: `Generate a changelog for our Terraform Provider version ${version} based on these Pull Requests:\n${JSON.stringify(prData, null, 2)}`
               }]
             };
 
@@ -239,7 +266,7 @@ jobs:
               formattedChangelog = formattedChangelog.replace(/`/g, ''); 
 
               core.setOutput('changelog_content', formattedChangelog);
-              core.setOutput('component', tagComponent);
+              core.setOutput('component', "Formal Terraform Provider");
               core.setOutput('version', version);
 
             } catch (error) {
