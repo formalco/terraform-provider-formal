@@ -88,3 +88,9 @@ resource "formal_connector_listener_link" "mysql_link" {
   connector_id          = formal_connector.main.id
   connector_listener_id = formal_connector_listener.mysql_listener.id
 }
+
+resource "formal_connector_configuration" "main" {
+  connector_id      = formal_connector.main.id
+  log_level         = "debug"
+  health_check_port = 8080
+}
