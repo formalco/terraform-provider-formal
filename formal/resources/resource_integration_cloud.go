@@ -2,6 +2,8 @@ package resource
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -18,6 +20,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 		Description:   "Registering a Cloud integration.",
 		CreateContext: resourceIntegrationCloudCreate,
 		ReadContext:   resourceIntegrationCloudRead,
+		UpdateContext: resourceIntegrationCloudUpdate,
 		DeleteContext: resourceIntegrationCloudDelete,
 
 		Timeouts: &schema.ResourceTimeout{
@@ -52,7 +55,6 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Description: "Region of the cloud provider.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -125,6 +127,30 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
 	}
 	return diags
+}
+
+func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+
+	integrationId := d.Id()
+
+	fieldsThatCanChange := []string{"cloud_region"}
+	if d.HasChangesExcept(fieldsThatCanChange...) {
+		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
+		return diag.Errorf(err)
+	}
+
+	cloudRegion := d.Get("cloud_region").(string)
+
+	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+		Id:          integrationId,
+		CloudRegion: &cloudRegion,
+	}))
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
+	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
 func resourceIntegrationCloudDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
