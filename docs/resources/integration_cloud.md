@@ -23,6 +23,7 @@ Registering a Cloud integration.
 
 ### Optional
 
+- `aws_template_version` (String) The template version of the CloudFormation stack.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
