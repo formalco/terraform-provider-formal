@@ -58,10 +58,9 @@ func ResourceIntegrationCloud() *schema.Resource {
 				ForceNew:    true,
 			},
 			"aws_template_version": {
-				Description: "The template version of the CloudFormation stack.",
+				Description: "The template version of the CloudFormation stack. Use `latest` to stay in sync.",
 				Type:        schema.TypeString,
-				Optional:    true,
-				Default:     "latest",
+				Required:    true,
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",

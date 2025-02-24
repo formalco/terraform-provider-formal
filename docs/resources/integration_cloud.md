@@ -17,13 +17,13 @@ Registering a Cloud integration.
 
 ### Required
 
+- `aws_template_version` (String) The template version of the CloudFormation stack. Use `latest` to stay in sync.
 - `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
 - `type` (String) Type of the Integration. (Supported: aws)
 
 ### Optional
 
-- `aws_template_version` (String) The template version of the CloudFormation stack.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
