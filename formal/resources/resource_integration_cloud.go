@@ -55,6 +55,12 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Description: "Region of the cloud provider.",
 				Type:        schema.TypeString,
 				Required:    true,
+				ForceNew:    true,
+			},
+			"aws_template_version": {
+				Description: "The template version of the CloudFormation stack. Use `latest` to stay in sync.",
+				Type:        schema.TypeString,
+				Required:    true,
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -125,6 +131,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_stack_name", data.Aws.AwsFormalStackName)
 		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
 		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
+		d.Set("aws_template_version", data.Aws.AwsTemplateVersion)
 	}
 	return diags
 }
@@ -134,17 +141,17 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	integrationId := d.Id()
 
-	fieldsThatCanChange := []string{"cloud_region"}
+	fieldsThatCanChange := []string{"aws_template_version"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	cloudRegion := d.Get("cloud_region").(string)
+	awsTemplateVersion := d.Get("aws_template_version").(string)
 
 	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
-		Id:          integrationId,
-		CloudRegion: &cloudRegion,
+		Id:                 integrationId,
+		AwsTemplateVersion: &awsTemplateVersion,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
