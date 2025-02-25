@@ -96,9 +96,11 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 	c := meta.(*clients.Clients)
 
 	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
-		Name:        d.Get("name").(string),
-		Type:        d.Get("type").(string),
-		CloudRegion: d.Get("cloud_region").(string),
+		Name:               d.Get("name").(string),
+		Type:               d.Get("type").(string),
+		CloudRegion:        d.Get("cloud_region").(string),
+		AwsS3BucketArn:     d.Get("aws_s3_bucket_arn").(string),
+		AwsTemplateVersion: d.Get("aws_template_version").(string),
 	}))
 	if err != nil {
 		return diag.FromErr(err)
