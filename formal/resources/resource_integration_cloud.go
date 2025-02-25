@@ -89,6 +89,12 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Computed:    true,
 			},
 		},
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+			if d.HasChange("aws_template_version") {
+				d.SetNewComputed("aws_template_body")
+			}
+			return nil
+		},
 	}
 }
 
