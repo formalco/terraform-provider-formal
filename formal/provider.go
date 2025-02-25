@@ -35,7 +35,6 @@ func New(version string) func() *schema.Provider {
 			DataSourcesMap: map[string]*schema.Resource{},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_connector":                  resource.ResourceConnector(),
-				"formal_connector_configuration":    resource.ResourceConnectorConfiguration(),
 				"formal_connector_hostname":         resource.ResourceConnectorHostname(),
 				"formal_connector_listener":         resource.ResourceConnectorListener(),
 				"formal_connector_listener_rule":    resource.ResourceConnectorListenerRule(),
