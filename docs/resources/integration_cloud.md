@@ -24,6 +24,7 @@ Registering a Cloud integration.
 
 ### Optional
 
+- `aws_s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
