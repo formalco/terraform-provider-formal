@@ -20,10 +20,17 @@ provider "aws" {
   region = var.region
 }
 
+resource "aws_s3_bucket" "demo" {
+  bucket        = "${var.name}-demo-integration"
+  force_destroy = true
+}
+
 resource "formal_integration_cloud" "demo" {
-  name         = "${var.name}-demo-integration"
-  type         = "aws"
-  cloud_region = var.region
+  name                 = "${var.name}-demo-integration"
+  type                 = "aws"
+  cloud_region         = var.region
+  aws_template_version = "1.1.0"
+  aws_s3_bucket_arn    = aws_s3_bucket.demo.arn
 }
 
 resource "aws_cloudformation_stack" "demo" {
@@ -35,11 +42,9 @@ resource "aws_cloudformation_stack" "demo" {
     FormalIntegrationId = formal_integration_cloud.demo.id
   }
   capabilities = ["CAPABILITY_NAMED_IAM"]
-}
-
-resource "aws_s3_bucket" "demo" {
-  bucket        = "${var.name}-demo-integration"
-  force_destroy = true
+  depends_on = [
+    formal_integration_cloud.demo
+  ]
 }
 
 resource "formal_integration_log" "demo" {
