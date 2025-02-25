@@ -62,6 +62,12 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"aws_s3_bucket_arn": {
+				Description: "The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "*",
+			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
 				Type:        schema.TypeString,
@@ -132,6 +138,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
 		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
 		d.Set("aws_template_version", data.Aws.AwsTemplateVersion)
+		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
 	}
 	return diags
 }
@@ -141,17 +148,19 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	integrationId := d.Id()
 
-	fieldsThatCanChange := []string{"aws_template_version"}
+	fieldsThatCanChange := []string{"aws_template_version", "aws_s3_bucket_arn"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
 	awsTemplateVersion := d.Get("aws_template_version").(string)
+	awsS3BucketArn := d.Get("aws_s3_bucket_arn").(string)
 
 	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
 		Id:                 integrationId,
 		AwsTemplateVersion: &awsTemplateVersion,
+		AwsS3BucketArn:     &awsS3BucketArn,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
