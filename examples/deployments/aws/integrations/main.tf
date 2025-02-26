@@ -26,11 +26,13 @@ resource "aws_s3_bucket" "demo" {
 }
 
 resource "formal_integration_cloud" "demo" {
-  name                 = "${var.name}-demo-integration"
-  type                 = "aws"
-  cloud_region         = var.region
-  aws_template_version = "1.1.0"
-  aws_s3_bucket_arn    = aws_s3_bucket.demo.arn
+  name         = "${var.name}-demo-integration"
+  cloud_region = var.region
+
+  aws {
+    template_version = "1.1.0"
+    s3_bucket_arn    = aws_s3_bucket.demo.arn
+  }
 }
 
 resource "aws_cloudformation_stack" "demo" {
@@ -40,6 +42,7 @@ resource "aws_cloudformation_stack" "demo" {
     FormalIAMRoleId     = formal_integration_cloud.demo.aws_formal_iam_role
     FormalSNSTopicARN   = formal_integration_cloud.demo.aws_formal_pingback_arn
     FormalIntegrationId = formal_integration_cloud.demo.id
+    S3BucketARN         = aws_s3_bucket.demo.arn
   }
   capabilities = ["CAPABILITY_NAMED_IAM"]
   depends_on = [
