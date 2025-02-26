@@ -36,13 +36,6 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"type": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration. (Supported: aws)",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
-			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Name of the Integration.",
@@ -57,16 +50,27 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"aws_template_version": {
-				Description: "The template version of the CloudFormation stack. Use `latest` to stay in sync.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"aws_s3_bucket_arn": {
-				Description: "The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.",
-				Type:        schema.TypeString,
+			"aws": {
+				Description: "Configuration block for AWS integration.",
+				Type:        schema.TypeList,
 				Optional:    true,
-				Default:     "*",
+				MaxItems:    1,
+				ForceNew:    false,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"template_version": {
+							Description: "The template version of the CloudFormation stack. Use `latest` to stay in sync.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"s3_bucket_arn": {
+							Description: "The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "*",
+						},
+					},
+				},
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -90,8 +94,14 @@ func ResourceIntegrationCloud() *schema.Resource {
 			},
 		},
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
-			if d.HasChange("aws_template_version") {
-				d.SetNewComputed("aws_template_body")
+			if v, ok := d.GetOk("aws"); ok {
+				awsConfigs := v.([]interface{})
+				if len(awsConfigs) > 0 {
+					oldVersion, newVersion := d.GetChange("aws.0.template_version")
+					if oldVersion != newVersion {
+						d.SetNewComputed("aws_template_body")
+					}
+				}
 			}
 			return nil
 		},
@@ -101,18 +111,31 @@ func ResourceIntegrationCloud() *schema.Resource {
 func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
-		Name:               d.Get("name").(string),
-		Type:               d.Get("type").(string),
-		CloudRegion:        d.Get("cloud_region").(string),
-		AwsS3BucketArn:     d.Get("aws_s3_bucket_arn").(string),
-		AwsTemplateVersion: d.Get("aws_template_version").(string),
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	d.SetId(res.Msg.Id)
+	name := d.Get("name").(string)
+	cloudRegion := d.Get("cloud_region").(string)
 
+	if v, ok := d.GetOk("aws"); ok {
+		awsConfigs := v.([]interface{})
+		if len(awsConfigs) > 0 {
+			awsConfig := awsConfigs[0].(map[string]interface{})
+
+			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
+				Name:        name,
+				CloudRegion: cloudRegion,
+
+				Cloud: &corev1.CreateCloudIntegrationRequest_Aws{
+					Aws: &corev1.CreateCloudIntegrationRequest_AWS{
+						S3BucketArn:     awsConfig["s3_bucket_arn"].(string),
+						TemplateVersion: awsConfig["template_version"].(string),
+					},
+				},
+			}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			d.SetId(res.Msg.Id)
+		}
+	}
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
@@ -139,41 +162,60 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 
 	switch data := res.Msg.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
-		d.Set("type", "aws")
 		d.Set("cloud_region", data.Aws.AwsCloudRegion)
+
+		awsConfig := map[string]interface{}{
+			"template_version": data.Aws.AwsTemplateVersion,
+			"s3_bucket_arn":    data.Aws.AwsS3BucketArn,
+		}
+		if err := d.Set("aws", []interface{}{awsConfig}); err != nil {
+			return diag.FromErr(err)
+		}
+
 		d.Set("aws_template_body", data.Aws.TemplateBody)
 		d.Set("aws_formal_stack_name", data.Aws.AwsFormalStackName)
 		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
 		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
-		d.Set("aws_template_version", data.Aws.AwsTemplateVersion)
-		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
 	}
+
 	return diags
 }
 
 func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-
 	integrationId := d.Id()
 
-	fieldsThatCanChange := []string{"aws_template_version", "aws_s3_bucket_arn"}
+	fieldsThatCanChange := []string{"aws"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
 	}
 
-	awsTemplateVersion := d.Get("aws_template_version").(string)
-	awsS3BucketArn := d.Get("aws_s3_bucket_arn").(string)
+	var err error
 
-	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
-		Id:                 integrationId,
-		AwsTemplateVersion: &awsTemplateVersion,
-		AwsS3BucketArn:     &awsS3BucketArn,
-	}))
+	if v, ok := d.GetOk("aws"); ok {
+		awsConfigs := v.([]interface{})
+		if len(awsConfigs) > 0 {
+			awsConfig := awsConfigs[0].(map[string]interface{})
+
+			awsTemplateVersion := awsConfig["template_version"].(string)
+			awsS3BucketArn := awsConfig["s3_bucket_arn"].(string)
+
+			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+				Id: integrationId,
+				Cloud: &corev1.UpdateCloudIntegrationRequest_Aws{
+					Aws: &corev1.UpdateCloudIntegrationRequest_AWS{
+						TemplateVersion: awsTemplateVersion,
+						S3BucketArn:     awsS3BucketArn,
+					},
+				},
+			}))
+		}
+	}
+
 	if err != nil {
 		return diag.FromErr(err)
 	}
-
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 

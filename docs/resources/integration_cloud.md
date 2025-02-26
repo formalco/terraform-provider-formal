@@ -17,14 +17,12 @@ Registering a Cloud integration.
 
 ### Required
 
-- `aws_template_version` (String) The template version of the CloudFormation stack. Use `latest` to stay in sync.
 - `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
-- `type` (String) Type of the Integration. (Supported: aws)
 
 ### Optional
 
-- `aws_s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
+- `aws` (Block List, Max: 1) Configuration block for AWS integration. (see [below for nested schema](#nestedblock--aws))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -34,6 +32,18 @@ Registering a Cloud integration.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
 - `id` (String) The ID of the Integration.
+
+<a id="nestedblock--aws"></a>
+### Nested Schema for `aws`
+
+Required:
+
+- `template_version` (String) The template version of the CloudFormation stack. Use `latest` to stay in sync.
+
+Optional:
+
+- `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
