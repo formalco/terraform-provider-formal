@@ -36,6 +36,14 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"type": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Type of the Integration. (Supported: aws)",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				Deprecated:  "This field is deprecated and will be removed in a future version.",
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Name of the Integration.",
@@ -162,6 +170,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 
 	switch data := res.Msg.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
+		d.Set("type", "aws")
 		d.Set("cloud_region", data.Aws.AwsCloudRegion)
 
 		awsConfig := map[string]interface{}{
