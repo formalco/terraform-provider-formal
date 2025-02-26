@@ -19,6 +19,7 @@ Registering a Cloud integration.
 
 - `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
+- `type` (String, Deprecated) Type of the Integration. (Supported: aws)
 
 ### Optional
 
