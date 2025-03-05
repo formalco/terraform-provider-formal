@@ -40,8 +40,8 @@ func ResourceIntegrationCloud() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "Type of the Integration. (Supported: aws)",
 				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Optional:    true,
+				Default:     "aws",
 				Deprecated:  "This field is deprecated and will be removed in a future version.",
 			},
 			"name": {
