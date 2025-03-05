@@ -19,12 +19,12 @@ Registering a Cloud integration.
 
 - `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
-- `type` (String, Deprecated) Type of the Integration. (Supported: aws)
 
 ### Optional
 
 - `aws` (Block List, Max: 1) Configuration block for AWS integration. (see [below for nested schema](#nestedblock--aws))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `type` (String, Deprecated) Type of the Integration. (Supported: aws)
 
 ### Read-Only
 
