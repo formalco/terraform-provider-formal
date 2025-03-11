@@ -30,24 +30,35 @@ resource "formal_integration_cloud" "demo" {
   cloud_region = var.region
 
   aws {
-    template_version = "1.1.0"
-    s3_bucket_arn    = aws_s3_bucket.demo.arn
+    template_version              = "1.2.0"
+    enable_eks_autodiscovery      = true
+    enable_rds_autodiscovery      = true
+    enable_redshift_autodiscovery = true
+    allow_s3_access               = true
+    s3_bucket_arn                 = aws_s3_bucket.demo.arn
   }
 }
 
+resource "time_sleep" "wait-aws" {
+  depends_on      = [formal_integration_cloud.demo]
+  create_duration = "20s"
+}
+
 resource "aws_cloudformation_stack" "demo" {
+  depends_on    = [formal_integration_cloud.demo, time_sleep.wait-aws]
   name          = formal_integration_cloud.demo.aws_formal_stack_name
   template_body = formal_integration_cloud.demo.aws_template_body
   parameters = {
-    FormalIAMRoleId     = formal_integration_cloud.demo.aws_formal_iam_role
-    FormalSNSTopicARN   = formal_integration_cloud.demo.aws_formal_pingback_arn
-    FormalIntegrationId = formal_integration_cloud.demo.id
-    S3BucketARN         = aws_s3_bucket.demo.arn
+    FormalIntegrationId         = formal_integration_cloud.demo.id
+    FormalIAMRoleId             = formal_integration_cloud.demo.aws_formal_iam_role
+    FormalSNSTopicARN           = formal_integration_cloud.demo.aws_formal_pingback_arn
+    EnableEKSAutodiscovery      = formal_integration_cloud.demo.aws_enable_eks_autodiscovery
+    EnableRDSAutodiscovery      = formal_integration_cloud.demo.aws_enable_rds_autodiscovery
+    EnableRedshiftAutodiscovery = formal_integration_cloud.demo.aws_enable_redshift_autodiscovery
+    AllowS3Access               = formal_integration_cloud.demo.aws_allow_s3_access
+    S3BucketARN                 = formal_integration_cloud.demo.aws_s3_bucket_arn
   }
   capabilities = ["CAPABILITY_NAMED_IAM"]
-  depends_on = [
-    formal_integration_cloud.demo
-  ]
 }
 
 resource "formal_integration_log" "demo" {
