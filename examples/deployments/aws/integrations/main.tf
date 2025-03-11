@@ -35,7 +35,7 @@ resource "formal_integration_cloud" "demo" {
     enable_rds_autodiscovery      = true
     enable_redshift_autodiscovery = true
     allow_s3_access               = true
-    s3_bucket_arn                 = aws_s3_bucket.demo.arn
+    s3_bucket_arn                 = "${aws_s3_bucket.demo.arn}/*"
   }
 }
 
