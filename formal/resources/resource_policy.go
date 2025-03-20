@@ -102,6 +102,28 @@ func ResourcePolicy() *schema.Resource {
 				Default:     false,
 			},
 		},
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta interface{}) error {
+			c := meta.(*clients.Clients)
+
+			tflog.Debug(ctx, "Validating policy code", map[string]interface{}{
+				"id":                 d.Id(),
+				"has_module_changes": d.HasChange("module"),
+			})
+
+			if d.Id() == "" || d.HasChange("module") {
+				resp, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicyCodeValidity(ctx, connect.NewRequest(&corev1.GetPolicyCodeValidityRequest{
+					Code: d.Get("module").(string),
+				}))
+				if err != nil {
+					return fmt.Errorf("policy code validation failed: %v", err)
+				}
+				if !resp.Msg.Valid {
+					return fmt.Errorf("invalid policy code: %s", resp.Msg.Error)
+				}
+				tflog.Debug(ctx, "Policy code validation successful")
+			}
+			return nil
+		},
 	}
 }
 
