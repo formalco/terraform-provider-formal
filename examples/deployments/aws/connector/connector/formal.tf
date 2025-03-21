@@ -17,6 +17,12 @@ resource "formal_connector" "main" {
   name = var.name
 }
 
+resource "formal_connector_configuration" "main" {
+  connector_id = formal_connector.main.id
+  log_level    = "debug"
+  health_check_port = 8080
+}
+
 resource "formal_connector_hostname" "main" {
   connector_id = formal_connector.main.id
   hostname     = var.connector_hostname
