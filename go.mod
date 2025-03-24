@@ -2,7 +2,7 @@ module github.com/formalco/terraform-provider-formal
 
 go 1.24
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.5-20250324021135-686fff576454.1
@@ -18,7 +18,7 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.5-20250130201111-63bb56e20495.1 // indirect
-	buf.build/gen/go/formal/core/connectrpc/go v1.18.1-20250226003025-88fb0896b952.1 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.18.1-20250312065745-fc45f7b59fa5.1 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.5-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.19.1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
