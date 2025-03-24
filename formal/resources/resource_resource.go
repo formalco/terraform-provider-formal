@@ -49,7 +49,6 @@ func ResourceResource() *schema.Resource {
 				Description: "Hostname of the Resource.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
@@ -190,7 +189,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "environment", "termination_protection", "space_id"}
+	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -224,6 +223,17 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
 			Id:      datastoreId,
 			SpaceId: &spaceId,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("hostname") {
+		hostname := d.Get("hostname").(string)
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
+			Id:       datastoreId,
+			Hostname: &hostname,
 		}))
 		if err != nil {
 			return diag.FromErr(err)
