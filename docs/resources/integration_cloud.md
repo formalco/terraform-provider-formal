@@ -19,19 +19,41 @@ Registering a Cloud integration.
 
 - `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
-- `type` (String) Type of the Integration. (Supported: aws)
 
 ### Optional
 
+- `aws` (Block List, Max: 1) Configuration block for AWS integration. (see [below for nested schema](#nestedblock--aws))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
+- `type` (String, Deprecated) Type of the Integration. (Supported: aws)
 
 ### Read-Only
 
+- `aws_allow_s3_access` (Boolean) Whether AWS S3 access is allowed or not.
+- `aws_enable_eks_autodiscovery` (Boolean) Whether AWS EKS autodiscovery is enabled or not.
+- `aws_enable_rds_autodiscovery` (Boolean) Whether AWS RDS autodiscovery is enabled or not.
+- `aws_enable_redshift_autodiscovery` (Boolean) Whether AWS Redshift autodiscovery is enabled or not.
 - `aws_formal_iam_role` (String) The IAM role ID Formal will use to access your resources.
 - `aws_formal_pingback_arn` (String) The SNS topic ARN CloudFormation can use to send events to Formal.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
+- `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
 - `id` (String) The ID of the Integration.
+
+<a id="nestedblock--aws"></a>
+### Nested Schema for `aws`
+
+Required:
+
+- `template_version` (String) The template version of the CloudFormation stack. Use `latest` to stay in sync.
+
+Optional:
+
+- `allow_s3_access` (Boolean) Allows the Cloud Integration to access S3 buckets for Log Integrations.
+- `enable_eks_autodiscovery` (Boolean) Enables resource autodiscovery for EKS clusters.
+- `enable_rds_autodiscovery` (Boolean) Enables resource autodiscovery for RDS instances (PostgreSQL, MySQL, MongoDB).
+- `enable_redshift_autodiscovery` (Boolean) Enables resource autodiscovery for Redshift clusters.
+- `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`

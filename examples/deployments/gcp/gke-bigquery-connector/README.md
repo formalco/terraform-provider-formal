@@ -54,7 +54,6 @@ terraform apply
     * Client ID: Your service account's identifier (from `terraform output google_service_account_id`)
     * OAuth Scopes:
       * https://www.googleapis.com/auth/bigquery
-      * https://www.googleapis.com/auth/cloud-platform
   * Click **Authorize**
 
 You should now be able to connect to BigQuery using the Connector.
