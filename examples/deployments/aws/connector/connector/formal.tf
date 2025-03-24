@@ -18,8 +18,8 @@ resource "formal_connector" "main" {
 }
 
 resource "formal_connector_configuration" "main" {
-  connector_id = formal_connector.main.id
-  log_level    = "debug"
+  connector_id      = formal_connector.main.id
+  log_level         = "debug"
   health_check_port = 8080
 }
 
