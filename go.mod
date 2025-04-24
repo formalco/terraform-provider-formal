@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.1
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.5-20250324021135-686fff576454.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.6-20250424192926-1e82e4aaa6fb.1
 	connectrpc.com/connect v1.18.1
 	github.com/bufbuild/protovalidate-go v0.9.2
 	github.com/formalco/go-sdk/sdk/v2 v2.8.2
@@ -17,9 +17,9 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.5-20250130201111-63bb56e20495.1 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20240920164238-5a7b106cbb87.1 // indirect
 	buf.build/gen/go/formal/core/connectrpc/go v1.18.1-20250312065745-fc45f7b59fa5.1 // indirect
-	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.5-20240617172850-a48fcebcf8f1.1 // indirect
+	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.6-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.19.1 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
