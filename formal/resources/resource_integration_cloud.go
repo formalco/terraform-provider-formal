@@ -89,6 +89,18 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Optional:    true,
 							Default:     true,
 						},
+						"enable_ecs_autodiscovery": {
+							Description: "Enables resource autodiscovery for ECS clusters.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+						"enable_ec2_autodiscovery": {
+							Description: "Enables resource autodiscovery for EC2 instances.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
 						"allow_s3_access": {
 							Description: "Allows the Cloud Integration to access S3 buckets for Log Integrations.",
 							Type:        schema.TypeBool,
@@ -139,6 +151,16 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
+			"aws_enable_ecs_autodiscovery": {
+				Description: "Whether AWS ECS autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"aws_enable_ec2_autodiscovery": {
+				Description: "Whether AWS EC2 autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
 			"aws_allow_s3_access": {
 				Description: "Whether AWS S3 access is allowed or not.",
 				Type:        schema.TypeBool,
@@ -185,6 +207,8 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			enableEksAutodiscovery := awsConfig["enable_eks_autodiscovery"].(bool)
 			enableRdsAutodiscovery := awsConfig["enable_rds_autodiscovery"].(bool)
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
+			enableEcsAutodiscovery := awsConfig["enable_ecs_autodiscovery"].(bool)
+			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
 			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
@@ -197,6 +221,8 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						EnableEksAutodiscovery:      &enableEksAutodiscovery,
 						EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
 						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
+						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
+						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 					},
@@ -242,6 +268,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"enable_eks_autodiscovery":      data.Aws.AwsEnableEksAutodiscovery,
 			"enable_rds_autodiscovery":      data.Aws.AwsEnableRdsAutodiscovery,
 			"enable_redshift_autodiscovery": data.Aws.AwsEnableRedshiftAutodiscovery,
+			"enable_ecs_autodiscovery":      data.Aws.AwsEnableEcsAutodiscovery,
+			"enable_ec2_autodiscovery":      data.Aws.AwsEnableEc2Autodiscovery,
 			"allow_s3_access":               data.Aws.AwsAllowS3Access,
 			"s3_bucket_arn":                 data.Aws.AwsS3BucketArn,
 		}
@@ -257,6 +285,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_enable_eks_autodiscovery", data.Aws.AwsEnableEksAutodiscovery)
 		d.Set("aws_enable_rds_autodiscovery", data.Aws.AwsEnableRdsAutodiscovery)
 		d.Set("aws_enable_redshift_autodiscovery", data.Aws.AwsEnableRedshiftAutodiscovery)
+		d.Set("aws_enable_ecs_autodiscovery", data.Aws.AwsEnableEcsAutodiscovery)
+		d.Set("aws_enable_ec2_autodiscovery", data.Aws.AwsEnableEc2Autodiscovery)
 		d.Set("aws_allow_s3_access", data.Aws.AwsAllowS3Access)
 		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
 	}
@@ -288,6 +318,8 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 			enableEksAutodiscovery := awsConfig["enable_eks_autodiscovery"].(bool)
 			enableRdsAutodiscovery := awsConfig["enable_rds_autodiscovery"].(bool)
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
+			enableEcsAutodiscovery := awsConfig["enable_ecs_autodiscovery"].(bool)
+			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
 			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
@@ -298,6 +330,8 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						EnableEksAutodiscovery:      &enableEksAutodiscovery,
 						EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
 						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
+						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
+						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 					},
