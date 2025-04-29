@@ -7,7 +7,7 @@ toolchain go1.24.1
 require (
 	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.6-20250402191954-0b96a105a7c1.1
 	connectrpc.com/connect v1.18.1
-	github.com/bufbuild/protovalidate-go v0.9.3
+	github.com/bufbuild/protovalidate-go v0.10.0
 	github.com/formalco/go-sdk/sdk/v2 v2.8.2
 	github.com/hashicorp/terraform-plugin-docs v0.21.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
@@ -17,7 +17,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250307204501-0409229c3780.1 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.6-20250423154025-7712fb530c57.1 // indirect
 	buf.build/gen/go/formal/core/connectrpc/go v1.18.1-20250402191954-0b96a105a7c1.1 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.6-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.23.1 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.24.1 // indirect
+	github.com/google/cel-go v0.25.0 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
