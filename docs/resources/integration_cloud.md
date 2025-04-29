@@ -29,6 +29,8 @@ Registering a Cloud integration.
 ### Read-Only
 
 - `aws_allow_s3_access` (Boolean) Whether AWS S3 access is allowed or not.
+- `aws_enable_ec2_autodiscovery` (Boolean) Whether AWS EC2 autodiscovery is enabled or not.
+- `aws_enable_ecs_autodiscovery` (Boolean) Whether AWS ECS autodiscovery is enabled or not.
 - `aws_enable_eks_autodiscovery` (Boolean) Whether AWS EKS autodiscovery is enabled or not.
 - `aws_enable_rds_autodiscovery` (Boolean) Whether AWS RDS autodiscovery is enabled or not.
 - `aws_enable_redshift_autodiscovery` (Boolean) Whether AWS Redshift autodiscovery is enabled or not.
@@ -49,6 +51,8 @@ Required:
 Optional:
 
 - `allow_s3_access` (Boolean) Allows the Cloud Integration to access S3 buckets for Log Integrations.
+- `enable_ec2_autodiscovery` (Boolean) Enables resource autodiscovery for EC2 instances.
+- `enable_ecs_autodiscovery` (Boolean) Enables resource autodiscovery for ECS clusters.
 - `enable_eks_autodiscovery` (Boolean) Enables resource autodiscovery for EKS clusters.
 - `enable_rds_autodiscovery` (Boolean) Enables resource autodiscovery for RDS instances (PostgreSQL, MySQL, MongoDB).
 - `enable_redshift_autodiscovery` (Boolean) Enables resource autodiscovery for Redshift clusters.
