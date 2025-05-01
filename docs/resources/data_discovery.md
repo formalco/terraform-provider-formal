@@ -24,6 +24,7 @@ Registering a Data Discovery with Formal.
 
 ### Optional
 
+- `path` (String) Path of the inventory object.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
