@@ -8,10 +8,11 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceIntegrationCloud() *schema.Resource {
@@ -182,9 +183,9 @@ func ResourceIntegrationCloud() *schema.Resource {
 					}
 
 					for _, key := range []string{"enable_eks_autodiscovery", "enable_rds_autodiscovery", "enable_redshift_autodiscovery", "allow_s3_access", "s3_bucket_arn"} {
-						old, new := d.GetChange(fmt.Sprintf("aws.0.%s", key))
-						if old != new {
-							d.SetNew(fmt.Sprintf("aws_%s", key), new)
+						oldVal, newVal := d.GetChange(fmt.Sprintf("aws.0.%s", key))
+						if oldVal != newVal {
+							d.SetNew(fmt.Sprintf("aws_%s", key), newVal)
 						}
 					}
 				}

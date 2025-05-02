@@ -6,9 +6,10 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceIntegrationBI() *schema.Resource {
@@ -131,7 +132,6 @@ func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, me
 		} else {
 			return diag.Errorf("Unsupported bi type")
 		}
-
 	}
 	d.SetId(res.Msg.Integration.Id)
 
@@ -179,7 +179,6 @@ func resourceIntegrationBIDelete(ctx context.Context, d *schema.ResourceData, me
 	appId := d.Id()
 
 	_, err := c.Grpc.Sdk.IntegrationBIServiceClient.DeleteBIIntegration(ctx, connect.NewRequest(&corev1.DeleteBIIntegrationRequest{Id: appId}))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

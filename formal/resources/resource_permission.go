@@ -6,11 +6,12 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourcePermission() *schema.Resource {
@@ -176,15 +177,13 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		}
 
 		_, err := c.Grpc.Sdk.PermissionsServiceClient.UpdatePermission(ctx, connect.NewRequest(updatedPermission))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		return resourcePermissionRead(ctx, d, meta)
-	} else {
-		return diag.Errorf("At the moment you can only update a permission's name, description, module and status. Please delete and recreate the Permission")
 	}
+	return diag.Errorf("At the moment you can only update a permission's name, description, module and status. Please delete and recreate the Permission")
 }
 
 func resourcePermissionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

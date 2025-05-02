@@ -159,12 +159,11 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		if err != nil {
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
-			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving User: ", map[string]interface{}{"err": err})
-				currentErrors += 1
-				time.Sleep(15 * time.Second)
-				continue
 			}
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving User: ", map[string]interface{}{"err": err})
+			currentErrors++
+			time.Sleep(15 * time.Second)
+			continue
 		}
 
 		if createdUser == nil {
@@ -175,9 +174,8 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 		// Check status
 		if createdUser.Msg.User != nil {
 			break
-		} else {
-			time.Sleep(15 * time.Second)
 		}
+		time.Sleep(15 * time.Second)
 	}
 
 	d.SetId(res.Msg.User.Id)
@@ -294,10 +292,9 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 			// Handle other errors
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
-			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on User Status: ", map[string]interface{}{"err": err})
-				currentErrors += 1
 			}
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on User Status: ", map[string]interface{}{"err": err})
+			currentErrors++
 		}
 
 		if time.Since(deleteTimeStart) > time.Minute*15 {

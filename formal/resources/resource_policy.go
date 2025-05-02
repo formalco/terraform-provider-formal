@@ -7,11 +7,12 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourcePolicy() *schema.Resource {
@@ -240,15 +241,13 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta inte
 		}
 
 		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		return resourcePolicyRead(ctx, d, meta)
-	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owner and active status. Please delete and recreate the Policy")
 	}
+	return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owner and active status. Please delete and recreate the Policy")
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

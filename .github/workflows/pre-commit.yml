@@ -1,0 +1,39 @@
+name: Pre-commit Checks
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+  pull-requests: read
+  checks: write
+
+jobs:
+  test:
+    name: Run pre-commit checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "^1.24"
+          cache: true
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+
+      - run: mise run buf:format
+      - run: mise run tidy
+      - run: mise run lint
+      - run: mise run format
+      - run: mise run docs
+    
+      - name: Assert no diff
+        run: git diff --exit-code

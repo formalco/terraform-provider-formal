@@ -1,23 +1,20 @@
 package resource
 
 import (
+	"context"
 	"errors"
+	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-
-	"github.com/formalco/terraform-provider-formal/formal/clients"
-
-	"context"
-	"fmt"
-	"strings"
-
-	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
-
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceSidecar() *schema.Resource {
@@ -231,10 +228,9 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 			// Handle other errors
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
-			} else {
-				tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Sidecar Status: ", map[string]interface{}{"err": err})
-				currentErrors += 1
 			}
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Sidecar Status: ", map[string]interface{}{"err": err})
+			currentErrors++
 		}
 
 		if time.Since(deleteTimeStart) > time.Minute*15 {
