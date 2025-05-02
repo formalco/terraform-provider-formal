@@ -14,6 +14,7 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
 permissions:
   contents: write
 jobs:
@@ -30,7 +31,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version-file: 'go.mod'
-          go-version: '1.22'
+          go-version: '1.24'
           cache: false
       -
         name: Import GPG key
@@ -60,7 +61,7 @@ jobs:
       changelog_content: ${{ steps.generate-changelog.outputs.changelog_content }}
       component: ${{ steps.generate-changelog.outputs.component }}
       version: ${{ steps.generate-changelog.outputs.version }}
-    
+      branch_component: ${{ steps.generate-changelog.outputs.branch_component }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -169,6 +170,7 @@ jobs:
               core.setOutput('changelog_content', `# ${tagComponent} ${version}\n\nNo changes in this release.`);
               core.setOutput('component', tagComponent);
               core.setOutput('version', version);
+              core.setOutput('branch_component', tagComponent);
               return;
             }
 
@@ -267,6 +269,7 @@ jobs:
 
               core.setOutput('changelog_content', formattedChangelog);
               core.setOutput('component', "Formal Terraform Provider");
+              core.setOutput('branch_component', "provider");
               core.setOutput('version', version);
 
             } catch (error) {
@@ -350,5 +353,5 @@ jobs:
           commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           body: "This PR updates the changelog for ${{ needs.generate-changelog.outputs.component }} version ${{ needs.generate-changelog.outputs.version }}"
-          branch: "changelog/${{ needs.generate-changelog.outputs.component }}-${{ needs.generate-changelog.outputs.version }}"
+          branch: "changelog/${{ needs.generate-changelog.outputs.branch_component }}-${{ needs.generate-changelog.outputs.version }}"
           base: main

@@ -5,10 +5,11 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceDataDomain() *schema.Resource {
@@ -236,15 +237,13 @@ func resourceDataDomainUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			IncludedPaths: IncludedPaths,
 			ExcludedPaths: ExcludedPaths,
 		}))
-
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
 		return resourceDataDomainRead(ctx, d, meta)
-	} else {
-		return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
 	}
+	return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owners and active status. Please delete and recreate the Policy")
 }
 
 func resourceDataDomainDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {

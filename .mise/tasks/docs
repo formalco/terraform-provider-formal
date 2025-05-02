@@ -1,0 +1,9 @@
+#!/bin/bash
+# mise sources=["**/*.go"]
+# mise outputs=[".mise/.outputs/docs"]
+set -e
+
+# Run go generate
+mise x -- go generate ./...
+
+touch .mise/.outputs/docs

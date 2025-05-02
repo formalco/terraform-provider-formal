@@ -8,11 +8,12 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourcePolicyDataLoader() *schema.Resource {
@@ -201,7 +202,6 @@ func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData,
 		Status:                &status,
 		TerminationProtection: &terminationProtection,
 	}))
-
 	if err != nil {
 		return diag.FromErr(err)
 	}

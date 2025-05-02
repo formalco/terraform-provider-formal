@@ -8,12 +8,12 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/formalco/terraform-provider-formal/formal/clients"
-	"github.com/robfig/cron/v3"
-
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/robfig/cron/v3"
+
+	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
 func ResourceDataDiscovery() *schema.Resource {

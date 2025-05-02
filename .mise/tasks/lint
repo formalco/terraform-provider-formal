@@ -1,0 +1,13 @@
+#!/bin/bash
+# mise sources=["**/*.go"]
+# mise outputs=[".mise/.outputs/lint"]
+set -e
+
+# if revive is not installed, install it
+if ! command -v revive &> /dev/null; then
+    mise install revive
+fi
+
+mise x -- revive -config .revive.toml ./...
+
+touch .mise/.outputs/lint

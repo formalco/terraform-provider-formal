@@ -1,0 +1,8 @@
+#!/bin/bash
+# mise sources=["**/*.go", "go.mod", "go.sum"]
+# mise outputs=[".mise/.outputs/tidy"]
+set -e
+
+mise x -- go mod tidy
+
+touch .mise/.outputs/tidy
