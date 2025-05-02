@@ -29,7 +29,6 @@ jobs:
       - name: Setup mise
         uses: jdx/mise-action@7a111ead46986ccad89a74ad013ba2a7c08c9e67
 
-      - run: mise run buf:format
       - run: mise run tidy
       - run: mise run lint
       - run: mise run format

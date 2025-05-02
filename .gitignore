@@ -44,3 +44,5 @@ set_local_env.sh
 plan.out
 
 terraform-provider-formal
+
+.mise/.outputs
