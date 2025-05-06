@@ -17,8 +17,8 @@ Creating a Permission in Formal.
 
 ### Required
 
+- `code` (String) The code describing how the permission works. Create one in the Formal Console.
 - `description` (String) Permission Description.
-- `module` (String) The module describing how the permission works. Create one in the Formal Console.
 - `name` (String) Permission Name
 - `status` (String) Defines the current status of the permission. It can be one of the following: 'draft', 'dry-run', or 'active'.
 
@@ -28,6 +28,4 @@ Creating a Permission in Formal.
 
 ### Read-Only
 
-- `created_at` (String) When the permission was created.
 - `id` (String) ID of this Permission.
-- `updated_at` (String) Last update time.

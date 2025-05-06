@@ -35,6 +35,12 @@ func ResourcePermission() *schema.Resource {
 			},
 		},
 		Schema: map[string]*schema.Schema{
+			"id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "ID of this Permission.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Permission Name",
@@ -47,29 +53,11 @@ func ResourcePermission() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
-			"module": {
+			"code": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The module describing how the permission works. Create one in the Formal Console.",
+				Description: "The code describing how the permission works. Create one in the Formal Console.",
 				Type:        schema.TypeString,
 				Required:    true,
-			},
-			"id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "ID of this Permission.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"created_at": {
-				// This description is used by the documentation generator and the language server.
-				Description: "When the permission was created.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"updated_at": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Last update time.",
-				Type:        schema.TypeString,
-				Computed:    true,
 			},
 			"status": {
 				// This description is used by the documentation generator and the language server.
@@ -99,19 +87,12 @@ func resourcePermissionCreate(ctx context.Context, d *schema.ResourceData, meta 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
-	// Maps to user-defined fields
-	Name := d.Get("name").(string)
-	Description := d.Get("description").(string)
-	Module := d.Get("module").(string)
-	Status := d.Get("status").(string)
-	TerminationProtection := d.Get("termination_protection").(bool)
-
 	newPermission := &corev1.CreatePermissionRequest{
-		Name:                  Name,
-		Description:           Description,
-		Code:                  Module,
-		Status:                Status,
-		TerminationProtection: TerminationProtection,
+		Name:                  d.Get("name").(string),
+		Description:           d.Get("description").(string),
+		Code:                  d.Get("code").(string),
+		Status:                d.Get("status").(string),
+		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
 	res, err := c.Grpc.Sdk.PermissionsServiceClient.CreatePermission(ctx, connect.NewRequest(newPermission))
@@ -146,7 +127,7 @@ func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta in
 	d.Set("id", res.Msg.Permission.Id)
 	d.Set("name", res.Msg.Permission.Name)
 	d.Set("description", res.Msg.Permission.Description)
-	d.Set("module", res.Msg.Permission.Code)
+	d.Set("code", res.Msg.Permission.Code)
 	d.Set("status", res.Msg.Permission.Status)
 	d.Set("termination_protection", res.Msg.Permission.TerminationProtection)
 
@@ -160,10 +141,10 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	permissionId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("status") || d.HasChange("termination_protection") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("code") || d.HasChange("status") || d.HasChange("termination_protection") {
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
-		Module := d.Get("module").(string)
+		code := d.Get("code").(string)
 		Status := d.Get("status").(string)
 		TerminationProtection := d.Get("termination_protection").(bool)
 
@@ -171,7 +152,7 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			Id:                    permissionId,
 			Name:                  Name,
 			Description:           Description,
-			Code:                  Module,
+			Code:                  code,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
 		}
@@ -183,7 +164,7 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 		return resourcePermissionRead(ctx, d, meta)
 	}
-	return diag.Errorf("At the moment you can only update a permission's name, description, module and status. Please delete and recreate the Permission")
+	return diag.Errorf("At the moment you can only update a permission's name, description, code and status. Please delete and recreate the Permission")
 }
 
 func resourcePermissionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
