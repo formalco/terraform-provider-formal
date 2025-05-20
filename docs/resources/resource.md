@@ -21,6 +21,7 @@ Registering a Resource with Formal.
 - `name` (String) Friendly name for the Resource.
 - `port` (Number) The port your Resource is listening on.
 - `technology` (String) Technology of the Resource: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `clickhouse`, `redis` and `ssh`.
+- `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
 
 ### Optional
 
