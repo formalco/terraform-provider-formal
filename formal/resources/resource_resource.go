@@ -57,6 +57,13 @@ func ResourceResource() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"provider": {
+				// This description is used by the documentation generator and the language server.
+				Description: "For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
 				Description: "The port your Resource is listening on.",
@@ -114,11 +121,19 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	environment := d.Get("environment").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
+	provider := d.Get("provider").(string)
+	if technology != "ssh" && provider != "" {
+		return diag.Errorf("provider is only supported for SSH resources")
+	}
+	if provider != "" && (provider != "aws-ec2" && provider != "aws-ecs") {
+		return diag.Errorf("provider must be one of: aws-ec2, aws-ecs")
+	}
 
 	msg := &corev1.CreateResourceRequest{
 		Name:                  name,
 		Hostname:              hostname,
 		Port:                  int32(port),
+		Provider:              &provider,
 		Technology:            technology,
 		Environment:           environment,
 		TerminationProtection: terminationProtection,
@@ -171,6 +186,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("hostname", res.Msg.Resource.Hostname)
 	d.Set("port", res.Msg.Resource.Port)
 	d.Set("technology", res.Msg.Resource.Technology)
+	d.Set("provider", res.Msg.Resource.Provider)
 	d.Set("environment", res.Msg.Resource.Environment)
 	d.Set("termination_protection", res.Msg.Resource.TerminationProtection)
 	if res.Msg.Resource.Space != nil {
