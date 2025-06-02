@@ -9,6 +9,7 @@ import (
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
+	"github.com/formalco/terraform-provider-formal/formal/datasources"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
 )
 
@@ -32,7 +33,9 @@ func New(version string) func() *schema.Provider {
 					Default:  true,
 				},
 			},
-			DataSourcesMap: map[string]*schema.Resource{},
+			DataSourcesMap: map[string]*schema.Resource{
+				"formal_resource": datasources.Resource(),
+			},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_connector":                        resource.ResourceConnector(),
 				"formal_connector_configuration":          resource.ResourceConnectorConfiguration(),
