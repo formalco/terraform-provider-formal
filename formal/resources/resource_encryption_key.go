@@ -2,7 +2,6 @@ package resource
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -44,12 +43,7 @@ func ResourceEncryptionKey() *schema.Resource {
 				}, false),
 			},
 			"key_id": {
-				Description: "The ID of the key in the provider's system.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
-			"region": {
-				Description: "The provider's region where the key is located.",
+				Description: "The ID of the key in the provider's system (e.g., key ARN for AWS KMS).",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -127,10 +121,9 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 	c := meta.(*clients.Clients)
 	keyId := d.Id()
 
-	fieldsThatCanChange := []string{"key_provider", "key_id", "region", "algorithm"}
+	fieldsThatCanChange := []string{"key_provider", "key_id", "algorithm"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	req := &corev1.UpdateEncryptionKeyRequest{
