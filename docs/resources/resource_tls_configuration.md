@@ -17,13 +17,13 @@ Creating a TLS Configuration of a Resource in Formal.
 
 ### Required
 
-- `resource_id` (String) Resource ID linked to the following tls configuration.
-- `tls_config` (String) Define the TLS configuration.
+- `resource_id` (String) Resource ID for which the TLS configuration is applied to.
+- `tls_config` (String) Validation mode for the TLS configuration.
 
 ### Optional
 
-- `tls_ca_truststore` (String) Location of the certificate associated with the TLS configuration.
-- `tls_min_version` (String) The version of the TLS configuration.
+- `tls_ca_truststore` (String) PEM encoded CA certificate to verify resource certificates. Only required if resource certificates are not trusted by the root CA truststore.
+- `tls_min_version` (String) Minimum TLS version to be used for connections.
 
 ### Read-Only
 

@@ -45,26 +45,26 @@ func ResourceTlsConfiguration() *schema.Resource {
 			},
 			"resource_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Resource ID linked to the following tls configuration.",
+				Description: "Resource ID for which the TLS configuration is applied to.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 			},
 			"tls_config": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Define the TLS configuration.",
+				Description: "Validation mode for the TLS configuration.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
-					"require",
 					"disable",
-					"verify-ca",
+					"insecure-skip-verify",
+					"insecure-verify-ca-only",
 					"verify-full",
 				}, false),
 			},
 			"tls_min_version": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The version of the TLS configuration.",
+				Description: "Minimum TLS version to be used for connections.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -75,7 +75,7 @@ func ResourceTlsConfiguration() *schema.Resource {
 			},
 			"tls_ca_truststore": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Location of the certificate associated with the TLS configuration.",
+				Description: "PEM encoded CA certificate to verify resource certificates. Only required if resource certificates are not trusted by the root CA truststore.",
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
