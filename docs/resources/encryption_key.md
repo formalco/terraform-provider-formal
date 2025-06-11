@@ -18,9 +18,8 @@ Registering an Encryption Key with Formal.
 ### Required
 
 - `algorithm` (String) The algorithm used for encryption. Can be either 'aes_random' or 'aes_deterministic'.
-- `key_id` (String) The ID of the key in the provider's system.
+- `key_id` (String) The ID of the key in the provider's system (e.g., key ARN for AWS KMS).
 - `key_provider` (String) The provider of the encryption key. Currently only 'aws' is supported.
-- `region` (String) The provider's region where the key is located.
 
 ### Optional
 
