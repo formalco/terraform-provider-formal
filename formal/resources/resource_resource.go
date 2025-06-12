@@ -62,7 +62,6 @@ func ResourceResource() *schema.Resource {
 				Description: "For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"port": {
 				// This description is used by the documentation generator and the language server.
