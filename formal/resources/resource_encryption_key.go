@@ -76,7 +76,6 @@ func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, me
 	req := &corev1.CreateEncryptionKeyRequest{
 		Provider:  d.Get("key_provider").(string),
 		KeyId:     d.Get("key_id").(string),
-		Region:    d.Get("region").(string),
 		Algorithm: d.Get("algorithm").(string),
 	}
 
@@ -108,7 +107,6 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("id", res.Msg.EncryptionKey.Id)
 	d.Set("key_provider", res.Msg.EncryptionKey.Provider)
 	d.Set("key_id", res.Msg.EncryptionKey.KeyId)
-	d.Set("region", res.Msg.EncryptionKey.Region)
 	d.Set("algorithm", res.Msg.EncryptionKey.Algorithm)
 	d.Set("created_at", res.Msg.EncryptionKey.CreatedAt.AsTime().String())
 	d.Set("updated_at", res.Msg.EncryptionKey.UpdatedAt.AsTime().String())
@@ -137,10 +135,6 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("key_id") {
 		keyId := d.Get("key_id").(string)
 		req.KeyId = &keyId
-	}
-	if d.HasChange("region") {
-		region := d.Get("region").(string)
-		req.Region = &region
 	}
 	if d.HasChange("algorithm") {
 		algorithm := d.Get("algorithm").(string)
