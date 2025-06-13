@@ -11,19 +11,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
-func ResourceResourceClassifierPreference() *schema.Resource {
+func ResourceResourceClassifierConfiguration() *schema.Resource {
 	return &schema.Resource{
-		Description:   "A Resource Classifier Preference is a preference for a resource classifier.",
-		CreateContext: resourceResourceClassifierPreferenceCreate,
-		ReadContext:   resourceResourceClassifierPreferenceRead,
-		UpdateContext: resourceResourceClassifierPreferenceUpdate,
-		DeleteContext: resourceResourceClassifierPreferenceDelete,
+		Description:   "A Resource Classifier Configuration is a configuration for a resource classifier.",
+		CreateContext: resourceResourceClassifierConfigurationCreate,
+		ReadContext:   resourceResourceClassifierConfigurationRead,
+		UpdateContext: resourceResourceClassifierConfigurationUpdate,
+		DeleteContext: resourceResourceClassifierConfigurationDelete,
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Description: "The ID of the Resource Classifier Preference.",
+				Description: "The ID of the Resource Classifier Configuration.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -51,7 +51,7 @@ func ResourceResourceClassifierPreference() *schema.Resource {
 	}
 }
 
-func resourceResourceClassifierPreferenceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -59,7 +59,7 @@ func resourceResourceClassifierPreferenceCreate(ctx context.Context, d *schema.R
 	resourceId := d.Get("resource_id").(string)
 	preference := d.Get("preference").(string)
 
-	msg := &corev1.CreateResourceClassifierPreferenceRequest{
+	msg := &corev1.CreateResourceClassifierConfigurationRequest{
 		ResourceId: resourceId,
 		Preference: preference,
 	}
@@ -72,42 +72,42 @@ func resourceResourceClassifierPreferenceCreate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceClassifierPreference(ctx, connect.NewRequest(msg))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceClassifierConfiguration(ctx, connect.NewRequest(msg))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(response.Msg.ResourceClassifierPreference.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierPreference.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierPreference.Preference)
-	d.Set("created_at", response.Msg.ResourceClassifierPreference.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierPreference.UpdatedAt)
+	d.SetId(response.Msg.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
 
-func resourceResourceClassifierPreferenceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
 	resourceId := d.Get("resource_id").(string)
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceClassifierPreference(ctx, connect.NewRequest(&corev1.GetResourceClassifierPreferenceRequest{ResourceId: resourceId}))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceClassifierConfiguration(ctx, connect.NewRequest(&corev1.GetResourceClassifierConfigurationRequest{ResourceId: resourceId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", response.Msg.ResourceClassifierPreference.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierPreference.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierPreference.Preference)
-	d.Set("created_at", response.Msg.ResourceClassifierPreference.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierPreference.UpdatedAt)
+	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
 
-func resourceResourceClassifierPreferenceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -115,7 +115,7 @@ func resourceResourceClassifierPreferenceUpdate(ctx context.Context, d *schema.R
 	resourceClassifierPreferenceId := d.Id()
 	preference := d.Get("preference").(string)
 
-	msg := &corev1.UpdateResourceClassifierPreferenceRequest{
+	msg := &corev1.UpdateResourceClassifierConfigurationRequest{
 		Id:         resourceClassifierPreferenceId,
 		Preference: preference,
 	}
@@ -128,28 +128,28 @@ func resourceResourceClassifierPreferenceUpdate(ctx context.Context, d *schema.R
 		return diag.FromErr(err)
 	}
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceClassifierPreference(ctx, connect.NewRequest(msg))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceClassifierConfiguration(ctx, connect.NewRequest(msg))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", response.Msg.ResourceClassifierPreference.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierPreference.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierPreference.Preference)
-	d.Set("created_at", response.Msg.ResourceClassifierPreference.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierPreference.UpdatedAt)
+	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
 
-func resourceResourceClassifierPreferenceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	resourceClassifierPreferenceId := d.Id()
+	resourceClassifierConfigurationId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceClassifierPreference(ctx, connect.NewRequest(&corev1.DeleteResourceClassifierPreferenceRequest{Id: resourceClassifierPreferenceId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceClassifierConfiguration(ctx, connect.NewRequest(&corev1.DeleteResourceClassifierConfigurationRequest{Id: resourceClassifierConfigurationId}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
