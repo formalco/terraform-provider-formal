@@ -68,9 +68,14 @@ func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	port := d.Get("port").(int)
+	if port == 8080 {
+		return diag.Errorf("connector listener cannot be created on health check port (8080)")
+	}
+
 	req := &corev1.CreateConnectorListenerRequest{
 		Name:                  d.Get("name").(string),
-		Port:                  int32(d.Get("port").(int)),
+		Port:                  int32(port),
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
