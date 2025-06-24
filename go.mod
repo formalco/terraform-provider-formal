@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.1
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.6-20250613172917-8305e8eef668.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.6-20250623184657-24bce21a26a0.1
 	connectrpc.com/connect v1.18.1
 	github.com/bufbuild/protovalidate-go v0.10.0
 	github.com/formalco/go-sdk/sdk/v2 v2.8.3
