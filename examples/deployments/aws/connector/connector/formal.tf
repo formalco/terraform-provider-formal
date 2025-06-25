@@ -73,10 +73,13 @@ resource "formal_resource" "main" {
 
 # Native Role
 resource "formal_native_user" "main_mysql" {
-  resource_id        = formal_resource.main.id
-  native_user_id     = "test"
-  native_user_secret = "test"
-  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+  resource_id     = formal_resource.main.id
+  type            = "password"
+  username        = "test"
+  username_is_env = false
+  password        = "test"
+  password_is_env = false
+  use_as_default  = true // per sidecar, exactly one native role must be marked as the default.
 }
 
 resource "formal_connector_listener" "mysql_listener" {

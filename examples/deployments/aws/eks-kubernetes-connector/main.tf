@@ -64,10 +64,10 @@ resource "formal_resource" "kubernetes_resource" {
 }
 
 resource "formal_native_user" "kubernetes_native_user" {
-  resource_id        = formal_resource.kubernetes_resource.id
-  native_user_id     = "iam"
-  native_user_secret = "iam"
-  use_as_default     = true
+  resource_id    = formal_resource.kubernetes_resource.id
+  type           = "k8s"
+  kubeconfig_env = "KUBECONFIG"
+  use_as_default = true
 }
 
 # Configure the Formal connector in Formal Control Plane
