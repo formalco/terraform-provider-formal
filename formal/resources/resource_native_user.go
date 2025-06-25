@@ -38,19 +38,50 @@ func ResourceNativeUser() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"native_user_id": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The username of the Native User.",
+			"type": {
+				Description: "The type of the Native User. (one of 'password', 'iam', 'k8s')",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
+				// The type of the native user can't be changed after creation in the current API implementation
+				ForceNew: true,
 			},
-			"native_user_secret": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The password of the Native User.",
+			// Password user fields
+			"username": {
+				Description: "For password users, the username.",
 				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
+				Required:    false,
+			},
+			"username_is_env": {
+				Description: "For password users, whether the username is the name of an environment variable where the real username is stored.",
+				Type:        schema.TypeBool,
+				Required:    false,
+			},
+			"password": {
+				Description: "For password users, the password.",
+				Type:        schema.TypeString,
+				Required:    false,
+			},
+			"password_is_env": {
+				Description: "For password users, whether the password is the name of an environment variable where the real password is stored.",
+				Type:        schema.TypeBool,
+				Required:    false,
+			},
+			// IAM user fields
+			"iam_type": {
+				Description: "For IAM users, the type of IAM user. (one of 'aws', 'gcp')",
+				Type:        schema.TypeString,
+				Required:    false,
+			},
+			"iam_role": {
+				Description: "For IAM users, the IAM role to assume. Currently only takes effect for AWS IAM.",
+				Type:        schema.TypeString,
+				Required:    false,
+			},
+			// K8s user fields
+			"kubeconfig_env": {
+				Description: "For kubernetes users, the name of the environment variable where the path to a kubeconfig file is stored.",
+				Type:        schema.TypeString,
+				Required:    false,
 			},
 			"use_as_default": {
 				// This description is used by the documentation generator and the language server.
