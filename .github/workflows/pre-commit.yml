@@ -27,7 +27,7 @@ jobs:
           go-version: "^1.24"
           cache: true
       - name: Setup mise
-        uses: jdx/mise-action@13abe502c30c1559a5c37dff303831bab82c9402
+        uses: jdx/mise-action@5cb1df66ed5e1fb3c670ea0b62fd17a76979826a
 
       - run: mise run tidy
       - run: mise run lint
