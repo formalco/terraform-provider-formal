@@ -12,6 +12,11 @@ import (
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
+const (
+	ValidUserTypes = "'password', 'iam', 'k8s'"
+	ValidIAMTypes  = "'aws', 'gcp'"
+)
+
 func ResourceNativeUser() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
@@ -39,7 +44,7 @@ func ResourceNativeUser() *schema.Resource {
 				ForceNew:    true,
 			},
 			"type": {
-				Description: "The type of the Native User. (one of 'password', 'iam', 'k8s')",
+				Description: "The type of the Native User. (one of " + ValidUserTypes + ")",
 				Type:        schema.TypeString,
 				Required:    true,
 				// The type of the native user can't be changed after creation in the current API implementation
@@ -68,7 +73,7 @@ func ResourceNativeUser() *schema.Resource {
 			},
 			// IAM user fields
 			"iam_type": {
-				Description: "For IAM users, the type of IAM user. (one of 'aws', 'gcp')",
+				Description: "For IAM users, the type of IAM user. (one of " + ValidIAMTypes + ")",
 				Type:        schema.TypeString,
 				Required:    false,
 			},
@@ -108,18 +113,45 @@ func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 
 	// Maps to user-defined fields
 	ResourceId := d.Get("resource_id").(string)
-	Username := d.Get("native_user_id").(string)
-	Secret := d.Get("native_user_secret").(string)
+	Type := d.Get("type").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUser(ctx, connect.NewRequest(&corev1.CreateNativeUserRequest{
+	req := &corev1.CreateNativeUserV2Request{
 		ResourceId:            ResourceId,
-		Username:              Username,
-		Secret:                Secret,
 		UseAsDefault:          UseAsDefault,
 		TerminationProtection: TerminationProtection,
-	}))
+	}
+
+	switch Type {
+	case "password":
+		Username := d.Get("username").(string)
+		UsernameIsEnv := d.Get("username_is_env").(bool)
+		Password := d.Get("password").(string)
+		PasswordIsEnv := d.Get("password_is_env").(bool)
+		req.Password = &corev1.CreateNativeUserV2Request_Password{
+			Username:      Username,
+			UsernameIsEnv: UsernameIsEnv,
+			Password:      Password,
+			PasswordIsEnv: PasswordIsEnv,
+		}
+	case "iam":
+		IamType := d.Get("iam_type").(string)
+		IamRole := d.Get("iam_role").(string)
+		req.Iam = &corev1.CreateNativeUserV2Request_Iam{
+			IamType: IamType,
+			IamRole: IamRole,
+		}
+	case "k8s":
+		KubeconfigEnv := d.Get("kubeconfig_env").(string)
+		req.K8S = &corev1.CreateNativeUserV2Request_K8S{
+			KubeconfigEnv: KubeconfigEnv,
+		}
+	default:
+		return diag.Errorf("invalid native user type: %s (expected one of %s)", Type, ValidUserTypes)
+	}
+
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUserV2(ctx, connect.NewRequest(req))
 	if err != nil {
 		return diag.FromErr(err)
 	}
