@@ -34,8 +34,11 @@ resource "formal_sidecar_resource_link" "main" {
 
 # Native Role
 resource "formal_native_user" "main_postgres" {
-  resource_id        = formal_resource.main.id
-  native_user_id     = var.postgres_username
-  native_user_secret = var.postgres_password
-  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+  resource_id     = formal_resource.main.id
+  type            = "password"
+  username        = var.postgres_username
+  username_is_env = false
+  password        = var.postgres_password
+  password_is_env = false
+  use_as_default  = true // per sidecar, exactly one native role must be marked as the default.
 }

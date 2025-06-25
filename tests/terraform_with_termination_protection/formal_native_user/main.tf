@@ -15,20 +15,23 @@ variable "termination_protection" {
 }
 
 resource "formal_resource" "postgres1" {
-  hostname                   = "terraform-test-local.formal-native-user.with-termination-protection.com"
-  name                       = "terraform-test-local-formal_native_user-with-termination-protection"
-  technology                 = "postgres"
-  environment                = "DEV"
-  port                       = 5432
+  hostname    = "terraform-test-local.formal-native-user.with-termination-protection.com"
+  name        = "terraform-test-local-formal_native_user-with-termination-protection"
+  technology  = "postgres"
+  environment = "DEV"
+  port        = 5432
   timeouts {
     create = "1m"
   }
 }
 
 resource "formal_native_user" "name" {
-  resource_id           = formal_resource.postgres1.id
-  native_user_id         = "postgres"
-  native_user_secret     = "postgres"
+  resource_id            = formal_resource.postgres1.id
+  type                   = "password"
+  username               = "postgres"
+  username_is_env        = false
+  password               = "postgres"
+  password_is_env        = false
   use_as_default         = true
   termination_protection = var.termination_protection
 }

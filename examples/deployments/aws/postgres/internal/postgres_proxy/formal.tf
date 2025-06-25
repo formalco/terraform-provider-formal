@@ -27,7 +27,7 @@ resource "formal_resource" "main" {
 }
 
 # Extra hostname, used to access the same resource
-# for example: 
+# for example:
 # postgres_extra_name=reader_endpoint
 # postgres_extra_hostname=xxx.cluster-ro-xxx.xxx.rds.amazonaws.com
 # you can then access the resource `psql -h <var.postgres_sidecar_hostname> -p 5432 -d <dbname>@<var.name>@<var.postgres_extra_name>`
@@ -45,16 +45,22 @@ resource "formal_sidecar_resource_link" "main" {
 
 # Native Role
 resource "formal_native_user" "main_postgres" {
-  resource_id        = formal_resource.main.id
-  native_user_id     = var.postgres_username
-  native_user_secret = var.postgres_password
-  use_as_default     = true // per sidecar, exactly one native role must be marked as the default.
+  resource_id     = formal_resource.main.id
+  type            = "password"
+  username        = var.postgres_username
+  username_is_env = false
+  password        = var.postgres_password
+  password_is_env = false
+  use_as_default  = true // per sidecar, exactly one native role must be marked as the default.
 }
 
 resource "formal_native_user" "main_postgres_extra" {
-  resource_id        = formal_resource.main.id
-  native_user_id     = var.postgres_extra_username
-  native_user_secret = var.postgres_extra_password
+  resource_id     = formal_resource.main.id
+  type            = "password"
+  username        = var.postgres_extra_username
+  username_is_env = false
+  password        = var.postgres_extra_password
+  password_is_env = false
 }
 
 resource "formal_native_user_link" "main" {
