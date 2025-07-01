@@ -116,6 +116,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	req := &corev1.CreateLogConfigurationRequest{
 		Name:                        d.Get("name").(string),
+		LogConfigurationLevel:       corev1.LogConfigurationLevel_LOG_CONFIGURATION_LEVEL_ACCOUNT,
 		RequestPayloadMaxSize:       int64(d.Get("request_payload_max_size").(int)),
 		ResponsePayloadMaxSize:      int64(d.Get("response_payload_max_size").(int)),
 		EncryptRequestPayload:       d.Get("encrypt_request_payload").(bool),
@@ -126,20 +127,30 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 		EncryptionKeyId:             d.Get("encryption_key_id").(string),
 	}
 
-	if v, ok := d.GetOk("connector_id"); ok {
-		connectorId := v.(string)
+	spaceId, spaceIdOk := d.GetOk("space_id")
+	connectorId, connectorIdOk := d.GetOk("connector_id")
+	resourceId, resourceIdOk := d.GetOk("resource_id")
+
+	if (spaceIdOk && connectorIdOk) || (spaceIdOk && resourceIdOk) || (connectorIdOk && resourceIdOk) {
+		return diag.Errorf("You can only specify one of space_id, connector_id, or resource_id")
+	}
+
+	if spaceIdOk {
+		spaceId := spaceId.(string)
+		req.SpaceId = &spaceId
+		req.LogConfigurationLevel = corev1.LogConfigurationLevel_LOG_CONFIGURATION_LEVEL_SPACE
+	}
+
+	if connectorIdOk {
+		connectorId := connectorId.(string)
 		req.ConnectorId = &connectorId
 		req.LogConfigurationLevel = corev1.LogConfigurationLevel_LOG_CONFIGURATION_LEVEL_CONNECTOR
 	}
-	if v, ok := d.GetOk("resource_id"); ok {
-		resourceId := v.(string)
+
+	if resourceIdOk {
+		resourceId := resourceId.(string)
 		req.ResourceId = &resourceId
 		req.LogConfigurationLevel = corev1.LogConfigurationLevel_LOG_CONFIGURATION_LEVEL_RESOURCE
-	}
-	if v, ok := d.GetOk("space_id"); ok {
-		spaceId := v.(string)
-		req.SpaceId = &spaceId
-		req.LogConfigurationLevel = corev1.LogConfigurationLevel_LOG_CONFIGURATION_LEVEL_SPACE
 	}
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogConfiguration(ctx, connect.NewRequest(req))
