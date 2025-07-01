@@ -17,9 +17,12 @@ Managing Log Configuration with Formal.
 
 ### Required
 
+- `encrypt_exec_stream_logs` (Boolean) Whether to encrypt exec stream logs.
 - `encrypt_request_payload` (Boolean) Whether to encrypt request payloads.
 - `encrypt_response_payload` (Boolean) Whether to encrypt response payloads.
 - `encrypt_values_from_sql_queries` (Boolean) Whether to encrypt SQL queries in logs.
+- `encryption_key_id` (String) ID of the encryption key to use for encryption.
+- `name` (String) Name of this log configuration.
 - `request_payload_max_size` (Number) Maximum size of request payloads to log.
 - `response_payload_max_size` (Number) Maximum size of response payloads to log.
 - `strip_values_from_sql_queries` (Boolean) Whether to obfuscate SQL queries in logs.
@@ -27,10 +30,8 @@ Managing Log Configuration with Formal.
 ### Optional
 
 - `connector_id` (String) The ID of the connector this configuration applies to.
-- `request_encryption_key_id` (String) ID of the encryption key to use for request payloads encryption.
 - `resource_id` (String) The ID of the resource this configuration applies to.
-- `response_encryption_key_id` (String) ID of the encryption key to use for response payloads encryption.
-- `sql_queries_encryption_key_id` (String) ID of the encryption key to use for SQL queries encryption.
+- `space_id` (String) The ID of the space this configuration applies to.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
