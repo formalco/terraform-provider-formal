@@ -34,62 +34,131 @@ func ResourceLogConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
-			"connector_id": {
-				Description: "The ID of the connector this configuration applies to.",
+			"name": {
+				Description: "The name of this log configuration.",
 				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
+				Required:    true,
 			},
-			"resource_id": {
-				Description: "The ID of the resource this configuration applies to.",
+			"encryption_key_id": {
+				Description: "The ID of the encryption key to use for this log configuration.",
 				Type:        schema.TypeString,
+				Required:    true,
+			},
+			"scope": {
+				Description: "The scope configuration for this log configuration.",
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"type": {
+							Description: "The type of scope (resource, connector, space, org).",
+							Type:        schema.TypeString,
+							Required:    true,
+							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+								v := val.(string)
+								valid := []string{"resource", "connector", "space", "org"}
+								for _, validVal := range valid {
+									if v == validVal {
+										return
+									}
+								}
+								errs = append(errs, fmt.Errorf("%q must be one of %v", key, valid))
+								return
+							},
+						},
+						"resource_id": {
+							Description: "The ID of the resource (required when type is resource).",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"connector_id": {
+							Description: "The ID of the connector (required when type is connector).",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"space_id": {
+							Description: "The ID of the space (required when type is space).",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+					},
+				},
+			},
+			"request": {
+				Description: "Request logging configuration.",
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"encrypt": {
+							Description: "Whether to encrypt request payloads.",
+							Type:        schema.TypeBool,
+							Required:    true,
+						},
+						"max_payload_size": {
+							Description: "Maximum size of request payloads to log.",
+							Type:        schema.TypeInt,
+							Required:    true,
+						},
+						"sql": {
+							Description: "SQL logging configuration for requests.",
+							Type:        schema.TypeSet,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"strip_values": {
+										Description: "Whether to obfuscate SQL queries in logs.",
+										Type:        schema.TypeBool,
+										Required:    true,
+									},
+									"encrypt": {
+										Description: "Whether to encrypt SQL queries in logs.",
+										Type:        schema.TypeBool,
+										Required:    true,
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			"response": {
+				Description: "Response logging configuration.",
+				Type:        schema.TypeSet,
+				Required:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"encrypt": {
+							Description: "Whether to encrypt response payloads.",
+							Type:        schema.TypeBool,
+							Required:    true,
+						},
+						"max_payload_size": {
+							Description: "Maximum size of response payloads to log.",
+							Type:        schema.TypeInt,
+							Required:    true,
+						},
+					},
+				},
+			},
+			"stream": {
+				Description: "Stream logging configuration.",
+				Type:        schema.TypeSet,
 				Optional:    true,
-				ForceNew:    true,
-			},
-			"request_payload_max_size": {
-				Description: "Maximum size of request payloads to log.",
-				Type:        schema.TypeInt,
-				Required:    true,
-			},
-			"response_payload_max_size": {
-				Description: "Maximum size of response payloads to log.",
-				Type:        schema.TypeInt,
-				Required:    true,
-			},
-			"encrypt_request_payload": {
-				Description: "Whether to encrypt request payloads.",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			"encrypt_response_payload": {
-				Description: "Whether to encrypt response payloads.",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			"request_encryption_key_id": {
-				Description: "ID of the encryption key to use for request payloads encryption.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"response_encryption_key_id": {
-				Description: "ID of the encryption key to use for response payloads encryption.",
-				Type:        schema.TypeString,
-				Optional:    true,
-			},
-			"strip_values_from_sql_queries": {
-				Description: "Whether to obfuscate SQL queries in logs.",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			"encrypt_values_from_sql_queries": {
-				Description: "Whether to encrypt SQL queries in logs.",
-				Type:        schema.TypeBool,
-				Required:    true,
-			},
-			"sql_queries_encryption_key_id": {
-				Description: "ID of the encryption key to use for SQL queries encryption.",
-				Type:        schema.TypeString,
-				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"encrypt": {
+							Description: "Whether to encrypt stream data.",
+							Type:        schema.TypeBool,
+							Required:    true,
+						},
+					},
+				},
 			},
 			"created_at": {
 				Description: "When the log configuration was created.",
@@ -109,33 +178,80 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	c := meta.(*clients.Clients)
 
 	req := &corev1.CreateLogConfigurationRequest{
-		RequestPayloadMaxSize:       int64(d.Get("request_payload_max_size").(int)),
-		ResponsePayloadMaxSize:      int64(d.Get("response_payload_max_size").(int)),
-		EncryptRequestPayload:       d.Get("encrypt_request_payload").(bool),
-		EncryptResponsePayload:      d.Get("encrypt_response_payload").(bool),
-		StripValuesFromSqlQueries:   d.Get("strip_values_from_sql_queries").(bool),
-		EncryptValuesFromSqlQueries: d.Get("encrypt_values_from_sql_queries").(bool),
+		Name:            d.Get("name").(string),
+		EncryptionKeyId: d.Get("encryption_key_id").(string),
 	}
 
-	if v, ok := d.GetOk("connector_id"); ok {
-		connectorId := v.(string)
-		req.ConnectorId = &connectorId
+	// Handle scope
+	if scopeSet := d.Get("scope").(*schema.Set); scopeSet.Len() > 0 {
+		scopeData := scopeSet.List()[0].(map[string]interface{})
+		scopeType := scopeData["type"].(string)
+		req.Scope = &corev1.LogConfigurationScope{}
+
+		switch scopeType {
+		case "resource":
+			req.Scope.Scope = corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_RESOURCE
+			if resourceId, ok := scopeData["resource_id"].(string); ok && resourceId != "" {
+				req.Scope.ResourceId = &resourceId
+			} else {
+				return diag.Errorf("resource_id is required when scope type is 'resource'")
+			}
+		case "connector":
+			req.Scope.Scope = corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_CONNECTOR
+			if connectorId, ok := scopeData["connector_id"].(string); ok && connectorId != "" {
+				req.Scope.ConnectorId = &connectorId
+			} else {
+				return diag.Errorf("connector_id is required when scope type is 'connector'")
+			}
+		case "space":
+			req.Scope.Scope = corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_SPACE
+			if spaceId, ok := scopeData["space_id"].(string); ok && spaceId != "" {
+				req.Scope.SpaceId = &spaceId
+			} else {
+				return diag.Errorf("space_id is required when scope type is 'space'")
+			}
+		case "org":
+			req.Scope.Scope = corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_ORG
+		default:
+			return diag.Errorf("invalid scope type: %s", scopeType)
+		}
 	}
-	if v, ok := d.GetOk("resource_id"); ok {
-		resourceId := v.(string)
-		req.ResourceId = &resourceId
+
+	// Handle request
+	if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
+		requestData := requestSet.List()[0].(map[string]interface{})
+		req.Request = &corev1.LogConfigurationRequest{
+			Encrypt:        requestData["encrypt"].(bool),
+			MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
+		}
+
+		// Handle SQL config if present
+		if sqlSetRaw, ok := requestData["sql"]; ok {
+			if sqlSet := sqlSetRaw.(*schema.Set); sqlSet != nil && sqlSet.Len() > 0 {
+				sqlData := sqlSet.List()[0].(map[string]interface{})
+				req.Request.Sql = &corev1.LogConfigurationSql{
+					StripValues: sqlData["strip_values"].(bool),
+					Encrypt:     sqlData["encrypt"].(bool),
+				}
+			}
+		}
 	}
-	if v, ok := d.GetOk("request_encryption_key_id"); ok {
-		requestEncryptionKeyId := v.(string)
-		req.RequestEncryptionKeyId = &requestEncryptionKeyId
+
+	// Handle response
+	if responseSet := d.Get("response").(*schema.Set); responseSet.Len() > 0 {
+		responseData := responseSet.List()[0].(map[string]interface{})
+		req.Response = &corev1.LogConfigurationResponse{
+			Encrypt:        responseData["encrypt"].(bool),
+			MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
+		}
 	}
-	if v, ok := d.GetOk("response_encryption_key_id"); ok {
-		responseEncryptionKeyId := v.(string)
-		req.ResponseEncryptionKeyId = &responseEncryptionKeyId
-	}
-	if v, ok := d.GetOk("sql_queries_encryption_key_id"); ok {
-		sqlQueriesEncryptionKeyId := v.(string)
-		req.SqlQueriesEncryptionKeyId = &sqlQueriesEncryptionKeyId
+
+	// Handle stream
+	if streamSet := d.Get("stream").(*schema.Set); streamSet.Len() > 0 {
+		streamData := streamSet.List()[0].(map[string]interface{})
+		req.Stream = &corev1.LogConfigurationStream{
+			Encrypt: streamData["encrypt"].(bool),
+		}
 	}
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogConfiguration(ctx, connect.NewRequest(req))
@@ -163,22 +279,76 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.LogConfiguration.Id)
-	d.Set("connector_id", res.Msg.LogConfiguration.ConnectorId)
-	d.Set("resource_id", res.Msg.LogConfiguration.ResourceId)
-	d.Set("request_payload_max_size", res.Msg.LogConfiguration.RequestPayloadMaxSize)
-	d.Set("response_payload_max_size", res.Msg.LogConfiguration.ResponsePayloadMaxSize)
-	d.Set("encrypt_request_payload", res.Msg.LogConfiguration.EncryptRequestPayload)
-	d.Set("encrypt_response_payload", res.Msg.LogConfiguration.EncryptResponsePayload)
-	d.Set("request_encryption_key_id", res.Msg.LogConfiguration.RequestEncryptionKeyId)
-	d.Set("response_encryption_key_id", res.Msg.LogConfiguration.ResponseEncryptionKeyId)
-	d.Set("strip_values_from_sql_queries", res.Msg.LogConfiguration.StripValuesFromSqlQueries)
-	d.Set("encrypt_values_from_sql_queries", res.Msg.LogConfiguration.EncryptValuesFromSqlQueries)
-	d.Set("sql_queries_encryption_key_id", res.Msg.LogConfiguration.SqlQueriesEncryptionKeyId)
-	d.Set("created_at", res.Msg.LogConfiguration.CreatedAt.AsTime().String())
-	d.Set("updated_at", res.Msg.LogConfiguration.UpdatedAt.AsTime().String())
+	logConfig := res.Msg.LogConfiguration
+	d.Set("id", logConfig.Id)
+	d.Set("name", logConfig.Name)
+	d.Set("encryption_key_id", logConfig.EncryptionKeyId)
 
-	d.SetId(res.Msg.LogConfiguration.Id)
+	// Set scope
+	if logConfig.Scope != nil {
+		scopeData := map[string]interface{}{}
+		switch logConfig.Scope.Scope {
+		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_RESOURCE:
+			scopeData["type"] = "resource"
+			if logConfig.Scope.ResourceId != nil {
+				scopeData["resource_id"] = *logConfig.Scope.ResourceId
+			}
+		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_CONNECTOR:
+			scopeData["type"] = "connector"
+			if logConfig.Scope.ConnectorId != nil {
+				scopeData["connector_id"] = *logConfig.Scope.ConnectorId
+			}
+		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_SPACE:
+			scopeData["type"] = "space"
+			if logConfig.Scope.SpaceId != nil {
+				scopeData["space_id"] = *logConfig.Scope.SpaceId
+			}
+		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_ORG:
+			scopeData["type"] = "org"
+		}
+		d.Set("scope", []interface{}{scopeData})
+	}
+
+	// Set request
+	if logConfig.Request != nil {
+		requestData := map[string]interface{}{
+			"encrypt":          logConfig.Request.Encrypt,
+			"max_payload_size": logConfig.Request.MaxPayloadSize,
+		}
+
+		// Set SQL config if present
+		if logConfig.Request.Sql != nil {
+			sqlData := map[string]interface{}{
+				"strip_values": logConfig.Request.Sql.StripValues,
+				"encrypt":      logConfig.Request.Sql.Encrypt,
+			}
+			requestData["sql"] = []interface{}{sqlData}
+		}
+
+		d.Set("request", []interface{}{requestData})
+	}
+
+	// Set response
+	if logConfig.Response != nil {
+		responseData := map[string]interface{}{
+			"encrypt":          logConfig.Response.Encrypt,
+			"max_payload_size": logConfig.Response.MaxPayloadSize,
+		}
+		d.Set("response", []interface{}{responseData})
+	}
+
+	// Set stream
+	if logConfig.Stream != nil {
+		streamData := map[string]interface{}{
+			"encrypt": logConfig.Stream.Encrypt,
+		}
+		d.Set("stream", []interface{}{streamData})
+	}
+
+	d.Set("created_at", logConfig.CreatedAt.AsTime().String())
+	d.Set("updated_at", logConfig.UpdatedAt.AsTime().String())
+
+	d.SetId(logConfig.Id)
 	return diags
 }
 
@@ -187,56 +357,65 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	configId := d.Id()
 
 	fieldsThatCanChange := []string{
-		"request_payload_max_size", "response_payload_max_size",
-		"encrypt_request_payload", "encrypt_response_payload",
-		"request_encryption_key_id", "response_encryption_key_id",
-		"strip_values_from_sql_queries", "encrypt_values_from_sql_queries",
-		"sql_queries_encryption_key_id",
+		"name", "encryption_key_id", "request", "response", "stream",
 	}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	req := &corev1.UpdateLogConfigurationRequest{
 		Id: configId,
 	}
 
-	if d.HasChange("request_payload_max_size") {
-		size := int64(d.Get("request_payload_max_size").(int))
-		req.RequestPayloadMaxSize = &size
+	if d.HasChange("name") {
+		name := d.Get("name").(string)
+		req.Name = &name
 	}
-	if d.HasChange("response_payload_max_size") {
-		size := int64(d.Get("response_payload_max_size").(int))
-		req.ResponsePayloadMaxSize = &size
+
+	if d.HasChange("encryption_key_id") {
+		encryptionKeyId := d.Get("encryption_key_id").(string)
+		req.EncryptionKeyId = &encryptionKeyId
 	}
-	if d.HasChange("encrypt_request_payload") {
-		encrypt := d.Get("encrypt_request_payload").(bool)
-		req.EncryptRequestPayload = &encrypt
+
+	// Handle request changes
+	if d.HasChange("request") {
+		if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
+			requestData := requestSet.List()[0].(map[string]interface{})
+			req.Request = &corev1.LogConfigurationRequest{
+				Encrypt:        requestData["encrypt"].(bool),
+				MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
+			}
+
+			// Handle SQL config if present
+			if sqlSet := requestData["sql"].(*schema.Set); sqlSet.Len() > 0 {
+				sqlData := sqlSet.List()[0].(map[string]interface{})
+				req.Request.Sql = &corev1.LogConfigurationSql{
+					StripValues: sqlData["strip_values"].(bool),
+					Encrypt:     sqlData["encrypt"].(bool),
+				}
+			}
+		}
 	}
-	if d.HasChange("encrypt_response_payload") {
-		encrypt := d.Get("encrypt_response_payload").(bool)
-		req.EncryptResponsePayload = &encrypt
+
+	// Handle response changes
+	if d.HasChange("response") {
+		if responseSet := d.Get("response").(*schema.Set); responseSet.Len() > 0 {
+			responseData := responseSet.List()[0].(map[string]interface{})
+			req.Response = &corev1.LogConfigurationResponse{
+				Encrypt:        responseData["encrypt"].(bool),
+				MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
+			}
+		}
 	}
-	if d.HasChange("request_encryption_key_id") {
-		keyId := d.Get("request_encryption_key_id").(string)
-		req.RequestEncryptionKeyId = &keyId
-	}
-	if d.HasChange("response_encryption_key_id") {
-		keyId := d.Get("response_encryption_key_id").(string)
-		req.ResponseEncryptionKeyId = &keyId
-	}
-	if d.HasChange("strip_values_from_sql_queries") {
-		strip := d.Get("strip_values_from_sql_queries").(bool)
-		req.StripValuesFromSqlQueries = &strip
-	}
-	if d.HasChange("encrypt_values_from_sql_queries") {
-		encrypt := d.Get("encrypt_values_from_sql_queries").(bool)
-		req.EncryptValuesFromSqlQueries = &encrypt
-	}
-	if d.HasChange("sql_queries_encryption_key_id") {
-		keyId := d.Get("sql_queries_encryption_key_id").(string)
-		req.SqlQueriesEncryptionKeyId = &keyId
+
+	// Handle stream changes
+	if d.HasChange("stream") {
+		if streamSet := d.Get("stream").(*schema.Set); streamSet.Len() > 0 {
+			streamData := streamSet.List()[0].(map[string]interface{})
+			req.Stream = &corev1.LogConfigurationStream{
+				Encrypt: streamData["encrypt"].(bool),
+			}
+		}
 	}
 
 	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateLogConfiguration(ctx, connect.NewRequest(req))
