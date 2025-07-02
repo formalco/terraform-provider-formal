@@ -17,20 +17,15 @@ Managing Log Configuration with Formal.
 
 ### Required
 
-- `encrypt_request_payload` (Boolean) Whether to encrypt request payloads.
-- `encrypt_response_payload` (Boolean) Whether to encrypt response payloads.
-- `encrypt_values_from_sql_queries` (Boolean) Whether to encrypt SQL queries in logs.
-- `request_payload_max_size` (Number) Maximum size of request payloads to log.
-- `response_payload_max_size` (Number) Maximum size of response payloads to log.
-- `strip_values_from_sql_queries` (Boolean) Whether to obfuscate SQL queries in logs.
+- `encryption_key_id` (String) The ID of the encryption key to use for this log configuration.
+- `name` (String) The name of this log configuration.
+- `request` (Block Set, Min: 1, Max: 1) Request logging configuration. (see [below for nested schema](#nestedblock--request))
+- `response` (Block Set, Min: 1, Max: 1) Response logging configuration. (see [below for nested schema](#nestedblock--response))
+- `scope` (Block Set, Min: 1, Max: 1) The scope configuration for this log configuration. (see [below for nested schema](#nestedblock--scope))
 
 ### Optional
 
-- `connector_id` (String) The ID of the connector this configuration applies to.
-- `request_encryption_key_id` (String) ID of the encryption key to use for request payloads encryption.
-- `resource_id` (String) The ID of the resource this configuration applies to.
-- `response_encryption_key_id` (String) ID of the encryption key to use for response payloads encryption.
-- `sql_queries_encryption_key_id` (String) ID of the encryption key to use for SQL queries encryption.
+- `stream` (Block Set, Max: 1) Stream logging configuration. (see [below for nested schema](#nestedblock--stream))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -38,6 +33,59 @@ Managing Log Configuration with Formal.
 - `created_at` (String) When the log configuration was created.
 - `id` (String) The ID of this log configuration.
 - `updated_at` (String) Last update time.
+
+<a id="nestedblock--request"></a>
+### Nested Schema for `request`
+
+Required:
+
+- `encrypt` (Boolean) Whether to encrypt request payloads.
+- `max_payload_size` (Number) Maximum size of request payloads to log.
+
+Optional:
+
+- `sql` (Block Set, Max: 1) SQL logging configuration for requests. (see [below for nested schema](#nestedblock--request--sql))
+
+<a id="nestedblock--request--sql"></a>
+### Nested Schema for `request.sql`
+
+Required:
+
+- `encrypt` (Boolean) Whether to encrypt SQL queries in logs.
+- `strip_values` (Boolean) Whether to obfuscate SQL queries in logs.
+
+
+
+<a id="nestedblock--response"></a>
+### Nested Schema for `response`
+
+Required:
+
+- `encrypt` (Boolean) Whether to encrypt response payloads.
+- `max_payload_size` (Number) Maximum size of response payloads to log.
+
+
+<a id="nestedblock--scope"></a>
+### Nested Schema for `scope`
+
+Required:
+
+- `type` (String) The type of scope (resource, connector, space, org).
+
+Optional:
+
+- `connector_id` (String) The ID of the connector (required when type is connector).
+- `resource_id` (String) The ID of the resource (required when type is resource).
+- `space_id` (String) The ID of the space (required when type is space).
+
+
+<a id="nestedblock--stream"></a>
+### Nested Schema for `stream`
+
+Required:
+
+- `encrypt` (Boolean) Whether to encrypt stream data.
+
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
