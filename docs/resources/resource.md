@@ -21,12 +21,12 @@ Registering a Resource with Formal.
 - `name` (String) Friendly name for the Resource.
 - `port` (Number) The port your Resource is listening on.
 - `technology` (String) Technology of the Resource: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `clickhouse`, `redis` and `ssh`.
-- `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
 
 ### Optional
 
 - `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `space_id` (String) The ID of the Space to create the Resource in.
+- `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
 - `termination_protection` (Boolean) If set to true, the Resource cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
