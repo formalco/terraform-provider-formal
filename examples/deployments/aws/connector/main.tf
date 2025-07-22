@@ -54,3 +54,25 @@ module "demo_connector" {
   container_memory               = var.container_memory
 }
 
+resource "formal_resource" "echo" {
+  name        = "${var.name}-echo"
+  technology  = "http"
+  hostname    = "echo.free.beeceptor.com"
+  port        = 443
+}
+
+resource "formal_connector_listener" "echo" {
+  name         = "${var.name}-echo"
+  port         = 8443
+}
+
+resource "formal_connector_listener_rule" "echo" {
+  connector_listener_id = formal_connector_listener.echo.id
+  type                  = "resource"
+  rule                  = formal_resource.echo.id
+}
+
+resource "formal_connector_listener_link" "echo" {
+  connector_id          = module.demo_connector.connector_id
+  connector_listener_id = formal_connector_listener.echo.id
+}
