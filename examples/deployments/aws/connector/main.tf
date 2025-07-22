@@ -37,7 +37,7 @@ locals {
 module "demo_connector" {
   source                      = "./connector"
   formal_api_key              = var.formal_api_key
-  name                        = var.name
+  name                        = "${var.name}-connector"
   connector_hostname          = local.connector_hostname
   connector_dns_record        = module.common.url
   environment                 = var.environment
