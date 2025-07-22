@@ -26,7 +26,7 @@ resource "formal_connector_configuration" "main" {
 resource "formal_connector_hostname" "main" {
   connector_id = formal_connector.main.id
   hostname     = var.connector_hostname
-  dns_record   = var.connector_dns_record
+  dns_record   = aws_lb.main.dns_name
 }
 
 

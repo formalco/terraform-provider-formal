@@ -72,3 +72,9 @@ variable "connector_image" {
   default     = "654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector:latest"
 }
 
+variable "connector_ports" {
+  description = "List of ports to open for the connector (health check port 8080 is always included)"
+  type        = list(number)
+  default     = [443]
+}
+

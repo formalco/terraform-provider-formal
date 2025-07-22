@@ -22,4 +22,9 @@ variable "ecs_task_execution_role_arn" {}
 variable "ecs_task_role_arn" {}
 
 variable "connector_hostname" {}
-variable "connector_dns_record" {}
+
+variable "connector_ports" {
+  description = "List of ports to open for the connector"
+  type        = list(number)
+}
+

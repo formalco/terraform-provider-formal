@@ -14,8 +14,8 @@ resource "aws_ecs_task_definition" "main" {
   family                   = var.name
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
-  cpu                      = 8192
-  memory                   = 16384
+  cpu                      = var.container_cpu
+  memory                   = var.container_memory
   execution_role_arn       = var.ecs_task_execution_role_arn
   task_role_arn            = var.ecs_task_role_arn
   container_definitions = jsonencode([
@@ -23,13 +23,17 @@ resource "aws_ecs_task_definition" "main" {
       name      = var.name
       image     = var.container_image
       essential = true
-      portMappings = [
+      portMappings = concat([
         {
           protocol      = "tcp"
           containerPort = 8080
           hostPort      = 8080
         }
-      ]
+        ], [for port in var.connector_ports : {
+          protocol      = "tcp"
+          containerPort = port
+          hostPort      = port
+      }])
       environment = [
         {
           name  = "SERVER_CONNECT_TLS"
@@ -68,12 +72,25 @@ resource "aws_security_group" "main" {
   description = "Allow inbound traffic"
   vpc_id      = var.vpc_id
 
+  # Health check port
   ingress {
-    description = "Allow inbound traffic"
-    from_port   = 0
-    to_port     = 65535
+    description = "Health check port"
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  # Dynamic connector ports
+  dynamic "ingress" {
+    for_each = toset([for port in var.connector_ports : tostring(port)])
+    content {
+      description = "Connector port ${ingress.key}"
+      from_port   = tonumber(ingress.key)
+      to_port     = tonumber(ingress.key)
+      protocol    = "tcp"
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
@@ -82,13 +99,12 @@ resource "aws_security_group" "main" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
 }
 
 resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
-  task_definition                    = aws_ecs_task_definition.main.arn
+  task_definition                    = "${aws_ecs_task_definition.main.family}:${aws_ecs_task_definition.main.revision}"
   desired_count                      = 1
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
@@ -103,16 +119,22 @@ resource "aws_ecs_service" "main" {
     assign_public_ip = false
   }
 
+  dynamic "load_balancer" {
+    for_each = aws_lb_target_group.connector
+    content {
+      target_group_arn = load_balancer.value.arn
+      container_name   = var.name
+      container_port   = tonumber(load_balancer.key)
+    }
+  }
+
   deployment_controller {
     type = "ECS"
   }
 
-
-  # we ignore task_definition changes as the revision changes on deploy
-  # of a new version of the application
-  # desired_count is ignored as it can change due to autoscaling policy
+  # desired_count is ignored as it can change due to autoscaling policy  
   lifecycle {
-    ignore_changes = [task_definition, desired_count, load_balancer]
+    ignore_changes = [desired_count]
   }
 }
 
