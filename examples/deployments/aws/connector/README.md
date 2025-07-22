@@ -25,8 +25,8 @@ Create a `terraform.tfvars` file:
 # Required variables
 region             = "us-west-2"
 availability_zones = ["us-west-2a", "us-west-2b"]
-formal_api_key     = "your-formal-api-key"
-formal_org_name    = "your-org-name"  # Provided by Formal
+formal_api_key     = "your-formal-api-key"      # Provided by Formal
+formal_org_name    = "your-org-name"            # Provided by Formal
 
 # Optional: customize networking (defaults provided)
 # vpc_cidr              = "172.0.0.0/16"

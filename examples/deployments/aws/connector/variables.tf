@@ -1,21 +1,45 @@
-variable "region" {}
+# Required variables
+variable "region" {
+  description = "AWS region for deployment"
+  type        = string
+}
+
+variable "availability_zones" {
+  description = "List of availability zones (e.g., [\"us-west-2a\", \"us-west-2b\"])"
+  type        = list(string)
+}
 
 variable "formal_api_key" {
-  type      = string
-  sensitive = true
+  description = "Your Formal API key (provided by Formal)"
+  type        = string
+  sensitive   = true
+}
+
+variable "formal_org_name" {
+  description = "Your Formal organization name (provided by Formal)"
+  type        = string
+}
+
+# Optional variables
+variable "name" {
+  description = "Name prefix for all resources"
+  type        = string
+  default     = "demo-env"
+}
+
+variable "environment" {
+  description = "Environment name for resource tagging"
+  type        = string
+  default     = "demo-formal-env"
 }
 
 variable "health_check_port" {
-  default = 8080
+  description = "Port for ECS health checks"
+  type        = number
+  default     = 8080
 }
 
-variable "name" {
-  default = "demo-env"
-}
-variable "environment" {
-  default = "demo-formal-env"
-}
-
+# Networking
 variable "vpc_cidr" {
   description = "CIDR block for the VPC"
   type        = string
@@ -34,26 +58,18 @@ variable "public_subnet_cidrs" {
   default     = ["172.0.101.0/24", "172.0.102.0/24"]
 }
 
-variable "availability_zones" {
-  description = "List of availability zones (must match your region, e.g., [\"us-west-2a\", \"us-west-2b\"])"
-  type        = list(string)
-}
-
-
-
+# Container
 variable "container_cpu" {
-  default = 1024
+  description = "CPU units for the connector container"
+  type        = number
+  default     = 1024
 }
+
 variable "container_memory" {
-  default = 2048
+  description = "Memory in MB for the connector container"
+  type        = number
+  default     = 2048
 }
-
-variable "formal_org_name" {
-  description = "Your Formal organization name (provided by Formal)"
-  type        = string
-}
-
-
 
 variable "connector_image" {
   description = "Container image for the Formal connector"
