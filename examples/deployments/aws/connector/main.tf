@@ -62,7 +62,7 @@ resource "formal_resource" "echo" {
 
 resource "formal_connector_listener" "echo" {
   name = "${var.name}-echo"
-  port = 8443
+  port = 443
 }
 
 resource "formal_connector_listener_rule" "echo" {
