@@ -44,18 +44,6 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
-          name  = "LOG_LEVEL"
-          value = "debug"
-        },
-        {
-          name  = "ENVIRONMENT"
-          value = "prod"
-        },
-        {
-          name  = "MANAGED_TLS_CERTS"
-          value = "true"
-        },
-        {
           name  = "PII_SAMPLING_RATE"
           value = "8"
         },
