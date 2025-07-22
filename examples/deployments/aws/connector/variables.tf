@@ -28,7 +28,6 @@ variable "private_subnets" {}
 variable "public_subnets" {}
 variable "availability_zones" {}
 
-variable "datadog_api_key" {}
 
 
 variable "container_cpu" {

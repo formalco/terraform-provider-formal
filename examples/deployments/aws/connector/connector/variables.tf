@@ -2,7 +2,6 @@ variable "name" {}
 
 variable "environment" {}
 
-variable "datadog_api_key" {}
 
 variable "health_check_port" {}
 

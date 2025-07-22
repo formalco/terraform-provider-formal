@@ -1,3 +1,15 @@
+data "aws_region" "current" {}
+
+resource "aws_cloudwatch_log_group" "connector" {
+  name              = "/ecs/${var.name}"
+  retention_in_days = 7
+
+  tags = {
+    Name        = var.name
+    Environment = var.environment
+  }
+}
+
 resource "aws_ecs_task_definition" "ecs_task" {
   family                   = var.name
   network_mode             = "awsvpc"
@@ -16,7 +28,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
           protocol      = "tcp"
           containerPort = var.health_check_port
           hostPort      = var.health_check_port
-      }]
+        }
+      ]
       environment = [
         {
           name  = "DATA_CLASSIFIER_SATELLITE_URI"
@@ -31,24 +44,12 @@ resource "aws_ecs_task_definition" "ecs_task" {
           value = "true"
         },
         {
-          name  = "LOG_LEVEL",
+          name  = "LOG_LEVEL"
           value = "debug"
         },
         {
-          name  = "DD_VERSION"
-          value = "1.0.0"
-        },
-        {
-          name  = "DD_ENV",
+          name  = "ENVIRONMENT"
           value = "prod"
-        },
-        {
-          name  = "ENVIRONMENT",
-          value = "prod"
-        },
-        {
-          name  = "DD_SERVICE"
-          value = var.name
         },
         {
           name  = "MANAGED_TLS_CERTS"
@@ -62,89 +63,20 @@ resource "aws_ecs_task_definition" "ecs_task" {
           name  = "S3_BROWSER_PORT"
           value = tostring(var.connector_s3_browser_port)
         }
-      ],
+      ]
       secrets = [
         {
           name      = "FORMAL_CONTROL_PLANE_API_KEY"
           valueFrom = aws_secretsmanager_secret_version.formal_connector_api_key.arn
-        },
-      ],
-      logConfiguration = {
-        logDriver = "awsfirelens"
-        options = {
-          "Name"       = "datadog",
-          "Host"       = "http-intake.logs.datadoghq.eu",
-          "TLS"        = "on",
-          "dd_source"  = var.name,
-          "provider"   = "ecs",
-          "dd_service" = var.name,
-          "apikey"     = var.datadog_api_key
         }
-      }
-      dependsOn = [
-        { "containerName" : "log_router", "condition" : "START" },
-        { "condition" = "HEALTHY", "containerName" = "datadog-agent" }
       ]
-    },
-    {
-      name              = "log_router"
-      image             = "public.ecr.aws/aws-observability/aws-for-fluent-bit:stable"
-      memoryReservation = 50,
-      firelensConfiguration = {
-        "type" = "fluentbit",
-        "options" = {
-          "config-file-type"        = "file"
-          "config-file-value"       = "/fluent-bit/configs/parse-json.conf"
-          "enable-ecs-log-metadata" = "true"
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.connector.name
+          "awslogs-region"        = data.aws_region.current.name
+          "awslogs-stream-prefix" = "ecs"
         }
-      },
-    },
-    {
-      name  = "datadog-agent",
-      image = "public.ecr.aws/datadog/agent:latest",
-      portMappings = [
-        {
-          "containerPort" = 8126,
-          "hostPort"      = 8126,
-          "protocol"      = "tcp"
-        }
-      ],
-      environment = [{
-        "name"  = "ECS_FARGATE",
-        "value" = "true"
-        },
-        {
-          "name"  = "DD_APM_ENABLED",
-          "value" = "true"
-        },
-        {
-          "name"  = "DD_LOGS_ENABLED",
-          "value" = "true"
-        },
-        {
-          "name"  = "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
-          "value" = "true"
-        },
-        {
-          "name"  = "DD_APM_NON_LOCAL_TRAFFIC",
-          "value" = "true"
-        },
-        {
-          "name"  = "DD_API_KEY",
-          "value" = var.datadog_api_key
-        },
-        {
-          "name"  = "DD_SITE",
-          "value" = "datadoghq.eu"
-      }],
-      healthCheck = {
-        "command" = [
-          "CMD-SHELL",
-          "agent health"
-        ],
-        "interval" = 30,
-        "timeout"  = 5,
-        "retries"  = 3
       }
     }
   ])
