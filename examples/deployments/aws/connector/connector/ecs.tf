@@ -59,10 +59,6 @@ resource "aws_ecs_task_definition" "ecs_task" {
           name  = "PII_SAMPLING_RATE"
           value = "8"
         },
-        {
-          name  = "S3_BROWSER_PORT"
-          value = tostring(var.connector_s3_browser_port)
-        }
       ]
       secrets = [
         {

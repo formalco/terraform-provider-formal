@@ -38,11 +38,9 @@ variable "container_memory" {
 }
 
 variable "demo_connector_hostname" {}
+variable "demo_connector_dns_record" {}
 
 
-variable "connector_s3_browser_port" {
-  default = 9200
-}
 
 variable "demo_connector_container_image" {}
 
