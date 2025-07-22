@@ -37,7 +37,7 @@ module "demo_connector" {
   connector_hostname             = var.demo_connector_hostname
   health_check_port              = var.health_check_port
   environment                    = var.environment
-  container_image                = var.demo_connector_container_image
+  container_image                = var.connector_image
   vpc_id                         = module.common.vpc_id
   ecs_task_execution_role_arn    = module.common.ecs_task_execution_role_arn
   ecs_task_role_arn              = module.common.ecs_task_role_arn

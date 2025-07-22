@@ -39,5 +39,9 @@ variable "demo_connector_dns_record" {}
 
 
 
-variable "demo_connector_container_image" {}
+variable "connector_image" {
+  description = "Container image for the Formal connector"
+  type        = string
+  default     = "654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector:latest"
+}
 
