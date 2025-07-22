@@ -24,7 +24,7 @@ variable "formal_org_name" {
 variable "name" {
   description = "Name prefix for all resources"
   type        = string
-  default     = "demo-env"
+  default     = "demo"
 }
 
 variable "environment" {
