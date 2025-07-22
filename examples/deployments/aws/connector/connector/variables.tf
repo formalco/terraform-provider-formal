@@ -23,3 +23,4 @@ variable "ecs_task_execution_role_arn" {}
 variable "ecs_task_role_arn" {}
 
 variable "connector_hostname" {}
+variable "connector_dns_record" {}

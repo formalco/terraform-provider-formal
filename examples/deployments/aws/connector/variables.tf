@@ -48,8 +48,10 @@ variable "container_memory" {
   default = 2048
 }
 
-variable "demo_connector_hostname" {}
-variable "demo_connector_dns_record" {}
+variable "formal_org_name" {
+  description = "Your Formal organization name (provided by Formal)"
+  type        = string
+}
 
 
 

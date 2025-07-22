@@ -23,11 +23,10 @@ Create a `terraform.tfvars` file:
 
 ```hcl
 # Required variables
-region                      = "us-west-2"
-availability_zones          = ["us-west-2a", "us-west-2b"]
-formal_api_key             = "your-formal-api-key"
-demo_connector_hostname    = "connector.yourdomain.com"
-demo_connector_dns_record  = "connector.yourdomain.com"
+region             = "us-west-2"
+availability_zones = ["us-west-2a", "us-west-2b"]
+formal_api_key     = "your-formal-api-key"
+formal_org_name    = "your-org-name"  # Provided by Formal
 
 # Optional: customize networking (defaults provided)
 # vpc_cidr              = "172.0.0.0/16"
@@ -57,7 +56,7 @@ terraform apply
 ### 4. Access Your Connector
 
 After deployment:
-1. The Connector will be available at the Network Load Balancer DNS name (shown in outputs)
+1. The Connector will be available at the provided hostname
 2. Configure your applications to connect through the Connector
 3. Monitor logs in CloudWatch under the `/ecs/{name}` log group
 

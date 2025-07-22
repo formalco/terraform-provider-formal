@@ -30,11 +30,17 @@ module "common" {
   environment        = var.environment
 }
 
+# Generate Formal hostname for automatic TLS certificate management
+locals {
+  connector_hostname = "${var.name}.${var.formal_org_name}.connectors.joinformal.com"
+}
+
 module "demo_connector" {
   source                         = "./connector"
   formal_api_key                 = var.formal_api_key
   name                           = "${var.name}-demo-connector"
-  connector_hostname             = var.demo_connector_hostname
+  connector_hostname             = local.connector_hostname
+  connector_dns_record           = module.common.url
   health_check_port              = var.health_check_port
   environment                    = var.environment
   container_image                = var.connector_image
