@@ -53,12 +53,33 @@ terraform plan
 terraform apply
 ```
 
-### 4. Access Your Connector
+### 4. Test Your Deployment
 
-After deployment:
-1. The Connector will be available at the provided hostname
-2. Configure your applications to connect through the Connector
-3. Monitor logs in CloudWatch under the `/ecs/{name}` log group
+After deployment completes, test the included demo echo service:
+
+```bash
+# Test the demo echo service (returns request details as JSON)
+curl https://$(terraform output -raw connector_hostname)
+
+# Example response:
+{
+  "method": "GET",
+  "protocol": "https",
+  "host": "echo.free.beeceptor.com",
+  "path": "/",
+  "ip": "4.130.158.175:65139",
+  "headers": {
+    "Host": "echo.free.beeceptor.com",
+    "User-Agent": "curl/8.7.1",
+    "Accept": "*/*",
+    "Accept-Encoding": "gzip",
+    "Via": "1.1 Caddy"
+  },
+  "parsedQueryParams": {}
+}
+```
+
+The demo includes a Formal resource that proxies requests to a public echo service via Beeceptor, demonstrating that your Connector is working correctly and can route traffic to external services.
 
 ## Resources Deployed
 
