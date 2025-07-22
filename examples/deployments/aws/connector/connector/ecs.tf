@@ -32,20 +32,12 @@ resource "aws_ecs_task_definition" "ecs_task" {
       ]
       environment = [
         {
-          name  = "DATA_CLASSIFIER_SATELLITE_URI"
-          value = "${var.data_classifier_satellite_url}:${var.data_classifier_satellite_port}"
-        },
-        {
           name  = "SERVER_CONNECT_TLS"
           value = "true"
         },
         {
           name  = "CLIENT_LISTEN_TLS"
           value = "true"
-        },
-        {
-          name  = "PII_SAMPLING_RATE"
-          value = "8"
         },
       ]
       secrets = [

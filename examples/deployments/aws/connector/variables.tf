@@ -20,9 +20,6 @@ variable "cidr" {
   default = "172.0.0.0/16"
 }
 
-variable "data_classifier_satellite_port" {
-  default = 50055
-}
 
 variable "private_subnets" {}
 variable "public_subnets" {}

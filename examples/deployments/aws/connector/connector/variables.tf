@@ -18,8 +18,6 @@ variable "ecs_cluster_name" {}
 variable "private_subnets" {}
 variable "public_subnets" {}
 
-variable "data_classifier_satellite_url" {}
-variable "data_classifier_satellite_port" {}
 
 variable "ecs_task_execution_role_arn" {}
 variable "ecs_task_role_arn" {}

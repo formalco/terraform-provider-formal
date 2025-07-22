@@ -47,7 +47,5 @@ module "demo_connector" {
   public_subnets                 = module.common.public_subnets
   container_cpu                  = var.container_cpu
   container_memory               = var.container_memory
-  data_classifier_satellite_url  = module.common.url
-  data_classifier_satellite_port = var.data_classifier_satellite_port
 }
 
