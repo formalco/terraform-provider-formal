@@ -41,7 +41,6 @@ module "demo_connector" {
   name                           = "${var.name}-demo-connector"
   connector_hostname             = local.connector_hostname
   connector_dns_record           = module.common.url
-  health_check_port              = var.health_check_port
   environment                    = var.environment
   container_image                = var.connector_image
   vpc_id                         = module.common.vpc_id

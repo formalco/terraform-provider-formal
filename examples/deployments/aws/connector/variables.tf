@@ -33,11 +33,6 @@ variable "environment" {
   default     = "demo-formal-env"
 }
 
-variable "health_check_port" {
-  description = "Port for ECS health checks"
-  type        = number
-  default     = 8080
-}
 
 # Networking
 variable "vpc_cidr" {

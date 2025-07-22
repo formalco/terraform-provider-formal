@@ -3,7 +3,6 @@ variable "name" {}
 variable "environment" {}
 
 
-variable "health_check_port" {}
 
 variable "container_image" {}
 variable "container_cpu" {}

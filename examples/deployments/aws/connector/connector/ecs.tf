@@ -26,8 +26,8 @@ resource "aws_ecs_task_definition" "ecs_task" {
       portMappings = [
         {
           protocol      = "tcp"
-          containerPort = var.health_check_port
-          hostPort      = var.health_check_port
+          containerPort = 8080
+          hostPort      = 8080
         }
       ]
       environment = [
