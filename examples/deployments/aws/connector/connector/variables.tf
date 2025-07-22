@@ -26,13 +26,3 @@ variable "ecs_task_execution_role_arn" {}
 variable "ecs_task_role_arn" {}
 
 variable "connector_hostname" {}
-variable "connector_dns_record" {}
-variable "connector_postgres_listener_name" {}
-variable "connector_postgres_listener_port" {}
-
-variable "connector_mysql_port" {}
-
-variable "connector_kubernetes_listener_name" {}
-variable "connector_kubernetes_listener_port" {
-  default = 443
-}

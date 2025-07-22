@@ -14,21 +14,6 @@ resource "aws_ecs_task_definition" "ecs_task" {
       portMappings = [
         {
           protocol      = "tcp"
-          containerPort = var.connector_postgres_listener_port
-          hostPort      = var.connector_postgres_listener_port
-        },
-        {
-          protocol      = "tcp"
-          containerPort = var.connector_mysql_port
-          hostPort      = var.connector_mysql_port
-        },
-        {
-          protocol      = "tcp"
-          containerPort = var.connector_kubernetes_listener_port
-          hostPort      = var.connector_kubernetes_listener_port
-        },
-        {
-          protocol      = "tcp"
           containerPort = var.health_check_port
           hostPort      = var.health_check_port
       }]
@@ -214,23 +199,6 @@ resource "aws_ecs_service" "main" {
     type = "ECS"
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.connector_postgres.arn
-    container_name   = var.name
-    container_port   = var.connector_postgres_listener_port
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.connector_mysql.arn
-    container_name   = var.name
-    container_port   = var.connector_mysql_port
-  }
-
-  load_balancer {
-    target_group_arn = aws_lb_target_group.connector_kubernetes.arn
-    container_name   = var.name
-    container_port   = var.connector_kubernetes_listener_port
-  }
 
   # we ignore task_definition changes as the revision changes on deploy
   # of a new version of the application

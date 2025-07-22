@@ -41,21 +41,7 @@ variable "container_memory" {
 }
 
 variable "demo_connector_hostname" {}
-variable "demo_connector_postgres_listener_name" {}
-variable "demo_connector_postgres_listener_port" {
-  default = 5432
-}
-variable "connector_mysql_port" {
-  default = 3306
-}
-variable "connector_kubernetes_listener_name" {}
-variable "connector_kubernetes_listener_port" {
-  default = 443
-}
 
-variable "connector_clickhouse_port" {
-  default = 8443
-}
 
 variable "connector_s3_browser_port" {
   default = 9200
