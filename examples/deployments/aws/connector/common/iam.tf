@@ -30,12 +30,6 @@ resource "aws_iam_policy" "ecs_secrets" {
       {
         Action   = ["secretsmanager:GetSecretValue"],
         Effect   = "Allow",
-        Resource = aws_secretsmanager_secret.dockerhub_credentials.arn
-
-      },
-      {
-        Action   = ["secretsmanager:GetSecretValue"],
-        Effect   = "Allow",
         Resource = "*"
       }
     ]

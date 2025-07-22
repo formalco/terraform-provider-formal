@@ -30,8 +30,6 @@ variable "availability_zones" {}
 
 variable "datadog_api_key" {}
 
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
 
 variable "container_cpu" {
   default = 1024

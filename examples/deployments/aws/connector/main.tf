@@ -28,8 +28,6 @@ module "common" {
   public_subnets     = var.public_subnets
   availability_zones = var.availability_zones
   environment        = var.environment
-  dockerhub_username = var.dockerhub_username
-  dockerhub_password = var.dockerhub_password
 }
 
 module "demo_connector" {
