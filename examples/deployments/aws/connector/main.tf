@@ -23,9 +23,9 @@ provider "formal" {
 module "common" {
   source             = "./common"
   name               = var.name
-  cidr               = var.cidr
-  private_subnets    = var.private_subnets
-  public_subnets     = var.public_subnets
+  cidr               = var.vpc_cidr
+  private_subnets    = var.private_subnet_cidrs
+  public_subnets     = var.public_subnet_cidrs
   availability_zones = var.availability_zones
   environment        = var.environment
 }
