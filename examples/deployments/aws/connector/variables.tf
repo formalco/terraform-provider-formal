@@ -1,65 +1,80 @@
-variable "region" {}
+# Required variables
+variable "region" {
+  description = "AWS region for deployment"
+  type        = string
+}
+
+variable "availability_zones" {
+  description = "List of availability zones (e.g., [\"us-west-2a\", \"us-west-2b\"])"
+  type        = list(string)
+}
 
 variable "formal_api_key" {
-  type      = string
-  sensitive = true
+  description = "Your Formal API key (provided by Formal)"
+  type        = string
+  sensitive   = true
 }
 
-variable "health_check_port" {
-  default = 8080
+variable "formal_org_name" {
+  description = "Your Formal organization name (provided by Formal)"
+  type        = string
 }
 
+# Optional variables
 variable "name" {
-  default = "demo-env"
+  description = "Name prefix for all resources"
+  type        = string
+  default     = "demo"
 }
+
 variable "environment" {
-  default = "demo-formal-env"
+  description = "Environment name for resource tagging"
+  type        = string
+  default     = "demo-formal-env"
 }
 
-variable "cidr" {
-  default = "172.0.0.0/16"
+
+# Networking
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "172.0.0.0/16"
 }
 
-variable "data_classifier_satellite_port" {
-  default = 50055
+variable "private_subnet_cidrs" {
+  description = "List of CIDR blocks for private subnets"
+  type        = list(string)
+  default     = ["172.0.1.0/24", "172.0.2.0/24"]
 }
 
-variable "private_subnets" {}
-variable "public_subnets" {}
-variable "availability_zones" {}
+variable "public_subnet_cidrs" {
+  description = "List of CIDR blocks for public subnets"
+  type        = list(string)
+  default     = ["172.0.101.0/24", "172.0.102.0/24"]
+}
 
-variable "datadog_api_key" {}
-
-variable "dockerhub_username" {}
-variable "dockerhub_password" {}
-
+# Container
 variable "container_cpu" {
-  default = 1024
+  description = "CPU units for the connector container"
+  type        = number
+  default     = 1024
 }
+
 variable "container_memory" {
-  default = 2048
+  description = "Memory in MB for the connector container"
+  type        = number
+  default     = 2048
 }
 
-variable "demo_connector_hostname" {}
-variable "demo_connector_postgres_listener_name" {}
-variable "demo_connector_postgres_listener_port" {
-  default = 5432
-}
-variable "connector_mysql_port" {
-  default = 3306
-}
-variable "connector_kubernetes_listener_name" {}
-variable "connector_kubernetes_listener_port" {
-  default = 443
+variable "connector_image" {
+  description = "Container image for the Formal connector"
+  type        = string
+  default     = "654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector:latest"
 }
 
-variable "connector_clickhouse_port" {
-  default = 8443
+variable "connector_ports" {
+  description = "List of ports to open for the connector (health check port 8080 is always included)"
+  type        = list(number)
+  default     = [443]
 }
-
-variable "connector_s3_browser_port" {
-  default = 9200
-}
-
-variable "demo_connector_container_image" {}
 

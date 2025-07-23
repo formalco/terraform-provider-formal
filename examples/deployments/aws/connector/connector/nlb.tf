@@ -12,149 +12,44 @@ resource "aws_lb" "main" {
   }
 }
 
-resource "aws_lb_target_group" "connector_postgres" {
-  name              = "${var.name}-postgres"
-  port              = var.connector_postgres_listener_port
-  protocol          = "TCP"
-  vpc_id            = var.vpc_id
-  proxy_protocol_v2 = false
-  target_type       = "ip"
+# Target groups for connector ports
+resource "aws_lb_target_group" "connector" {
+  for_each = toset([for port in var.connector_ports : tostring(port)])
+
+  name        = "${var.name}-${each.key}"
+  port        = tonumber(each.key)
+  protocol    = "TCP"
+  vpc_id      = var.vpc_id
+  target_type = "ip"
 
   health_check {
-    healthy_threshold   = "3"
-    interval            = "10"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = var.health_check_port
-    timeout             = "6"
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200"
     path                = "/health"
-    unhealthy_threshold = "3"
+    port                = "8080"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 2
   }
 
   tags = {
-    Name        = var.name
+    Name        = "${var.name}-${each.key}"
     Environment = var.environment
-  }
-
-  lifecycle {
-    create_before_destroy = true
   }
 }
 
-# Redirect traffic to target group
-resource "aws_lb_listener" "connector_postgres" {
-  load_balancer_arn = aws_lb.main.id
-  port              = var.connector_postgres_listener_port
-  protocol          = "TCP"
+# Listeners for connector ports
+resource "aws_lb_listener" "connector" {
+  for_each = toset([for port in var.connector_ports : tostring(port)])
 
-  ssl_policy      = null
-  certificate_arn = null
-  alpn_policy     = null
+  load_balancer_arn = aws_lb.main.arn
+  port              = each.key
+  protocol          = "TCP"
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_postgres.arn
-  }
-
-  lifecycle {
-    ignore_changes = [default_action]
-  }
-}
-
-resource "aws_lb_target_group" "connector_mysql" {
-  name              = "${var.name}-mysql"
-  port              = var.connector_mysql_port
-  protocol          = "TCP"
-  vpc_id            = var.vpc_id
-  proxy_protocol_v2 = false
-  target_type       = "ip"
-
-  health_check {
-    healthy_threshold   = "3"
-    interval            = "10"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = var.health_check_port
-    timeout             = "6"
-    path                = "/health"
-    unhealthy_threshold = "3"
-  }
-
-  tags = {
-    Name        = var.name
-    Environment = var.environment
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Redirect traffic to target group
-resource "aws_lb_listener" "connector_mysql" {
-  load_balancer_arn = aws_lb.main.id
-  port              = var.connector_mysql_port
-  protocol          = "TCP"
-
-  ssl_policy      = null
-  certificate_arn = null
-  alpn_policy     = null
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_mysql.arn
-  }
-
-  lifecycle {
-    ignore_changes = [default_action]
-  }
-}
-
-resource "aws_lb_target_group" "connector_kubernetes" {
-  name              = "${var.name}-kubernetes"
-  port              = var.connector_kubernetes_listener_port
-  protocol          = "TCP"
-  vpc_id            = var.vpc_id
-  proxy_protocol_v2 = false
-  target_type       = "ip"
-
-  health_check {
-    healthy_threshold   = "3"
-    interval            = "10"
-    protocol            = "HTTP"
-    matcher             = "200-399"
-    port                = var.health_check_port
-    timeout             = "6"
-    path                = "/health"
-    unhealthy_threshold = "3"
-  }
-
-  tags = {
-    Name        = var.name
-    Environment = var.environment
-  }
-
-  lifecycle {
-    create_before_destroy = true
-  }
-}
-
-# Redirect traffic to target group
-resource "aws_lb_listener" "connector_kubernetes" {
-  load_balancer_arn = aws_lb.main.id
-  port              = var.connector_kubernetes_listener_port
-  protocol          = "TCP"
-
-  ssl_policy      = null
-  certificate_arn = null
-  alpn_policy     = null
-
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.connector_kubernetes.arn
-  }
-
-  lifecycle {
-    ignore_changes = [default_action]
+    target_group_arn = aws_lb_target_group.connector[each.key].arn
   }
 }

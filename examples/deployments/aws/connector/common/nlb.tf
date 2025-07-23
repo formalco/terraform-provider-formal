@@ -3,15 +3,15 @@ resource "aws_lb" "main" {
   internal           = false
   load_balancer_type = "network"
   subnets            = aws_subnet.public.*.id
-  security_groups    = [aws_security_group.main_nlb.id]
+  security_groups    = [aws_security_group.main.id]
   tags = {
     Name        = var.name
     Environment = var.environment
   }
 }
 
-resource "aws_security_group" "main_nlb" {
-  name        = "nlb-sg"
+resource "aws_security_group" "main" {
+  name        = var.name
   description = "Allow traffic"
   vpc_id      = aws_vpc.main.id
 

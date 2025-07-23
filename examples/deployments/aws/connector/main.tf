@@ -6,7 +6,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = "4.0.15"
+      version = "4.10.1"
     }
   }
   required_version = ">= 0.14.9"
@@ -23,39 +23,55 @@ provider "formal" {
 module "common" {
   source             = "./common"
   name               = var.name
-  cidr               = var.cidr
-  private_subnets    = var.private_subnets
-  public_subnets     = var.public_subnets
+  cidr               = var.vpc_cidr
+  private_subnets    = var.private_subnet_cidrs
+  public_subnets     = var.public_subnet_cidrs
   availability_zones = var.availability_zones
   environment        = var.environment
-  dockerhub_username = var.dockerhub_username
-  dockerhub_password = var.dockerhub_password
+}
+
+locals {
+  connector_hostname = "${var.name}.${var.formal_org_name}.connectors.joinformal.com"
 }
 
 module "demo_connector" {
-  source                             = "./connector"
-  formal_api_key                     = var.formal_api_key
-  name                               = "${var.name}-demo-connector"
-  connector_hostname                 = var.demo_connector_hostname
-  connector_postgres_listener_name   = var.demo_connector_postgres_listener_name
-  connector_postgres_listener_port   = var.demo_connector_postgres_listener_port
-  connector_kubernetes_listener_name = var.demo_connector_kubernetes_listener_name
-  connector_kubernetes_listener_port = var.demo_connector_kubernetes_listener_port
-  connector_mysql_port               = var.connector_mysql_port
-  health_check_port                  = var.health_check_port
-  environment                        = var.environment
-  container_image                    = var.demo_connector_container_image
-  vpc_id                             = module.common.vpc_id
-  ecs_task_execution_role_arn        = module.common.ecs_task_execution_role_arn
-  ecs_task_role_arn                  = module.common.ecs_task_role_arn
-  ecs_cluster_id                     = module.common.ecs_cluster_id
-  ecs_cluster_name                   = module.common.ecs_cluster_name
-  private_subnets                    = module.common.private_subnets
-  public_subnets                     = module.common.public_subnets
-  container_cpu                      = var.container_cpu
-  container_memory                   = var.container_memory
-  datadog_api_key                    = var.datadog_api_key
-  data_classifier_satellite_url      = module.common.url
-  data_classifier_satellite_port     = var.data_classifier_satellite_port
+  source                      = "./connector"
+  formal_api_key              = var.formal_api_key
+  name                        = "${var.name}-connector"
+  connector_hostname          = local.connector_hostname
+  environment                 = var.environment
+  container_image             = var.connector_image
+  vpc_id                      = module.common.vpc_id
+  ecs_task_execution_role_arn = module.common.ecs_task_execution_role_arn
+  ecs_task_role_arn           = module.common.ecs_task_role_arn
+  ecs_cluster_id              = module.common.ecs_cluster_id
+  ecs_cluster_name            = module.common.ecs_cluster_name
+  private_subnets             = module.common.private_subnets
+  public_subnets              = module.common.public_subnets
+  container_cpu               = var.container_cpu
+  container_memory            = var.container_memory
+  connector_ports             = var.connector_ports
 }
 
+resource "formal_resource" "echo" {
+  name       = "${var.name}-echo"
+  technology = "http"
+  hostname   = "echo.free.beeceptor.com"
+  port       = 443
+}
+
+resource "formal_connector_listener" "echo" {
+  name = "${var.name}-echo"
+  port = 443
+}
+
+resource "formal_connector_listener_rule" "echo" {
+  connector_listener_id = formal_connector_listener.echo.id
+  type                  = "resource"
+  rule                  = formal_resource.echo.id
+}
+
+resource "formal_connector_listener_link" "echo" {
+  connector_id          = module.demo_connector.connector_id
+  connector_listener_id = formal_connector_listener.echo.id
+}
