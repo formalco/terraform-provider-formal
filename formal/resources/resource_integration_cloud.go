@@ -114,6 +114,12 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Optional:    true,
 							Default:     "*",
 						},
+						"aws_customer_role_arn": {
+							Description: "The ARN of the IAM role that Formal assumes in your AWS account to access your resources.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+						},
 					},
 				},
 			},
@@ -212,6 +218,12 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
+			var customerRoleArn *string
+			awsCustomerRoleArn := awsConfig["aws_customer_role_arn"].(string)
+			if awsCustomerRoleArn != "" {
+				customerRoleArn = &awsCustomerRoleArn
+			}
+
 			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
 				Name:        name,
 				CloudRegion: cloudRegion,
@@ -226,6 +238,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
+						CustomerRoleArn:             customerRoleArn,
 					},
 				},
 			}))
@@ -273,6 +286,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"enable_ec2_autodiscovery":      data.Aws.AwsEnableEc2Autodiscovery,
 			"allow_s3_access":               data.Aws.AwsAllowS3Access,
 			"s3_bucket_arn":                 data.Aws.AwsS3BucketArn,
+			"aws_customer_role_arn":         data.Aws.AwsCustomerRoleArn,
 		}
 		if err := d.Set("aws", []interface{}{awsConfig}); err != nil {
 			return diag.FromErr(err)
@@ -290,6 +304,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_enable_ec2_autodiscovery", data.Aws.AwsEnableEc2Autodiscovery)
 		d.Set("aws_allow_s3_access", data.Aws.AwsAllowS3Access)
 		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
+		d.Set("aws_customer_role_arn", data.Aws.AwsCustomerRoleArn)
 	}
 
 	return diags
@@ -303,7 +318,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn"}...)
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "aws_customer_role_arn"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
@@ -323,6 +338,13 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
+			// Don't attempt to change a customer role ARN if it was computed from CloudFormation
+			var customerRoleArn *string
+			awsCustomerRoleArn := awsConfig["aws_customer_role_arn"].(string)
+			if awsCustomerRoleArn != "" {
+				customerRoleArn = &awsCustomerRoleArn
+			}
+
 			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Aws{
@@ -335,6 +357,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
+						CustomerRoleArn:             customerRoleArn,
 					},
 				},
 			}))

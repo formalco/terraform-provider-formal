@@ -51,6 +51,7 @@ Required:
 Optional:
 
 - `allow_s3_access` (Boolean) Allows the Cloud Integration to access S3 buckets for Log Integrations.
+- `aws_customer_role_arn` (String) The ARN of the IAM role that Formal assumes in your AWS account to access your resources.
 - `enable_ec2_autodiscovery` (Boolean) Enables resource autodiscovery for EC2 instances.
 - `enable_ecs_autodiscovery` (Boolean) Enables resource autodiscovery for ECS clusters.
 - `enable_eks_autodiscovery` (Boolean) Enables resource autodiscovery for EKS clusters.
