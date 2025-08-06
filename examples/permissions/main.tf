@@ -3,7 +3,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "~> 4.0.22"
+      version = "~> 4.10.2"
     }
     aws = {
       source  = "hashicorp/aws"
@@ -16,10 +16,10 @@ provider "formal" {
   api_key = var.formal_api_key # you can also use env variable FORMAL_API_KEY
 }
 
-resource "formal_permission" "read_only" {
-  name        = "logs read-only"
+resource "formal_permission" "read_only2" {
+  name        = "logs read-only2"
   description = "read only permission for logs"
-  module      = <<-EOF
+  code        = <<-EOF
 package formal.app
 
 import future.keywords.if
@@ -32,4 +32,5 @@ allow if {
 	"Security Team" in input.user.groups
 }
 EOF
+  status = "draft"
 }
