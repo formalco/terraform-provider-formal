@@ -16,8 +16,8 @@ provider "formal" {
   api_key = var.formal_api_key # you can also use env variable FORMAL_API_KEY
 }
 
-resource "formal_permission" "read_only2" {
-  name        = "logs read-only2"
+resource "formal_permission" "read_only" {
+  name        = "logs read-only"
   description = "read only permission for logs"
   code        = <<-EOF
 package formal.app
