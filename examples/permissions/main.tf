@@ -32,5 +32,5 @@ allow if {
 	"Security Team" in input.user.groups
 }
 EOF
-  status = "draft"
+  status      = "draft"
 }
