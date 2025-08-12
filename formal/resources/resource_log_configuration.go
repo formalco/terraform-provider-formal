@@ -100,7 +100,8 @@ func ResourceLogConfiguration() *schema.Resource {
 						"max_payload_size": {
 							Description: "Maximum size of request payloads to log.",
 							Type:        schema.TypeInt,
-							Required:    true,
+							Optional:    true,
+							Default:     -1,
 						},
 						"sql": {
 							Description: "SQL logging configuration for requests.",
@@ -140,7 +141,8 @@ func ResourceLogConfiguration() *schema.Resource {
 						"max_payload_size": {
 							Description: "Maximum size of response payloads to log.",
 							Type:        schema.TypeInt,
-							Required:    true,
+							Optional:    true,
+							Default:     -1,
 						},
 					},
 				},
