@@ -40,10 +40,10 @@ Managing Log Configuration with Formal.
 Required:
 
 - `encrypt` (Boolean) Whether to encrypt request payloads.
-- `max_payload_size` (Number) Maximum size of request payloads to log.
 
 Optional:
 
+- `max_payload_size` (Number) Maximum size of request payloads to log.
 - `sql` (Block Set, Max: 1) SQL logging configuration for requests. (see [below for nested schema](#nestedblock--request--sql))
 
 <a id="nestedblock--request--sql"></a>
@@ -62,6 +62,9 @@ Required:
 Required:
 
 - `encrypt` (Boolean) Whether to encrypt response payloads.
+
+Optional:
+
 - `max_payload_size` (Number) Maximum size of response payloads to log.
 
 
