@@ -23,7 +23,7 @@ jobs:
     steps:
       -
         name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
       -
@@ -63,7 +63,7 @@ jobs:
       version: ${{ steps.generate-changelog.outputs.version }}
       branch_component: ${{ steps.generate-changelog.outputs.branch_component }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -281,7 +281,7 @@ jobs:
     needs: generate-changelog
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -300,7 +300,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout docs repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: formalco/docusaurus-documentation
           token: ${{ secrets.DOCUSAURUS_PAT }}
