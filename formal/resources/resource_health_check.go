@@ -7,7 +7,7 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
-	"github.com/bufbuild/protovalidate-go"
+	"buf.build/go/protovalidate"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 

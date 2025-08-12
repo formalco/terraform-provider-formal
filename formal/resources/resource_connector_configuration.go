@@ -52,13 +52,6 @@ func ResourceConnectorConfiguration() *schema.Resource {
 				Optional:    true,
 				Default:     "info",
 			},
-			"health_check_port": {
-				// This description is used by the documentation generator and the language server.
-				Description: "The port to be used for this Connector's health check.",
-				Type:        schema.TypeInt,
-				Optional:    true,
-				Default:     8080,
-			},
 		},
 	}
 }
@@ -71,9 +64,8 @@ func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.Resourc
 	var diags diag.Diagnostics
 
 	req := &corev1.CreateConnectorConfigurationRequest{
-		ConnectorId:     d.Get("connector_id").(string),
-		LogLevel:        d.Get("log_level").(string),
-		HealthCheckPort: int32(d.Get("health_check_port").(int)),
+		ConnectorId: d.Get("connector_id").(string),
+		LogLevel:    d.Get("log_level").(string),
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorConfiguration(ctx, connect.NewRequest(req))
@@ -111,7 +103,6 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	d.Set("id", res.Msg.ConnectorConfiguration.Id)
 	d.Set("connector_id", res.Msg.ConnectorConfiguration.ConnectorId)
 	d.Set("log_level", res.Msg.ConnectorConfiguration.LogLevel)
-	d.Set("health_check_port", res.Msg.ConnectorConfiguration.HealthCheckPort)
 
 	d.SetId(res.Msg.ConnectorConfiguration.Id)
 
@@ -127,19 +118,17 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 
 	connectorConfigurationId := d.Id()
 
-	fieldsThatCanChange := []string{"log_level", "health_check_port"}
+	fieldsThatCanChange := []string{"log_level"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.FromErr(errors.New(err))
 	}
 
 	logLevel := d.Get("log_level").(string)
-	healthCheckPort := d.Get("health_check_port").(int32)
 
 	req := connect.NewRequest(&corev1.UpdateConnectorConfigurationRequest{
-		Id:              connectorConfigurationId,
-		LogLevel:        &logLevel,
-		HealthCheckPort: &healthCheckPort,
+		Id:       connectorConfigurationId,
+		LogLevel: &logLevel,
 	})
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorConfiguration(ctx, req)

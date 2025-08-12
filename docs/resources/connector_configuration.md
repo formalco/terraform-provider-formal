@@ -21,7 +21,6 @@ Registering a Connector Configuration with Formal.
 
 ### Optional
 
-- `health_check_port` (Number) The port to be used for this Connector's health check.
 - `log_level` (String) The log level to be configured for this Connector.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
