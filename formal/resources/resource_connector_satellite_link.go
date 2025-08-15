@@ -125,7 +125,6 @@ func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-
 func resourceConnectorSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
