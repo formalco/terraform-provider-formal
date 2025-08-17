@@ -76,7 +76,6 @@ func New(version string) func() *schema.Provider {
 				"formal_log_configuration":                 resource.ResourceLogConfiguration(),
 				"formal_encryption_key":                    resource.ResourceEncryptionKey(),
 				"formal_resource_classifier_configuration": resource.ResourceResourceClassifierConfiguration(),
-				"formal_connector_tls_certificate":         resource.ResourceConnectorTlsCertificate(),
 			},
 		}
 
