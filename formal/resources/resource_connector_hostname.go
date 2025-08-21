@@ -52,6 +52,14 @@ func ResourceConnectorHostname() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
+			"managed_tls": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Deprecated: If set to true, Formal will manage the TLS certificate for this hostname.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Default:     false,
+				Deprecated:  "This field is deprecated and has no effect. It will be removed in a future release.",
+			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this connector hostname cannot be deleted.",
