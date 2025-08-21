@@ -52,14 +52,6 @@ func ResourceConnectorHostname() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 			},
-			"managed_tls": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Deprecated: If set to true, Formal will manage the TLS certificate for this hostname.",
-				Type:        schema.TypeBool,
-				Optional:    true,
-				Default:     false,
-				Deprecated:  "This field is deprecated and has no effect. It will be removed in a future release.",
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this connector hostname cannot be deleted.",
@@ -72,6 +64,18 @@ func ResourceConnectorHostname() *schema.Resource {
 				Description: "The DNS record for this hostname.",
 				Type:        schema.TypeString,
 				Optional:    true,
+			},
+			"certificate": {
+				Description: "The TLS certificate for this hostname. It should be in PEM format and only be set if the hostname is not managed by Formal.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"private_key": {
+				Description: "The TLS private key for this hostname. It should be in PEM format and only be set if the hostname is not managed by Formal.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
 			},
 			"tls_certificate_status": {
 				// This description is used by the documentation generator and the language server.
@@ -96,11 +100,19 @@ func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	certificate := d.Get("certificate").(string)
+	privateKey := d.Get("private_key").(string)
+
 	req := &corev1.CreateConnectorHostnameRequest{
 		ConnectorId:           d.Get("connector_id").(string),
 		Hostname:              d.Get("hostname").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
 		DnsRecord:             d.Get("dns_record").(string),
+	}
+
+	if certificate != "" && privateKey != "" {
+		req.Certificate = []byte(certificate)
+		req.PrivateKey = []byte(privateKey)
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorHostname(ctx, connect.NewRequest(req))
@@ -110,6 +122,12 @@ func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData
 
 	d.SetId(res.Msg.ConnectorHostname.Id)
 	resourceConnectorHostnameRead(ctx, d, meta)
+
+	if certificate != "" && privateKey != "" {
+		d.Set("certificate", certificate)
+		d.Set("private_key", privateKey)
+	}
+
 	return diags
 }
 
@@ -208,7 +226,7 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 
 	connectorHostnameId := d.Id()
 
-	fieldsThatCanChange := []string{"termination_protection", "dns_record"}
+	fieldsThatCanChange := []string{"termination_protection", "dns_record", "certificate", "private_key"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
@@ -216,15 +234,24 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 
 	terminationProtection := d.Get("termination_protection").(bool)
 	dnsRecord := d.Get("dns_record").(string)
+	certificate := d.Get("certificate").(string)
+	privateKey := d.Get("private_key").(string)
 	req := connect.NewRequest(&corev1.UpdateConnectorHostnameRequest{
 		Id:                    connectorHostnameId,
 		TerminationProtection: &terminationProtection,
 		DnsRecord:             &dnsRecord,
+		Certificate:           []byte(certificate),
+		PrivateKey:            []byte(privateKey),
 	})
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	if certificate != "" && privateKey != "" {
+		d.Set("certificate", certificate)
+		d.Set("private_key", privateKey)
 	}
 
 	resourceConnectorHostnameRead(ctx, d, meta)
