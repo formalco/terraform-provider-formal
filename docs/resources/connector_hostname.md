@@ -22,8 +22,10 @@ Registering a Connector Hostname with Formal.
 
 ### Optional
 
+- `certificate` (String, Sensitive) The TLS certificate for this hostname. It should be in PEM format and only be set if the hostname is not managed by Formal.
 - `dns_record` (String) The DNS record for this hostname.
 - `managed_tls` (Boolean, Deprecated) Deprecated: If set to true, Formal will manage the TLS certificate for this hostname.
+- `private_key` (String, Sensitive) The TLS private key for this hostname. It should be in PEM format and only be set if the hostname is not managed by Formal.
 - `termination_protection` (Boolean) If set to true, this connector hostname cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
