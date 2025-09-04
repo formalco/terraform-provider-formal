@@ -78,7 +78,7 @@ jobs:
 
       - name: Generate Changelog
         id: generate-changelog
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.DOCUSAURUS_PAT }}
           script: |
