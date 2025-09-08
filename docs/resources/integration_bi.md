@@ -17,8 +17,8 @@ Registering a BI App.
 
 ### Required
 
-- `name` (String) Friendly name for the App.
-- `sync` (Boolean) Auto synchronize users from Metabase to Formal (occurs every hour). Note that a lambda worker will need to be deployed in your infrastructure to synchronise users.
+- `name` (String) Friendly name for this app.
+- `sync` (Boolean) Auto synchronize users from Metabase to Formal (occurs every hour). When disabled, a worker will need to be deployed in your infrastructure to synchronise users.
 
 ### Optional
 
@@ -32,11 +32,11 @@ Registering a BI App.
 <a id="nestedblock--metabase"></a>
 ### Nested Schema for `metabase`
 
-Required:
+Optional:
 
-- `hostname` (String) Hostname of the Metabase instance.
-- `password` (String) Password for the Metabase instance.
-- `username` (String) Username for the Metabase instance.
+- `hostname` (String) Metabase server hostname. Required when `sync=true`.
+- `password` (String) Metabase admin password. Required when `sync=true`.
+- `username` (String) Metabase admin username. Required when `sync=true`.
 
 
 <a id="nestedblock--timeouts"></a>
