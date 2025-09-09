@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -40,6 +41,18 @@ func ResourceSatellite() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
+			},
+			"satellite_type": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The type of satellite.",
+				Type:        schema.TypeString,
+				Required:    true,
+				ForceNew:    true,
+				ValidateFunc: validation.StringInSlice([]string{
+					"data_discovery",
+					"data_classifier",
+					"policy_data_loader",
+				}, false),
 			},
 			"tls_cert": {
 				// This description is used by the documentation generator and the language server.
@@ -80,10 +93,12 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	name := d.Get("name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
+	satelliteType := d.Get("satellite_type").(string)
 
 	r := &corev1.CreateSatelliteRequest{
 		Name:                  name,
 		TerminationProtection: terminationProtection,
+		SatelliteType:         satelliteType,
 	}
 	if spaceId != "" {
 		r.SpaceId = &spaceId
@@ -115,6 +130,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 
 	d.Set("name", res.Msg.Satellite.Name)
 	d.Set("termination_protection", res.Msg.Satellite.TerminationProtection)
+	d.Set("satellite_type", res.Msg.Satellite.SatelliteType)
 	if res.Msg.Satellite.Space != nil {
 		d.Set("space_id", res.Msg.Satellite.Space.Id)
 	}
