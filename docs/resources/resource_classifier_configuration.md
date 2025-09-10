@@ -20,6 +20,11 @@ A Resource Classifier Configuration is a configuration for a resource classifier
 - `preference` (String) The preference. Supported values are `nlp`, `llm`, `both`, and `none`.
 - `resource_id` (String) The ID of the Resource.
 
+### Optional
+
+- `ai_analysis_timeout_seconds` (Number) The timeout for the AI analysis in seconds.
+- `enforce_strict_classifier_result_count` (Boolean) Whether to fail requests if the number of results from the classifier is not equal to the number of key-value pairs sent to it.
+
 ### Read-Only
 
 - `created_at` (Number) The timestamp of the Resource Classifier Preference creation.
