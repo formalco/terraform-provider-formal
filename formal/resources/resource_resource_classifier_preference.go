@@ -38,6 +38,17 @@ func ResourceResourceClassifierConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"ai_analysis_timeout_seconds": {
+				Description: "The timeout for the AI analysis in seconds.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+			},
+			"enforce_strict_classifier_result_count": {
+				Description: "Whether to fail requests if the number of results from the classifier is not equal to the number of key-value pairs sent to it.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+
 			"created_at": {
 				Description: "The timestamp of the Resource Classifier Preference creation.",
 				Type:        schema.TypeInt,
@@ -59,10 +70,14 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 
 	resourceId := d.Get("resource_id").(string)
 	preference := d.Get("preference").(string)
+	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
+	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
 
 	msg := &corev1.CreateResourceClassifierConfigurationRequest{
-		ResourceId: resourceId,
-		Preference: preference,
+		ResourceId:                  resourceId,
+		Preference:                  preference,
+		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
+		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
 	}
 
 	v, err := protovalidate.New()
@@ -81,6 +96,8 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 	d.SetId(response.Msg.ResourceClassifierConfiguration.Id)
 	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
@@ -102,6 +119,8 @@ func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.
 	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
 	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
@@ -115,10 +134,14 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 
 	resourceClassifierPreferenceId := d.Id()
 	preference := d.Get("preference").(string)
+	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
+	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
 
 	msg := &corev1.UpdateResourceClassifierConfigurationRequest{
-		Id:         resourceClassifierPreferenceId,
-		Preference: &preference,
+		Id:                          resourceClassifierPreferenceId,
+		Preference:                  &preference,
+		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
+		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
 	}
 
 	v, err := protovalidate.New()
@@ -137,6 +160,8 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
 	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
