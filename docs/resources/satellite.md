@@ -18,7 +18,7 @@ Registering a Satellite
 ### Required
 
 - `name` (String) Friendly name for the Satellite.
-- `satellite_type` (String) The type of satellite.
+- `satellite_type` (String) The type of satellite. Must be one of: `data_discovery`, `data_classifier`, or `policy_data_loader`.
 
 ### Optional
 
