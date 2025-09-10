@@ -19,7 +19,7 @@ Link a Connector to a Satellite.
 
 - `connector_id` (String) The ID of the Connector to link to the satellite.
 - `satellite_id` (String) The ID of the Satellite to link to the connector.
-- `satellite_type` (String) The type of satellite being linked.
+- `satellite_type` (String) The type of satellite being linked. Must be one of: `data_classifier` or `policy_data_loader`.
 
 ### Optional
 
