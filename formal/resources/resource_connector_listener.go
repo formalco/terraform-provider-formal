@@ -50,6 +50,13 @@ func ResourceConnectorListener() *schema.Resource {
 				Type:        schema.TypeInt,
 				Required:    true,
 			},
+			"connector_id": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The ID of the connector this listener is associated with.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				ForceNew:    true,
+			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this connector listener cannot be deleted.",
@@ -73,10 +80,16 @@ func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("connector listener cannot be created on health check port (8080)")
 	}
 
+	var connectorId *string
+	if providedConnectorId := d.Get("connector_id").(string); providedConnectorId != "" {
+		connectorId = &providedConnectorId
+	}
+
 	req := &corev1.CreateConnectorListenerRequest{
 		Name:                  d.Get("name").(string),
 		Port:                  int32(port),
 		TerminationProtection: d.Get("termination_protection").(bool),
+		ConnectorId:           connectorId,
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListener(ctx, connect.NewRequest(req))
@@ -113,7 +126,9 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 	d.Set("name", res.Msg.ConnectorListener.Name)
 	d.Set("port", res.Msg.ConnectorListener.Port)
 	d.Set("termination_protection", res.Msg.ConnectorListener.TerminationProtection)
-
+	if res.Msg.ConnectorListener.Connector != nil {
+		d.Set("connector_id", res.Msg.ConnectorListener.Connector.Id)
+	}
 	d.SetId(res.Msg.ConnectorListener.Id)
 
 	return diags
