@@ -8,7 +8,7 @@ require (
 	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251003234848-a5b759b16343.1
 	buf.build/go/protovalidate v0.14.0
 	connectrpc.com/connect v1.19.0
-	github.com/formalco/go-sdk/sdk/v2 v2.8.3
+	github.com/formalco/go-sdk/sdk/v2 v2.9.0
 	github.com/hashicorp/terraform-plugin-docs v0.22.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
