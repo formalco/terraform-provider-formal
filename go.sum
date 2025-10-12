@@ -56,8 +56,8 @@ github.com/emirpasic/gods v1.18.1/go.mod h1:8tpGGwCnJ5H4r6BWwaV6OrWmMoPhUl5jm/FM
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.16.0 h1:zmkK9Ngbjj+K0yRhTVONQh1p/HknKYSlNT+vZCzyokM=
 github.com/fatih/color v1.16.0/go.mod h1:fL2Sau1YI5c0pdGEVCbKQbLXB6edEj1ZgiY4NijnWvE=
-github.com/formalco/go-sdk/sdk/v2 v2.8.3 h1:Ovz9SzUOP9b1KH7qGX2/dWdhJiH2Zxy+o3Uxuia5SgQ=
-github.com/formalco/go-sdk/sdk/v2 v2.8.3/go.mod h1:cZBa9EOrO6aPAFpuiHeTbtXlgsaafn/tBbYIX1m/a/M=
+github.com/formalco/go-sdk/sdk/v2 v2.9.0 h1:OVjCMCLUNVgTZhTB48eoMkw7Y+vupfkt7Slmv0EvMO4=
+github.com/formalco/go-sdk/sdk/v2 v2.9.0/go.mod h1:TVAD+ICRpVwbJyRwpF4//ZjTFAPFrksKaMcchkD6FeU=
 github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
 github.com/frankban/quicktest v1.14.3/go.mod h1:mgiwOwqx65TmIk1wJ6Q7wvnVMocbUorkibMOrVTHZps=
 github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 h1:+zs/tPmkDkHx3U66DAb0lQFJrpS6731Oaa12ikc+DiI=
