@@ -305,6 +305,7 @@ jobs:
           repository: formalco/docusaurus-documentation
           token: ${{ secrets.DOCUSAURUS_PAT }}
           path: docusaurus-documentation
+          ref: main
 
       - name: Add Changelog
         run: |
