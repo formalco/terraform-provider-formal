@@ -292,7 +292,7 @@ jobs:
           commit-message: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           body: ${{ needs.generate-changelog.outputs.changelog_content }}
-          branch: "changelog/${{ needs.generate-changelog.outputs.component }}-${{ needs.generate-changelog.outputs.version }}"
+          branch: "changelog/${{ needs.generate-changelog.outputs.branch_component }}-${{ needs.generate-changelog.outputs.version }}"
           base: main
 
   sync-to-docs:
@@ -305,6 +305,7 @@ jobs:
           repository: formalco/docusaurus-documentation
           token: ${{ secrets.DOCUSAURUS_PAT }}
           path: docusaurus-documentation
+          ref: main
 
       - name: Add Changelog
         run: |
@@ -314,7 +315,7 @@ jobs:
           )
           
           # Get the target file for this component
-          target_file="docusaurus-documentation/${changelog_files[${{ needs.generate-changelog.outputs.component }}]}"
+          target_file="docusaurus-documentation/${changelog_files[${{ needs.generate-changelog.outputs.branch_component }}]}"
           
           # Create directory if it doesn't exist
           mkdir -p "$(dirname "$target_file")"
