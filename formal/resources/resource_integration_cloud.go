@@ -102,6 +102,12 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Optional:    true,
 							Default:     true,
 						},
+						"enable_s3_autodiscovery": {
+							Description: "Enables resource autodiscovery for S3 buckets.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
 						"allow_s3_access": {
 							Description: "Allows the Cloud Integration to access S3 buckets for Log Integrations.",
 							Type:        schema.TypeBool,
@@ -188,7 +194,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 						d.SetNewComputed("aws_template_body")
 					}
 
-					for _, key := range []string{"enable_eks_autodiscovery", "enable_rds_autodiscovery", "enable_redshift_autodiscovery", "allow_s3_access", "s3_bucket_arn"} {
+					for _, key := range []string{"enable_eks_autodiscovery", "enable_rds_autodiscovery", "enable_redshift_autodiscovery", "enable_ecs_autodiscovery", "enable_ec2_autodiscovery", "enable_s3_autodiscovery", "allow_s3_access", "s3_bucket_arn"} {
 						oldVal, newVal := d.GetChange(fmt.Sprintf("aws.0.%s", key))
 						if oldVal != newVal {
 							d.SetNew(fmt.Sprintf("aws_%s", key), newVal)
@@ -216,6 +222,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
 			enableEcsAutodiscovery := awsConfig["enable_ecs_autodiscovery"].(bool)
 			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
+			enableS3Autodiscovery := awsConfig["enable_s3_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
 			var customerRoleArn *string
@@ -236,6 +243,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
 						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
 						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
+						EnableS3Autodiscovery:       &enableS3Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 						CustomerRoleArn:             customerRoleArn,
@@ -284,6 +292,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"enable_redshift_autodiscovery": data.Aws.AwsEnableRedshiftAutodiscovery,
 			"enable_ecs_autodiscovery":      data.Aws.AwsEnableEcsAutodiscovery,
 			"enable_ec2_autodiscovery":      data.Aws.AwsEnableEc2Autodiscovery,
+			"enable_s3_autodiscovery":       data.Aws.AwsEnableS3Autodiscovery,
 			"allow_s3_access":               data.Aws.AwsAllowS3Access,
 			"s3_bucket_arn":                 data.Aws.AwsS3BucketArn,
 			"aws_customer_role_arn":         data.Aws.AwsCustomerRoleArn,
@@ -302,6 +311,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_enable_redshift_autodiscovery", data.Aws.AwsEnableRedshiftAutodiscovery)
 		d.Set("aws_enable_ecs_autodiscovery", data.Aws.AwsEnableEcsAutodiscovery)
 		d.Set("aws_enable_ec2_autodiscovery", data.Aws.AwsEnableEc2Autodiscovery)
+		d.Set("aws_enable_s3_autodiscovery", data.Aws.AwsEnableS3Autodiscovery)
 		d.Set("aws_allow_s3_access", data.Aws.AwsAllowS3Access)
 		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
 		d.Set("aws_customer_role_arn", data.Aws.AwsCustomerRoleArn)
@@ -318,7 +328,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "aws_customer_role_arn"}...)
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "aws_customer_role_arn"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
@@ -336,6 +346,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
 			enableEcsAutodiscovery := awsConfig["enable_ecs_autodiscovery"].(bool)
 			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
+			enableS3Autodiscovery := awsConfig["enable_s3_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
 
 			// Don't attempt to change a customer role ARN if it was computed from CloudFormation
@@ -355,6 +366,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
 						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
 						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
+						EnableS3Autodiscovery:       &enableS3Autodiscovery,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 						CustomerRoleArn:             customerRoleArn,

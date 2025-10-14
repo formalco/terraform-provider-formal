@@ -57,6 +57,7 @@ Optional:
 - `enable_eks_autodiscovery` (Boolean) Enables resource autodiscovery for EKS clusters.
 - `enable_rds_autodiscovery` (Boolean) Enables resource autodiscovery for RDS instances (PostgreSQL, MySQL, MongoDB).
 - `enable_redshift_autodiscovery` (Boolean) Enables resource autodiscovery for Redshift clusters.
+- `enable_s3_autodiscovery` (Boolean) Enables resource autodiscovery for S3 buckets.
 - `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
 
 

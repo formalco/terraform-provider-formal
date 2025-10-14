@@ -179,9 +179,11 @@ func ResourceLogConfiguration() *schema.Resource {
 func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
+	encryptionKeyId := d.Get("encryption_key_id").(string)
+
 	req := &corev1.CreateLogConfigurationRequest{
 		Name:            d.Get("name").(string),
-		EncryptionKeyId: d.Get("encryption_key_id").(string),
+		EncryptionKeyId: &encryptionKeyId,
 	}
 
 	// Handle scope
