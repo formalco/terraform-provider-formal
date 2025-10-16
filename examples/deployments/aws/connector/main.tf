@@ -6,7 +6,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = "4.10.1"
+      version = "~> 4.12.3"
     }
   }
   required_version = ">= 0.14.9"
@@ -39,6 +39,7 @@ module "demo_connector" {
   formal_api_key              = var.formal_api_key
   name                        = "${var.name}-connector"
   connector_hostname          = local.connector_hostname
+  dns_record                  = module.common.url
   environment                 = var.environment
   container_image             = var.connector_image
   vpc_id                      = module.common.vpc_id
@@ -61,8 +62,9 @@ resource "formal_resource" "echo" {
 }
 
 resource "formal_connector_listener" "echo" {
-  name = "${var.name}-echo"
-  port = 443
+  name         = "${var.name}-echo"
+  port         = 443
+  connector_id = module.demo_connector.connector_id
 }
 
 resource "formal_connector_listener_rule" "echo" {

@@ -1,5 +1,5 @@
 resource "aws_lb" "main" {
-  name               = var.name
+  name               = substr(var.name, 0, 32)
   internal           = false
   load_balancer_type = "network"
   subnets            = var.public_subnets
@@ -16,7 +16,7 @@ resource "aws_lb" "main" {
 resource "aws_lb_target_group" "connector" {
   for_each = toset([for port in var.connector_ports : tostring(port)])
 
-  name        = "${var.name}-${each.key}"
+  name        = substr("${var.name}-${each.key}", 0, 32)
   port        = tonumber(each.key)
   protocol    = "TCP"
   vpc_id      = var.vpc_id
