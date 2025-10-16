@@ -88,13 +88,13 @@ export FORMAL_API_KEY="some_api_key"
 
 #### Retrieving Sensitive Values
 
-You can configure the Formal Provider to disabled retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
+You can configure the Formal Provider to disable retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
 
 ### Deploying with a Managed Cloud model
 
-Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](console.joinformal.app).
+Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](https://app.joinformal.com).
 
 
 ## Examples
 
-See examples for each resource in the `examples/` folder.
+See examples for each resource in the `examples/` folder of the [Formal Terraform Github Repository](https://github.com/formalco/terraform-provider-formal/tree/main/examples).
