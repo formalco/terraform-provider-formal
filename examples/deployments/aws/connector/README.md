@@ -17,6 +17,22 @@ The Connector will be accessible from the internet and ready to proxy connection
 - Terraform >= 0.14.9 installed
 - A Formal API key (obtain from your Formal dashboard)
 
+#### AWS Authentication
+
+If using AWS SSO or multiple AWS profiles, set the profile before running Terraform:
+
+```bash
+export AWS_PROFILE=your-profile-name
+```
+
+Or prefix each Terraform command with the profile:
+
+```bash
+AWS_PROFILE=your-profile-name terraform init
+AWS_PROFILE=your-profile-name terraform plan
+AWS_PROFILE=your-profile-name terraform apply
+```
+
 ### 2. Set Required Variables
 
 Create a `terraform.tfvars` file:
