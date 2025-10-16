@@ -19,6 +19,8 @@ require (
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20250912141014-52f32327d4b0.1 // indirect
 	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251010214215-50a44c90a1de.2 // indirect
+	buf.build/gen/go/formal/frontend/connectrpc/go v1.19.1-20250918184015-e4ef57753734.2 // indirect
+	buf.build/gen/go/formal/frontend/protocolbuffers/go v1.36.10-20250918184015-e4ef57753734.1 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	github.com/BurntSushi/toml v1.2.1 // indirect
