@@ -19,7 +19,7 @@ provider "formal" {
 resource "formal_policy" "decrypt" {
   name         = "decrypt"
   description  = "decrpyt any columns that has the name encrypted-col."
-  owner       = "john@joinformal.com"
+  owner        = "john@joinformal.com"
   notification = "none"
   status       = "active"
   module       = <<-EOF
@@ -38,7 +38,7 @@ EOF
 resource "formal_policy" "mask_emails" {
   name         = "mask-email"
   description  = "Mask any column that has the data label email_address."
-  owner       = "john@joinformal.com"
+  owner        = "john@joinformal.com"
   notification = "consumer"
   status       = "active"
   module       = <<-EOF
@@ -55,7 +55,7 @@ EOF
 resource "formal_policy" "row_level_hashing" {
   name         = "test-row-level-hashing-eu"
   description  = "hash every row that has the eu column set to true."
-  owner       = "john@joinformal.com"
+  owner        = "john@joinformal.com"
   notification = "all"
   status       = "active"
   module       = <<-EOF
@@ -73,7 +73,7 @@ EOF
 resource "formal_policy" "block_db_with_formal_message" {
   name         = "block_db_with_formal_message"
   description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
-  owner       = "john@joinformal.com"
+  owner        = "john@joinformal.com"
   notification = "all"
   status       = "active"
   module       = <<-EOF
@@ -96,7 +96,7 @@ EOF
 resource "formal_policy" "http_pre_request_name_hash" {
   name         = "http_pre_request_name_hash"
   description  = "this policy hash every names in body request of HTTP requests"
-  owner       = "john@joinformal.com"
+  owner        = "john@joinformal.com"
   notification = "all"
   status       = "active"
   module       = <<-EOF
