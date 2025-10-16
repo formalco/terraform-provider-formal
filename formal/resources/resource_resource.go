@@ -78,11 +78,8 @@ func ResourceResource() *schema.Resource {
 				Computed:    true,
 			},
 			"environment": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This field is deprecated and will be removed in a future release.",
+				Type:     schema.TypeString,
+				Computed: true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -118,7 +115,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	hostname := d.Get("hostname").(string)
 	port := portInt
 	technology := d.Get("technology").(string)
-	environment := d.Get("environment").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
 
@@ -127,7 +123,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Hostname:              hostname,
 		Port:                  int32(port),
 		Technology:            technology,
-		Environment:           environment,
 		TerminationProtection: terminationProtection,
 	}
 

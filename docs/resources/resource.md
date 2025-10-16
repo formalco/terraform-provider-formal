@@ -24,7 +24,6 @@ Registering a Resource with Formal.
 
 ### Optional
 
-- `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `space_id` (String) The ID of the Space to create the Resource in.
 - `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
 - `termination_protection` (Boolean) If set to true, the Resource cannot be deleted.
@@ -33,6 +32,7 @@ Registering a Resource with Formal.
 ### Read-Only
 
 - `created_at` (Number) Creation time of the Resource.
+- `environment` (String)
 - `id` (String) The ID of the Resource.
 
 <a id="nestedblock--timeouts"></a>
