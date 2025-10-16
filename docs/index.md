@@ -41,7 +41,7 @@ resource "formal_user" "dior_the_data_scientist" {
 }
 
 # Create a Resource
-"formal_resource" "postgres_resource" {
+resource "formal_resource" "postgres_resource" {
   hostname    = "postgres-hostname"
   name        = "postgres-staging"
   technology  = "postgres"
@@ -88,7 +88,7 @@ export FORMAL_API_KEY="some_api_key"
 
 #### Retrieving Sensitive Values
 
-You can configure the Formal Provider to disabled retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
+You can configure the Formal Provider to disable retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
 
 ### Deploying with a Managed Cloud model
 
