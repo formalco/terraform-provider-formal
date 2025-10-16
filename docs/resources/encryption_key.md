@@ -18,12 +18,12 @@ Registering an Encryption Key with Formal.
 ### Required
 
 - `algorithm` (String) The algorithm used for encryption. Can be either 'aes_random' or 'aes_deterministic'.
-- `decryptor_uri` (String) The URI of the decryptor (e.g., a URL to a Lambda function, either directly or via API Gateway). This is used to decrypt the data on the frontend only (and is never called by the Formal Control Plane backend).
 - `key_id` (String) The ID of the key in the provider's system (e.g., key ARN for AWS KMS).
 - `key_provider` (String) The provider of the encryption key. Currently only 'aws' is supported.
 
 ### Optional
 
+- `decryptor_uri` (String) The URI of the decryptor (e.g., a URL to a Lambda function, either directly or via API Gateway). This is used to decrypt the data on the frontend only (and is never called by the Formal Control Plane backend).
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
