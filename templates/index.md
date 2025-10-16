@@ -41,7 +41,7 @@ resource "formal_user" "dior_the_data_scientist" {
 }
 
 # Create a Resource
-"formal_resource" "postgres_resource" {
+resource "formal_resource" "postgres_resource" {
   hostname    = "postgres-hostname"
   name        = "postgres-staging"
   technology  = "postgres"
