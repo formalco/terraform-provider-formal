@@ -77,13 +77,6 @@ func ResourceResource() *schema.Resource {
 				Type:        schema.TypeInt,
 				Computed:    true,
 			},
-			"environment": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				Deprecated:  "This field is deprecated and will be removed in a future release.",
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, the Resource cannot be deleted.",
@@ -118,7 +111,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	hostname := d.Get("hostname").(string)
 	port := portInt
 	technology := d.Get("technology").(string)
-	environment := d.Get("environment").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
 
@@ -127,7 +119,6 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Hostname:              hostname,
 		Port:                  int32(port),
 		Technology:            technology,
-		Environment:           environment,
 		TerminationProtection: terminationProtection,
 	}
 
@@ -179,7 +170,6 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	d.Set("port", res.Msg.Resource.Port)
 	d.Set("technology", res.Msg.Resource.Technology)
 	d.Set("technology_provider", res.Msg.Resource.Provider)
-	d.Set("environment", res.Msg.Resource.Environment)
 	d.Set("termination_protection", res.Msg.Resource.TerminationProtection)
 	if res.Msg.Resource.Space != nil {
 		d.Set("space_id", res.Msg.Resource.Space.Id)
@@ -197,7 +187,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id"}
+	fieldsThatCanChange := []string{"name", "hostname", "termination_protection", "space_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.Errorf(err)
