@@ -76,7 +76,7 @@ func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m
 			kandjiConfig := kandjiConfigs[0].(map[string]interface{})
 
 			request := corev1.CreateIntegrationMDMRequest{
-				Name: kandjiConfig["name"].(string),
+				Name: d.Get("name").(string),
 				Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
 					Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
 						ApiKey: kandjiConfig["api_key"].(string),
