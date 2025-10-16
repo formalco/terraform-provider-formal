@@ -59,7 +59,8 @@ func ResourceEncryptionKey() *schema.Resource {
 			"decryptor_uri": {
 				Description: "The URI of the decryptor (e.g., a URL to a Lambda function, either directly or via API Gateway). This is used to decrypt the data on the frontend only (and is never called by the Formal Control Plane backend).",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Default:     "",
 			},
 			"created_at": {
 				Description: "When the encryption key was created.",
