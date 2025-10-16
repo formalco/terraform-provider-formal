@@ -2,7 +2,7 @@ terraform {
   required_providers {
     formal = {
       source  = "formalco/formal"
-      version = "4.10.1"
+      version = "~> 4.12.3"
     }
   }
 
@@ -18,15 +18,14 @@ resource "formal_connector" "main" {
 }
 
 resource "formal_connector_configuration" "main" {
-  connector_id      = formal_connector.main.id
-  log_level         = "debug"
-  health_check_port = 8080
+  connector_id = formal_connector.main.id
+  log_level    = "debug"
 }
 
 resource "formal_connector_hostname" "main" {
   connector_id = formal_connector.main.id
-  hostname     = var.connector_hostname
-  dns_record   = aws_lb.main.dns_name
+  hostname     = var.connector_hostname # e.g. "postgres.<org-name>.connectors.joinformal.com"
+  dns_record   = var.dns_record         # CNAME record value to point to
 }
 
 
