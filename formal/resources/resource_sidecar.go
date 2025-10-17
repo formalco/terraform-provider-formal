@@ -26,7 +26,7 @@ func ResourceSidecar() *schema.Resource {
 		ReadContext:        resourceSidecarRead,
 		UpdateContext:      resourceSidecarUpdate,
 		DeleteContext:      resourceSidecarDelete,
-		SchemaVersion: 1,
+		SchemaVersion:      1,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
