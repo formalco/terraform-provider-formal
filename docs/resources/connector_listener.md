@@ -17,12 +17,12 @@ Registering a Connector Listener with Formal.
 
 ### Required
 
+- `connector_id` (String) The ID of the connector this listener is associated with.
 - `name` (String) The name of the connector listener.
 - `port` (Number) The listening port for this connector listener.
 
 ### Optional
 
-- `connector_id` (String) The ID of the connector this listener is associated with.
 - `termination_protection` (Boolean) If set to true, this connector listener cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
