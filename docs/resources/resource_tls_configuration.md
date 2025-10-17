@@ -18,7 +18,7 @@ Creating a TLS Configuration of a Resource in Formal.
 ### Required
 
 - `resource_id` (String) Resource ID for which the TLS configuration is applied to.
-- `tls_config` (String) Validation mode for the TLS configuration.
+- `tls_config` (String) Validation mode for the TLS configuration. Supported values are: `disable` (no TLS), `insecure-skip-verify` (TLS without verification), `insecure-verify-ca-only` (verify CA only), `verify-full` (full certificate verification).
 
 ### Optional
 
