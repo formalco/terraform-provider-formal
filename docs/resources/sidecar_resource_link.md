@@ -3,12 +3,12 @@
 page_title: "formal_sidecar_resource_link Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Linking a Resource to a Sidecar in Formal.
+  (Deprecated) Linking a Resource to a Sidecar in Formal.
 ---
 
 # formal_sidecar_resource_link (Resource)
 
-Linking a Resource to a Sidecar in Formal.
+(Deprecated) Linking a Resource to a Sidecar in Formal.
 
 
 

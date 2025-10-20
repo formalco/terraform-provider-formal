@@ -15,11 +15,12 @@ import (
 func ResourceIntegrationDataCatalog() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description:   "Registering a Data Catalog integration.",
-		CreateContext: resourceIntegrationDataCatalogCreate,
-		ReadContext:   resourceIntegrationDataCatalogRead,
-		UpdateContext: resourceIntegrationDataCatalogUpdate,
-		DeleteContext: resourceIntegrationDataCatalogDelete,
+		Description:        "(Deprecated) Registering a Data Catalog integration.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future version. DataHub integration support is being phased out.",
+		CreateContext:      resourceIntegrationDataCatalogCreate,
+		ReadContext:        resourceIntegrationDataCatalogRead,
+		UpdateContext:      resourceIntegrationDataCatalogUpdate,
+		DeleteContext:      resourceIntegrationDataCatalogDelete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
