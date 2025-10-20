@@ -70,17 +70,14 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 
 	resourceId := d.Get("resource_id").(string)
 	preference := d.Get("preference").(string)
+	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
 	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
 
 	msg := &corev1.CreateResourceClassifierConfigurationRequest{
 		ResourceId:                  resourceId,
 		Preference:                  preference,
+		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
 		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
-	}
-
-	if v, ok := d.GetOk("ai_analysis_timeout_seconds"); ok {
-		aiAnalysisTimeout := int32(v.(int))
-		msg.AiAnalysisTimeoutSeconds = &aiAnalysisTimeout
 	}
 
 	v, err := protovalidate.New()
@@ -137,17 +134,14 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 
 	resourceClassifierPreferenceId := d.Id()
 	preference := d.Get("preference").(string)
+	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
 	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
 
 	msg := &corev1.UpdateResourceClassifierConfigurationRequest{
 		Id:                          resourceClassifierPreferenceId,
 		Preference:                  &preference,
+		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
 		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
-	}
-
-	if v, ok := d.GetOk("ai_analysis_timeout_seconds"); ok {
-		aiAnalysisTimeout := int32(v.(int))
-		msg.AiAnalysisTimeoutSeconds = &aiAnalysisTimeout
 	}
 
 	v, err := protovalidate.New()
