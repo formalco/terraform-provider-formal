@@ -16,8 +16,8 @@ func ResourceIntegrationMDM() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Registering a Integration MDM app.",
 		CreateContext: resourceIntegrationMDMCreate,
-		ReadContext:        resourceIntegrationMDMRead,
-		DeleteContext:      resourceIntegrationMDMDelete,
+		ReadContext:   resourceIntegrationMDMRead,
+		DeleteContext: resourceIntegrationMDMDelete,
 
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
