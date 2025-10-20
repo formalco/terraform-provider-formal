@@ -14,9 +14,8 @@ import (
 
 func ResourceIntegrationMDM() *schema.Resource {
 	return &schema.Resource{
-		Description:        "Registering a Integration MDM app.",
-		DeprecationMessage: "This resource is deprecated and will be removed in a future version. MDM integration support is being phased out.",
-		CreateContext:      resourceIntegrationMDMCreate,
+		Description:   "Registering a Integration MDM app.",
+		CreateContext: resourceIntegrationMDMCreate,
 		ReadContext:        resourceIntegrationMDMRead,
 		DeleteContext:      resourceIntegrationMDMDelete,
 

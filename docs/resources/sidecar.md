@@ -3,12 +3,12 @@
 page_title: "formal_sidecar Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Registering a Sidecar with Formal.
+  (Deprecated) Registering a Sidecar with Formal.
 ---
 
 # formal_sidecar (Resource)
 
-Registering a Sidecar with Formal.
+(Deprecated) Registering a Sidecar with Formal.
 
 
 

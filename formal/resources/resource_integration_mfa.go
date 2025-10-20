@@ -15,7 +15,7 @@ import (
 func ResourceIntegrationMfa() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description:        "Registering a Integration MFA app.",
+		Description:        "(Deprecated) Registering a Integration MFA app.",
 		DeprecationMessage: "This resource is deprecated and will be removed in a future version. MFA integration support is being phased out.",
 		CreateContext:      resourceIntegrationMfaCreate,
 		ReadContext:        resourceIntegrationMfaRead,

@@ -20,7 +20,7 @@ import (
 func ResourceSidecar() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description:        "Registering a Sidecar with Formal.",
+		Description:        "(Deprecated) Registering a Sidecar with Formal.",
 		DeprecationMessage: "This resource is deprecated and will be removed in a future version. Please use formal_connector instead.",
 		CreateContext:      resourceSidecarCreate,
 		ReadContext:        resourceSidecarRead,

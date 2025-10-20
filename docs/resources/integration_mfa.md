@@ -3,12 +3,12 @@
 page_title: "formal_integration_mfa Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Registering a Integration MFA app.
+  (Deprecated) Registering a Integration MFA app.
 ---
 
 # formal_integration_mfa (Resource)
 
-Registering a Integration MFA app.
+(Deprecated) Registering a Integration MFA app.
 
 
 
