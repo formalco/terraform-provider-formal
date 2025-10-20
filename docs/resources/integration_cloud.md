@@ -34,6 +34,7 @@ Registering a Cloud integration.
 - `aws_enable_eks_autodiscovery` (Boolean) Whether AWS EKS autodiscovery is enabled or not.
 - `aws_enable_rds_autodiscovery` (Boolean) Whether AWS RDS autodiscovery is enabled or not.
 - `aws_enable_redshift_autodiscovery` (Boolean) Whether AWS Redshift autodiscovery is enabled or not.
+- `aws_enable_s3_autodiscovery` (Boolean) Whether AWS S3 autodiscovery is enabled or not.
 - `aws_formal_iam_role` (String) The IAM role ID Formal will use to access your resources.
 - `aws_formal_pingback_arn` (String) The SNS topic ARN CloudFormation can use to send events to Formal.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
