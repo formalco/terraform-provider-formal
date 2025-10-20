@@ -41,7 +41,7 @@ func ResourceResourceClassifierConfiguration() *schema.Resource {
 			"ai_analysis_timeout_seconds": {
 				Description: "The timeout for the AI analysis in seconds.",
 				Type:        schema.TypeInt,
-				Optional:    true,
+				Required:    true,
 			},
 			"enforce_strict_classifier_result_count": {
 				Description: "Whether to fail requests if the number of results from the classifier is not equal to the number of key-value pairs sent to it.",
