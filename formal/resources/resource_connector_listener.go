@@ -54,7 +54,7 @@ func ResourceConnectorListener() *schema.Resource {
 				// This description is used by the documentation generator and the language server.
 				Description: "The ID of the connector this listener is associated with.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"termination_protection": {
