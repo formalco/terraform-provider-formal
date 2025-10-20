@@ -174,6 +174,11 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
+			"aws_enable_s3_autodiscovery": {
+				Description: "Whether AWS S3 autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
 			"aws_allow_s3_access": {
 				Description: "Whether AWS S3 access is allowed or not.",
 				Type:        schema.TypeBool,

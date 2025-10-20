@@ -163,9 +163,9 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceTlsConfigurationRequest{
 		Id:              resourceTlsConfig,
-		TlsConfig:       &tlsConfig,
-		TlsMinVersion:   &tlsMinVersion,
-		TlsCaTruststore: &tlsCaTrustStore,
+		TlsConfig:       tlsConfig,
+		TlsMinVersion:   tlsMinVersion,
+		TlsCaTruststore: tlsCaTrustStore,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
