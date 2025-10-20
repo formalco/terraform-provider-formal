@@ -3,12 +3,12 @@
 page_title: "formal_integration_data_catalog Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Registering a Data Catalog integration.
+  (Deprecated) Registering a Data Catalog integration.
 ---
 
 # formal_integration_data_catalog (Resource)
 
-Registering a Data Catalog integration.
+(Deprecated) Registering a Data Catalog integration.
 
 
 

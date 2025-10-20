@@ -52,7 +52,7 @@ func ResourceTlsConfiguration() *schema.Resource {
 			},
 			"tls_config": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Validation mode for the TLS configuration.",
+				Description: "Validation mode for the TLS configuration. Supported values are: `disable` (no TLS), `insecure-skip-verify` (TLS without verification), `insecure-verify-ca-only` (verify CA only), `verify-full` (full certificate verification).",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
@@ -163,9 +163,9 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceTlsConfigurationRequest{
 		Id:              resourceTlsConfig,
-		TlsConfig:       &tlsConfig,
-		TlsMinVersion:   &tlsMinVersion,
-		TlsCaTruststore: &tlsCaTrustStore,
+		TlsConfig:       tlsConfig,
+		TlsMinVersion:   tlsMinVersion,
+		TlsCaTruststore: tlsCaTrustStore,
 	}))
 	if err != nil {
 		return diag.FromErr(err)

@@ -16,7 +16,8 @@ import (
 func ResourceSidecarResourceLink() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "Linking a Resource to a Sidecar in Formal.",
+		Description:        "(Deprecated) Linking a Resource to a Sidecar in Formal.",
+		DeprecationMessage: "This resource is deprecated and will be removed in a future version. Please use formal_connector_listener and formal_connector_listener_link instead.",
 
 		CreateContext: resourceSidecarResourceLinkCreate,
 		ReadContext:   resourceSidecarResourceLinkRead,
