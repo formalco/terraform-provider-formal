@@ -16,7 +16,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = ">= 4.6.2"
+      version = "~> 4.12.8"
     }
     time = {
       source  = "hashicorp/time"
