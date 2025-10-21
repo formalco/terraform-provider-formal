@@ -6,7 +6,7 @@ terraform {
     }
     formal = {
       source  = "formalco/formal"
-      version = "~> 4.12.3"
+      version = "~> 4.12.8"
     }
   }
   required_version = ">= 0.14.9"
