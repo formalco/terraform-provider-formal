@@ -352,27 +352,20 @@ EOF
           # Insert the new changelog content after the frontmatter (after second ---)
           # Create a temporary file for the new changelog content
           new_content_file=$(mktemp)
-          echo "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
+          printf '%s\n' "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
 
           # Create another temporary file for the updated changelog
           temp_file=$(mktemp)
 
-          # Use awk to insert content after second ---
-          awk 'BEGIN {seen_first=0; inserted=0}
-          /^---$/ {
-            print
-            if (seen_first == 1 && inserted == 0) {
-              print ""
-              system("cat '"$new_content_file"'")
-              print ""
-              inserted=1
-            }
-            if (seen_first == 0) {
-              seen_first=1
-            }
-            next
-          }
-          {print}' "$target_file" > "$temp_file"
+          # Use sed to insert content after the second ---
+          # This matches the second occurrence of --- and inserts content after it
+          sed '0,/^---$/b; 0,/^---$/{
+              a\
+
+              r '"$new_content_file"'
+              a\
+
+          }' "$target_file" > "$temp_file"
 
           # Move the updated content back into the changelog file
           mv "$temp_file" "$target_file"
