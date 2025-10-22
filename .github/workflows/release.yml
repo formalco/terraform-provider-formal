@@ -349,29 +349,31 @@ description: "Release notes for Formal Terraform Provider"
 EOF
           fi
 
-          # Insert the new changelog content after the frontmatter (after second ---)
-          # Create a temporary file for the new changelog content
-          new_content_file=$(mktemp)
-          printf '%s\n' "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
+          # Insert the new changelog content after the frontmatter
+          # Use Node.js to safely insert content (like monorepo does)
+          node -e "
+          const fs = require('fs');
+          let content = fs.readFileSync('$target_file', 'utf8');
 
-          # Create another temporary file for the updated changelog
-          temp_file=$(mktemp)
+          // Find the position after the frontmatter (after second ---)
+          const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
+          const match = frontmatterRegex.exec(content);
 
-          # Use sed to insert content after the second ---
-          # This matches the second occurrence of --- and inserts content after it
-          sed '0,/^---$/b; 0,/^---$/{
-              a\
+          if (!match) {
+            throw new Error('Could not find frontmatter in MDX file');
+          }
 
-              r '"$new_content_file"'
-              a\
+          const insertPosition = match[0].length;
+          const changelogContent = process.argv[1];
 
-          }' "$target_file" > "$temp_file"
+          // Insert the new changelog content after frontmatter
+          content = content.slice(0, insertPosition) +
+                    '\n' + changelogContent + '\n\n' +
+                    content.slice(insertPosition);
 
-          # Move the updated content back into the changelog file
-          mv "$temp_file" "$target_file"
-
-          # Clean up the temporary file
-          rm -f "$new_content_file"
+          fs.writeFileSync('$target_file', content);
+          console.log('✓ Updated $target_file');
+          " "${{ needs.generate-changelog.outputs.changelog_content }}"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
