@@ -317,6 +317,12 @@ ${changelogContent.trim()}
     needs: [generate-changelog, create-changelog-pr]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout terraform-provider repo
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: terraform-provider-formal
+
       - name: Checkout docs repo
         uses: actions/checkout@v5
         with:
@@ -350,7 +356,7 @@ EOF
           fi
 
           # Insert the new changelog content after the frontmatter
-          node .github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_content }}"
+          node terraform-provider-formal/.github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_content }}"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
