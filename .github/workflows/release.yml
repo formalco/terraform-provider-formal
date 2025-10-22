@@ -349,18 +349,36 @@ description: "Release notes for Formal Terraform Provider"
 EOF
           fi
 
-          # Insert the new changelog content after the frontmatter (after ---)
-          awk -v content="${{ needs.generate-changelog.outputs.changelog_content }}" '
-          /^---$/ && seen_first {
+          # Insert the new changelog content after the frontmatter (after second ---)
+          # Create a temporary file for the new changelog content
+          new_content_file=$(mktemp)
+          echo "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
+
+          # Create another temporary file for the updated changelog
+          temp_file=$(mktemp)
+
+          # Use awk to insert content after second ---
+          awk 'BEGIN {seen_first=0; inserted=0}
+          /^---$/ {
             print
-            print ""
-            print content
-            print ""
+            if (seen_first == 1 && inserted == 0) {
+              print ""
+              system("cat '"$new_content_file"'")
+              print ""
+              inserted=1
+            }
+            if (seen_first == 0) {
+              seen_first=1
+            }
             next
           }
-          /^---$/ { seen_first=1 }
-          { print }
-          ' "$target_file" > temp_file && mv temp_file "$target_file"
+          {print}' "$target_file" > "$temp_file"
+
+          # Move the updated content back into the changelog file
+          mv "$temp_file" "$target_file"
+
+          # Clean up the temporary file
+          rm -f "$new_content_file"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
