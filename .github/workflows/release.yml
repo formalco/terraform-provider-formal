@@ -350,30 +350,7 @@ EOF
           fi
 
           # Insert the new changelog content after the frontmatter
-          # Use Node.js to safely insert content (like monorepo does)
-          node -e "
-          const fs = require('fs');
-          let content = fs.readFileSync('$target_file', 'utf8');
-
-          // Find the position after the frontmatter (after second ---)
-          const frontmatterRegex = /^---\n[\s\S]*?\n---\n/;
-          const match = frontmatterRegex.exec(content);
-
-          if (!match) {
-            throw new Error('Could not find frontmatter in MDX file');
-          }
-
-          const insertPosition = match[0].length;
-          const changelogContent = process.argv[1];
-
-          // Insert the new changelog content after frontmatter
-          content = content.slice(0, insertPosition) +
-                    '\n' + changelogContent + '\n\n' +
-                    content.slice(insertPosition);
-
-          fs.writeFileSync('$target_file', content);
-          console.log('✓ Updated $target_file');
-          " "${{ needs.generate-changelog.outputs.changelog_content }}"
+          node .github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_content }}"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
