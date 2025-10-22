@@ -20,6 +20,8 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    # Skip goreleaser for test tags
+    if: ${{ !contains(github.ref, '-test') }}
     steps:
       -
         name: Checkout
@@ -185,7 +187,7 @@ jobs:
 
             // Generate changelog using OpenAI
             const openaiPrompt = {
-              model: "gpt-4",
+              model: "gpt-5",
               messages: [{
                 role: "system",
                content: "You are a technical writer creating an external-facing changelog for our customers. Your goal is to communicate **high-level functionality changes**, not internal implementation details like code refactors, function changes, or technical restructuring.\n\n" +
@@ -245,14 +247,8 @@ jobs:
                 }
               });
 
-              const today = new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit'
-              }).replace(/(\d+)\/(\d+)\/(\d+)/, '$3-$1-$2');
-
               let changelogContent = openaiResponse.data.choices[0].message.content;
-              
+
               // Only remove title if it starts with # but not with ###
               if (changelogContent.startsWith('#') && !changelogContent.startsWith('###')) {
                 const firstSectionIndex = changelogContent.indexOf('### ');
@@ -261,11 +257,33 @@ jobs:
                 }
               }
 
-              // Format the changelog entry with the correct title format
-              let formattedChangelog = `## ${version} (${today})\n\n${changelogContent.trim()}`;
+              // Determine tags based on changelog content
+              const tags = [];
+              if (changelogContent.includes('### New')) tags.push('New Features');
+              if (changelogContent.includes('### Fixed')) tags.push('Bug Fixes');
+              if (changelogContent.includes('### Changed')) tags.push('Improvements');
 
-              // Force removal of any remaining backticks
-              formattedChangelog = formattedChangelog.replace(/`/g, ''); 
+              const tagsString = tags.length > 0 ? ` tags={${JSON.stringify(tags)}}` : '';
+
+              // Format date as "Month Day, Year" (e.g., "October 15, 2025")
+              const formatDate = (dateStr) => {
+                const d = new Date(dateStr);
+                const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                   'July', 'August', 'September', 'October', 'November', 'December'];
+                return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+              };
+
+              const today = new Date();
+              const formattedDate = formatDate(today);
+
+              // Return with Update wrapper for Mintlify
+              const formattedChangelog = `<Update label="${formattedDate}"${tagsString}>
+
+## ${version}
+
+${changelogContent.trim()}
+
+</Update>`;
 
               core.setOutput('changelog_content', formattedChangelog);
               core.setOutput('component', "Formal Terraform Provider");
@@ -302,55 +320,53 @@ jobs:
       - name: Checkout docs repo
         uses: actions/checkout@v5
         with:
-          repository: formalco/docusaurus-documentation
+          repository: formalco/mintlify-docs
           token: ${{ secrets.DOCUSAURUS_PAT }}
-          path: docusaurus-documentation
+          path: mintlify-docs
           ref: main
 
       - name: Add Changelog
         run: |
           # Define the mapping of components to their changelog files
           declare -A changelog_files=(
-            ["provider"]="docs/changelogs/provider-changelog.md"
+            ["provider"]="docs/changelog/terraform-provider.mdx"
           )
-          
+
           # Get the target file for this component
-          target_file="docusaurus-documentation/${changelog_files[${{ needs.generate-changelog.outputs.branch_component }}]}"
-          
+          target_file="mintlify-docs/${changelog_files[${{ needs.generate-changelog.outputs.branch_component }}]}"
+
           # Create directory if it doesn't exist
           mkdir -p "$(dirname "$target_file")"
-          
-          # Create file if it doesn't exist
+
+          # Create file if it doesn't exist with Mintlify frontmatter
           if [ ! -f "$target_file" ]; then
-            echo "# Changelog" > "$target_file"
-            echo "" >> "$target_file"
+            cat > "$target_file" <<'EOF'
+---
+title: "Terraform Provider"
+description: "Release notes for Formal Terraform Provider"
+---
+
+EOF
           fi
-          
-          # Create a temporary file for the new changelog content
-          new_content_file=$(mktemp)
-          echo "${{ needs.generate-changelog.outputs.changelog_content }}" > "$new_content_file"
 
-          # Create another temporary file for the updated changelog
-          temp_file=$(mktemp)
-
-          # Ensure `sed` inserts content safely with a blank line for formatting
-          sed "/^# Changelog$/ {
-              a\\
-              
-              r $new_content_file
-          }" "$target_file" > "$temp_file"
-
-          # Move the updated content back into the changelog file
-          mv "$temp_file" "$target_file"
-
-          # Clean up the temporary file
-          rm -f "$new_content_file"
+          # Insert the new changelog content after the frontmatter (after ---)
+          awk -v content="${{ needs.generate-changelog.outputs.changelog_content }}" '
+          /^---$/ && seen_first {
+            print
+            print ""
+            print content
+            print ""
+            next
+          }
+          /^---$/ { seen_first=1 }
+          { print }
+          ' "$target_file" > temp_file && mv temp_file "$target_file"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
         with:
           token: ${{ secrets.DOCUSAURUS_PAT }}
-          path: docusaurus-documentation
+          path: mintlify-docs
           commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           body: "This PR updates the changelog for ${{ needs.generate-changelog.outputs.component }} version ${{ needs.generate-changelog.outputs.version }}"
