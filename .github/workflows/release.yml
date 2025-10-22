@@ -57,7 +57,6 @@ jobs:
   generate-changelog:
     runs-on: ubuntu-latest
     env:
-      GITHUB_TOKEN: ${{ secrets.DOCUSAURUS_PAT }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     outputs:
       changelog_content: ${{ steps.generate-changelog.outputs.changelog_content }}
@@ -69,6 +68,14 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate GitHub App token
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: '["terraform-provider-formal", "mintlify-docs"]'
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -82,7 +89,7 @@ jobs:
         id: generate-changelog
         uses: actions/github-script@v8
         with:
-          github-token: ${{ secrets.DOCUSAURUS_PAT }}
+          github-token: ${{ steps.generate-token.outputs.token }}
           script: |
             const generateChangelog = require('./.github/workflows/scripts/generate-changelog.js');
             await generateChangelog({ github, context, core, process });
@@ -95,10 +102,18 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate GitHub App token
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: '["terraform-provider-formal", "mintlify-docs"]'
+
       - name: Create Changelog PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.DOCUSAURUS_PAT }}
+          token: ${{ steps.generate-token.outputs.token }}
           commit-message: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           body: ${{ needs.generate-changelog.outputs.changelog_content }}
@@ -109,6 +124,14 @@ jobs:
     needs: [generate-changelog, create-changelog-pr]
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        uses: tibdex/github-app-token@v2
+        id: generate-token
+        with:
+          app_id: ${{ secrets.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          repositories: '["terraform-provider-formal", "mintlify-docs"]'
+
       - name: Checkout terraform-provider repo
         uses: actions/checkout@v5
         with:
@@ -119,7 +142,7 @@ jobs:
         uses: actions/checkout@v5
         with:
           repository: formalco/mintlify-docs
-          token: ${{ secrets.DOCUSAURUS_PAT }}
+          token: ${{ steps.generate-token.outputs.token }}
           path: mintlify-docs
           ref: main
 
@@ -153,7 +176,7 @@ EOF
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.DOCUSAURUS_PAT }}
+          token: ${{ steps.generate-token.outputs.token }}
           path: mintlify-docs
           commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
