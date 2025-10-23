@@ -165,10 +165,10 @@ jobs:
             git push origin "$BRANCH" --force
 
             if [ "$VERSIONS_COUNT" = "1" ]; then
-              TITLE="docs: update Terraform Provider changelog ${VERSION_RANGE}"
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
               BODY="This PR updates the Terraform Provider changelog for version **${VERSION_RANGE}**."
             else
-              TITLE="docs: update Terraform Provider changelog ${VERSION_RANGE}"
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
               BODY="This PR updates the Terraform Provider changelog with **${VERSIONS_COUNT} versions** (${VERSION_RANGE})."
             fi
 
@@ -200,10 +200,10 @@ jobs:
             git push origin "$BRANCH"
 
             if [ "$VERSIONS_COUNT" = "1" ]; then
-              TITLE="docs: update Terraform Provider changelog ${VERSION_RANGE}"
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
               BODY="This PR updates the Terraform Provider changelog for version **${VERSION_RANGE}**."
             else
-              TITLE="docs: update Terraform Provider changelog ${VERSION_RANGE}"
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
               BODY="This PR updates the Terraform Provider changelog with **${VERSIONS_COUNT} versions** (${VERSION_RANGE})."
             fi
 
