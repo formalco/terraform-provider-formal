@@ -213,6 +213,14 @@ ${changelogContent.trim()}
     core.setOutput('branch_component', "provider");
     core.setOutput('version', version);
 
+    // Generate PR list for the PR description
+    const githubRepo = context.repo.owner + '/' + context.repo.repo;
+    let prListMarkdown = `\n### ${version}\n`;
+    for (const pr of prData) {
+      prListMarkdown += `- [#${pr.number}](${pr.url}): ${pr.title}\n`;
+    }
+    core.setOutput('pr_list', prListMarkdown);
+
   } catch (error) {
     console.error('OpenAI API Error:', error.response?.data || error);
     core.setFailed('Failed to generate changelog with OpenAI');

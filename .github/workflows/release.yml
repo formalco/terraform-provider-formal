@@ -180,6 +180,17 @@ EOF
           path: mintlify-docs
           commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
           title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
-          body: "This PR updates the changelog for ${{ needs.generate-changelog.outputs.component }} version ${{ needs.generate-changelog.outputs.version }}"
+          body: |
+            This PR updates the changelog for **${{ needs.generate-changelog.outputs.component }}** version **${{ needs.generate-changelog.outputs.version }}**.
+
+            ## Pull Requests Included
+            ${{ needs.generate-changelog.outputs.pr_list }}
+
+            ## Next Steps
+            1. Review the generated changelog
+            2. Edit if needed to ensure accuracy
+            3. Approve and merge to publish
+
+            🤖 Generated with automation
           branch: "changelog/${{ needs.generate-changelog.outputs.branch_component }}-${{ needs.generate-changelog.outputs.version }}"
           base: main
