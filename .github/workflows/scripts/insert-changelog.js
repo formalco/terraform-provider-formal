@@ -2,7 +2,7 @@
 
 /**
  * Simple script to insert changelog content into MDX file after frontmatter
- * Usage: node insert-changelog.js <changelog-file-path> <changelog-content-file>
+ * Usage: node insert-changelog.js <changelog-file-path> <changelog-content-base64>
  */
 
 const fs = require('fs');
@@ -11,14 +11,14 @@ function main() {
   const args = process.argv.slice(2);
 
   if (args.length !== 2) {
-    console.log('Usage: node insert-changelog.js <changelog-file-path> <changelog-content-file>');
+    console.log('Usage: node insert-changelog.js <changelog-file-path> <changelog-content-base64>');
     process.exit(1);
   }
 
-  const [changelogPath, changelogContentFile] = args;
+  const [changelogPath, changelogContentBase64] = args;
 
-  // Read the changelog content from the file
-  const changelogContent = fs.readFileSync(changelogContentFile, 'utf8');
+  // Decode the base64 changelog content
+  const changelogContent = Buffer.from(changelogContentBase64, 'base64').toString('utf8');
 
   // Read the existing file
   let content = fs.readFileSync(changelogPath, 'utf8');

@@ -208,11 +208,9 @@ ${changelogContent.trim()}
 
 </Update>`;
 
-    // Write changelog content to temp file to avoid bash escaping issues
-    const fs = require('fs');
-    const changelogPath = '/tmp/changelog-content.txt';
-    fs.writeFileSync(changelogPath, formattedChangelog);
-    core.setOutput('changelog_file', changelogPath);
+    // Base64 encode the changelog content to avoid bash escaping issues
+    const changelogBase64 = Buffer.from(formattedChangelog).toString('base64');
+    core.setOutput('changelog_content', changelogBase64);
 
     core.setOutput('component', "Formal Terraform Provider");
     core.setOutput('branch_component', "provider");

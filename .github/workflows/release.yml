@@ -168,8 +168,8 @@ jobs:
             printf '\n' >> "$target_file"
           fi
 
-          # Insert the new changelog content after the frontmatter
-          node terraform-provider-formal/.github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_file }}"
+          # Insert the new changelog content after the frontmatter (base64 encoded)
+          node terraform-provider-formal/.github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_content }}"
 
       - name: Create Docs PR
         uses: peter-evans/create-pull-request@v7
