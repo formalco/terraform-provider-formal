@@ -58,7 +58,7 @@ function githubApi(endpoint, token) {
 /**
  * Make OpenAI API request
  */
-async function openaiApi(messages, apiKey, model = 'gpt-4') {
+async function openaiApi(messages, apiKey, model = 'gpt-4o') {
   return new Promise((resolve, reject) => {
     const postData = JSON.stringify({
       model,
@@ -250,15 +250,16 @@ function getFileDiffBetweenTags(newerTag, olderTag) {
 
 /**
  * Get detailed file changes (additions/deletions) for context
+ * Excludes go.mod/go.sum which are very verbose
  */
-function getDetailedFileDiff(newerTag, olderTag, maxLines = 500) {
+function getDetailedFileDiff(newerTag, olderTag, maxLines = 300) {
   try {
     if (!olderTag) {
       return '';
     }
 
-    // Get unified diff with limited context
-    const diff = exec(`git diff ${olderTag}..${newerTag} --unified=3 | head -${maxLines}`);
+    // Get unified diff with limited context, excluding verbose dependency files
+    const diff = exec(`git diff ${olderTag}..${newerTag} --unified=2 -- . ':(exclude)go.sum' ':(exclude)go.mod' | head -${maxLines}`);
     return diff;
   } catch (error) {
     console.error(`Error getting detailed diff:`, error.message);
@@ -358,15 +359,21 @@ async function generateChangelogWithLLM(version, prDetails, fileDiff, detailedDi
 
 Focus on how changes affect Terraform Provider users, **not on how they were implemented.**`;
 
+  // Truncate PR bodies to avoid token limits
+  const truncatedPRDetails = prDetails.map(pr => ({
+    ...pr,
+    body: pr.body ? pr.body.substring(0, 500) : '' // Limit PR body to 500 chars
+  }));
+
   const userPrompt = `Generate a changelog for Terraform Provider version ${version}.
 
 Pull Request Information:
-${JSON.stringify(prDetails, null, 2)}
+${JSON.stringify(truncatedPRDetails, null, 2)}
 
 File Changes Summary:
-${fileDiff}
+${fileDiff.substring(0, 1500)}
 
-${detailedDiff ? `\nDetailed Changes (sample):\n${detailedDiff.substring(0, 2000)}` : ''}`;
+${detailedDiff ? `\nDetailed Changes (sample):\n${detailedDiff.substring(0, 1500)}` : ''}`;
 
   try {
     const response = await openaiApi([
