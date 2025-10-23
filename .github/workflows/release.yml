@@ -161,13 +161,11 @@ jobs:
 
           # Create file if it doesn't exist with Mintlify frontmatter
           if [ ! -f "$target_file" ]; then
-            cat > "$target_file" <<'EOF'
----
-title: "Terraform Provider"
-description: "Release notes for Formal Terraform Provider"
----
-
-EOF
+            printf '%s\n' '---' > "$target_file"
+            printf '%s\n' 'title: "Terraform Provider"' >> "$target_file"
+            printf '%s\n' 'description: "Release notes for Formal Terraform Provider"' >> "$target_file"
+            printf '%s\n' '---' >> "$target_file"
+            printf '\n' >> "$target_file"
           fi
 
           # Insert the new changelog content after the frontmatter
