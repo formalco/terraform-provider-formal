@@ -38,8 +38,6 @@ module "demo_connector" {
   source                      = "./connector"
   formal_api_key              = var.formal_api_key
   name                        = "${var.name}-connector"
-  connector_hostname          = local.connector_hostname
-  dns_record                  = module.common.url
   environment                 = var.environment
   container_image             = var.connector_image
   vpc_id                      = module.common.vpc_id
@@ -52,6 +50,12 @@ module "demo_connector" {
   container_cpu               = var.container_cpu
   container_memory            = var.container_memory
   connector_ports             = var.connector_ports
+}
+
+resource "formal_connector_hostname" "demo_connector" {
+  connector_id = module.demo_connector.connector_id
+  hostname     = local.connector_hostname
+  dns_record   = module.demo_connector.nlb_dns_name
 }
 
 resource "formal_resource" "echo" {
