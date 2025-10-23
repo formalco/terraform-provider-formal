@@ -208,7 +208,12 @@ ${changelogContent.trim()}
 
 </Update>`;
 
-    core.setOutput('changelog_content', formattedChangelog);
+    // Write changelog content to temp file to avoid bash escaping issues
+    const fs = require('fs');
+    const changelogPath = '/tmp/changelog-content.txt';
+    fs.writeFileSync(changelogPath, formattedChangelog);
+    core.setOutput('changelog_file', changelogPath);
+
     core.setOutput('component', "Formal Terraform Provider");
     core.setOutput('branch_component', "provider");
     core.setOutput('version', version);
