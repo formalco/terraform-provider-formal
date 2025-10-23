@@ -19,22 +19,10 @@ output "public_subnets" {
   value = aws_subnet.public.*.id
 }
 
-output "url" {
-  value = aws_lb.main.dns_name
-}
-
-output "nlb_id" {
-  value = aws_lb.main.id
-}
-
 output "ecs_task_execution_role_arn" {
   value = aws_iam_role.ecs_task_execution_role.arn
 }
 
 output "ecs_task_role_arn" {
   value = aws_iam_role.ecs_task_role.arn
-}
-
-output "ecs_task_role" {
-  value = aws_iam_role.ecs_task_role
 }

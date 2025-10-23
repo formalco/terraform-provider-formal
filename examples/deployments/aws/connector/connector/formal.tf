@@ -22,11 +22,5 @@ resource "formal_connector_configuration" "main" {
   log_level    = "debug"
 }
 
-resource "formal_connector_hostname" "main" {
-  connector_id = formal_connector.main.id
-  hostname     = var.connector_hostname # e.g. "postgres.<org-name>.connectors.joinformal.com"
-  dns_record   = var.dns_record         # CNAME record value to point to
-}
-
 
 
