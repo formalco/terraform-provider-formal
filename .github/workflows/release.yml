@@ -15,6 +15,15 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode (auto = generate all missing changelogs, latest = generate for latest tag only)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - latest
 permissions:
   contents: write
 jobs:
@@ -54,17 +63,13 @@ jobs:
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  generate-changelog:
+  sync-to-docs:
     runs-on: ubuntu-latest
     env:
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-    outputs:
-      changelog_content: ${{ steps.generate-changelog.outputs.changelog_content }}
-      component: ${{ steps.generate-changelog.outputs.component }}
-      version: ${{ steps.generate-changelog.outputs.version }}
-      branch_component: ${{ steps.generate-changelog.outputs.branch_component }}
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout terraform-provider repo
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -77,118 +82,164 @@ jobs:
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
           repositories: '["terraform-provider-formal", "mintlify-docs"]'
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '16'
-
-      - name: Install dependencies
-        run: npm install semver axios
-
-      - name: Generate Changelog
-        id: generate-changelog
-        uses: actions/github-script@v8
-        with:
-          github-token: ${{ steps.generate-token.outputs.token }}
-          script: |
-            const generateChangelog = require('./.github/workflows/scripts/generate-changelog.js');
-            await generateChangelog({ github, context, core, process });
-
-  create-changelog-pr:
-    needs: generate-changelog
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Generate GitHub App token
-        uses: tibdex/github-app-token@v2
-        id: generate-token
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
-          repositories: '["terraform-provider-formal", "mintlify-docs"]'
-
-      - name: Create Changelog PR
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          commit-message: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
-          title: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
-          body: ${{ needs.generate-changelog.outputs.changelog_content }}
-          branch: "changelog/${{ needs.generate-changelog.outputs.branch_component }}-${{ needs.generate-changelog.outputs.version }}"
-          base: main
-
-  sync-to-docs:
-    needs: [generate-changelog, create-changelog-pr]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Generate GitHub App token
-        uses: tibdex/github-app-token@v2
-        id: generate-token
-        with:
-          app_id: ${{ secrets.APP_ID }}
-          private_key: ${{ secrets.APP_PRIVATE_KEY }}
-          repositories: '["terraform-provider-formal", "mintlify-docs"]'
-
-      - name: Checkout terraform-provider repo
-        uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          path: terraform-provider-formal
-
       - name: Checkout docs repo
         uses: actions/checkout@v5
         with:
           repository: formalco/mintlify-docs
-          token: ${{ steps.generate-token.outputs.token }}
-          path: mintlify-docs
           ref: main
+          token: ${{ steps.generate-token.outputs.token }}
+          path: docs-repo
+          fetch-depth: 1
 
-      - name: Add Changelog
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '18'
+
+      - name: Generate changelog
+        id: generate
+        env:
+          GITHUB_TOKEN: ${{ steps.generate-token.outputs.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          # Define the mapping of components to their changelog files
-          declare -A changelog_files=(
-            ["provider"]="docs/changelog/terraform-provider.mdx"
-          )
+          # Determine mode: for tag pushes use 'latest', for workflow_dispatch use input
+          MODE="${{ github.event.inputs.mode || 'latest' }}"
 
-          # Get the target file for this component
-          target_file="mintlify-docs/${changelog_files[${{ needs.generate-changelog.outputs.branch_component }}]}"
+          echo "Generating changelog in mode: $MODE"
+          node .github/workflows/scripts/generate-changelog-v2.js \
+            --mode "$MODE" \
+            --docs-repo-path docs-repo
 
-          # Create directory if it doesn't exist
-          mkdir -p "$(dirname "$target_file")"
-
-          # Create file if it doesn't exist with Mintlify frontmatter
-          if [ ! -f "$target_file" ]; then
-            printf '%s\n' '---' > "$target_file"
-            printf '%s\n' 'title: "Terraform Provider"' >> "$target_file"
-            printf '%s\n' 'description: "Release notes for Formal Terraform Provider"' >> "$target_file"
-            printf '%s\n' '---' >> "$target_file"
-            printf '\n' >> "$target_file"
+      - name: Check for changes in docs repo
+        id: check-changes
+        working-directory: docs-repo
+        run: |
+          if git diff --quiet && git diff --cached --quiet && [ -z "$(git ls-files --others --exclude-standard)" ]; then
+            echo "No changes detected"
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "Changes detected:"
+            git status --short
+            echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-          # Insert the new changelog content after the frontmatter (base64 encoded)
-          node terraform-provider-formal/.github/workflows/scripts/insert-changelog.js "$target_file" "${{ needs.generate-changelog.outputs.changelog_content }}"
+      - name: Create or update PR in docs repo
+        if: steps.check-changes.outputs.has_changes == 'true'
+        working-directory: docs-repo
+        env:
+          GH_TOKEN: ${{ steps.generate-token.outputs.token }}
+        run: |
+          # Get version range from generate step outputs (or fallback to latest tag)
+          VERSION_RANGE="${{ steps.generate.outputs.version }}"
+          VERSIONS_COUNT="${{ steps.generate.outputs.versions_count }}"
+          PR_LIST="${{ steps.generate.outputs.pr_list }}"
 
-      - name: Create Docs PR
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ steps.generate-token.outputs.token }}
-          path: mintlify-docs
-          commit-message: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
-          title: "docs: update changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
-          body: |
-            This PR updates the changelog for **${{ needs.generate-changelog.outputs.component }}** version **${{ needs.generate-changelog.outputs.version }}**.
+          # Use fallback values if outputs are empty
+          if [ -z "$VERSION_RANGE" ]; then
+            VERSION_RANGE=$(git tag -l "v*" --sort=-version:refname | head -1 | sed 's/^v//')
+          fi
+          if [ -z "$VERSIONS_COUNT" ]; then
+            VERSIONS_COUNT="1"
+          fi
 
-            ## Pull Requests Included
-            ${{ needs.generate-changelog.outputs.pr_list }}
+          # Configure git
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            ## Next Steps
-            1. Review the generated changelog
-            2. Edit if needed to ensure accuracy
-            3. Approve and merge to publish
+          # Check for existing open PR with changelog branch pattern for terraform-provider
+          ALL_OPEN_PRS=$(gh pr list --state open --json number,headRefName 2>/dev/null || echo "[]")
+          EXISTING_PR=$(echo "$ALL_OPEN_PRS" | jq '.[] | select(.headRefName | startswith("changelog/terraform-provider-")) | {number, headRefName}' | jq -s '.[0]')
 
-            🤖 Generated with automation
-          branch: "changelog/${{ needs.generate-changelog.outputs.branch_component }}-${{ needs.generate-changelog.outputs.version }}"
-          base: main
+          if [ -n "$EXISTING_PR" ] && [ "$EXISTING_PR" != "null" ]; then
+            # Extract existing branch name and PR number
+            EXISTING_BRANCH=$(echo "$EXISTING_PR" | jq -r '.headRefName')
+            PR_NUMBER=$(echo "$EXISTING_PR" | jq -r '.number')
+
+            echo "Found existing PR #${PR_NUMBER} with branch ${EXISTING_BRANCH}"
+            echo "Updating existing PR instead of creating a new one..."
+
+            BRANCH="$EXISTING_BRANCH"
+
+            # Checkout existing branch and force push updates
+            git fetch origin "$BRANCH"
+            git checkout "$BRANCH"
+            git add .
+            git commit --amend --no-edit -m "docs: update changelog for Terraform Provider (${VERSIONS_COUNT} versions)"
+            git push origin "$BRANCH" --force
+
+            # Update PR title and body
+            if [ "$VERSIONS_COUNT" = "1" ]; then
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
+              BODY="This PR updates the changelog for **Terraform Provider** version **${VERSION_RANGE}**."
+            else
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
+              BODY="This PR updates the changelog for **Terraform Provider** with **${VERSIONS_COUNT} versions** (${VERSION_RANGE})."
+            fi
+
+            gh pr edit "$PR_NUMBER" \
+              --title "$TITLE" \
+              --body "$BODY
+
+Last updated from workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+## Pull Requests Included
+${PR_LIST}
+
+## Next Steps
+1. Review the generated changelogs
+2. Edit if needed to ensure accuracy
+3. Approve and merge to publish
+
+🤖 Generated with automation"
+
+            echo "Updated existing PR #${PR_NUMBER}"
+          else
+            echo "No existing PR found, creating a new one..."
+
+            # Create new branch and commit with timestamp to ensure uniqueness
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            BRANCH="changelog/terraform-provider-${TIMESTAMP}"
+            git checkout -b "$BRANCH"
+            git add .
+            git commit -m "docs: update changelog for Terraform Provider (${VERSIONS_COUNT} versions)"
+            git push origin "$BRANCH"
+
+            # Create PR with appropriate title and body
+            if [ "$VERSIONS_COUNT" = "1" ]; then
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
+              BODY="This PR updates the changelog for **Terraform Provider** version **${VERSION_RANGE}**."
+            else
+              TITLE="docs: update changelog for Terraform Provider ${VERSION_RANGE}"
+              BODY="This PR updates the changelog for **Terraform Provider** with **${VERSIONS_COUNT} versions** (${VERSION_RANGE})."
+            fi
+
+            PR_URL=$(gh pr create \
+              --title "$TITLE" \
+              --body "$BODY
+
+Generated from workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+## Pull Requests Included
+${PR_LIST}
+
+## Next Steps
+1. Review the generated changelogs
+2. Edit if needed to ensure accuracy
+3. Approve and merge to publish
+
+🤖 Generated with automation" \
+              --base main \
+              --head "$BRANCH")
+
+            # Extract PR number from URL
+            PR_NUMBER=$(echo "$PR_URL" | grep -oE '[0-9]+$')
+
+            echo "Created new PR #${PR_NUMBER} with branch ${BRANCH}"
+          fi
+
+      - name: No changes needed
+        if: steps.check-changes.outputs.has_changes == 'false'
+        run: |
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "ℹ️  No changelog updates needed for Terraform Provider"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
