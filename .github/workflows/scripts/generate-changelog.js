@@ -58,7 +58,7 @@ function githubApi(endpoint, token) {
 /**
  * Make OpenAI API request
  */
-async function openaiApi(messages, apiKey, model = 'gpt-4o') {
+async function openaiApi(messages, apiKey, model = 'gpt-5') {
   return new Promise((resolve, reject) => {
     const postData = JSON.stringify({
       model,
