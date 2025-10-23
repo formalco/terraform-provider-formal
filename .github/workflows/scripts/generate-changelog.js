@@ -139,6 +139,7 @@ function parseLatestVersionFromChangelog(changelogPath) {
 
 /**
  * Get all git tags matching v* pattern, sorted by version
+ * Excludes test versions (tags containing '-test')
  */
 function getAllVersionTags() {
   const tagsOutput = exec('git tag -l "v*" --sort=-version:refname');
@@ -148,11 +149,13 @@ function getAllVersionTags() {
 
   const tags = tagsOutput.split('\n').filter(tag => tag.trim());
 
-  // Remove 'v' prefix and return version strings
-  return tags.map(tag => ({
-    tag: tag,
-    version: tag.substring(1) // Remove 'v' prefix
-  }));
+  // Remove 'v' prefix and filter out test versions
+  return tags
+    .filter(tag => !tag.includes('-test')) // Exclude test versions
+    .map(tag => ({
+      tag: tag,
+      version: tag.substring(1) // Remove 'v' prefix
+    }));
 }
 
 /**
@@ -580,6 +583,10 @@ async function main() {
   console.log('\n[6/6] Inserting changelogs into file...');
   console.log(`Inserting ${allGeneratedChangelogs.length} changelogs...`);
 
+  // Reverse the array so newest versions appear first in the file
+  // (each insert adds after frontmatter, so we insert newest first)
+  allGeneratedChangelogs.reverse();
+
   for (let i = 0; i < allGeneratedChangelogs.length; i++) {
     insertChangelogIntoFile(changelogPath, allGeneratedChangelogs[i]);
   }
@@ -597,9 +604,10 @@ async function main() {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${versionRange}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `versions_count=${allGeneratedChangelogs.length}\n`);
 
-    // Create PR list for the GitHub PR description
+    // Create PR list for the GitHub PR description (newest first)
     let prListMarkdown = '';
-    for (const { version, prs } of allPRsByVersion) {
+    const reversedPRsByVersion = [...allPRsByVersion].reverse();
+    for (const { version, prs } of reversedPRsByVersion) {
       prListMarkdown += `\n### ${version}\n`;
       for (const pr of prs) {
         prListMarkdown += `- [#${pr.number}](https://github.com/${githubRepo}/pull/${pr.number}): ${pr.title}\n`;
