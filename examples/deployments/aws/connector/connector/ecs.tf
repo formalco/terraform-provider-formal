@@ -93,6 +93,24 @@ resource "aws_security_group" "main" {
     }
   }
 
+  # Allow etcd client port (2379) from within security group
+  ingress {
+    description = "etcd client port"
+    from_port   = 2379
+    to_port     = 2379
+    protocol    = "tcp"
+    self        = true
+  }
+
+  # Allow etcd peer port (2380) from within security group
+  ingress {
+    description = "etcd peer port"
+    from_port   = 2380
+    to_port     = 2380
+    protocol    = "tcp"
+    self        = true
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -105,7 +123,7 @@ resource "aws_ecs_service" "main" {
   name                               = var.name
   cluster                            = var.ecs_cluster_id
   task_definition                    = "${aws_ecs_task_definition.main.family}:${aws_ecs_task_definition.main.revision}"
-  desired_count                      = 1
+  desired_count                      = 3
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
   health_check_grace_period_seconds  = 60
