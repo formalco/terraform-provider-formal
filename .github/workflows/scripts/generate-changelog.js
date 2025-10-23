@@ -597,9 +597,9 @@ async function main() {
 
   // Output for GitHub Actions
   if (process.env.GITHUB_OUTPUT) {
-    const lastVersion = missingVersionPairs[missingVersionPairs.length - 1].version;
-    const firstVersion = missingVersionPairs[0].version;
-    const versionRange = missingVersionPairs.length === 1 ? lastVersion : `${firstVersion}-to-${lastVersion}`;
+    const newestVersion = missingVersionPairs[0].version;
+    const oldestVersion = missingVersionPairs[missingVersionPairs.length - 1].version;
+    const versionRange = missingVersionPairs.length === 1 ? newestVersion : `${oldestVersion}-to-${newestVersion}`;
 
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `version=${versionRange}\n`);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, `versions_count=${allGeneratedChangelogs.length}\n`);
