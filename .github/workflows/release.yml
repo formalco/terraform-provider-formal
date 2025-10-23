@@ -124,7 +124,7 @@ jobs:
           fi
 
       - name: Create or update PR in docs repo
-        if: steps.check-changes.outputs.has_changes == 'true'
+        if: ${{ steps.check-changes.outputs.has_changes == 'true' }}
         working-directory: docs-repo
         env:
           GH_TOKEN: ${{ steps.generate-token.outputs.token }}
@@ -238,7 +238,7 @@ ${PR_LIST}
           fi
 
       - name: No changes needed
-        if: steps.check-changes.outputs.has_changes == 'false'
+        if: ${{ steps.check-changes.outputs.has_changes == 'false' }}
         run: |
           echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           echo "ℹ️  No changelog updates needed for Terraform Provider"
