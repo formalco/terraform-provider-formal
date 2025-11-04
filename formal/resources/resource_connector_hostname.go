@@ -236,8 +236,7 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 
 	fieldsThatCanChange := []string{"termination_protection", "dns_record", "certificate", "private_key"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	terminationProtection := d.Get("termination_protection").(bool)

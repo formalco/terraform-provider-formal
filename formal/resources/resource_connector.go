@@ -2,7 +2,6 @@ package resource
 
 import (
 	"context"
-	"fmt"
 	"strings"
 	"time"
 
@@ -140,8 +139,7 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	fieldsThatCanChange := []string{"name", "termination_protection", "space_id"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	terminationProtection := d.Get("termination_protection").(bool)
