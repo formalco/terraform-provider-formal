@@ -2,7 +2,6 @@ package resource
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -122,8 +121,7 @@ func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.R
 
 	fieldsThatCanChange := []string{"data_label", "locked"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	dataLabel := d.Get("data_label").(string)

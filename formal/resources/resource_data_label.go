@@ -2,7 +2,6 @@ package resource
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -125,8 +124,7 @@ func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	fieldsThatCanChange := []string{"name", "classifier_type", "classifier_data"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
-		return diag.Errorf(err)
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
 	name := d.Get("name").(string)
