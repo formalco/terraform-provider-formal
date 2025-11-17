@@ -67,7 +67,6 @@ func New(version string) func() *schema.Provider {
 				"formal_data_domain":                       resource.ResourceDataDomain(),
 				"formal_data_label":                        resource.ResourceDataLabel(),
 				"formal_inventory_object_data_label_link":  resource.ResourceInventoryObjectDataLabelLink(),
-				"formal_tracker":                           resource.ResourceTracker(),
 				"formal_data_discovery":                    resource.ResourceDataDiscovery(),
 				"formal_resource_health_check":             resource.ResourceHealthCheck(),
 				"formal_resource_hostname":                 resource.ResourceResourceHostname(),
