@@ -65,15 +65,6 @@ resource "formal_integration_log" "s3" {
   }
 }
 
-resource "formal_integration_mfa" "duo" {
-  name = "test"
-  duo {
-    api_hostname     = "key.com"
-    secret_key = "key"
-    integration_key = "key"
-  }
-}
-
 resource "formal_native_user" "name" {
   resource_id       = formal_resource.postgres1.id
   native_user_id     = "postgres1"
