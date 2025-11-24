@@ -93,21 +93,21 @@ resource "aws_security_group" "main" {
     }
   }
 
-  # Allow etcd client port (2379) from within security group
+  # Allow distributed state port (7946) from within security group
   ingress {
-    description = "etcd client port"
-    from_port   = 2379
-    to_port     = 2379
+    description = "distributed state port"
+    from_port   = 7946
+    to_port     = 7946
     protocol    = "tcp"
     self        = true
   }
 
-  # Allow etcd peer port (2380) from within security group
+  # Allow distributed state port (7946 UDP) from within security group
   ingress {
-    description = "etcd peer port"
-    from_port   = 2380
-    to_port     = 2380
-    protocol    = "tcp"
+    description = "distributed state port UDP"
+    from_port   = 7946
+    to_port     = 7946
+    protocol    = "udp"
     self        = true
   }
 
