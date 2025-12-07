@@ -156,7 +156,7 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	tlsConfig := d.Get("tls_config").(string)
-	tlsMinVersion := d.Get("tls_config").(string)
+	tlsMinVersion := d.Get("tls_min_version").(string)
 	tlsCaTrustStore := d.Get("tls_ca_truststore").(string)
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceTlsConfigurationRequest{
