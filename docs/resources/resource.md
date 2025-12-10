@@ -26,6 +26,7 @@ Registering a Resource with Formal.
 
 - `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `space_id` (String) The ID of the Space to create the Resource in.
+- `tags` (Map of String) Tags to apply to the Resource.
 - `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
 - `termination_protection` (Boolean) If set to true, the Resource cannot be deleted.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))

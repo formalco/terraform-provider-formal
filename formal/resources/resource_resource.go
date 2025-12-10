@@ -98,6 +98,15 @@ func ResourceResource() *schema.Resource {
 				Optional:    true,
 				Default:     "",
 			},
+			"tags": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Tags to apply to the Resource.",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
 }
@@ -121,6 +130,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	environment := d.Get("environment").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
+	tags := d.Get("tags").(map[string]interface{})
 
 	msg := &corev1.CreateResourceRequest{
 		Name:                  name,
@@ -129,6 +139,19 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Technology:            technology,
 		Environment:           environment,
 		TerminationProtection: terminationProtection,
+		Tags:                  make([]*corev1.ResourceTag, 0, len(tags)),
+	}
+
+	for key, value := range tags {
+		valueString, ok := value.(string)
+		if !ok {
+			return diag.FromErr(fmt.Errorf("error reading tag value"))
+		}
+
+		msg.Tags = append(msg.Tags, &corev1.ResourceTag{
+			Key:   key,
+			Value: valueString,
+		})
 	}
 
 	if spaceId != "" {
@@ -186,6 +209,15 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	}
 	d.SetId(res.Msg.Resource.Id)
 
+	tags := make(map[string]string)
+	for _, tag := range res.Msg.Resource.Tags {
+		if tag == nil {
+			continue
+		}
+		tags[tag.Key] = tag.Value
+	}
+	d.Set("tags", tags)
+
 	return diags
 }
 
@@ -197,7 +229,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id"}
+	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id", "tags"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
@@ -242,6 +274,30 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 			Id:       datastoreId,
 			Hostname: &hostname,
 		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("tags") {
+		tags := d.Get("tags").(map[string]interface{})
+
+		msg := &corev1.UpdateResourceRequest{
+			Id:   datastoreId,
+			Tags: &corev1.UpdateResourceRequest_UpdateResourceTag{Tags: make([]*corev1.ResourceTag, 0, len(tags))},
+		}
+		for key, value := range tags {
+			valueString, ok := value.(string)
+			if !ok {
+				return diag.FromErr(fmt.Errorf("error reading tag value"))
+			}
+			msg.Tags.Tags = append(msg.Tags.Tags, &corev1.ResourceTag{
+				Key:   key,
+				Value: valueString,
+			})
+		}
+
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(msg))
 		if err != nil {
 			return diag.FromErr(err)
 		}
