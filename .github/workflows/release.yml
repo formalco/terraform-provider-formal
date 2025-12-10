@@ -286,7 +286,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Changelog PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.DOCUSAURUS_PAT }}
           commit-message: "docs: add changelog for ${{ needs.generate-changelog.outputs.component }} ${{ needs.generate-changelog.outputs.version }}"
@@ -347,7 +347,7 @@ jobs:
           rm -f "$new_content_file"
 
       - name: Create Docs PR
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.DOCUSAURUS_PAT }}
           path: docusaurus-documentation
