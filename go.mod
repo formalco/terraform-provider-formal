@@ -36,7 +36,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251210011536-5930ff8d805c.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251211074431-a81ca9da7ffc.1
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/formalco/go-sdk/sdk/v2 v2.10.0
 	github.com/golang/protobuf v1.5.4 // indirect
