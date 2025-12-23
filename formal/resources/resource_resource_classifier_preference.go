@@ -48,6 +48,11 @@ func ResourceResourceClassifierConfiguration() *schema.Resource {
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
+			"ai_analysis_scope": {
+				Description: "Which direction to apply AI analysis. Required. Supported values are `request` or `response`. Use preference=none to disable AI analysis entirely.",
+				Type:        schema.TypeString,
+				Required:    true,
+			},
 
 			"created_at": {
 				Description: "The timestamp of the Resource Classifier Preference creation.",
@@ -72,12 +77,14 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 	preference := d.Get("preference").(string)
 	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
 	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
+	aiAnalysisScope := d.Get("ai_analysis_scope").(string)
 
 	msg := &corev1.CreateResourceClassifierConfigurationRequest{
 		ResourceId:                  resourceId,
 		Preference:                  preference,
 		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
 		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
+		AiAnalysisScope:             aiAnalysisScope,
 	}
 
 	v, err := protovalidate.New()
@@ -98,6 +105,7 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
 	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
 	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
@@ -121,6 +129,7 @@ func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
 	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
 	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 
@@ -136,12 +145,14 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 	preference := d.Get("preference").(string)
 	aiAnalysisTimeout := int32(d.Get("ai_analysis_timeout_seconds").(int))
 	enforceStrictClassifierResultCount := d.Get("enforce_strict_classifier_result_count").(bool)
+	aiAnalysisScope := d.Get("ai_analysis_scope").(string)
 
 	msg := &corev1.UpdateResourceClassifierConfigurationRequest{
 		Id:                          resourceClassifierPreferenceId,
 		Preference:                  &preference,
 		AiAnalysisTimeoutSeconds:    &aiAnalysisTimeout,
 		StrictClassifierResultCount: &enforceStrictClassifierResultCount,
+		AiAnalysisScope:             &aiAnalysisScope,
 	}
 
 	v, err := protovalidate.New()
@@ -162,6 +173,7 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
 	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
 	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
 	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
 	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
 

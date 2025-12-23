@@ -17,6 +17,7 @@ A Resource Classifier Configuration is a configuration for a resource classifier
 
 ### Required
 
+- `ai_analysis_scope` (String) Which direction to apply AI analysis. Required. Supported values are `request` or `response`. Use preference=none to disable AI analysis entirely.
 - `ai_analysis_timeout_seconds` (Number) The timeout for the AI analysis in seconds.
 - `preference` (String) The preference. Supported values are `nlp`, `llm`, `both`, and `none`.
 - `resource_id` (String) The ID of the Resource.
