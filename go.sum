@@ -1,11 +1,11 @@
-buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20251209175733-2a1774d88802.1 h1:ZnX3qpF/pDiYrf+Q3p+/zCzZ5ELSpszy5hdVarDMSV4=
-buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20251209175733-2a1774d88802.1/go.mod h1:fUl8CEN/6ZAMk6bP8ahBJPUJw7rbp+j4x+wCcYi2IG4=
+buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20240920164238-5a7b106cbb87.1 h1:5Hare6GmKrTUFXYxNwOrZyXtGTzKUMXTRHdNxQkewcE=
+buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20240920164238-5a7b106cbb87.1/go.mod h1:tvtbpgaVXZX4g6Pn+AnzFycuRK3MOz5HJfEGeEllXYM=
 buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251219193828-681767952bbb.2 h1:fq//mtnbv0FWsIdO73FnCQg7w23jQ833sPoqRnbIpSQ=
 buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251219193828-681767952bbb.2/go.mod h1:nPMnQSICi/D5nTtNWkwaxtOQeRTgtt8ct8hNpkPem1U=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251219193828-681767952bbb.1 h1:bJyc7iYOK3rzpcOBcGrJCpbMPFaf/+92jhVurpsuFzE=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251219193828-681767952bbb.1/go.mod h1:6qE/DBzUbtHkfASbILQBZpTTMU++ShXeHGtBMuf3uZg=
-buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20240617172850-a48fcebcf8f1.1 h1:gt6IvHP9aUG4vKAjWaT++3SGws5i2Q14qciSAlNOui4=
-buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20240617172850-a48fcebcf8f1.1/go.mod h1:Dkpdum4mgWWBTG5nDVJPCDdaqFh34tucP6RulxhdOjs=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20251219200635-0335f6990fa2.1 h1:7rpvhNt3js8g6/tTZceFOwdWLTiAjgysRivkVUJuOVw=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20251219200635-0335f6990fa2.1/go.mod h1:1dHiBGQoihkXZQkToxnFLSdzNSqSBKXROUMlOnbPcQY=
+buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20240617172850-a48fcebcf8f1.1 h1:I/+CIC0+e6nj7PP7Jwyh5I0qczMmb6r6rL8sjYu3WcE=
+buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20240617172850-a48fcebcf8f1.1/go.mod h1:KAAU6zfI4aGOR/SiWil31PiNwdpo1SlqZidcB3z+sL0=
 buf.build/go/protovalidate v0.14.0 h1:kr/rC/no+DtRyYX+8KXLDxNnI1rINz0imk5K44ZpZ3A=
 buf.build/go/protovalidate v0.14.0/go.mod h1:+F/oISho9MO7gJQNYC2VWLzcO1fTPmaTA08SDYJZncA=
 cel.dev/expr v0.24.0 h1:56OvJKSH3hDGL0ml5uSxZmz3/3Pq4tJ+fb1unVLAFcY=

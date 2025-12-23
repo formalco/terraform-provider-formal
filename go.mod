@@ -18,7 +18,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.10-20251209175733-2a1774d88802.1 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20240920164238-5a7b106cbb87.1 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -36,7 +36,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251219193828-681767952bbb.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20251219200635-0335f6990fa2.1
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/formalco/go-sdk/sdk/v2 v2.10.0
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -53,7 +53,7 @@ require (
 
 require (
 	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251219193828-681767952bbb.2 // indirect
-	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20240617172850-a48fcebcf8f1.1 // indirect
+	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
