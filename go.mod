@@ -6,7 +6,7 @@ replace github.com/aws/session-manager-plugin => github.com/formalco/session-man
 
 replace github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0.0.0-20241219203747-6409e4292f34
 
-replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20251206200332-061a2dceb817
+replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v0.0.0-20251219224315-9f3cece93612
 
 require (
 	connectrpc.com/connect v1.19.1
@@ -31,12 +31,12 @@ require (
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
 	golang.org/x/tools v0.39.0 // indirect
-	google.golang.org/protobuf v1.36.10
+	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251210011536-5930ff8d805c.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.10-20251219193828-681767952bbb.1
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/formalco/go-sdk/sdk/v2 v2.10.0
 	github.com/golang/protobuf v1.5.4 // indirect
@@ -52,8 +52,8 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251210011536-5930ff8d805c.2 // indirect
-	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20241220201140-4c5ba75caaf8.1 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20251219193828-681767952bbb.2 // indirect
+	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.10-20240617172850-a48fcebcf8f1.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
