@@ -16,7 +16,7 @@ The Data Discovery Satellite connects to the Formal Control Plane to enable data
 - Terraform >= 1.0 installed
 - A Formal API key (obtain from your Formal dashboard)
 - An existing ECS cluster
-- An existing VPC with subnets (private subnets with NAT gateway access recommended)
+- An existing VPC with subnets (public subnets recommended, or private subnets with NAT gateway)
 - Security groups configured to allow outbound HTTPS traffic
 
 ## Setup
@@ -43,8 +43,12 @@ ecs_cluster_arn = "arn:aws:ecs:us-west-2:123456789012:cluster/your-cluster-name"
 # container_cpu    = 1024
 # container_memory = 2048
 # desired_count    = 1
-# assign_public_ip = false
+# assign_public_ip = true  # Set to false if using private subnets with NAT gateway
 # tags             = { Environment = "production" }
+
+# Optional: use existing IAM roles instead of creating new ones
+# execution_role_arn = "arn:aws:iam::123456789012:role/existing-execution-role"
+# task_role_arn      = "arn:aws:iam::123456789012:role/existing-task-role"
 ```
 
 ### 2. Deploy
@@ -85,10 +89,12 @@ aws logs tail $(terraform output -raw cloudwatch_log_group_name) --follow
 - **CloudWatch Log Group**: Centralized logging for the satellite container (7-day retention)
 - **Secrets Manager Secret**: Secure storage for the Formal API key
 
-### IAM Roles & Policies
+### IAM Roles & Policies (created unless existing roles are provided)
 - **ECS Task Execution Role**: Allows ECS to pull images from Formal's ECR and access secrets
 - **ECS Task Role**: Runtime permissions for the satellite container
 - **IAM Policies**: Minimal permissions for Secrets Manager and cross-account ECR access
+
+> **Note**: You can optionally provide existing IAM roles via `execution_role_arn` and `task_role_arn` variables. If using existing roles, ensure they have the necessary permissions for ECR access and Secrets Manager.
 
 ## Architecture
 
@@ -98,26 +104,28 @@ flowchart TB
 
     subgraph AWS ["Your AWS Account"]
         subgraph VPC ["Your VPC"]
-            subgraph PrivateSub ["Your Subnets"]
+            IGW[Internet Gateway]
+            subgraph Subnets ["Your Subnets"]
                 subgraph Cluster ["Your ECS Cluster"]
                     ECS[ECS Service]
                     Container[Data Discovery<br/>Satellite Container]
                 end
             end
-            NAT[NAT Gateway]
         end
     end
 
-    Container --> NAT
-    NAT --> FormalCP
-    FormalCP -.-> Container
+    Container --> IGW
+    IGW --> FormalCP
+    FormalCP -.-> IGW
+    IGW -.-> Container
 ```
 
 ## Security Considerations
 
 ### Network Requirements
 - The Data Discovery Satellite requires outbound HTTPS (port 443) access to communicate with the Formal Control Plane
-- If using private subnets, ensure NAT gateway access is available
+- By default, tasks are assigned a public IP for internet access (requires public subnets)
+- Alternatively, set `assign_public_ip = false` and use private subnets with NAT gateway
 - No inbound traffic is required
 
 ### IAM Permissions
@@ -139,9 +147,11 @@ The deployment creates IAM roles with minimal permissions:
 | `container_cpu` | No | `1024` | CPU units (1024 = 1 vCPU) |
 | `container_memory` | No | `2048` | Memory in MB |
 | `desired_count` | No | `1` | Number of tasks to run |
-| `assign_public_ip` | No | `false` | Assign public IP to tasks |
+| `assign_public_ip` | No | `true` | Assign public IP to tasks |
 | `image_tag` | No | `latest` | Container image tag |
 | `tags` | No | `{}` | Tags to apply to resources |
+| `execution_role_arn` | No | `null` | ARN of existing ECS task execution role |
+| `task_role_arn` | No | `null` | ARN of existing ECS task role |
 
 ## Troubleshooting
 
@@ -149,8 +159,23 @@ If you encounter issues:
 
 - **Check ECS service events**: `aws ecs describe-services --cluster <cluster> --services <service>`
 - **Check container logs**: `aws logs tail /ecs/formal-data-discovery-satellite --follow`
-- **Verify network connectivity**: Ensure subnets have outbound internet access via NAT gateway
 - **Check IAM permissions**: Verify the task execution role can access Secrets Manager and ECR
+
+### Common Issues
+
+**"ResourceInitializationError: unable to pull secrets or registry auth"**
+
+This usually indicates a network connectivity issue. The ECS task cannot reach ECR to pull the container image. Solutions:
+- If using public subnets: Ensure `assign_public_ip = true` (the default)
+- If using private subnets: Ensure NAT gateway is configured and set `assign_public_ip = false`
+- Verify security groups allow outbound HTTPS (port 443) traffic
+
+**Task fails to start with IAM errors**
+
+If using existing IAM roles (`execution_role_arn`), ensure they have:
+- `AmazonECSTaskExecutionRolePolicy` attached
+- Secrets Manager access for `secretsmanager:GetSecretValue` on the created secret
+- ECR access for cross-account image pulls from `654654333078.dkr.ecr.us-east-1.amazonaws.com`
 
 If you still encounter issues, please reach out to the Formal team!
 
