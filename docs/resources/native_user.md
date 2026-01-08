@@ -18,11 +18,15 @@ This resource creates a Native User.
 ### Required
 
 - `native_user_id` (String) The username of the Native User.
-- `native_user_secret` (String, Sensitive) The password of the Native User.
 - `resource_id` (String) The Sidecar ID for the resource this Native User is for.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `native_user_secret` (String, Sensitive) The password of the Native User. Prefer using `native_user_secret_wo` to avoid storing the secret in Terraform state.
+- `native_user_secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only password of the Native User. This value is not stored in Terraform state. Requires Terraform 1.11+.
+- `native_user_secret_wo_version` (Number) Version trigger for `native_user_secret_wo`. Increment this value to update the secret.
 - `termination_protection` (Boolean) If set to true, this Native User cannot be deleted.
 - `use_as_default` (Boolean) The password of the Native User.
 
