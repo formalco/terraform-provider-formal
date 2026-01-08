@@ -5,6 +5,7 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -47,10 +48,25 @@ func ResourceNativeUser() *schema.Resource {
 			},
 			"native_user_secret": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The password of the Native User.",
-				Type:        schema.TypeString,
-				Required:    true,
-				Sensitive:   true,
+				Description:  "The password of the Native User. Prefer using `native_user_secret_wo` to avoid storing the secret in Terraform state.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				Sensitive:    true,
+				ExactlyOneOf: []string{"native_user_secret", "native_user_secret_wo"},
+			},
+			"native_user_secret_wo": {
+				// This description is used by the documentation generator and the language server.
+				Description:  "Write-only password of the Native User. This value is not stored in Terraform state. Requires Terraform 1.11+.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				WriteOnly:    true,
+				ExactlyOneOf: []string{"native_user_secret", "native_user_secret_wo"},
+			},
+			"native_user_secret_wo_version": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Version trigger for `native_user_secret_wo`. Increment this value to update the secret.",
+				Type:        schema.TypeInt,
+				Optional:    true,
 			},
 			"use_as_default": {
 				// This description is used by the documentation generator and the language server.
@@ -78,9 +94,27 @@ func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	// Maps to user-defined fields
 	ResourceId := d.Get("resource_id").(string)
 	Username := d.Get("native_user_id").(string)
-	Secret := d.Get("native_user_secret").(string)
 	UseAsDefault := d.Get("use_as_default").(bool)
 	TerminationProtection := d.Get("termination_protection").(bool)
+
+	// Get secret from either native_user_secret or native_user_secret_wo
+	var Secret string
+	if v, ok := d.GetOk("native_user_secret"); ok {
+		Secret = v.(string)
+	} else {
+		// Try write-only attribute
+		woVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("native_user_secret_wo"))
+		if rawDiags.HasError() {
+			return diag.Errorf("failed to get native_user_secret_wo: %v", rawDiags)
+		}
+		if !woVal.IsNull() && woVal.Type() == cty.String {
+			Secret = woVal.AsString()
+		}
+	}
+
+	if Secret == "" {
+		return diag.Errorf("one of `native_user_secret` or `native_user_secret_wo` must be specified")
+	}
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUser(ctx, connect.NewRequest(&corev1.CreateNativeUserRequest{
 		ResourceId:            ResourceId,
@@ -151,8 +185,19 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			}
 		}
 	}
-	if d.HasChange("native_user_secret") {
-		secret := d.Get("native_user_secret").(string)
+	if d.HasChange("native_user_secret") || d.HasChange("native_user_secret_wo_version") {
+		var secret string
+		if v, ok := d.GetOk("native_user_secret"); ok {
+			secret = v.(string)
+		} else {
+			woVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("native_user_secret_wo"))
+			if rawDiags.HasError() {
+				return diag.Errorf("failed to get native_user_secret_wo: %v", rawDiags)
+			}
+			if !woVal.IsNull() && woVal.Type() == cty.String {
+				secret = woVal.AsString()
+			}
+		}
 		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
 			Id:     id,
 			Secret: &secret,
