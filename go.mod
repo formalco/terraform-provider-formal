@@ -6,8 +6,6 @@ replace github.com/aws/session-manager-plugin => github.com/formalco/session-man
 
 replace github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0.0.0-20241219203747-6409e4292f34
 
-replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v0.0.0-20251219224315-9f3cece93612
-
 require (
 	connectrpc.com/connect v1.19.1
 	github.com/BurntSushi/toml v1.5.0 // indirect
