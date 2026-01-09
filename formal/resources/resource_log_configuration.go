@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -42,7 +43,7 @@ func ResourceLogConfiguration() *schema.Resource {
 			"encryption_key_id": {
 				Description: "The ID of the encryption key to use for this log configuration.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 			},
 			"scope": {
 				Description: "The scope configuration for this log configuration.",
@@ -123,6 +124,11 @@ func ResourceLogConfiguration() *schema.Resource {
 								},
 							},
 						},
+						"policy_eval_input_retention": {
+							Description: "Duration to retain policy evaluation inputs for requests. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -144,6 +150,11 @@ func ResourceLogConfiguration() *schema.Resource {
 							Optional:    true,
 							Default:     -1,
 						},
+						"policy_eval_input_retention": {
+							Description: "Duration to retain policy evaluation inputs for responses. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
 					},
 				},
 			},
@@ -162,6 +173,21 @@ func ResourceLogConfiguration() *schema.Resource {
 					},
 				},
 			},
+			"session": {
+				Description: "Session logging configuration.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				MaxItems:    1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"policy_eval_input_retention": {
+							Description: "Duration to retain policy evaluation inputs for sessions. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+					},
+				},
+			},
 			"created_at": {
 				Description: "When the log configuration was created.",
 				Type:        schema.TypeString,
@@ -176,14 +202,59 @@ func ResourceLogConfiguration() *schema.Resource {
 	}
 }
 
+// parseDuration converts a duration string in format "%dd" (e.g., "1d", "7d", "30d") to a protobuf Duration.
+// Only accepts values: 1d, 2d, 3d, 7d, 14d, 21d, 30d
+// Returns nil if the input string is empty.
+func parseDuration(durationStr string) (*durationpb.Duration, error) {
+	if durationStr == "" {
+		return nil, nil
+	}
+
+	// Valid duration values in days
+	validDurations := map[string]int{
+		"1d":  1,
+		"2d":  2,
+		"3d":  3,
+		"7d":  7,
+		"14d": 14,
+		"21d": 21,
+		"30d": 30,
+	}
+
+	days, ok := validDurations[durationStr]
+	if !ok {
+		return nil, fmt.Errorf("invalid duration '%s': must be one of 1d, 2d, 3d, 7d, 14d, 21d, 30d", durationStr)
+	}
+
+	// Convert days to time.Duration (days * 24 hours)
+	duration := time.Duration(days) * 24 * time.Hour
+	return durationpb.New(duration), nil
+}
+
+// formatDuration converts a protobuf Duration to a string representation in "%dd" format
+func formatDuration(d *durationpb.Duration) string {
+	if d == nil {
+		return ""
+	}
+
+	duration := d.AsDuration()
+	days := int(duration.Hours() / 24)
+
+	// Return in "%dd" format
+	return fmt.Sprintf("%dd", days)
+}
+
 func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	encryptionKeyId := d.Get("encryption_key_id").(string)
-
 	req := &corev1.CreateLogConfigurationRequest{
-		Name:            d.Get("name").(string),
-		EncryptionKeyId: &encryptionKeyId,
+		Name: d.Get("name").(string),
+	}
+
+	// Handle encryption_key_id if provided
+	if encryptionKeyId, ok := d.GetOk("encryption_key_id"); ok {
+		keyId := encryptionKeyId.(string)
+		req.EncryptionKeyId = &keyId
 	}
 
 	// Handle scope
@@ -239,6 +310,15 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 				}
 			}
 		}
+
+		// Handle policy_eval_input_retention if present
+		if retentionStr, ok := requestData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+			retention, err := parseDuration(retentionStr)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("invalid request policy_eval_input_retention: %w", err))
+			}
+			req.Request.PolicyEvalInputRetention = retention
+		}
 	}
 
 	// Handle response
@@ -248,6 +328,15 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 			Encrypt:        responseData["encrypt"].(bool),
 			MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
 		}
+
+		// Handle policy_eval_input_retention if present
+		if retentionStr, ok := responseData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+			retention, err := parseDuration(retentionStr)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("invalid response policy_eval_input_retention: %w", err))
+			}
+			req.Response.PolicyEvalInputRetention = retention
+		}
 	}
 
 	// Handle stream
@@ -255,6 +344,21 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 		streamData := streamSet.List()[0].(map[string]interface{})
 		req.Stream = &corev1.LogConfigurationStream{
 			Encrypt: streamData["encrypt"].(bool),
+		}
+	}
+
+	// Handle session
+	if sessionSet := d.Get("session").(*schema.Set); sessionSet.Len() > 0 {
+		sessionData := sessionSet.List()[0].(map[string]interface{})
+		req.Session = &corev1.LogConfigurationSession{}
+
+		// Handle policy_eval_input_retention if present
+		if retentionStr, ok := sessionData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+			retention, err := parseDuration(retentionStr)
+			if err != nil {
+				return diag.FromErr(fmt.Errorf("invalid session policy_eval_input_retention: %w", err))
+			}
+			req.Session.PolicyEvalInputRetention = retention
 		}
 	}
 
@@ -329,6 +433,11 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 			requestData["sql"] = []interface{}{sqlData}
 		}
 
+		// Set policy_eval_input_retention if present
+		if logConfig.Request.PolicyEvalInputRetention != nil {
+			requestData["policy_eval_input_retention"] = formatDuration(logConfig.Request.PolicyEvalInputRetention)
+		}
+
 		d.Set("request", []interface{}{requestData})
 	}
 
@@ -338,6 +447,12 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 			"encrypt":          logConfig.Response.Encrypt,
 			"max_payload_size": logConfig.Response.MaxPayloadSize,
 		}
+
+		// Set policy_eval_input_retention if present
+		if logConfig.Response.PolicyEvalInputRetention != nil {
+			responseData["policy_eval_input_retention"] = formatDuration(logConfig.Response.PolicyEvalInputRetention)
+		}
+
 		d.Set("response", []interface{}{responseData})
 	}
 
@@ -347,6 +462,18 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 			"encrypt": logConfig.Stream.Encrypt,
 		}
 		d.Set("stream", []interface{}{streamData})
+	}
+
+	// Set session
+	if logConfig.Session != nil {
+		sessionData := map[string]interface{}{}
+
+		// Set policy_eval_input_retention if present
+		if logConfig.Session.PolicyEvalInputRetention != nil {
+			sessionData["policy_eval_input_retention"] = formatDuration(logConfig.Session.PolicyEvalInputRetention)
+		}
+
+		d.Set("session", []interface{}{sessionData})
 	}
 
 	d.Set("created_at", logConfig.CreatedAt.AsTime().String())
@@ -361,7 +488,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	configId := d.Id()
 
 	fieldsThatCanChange := []string{
-		"name", "encryption_key_id", "request", "response", "stream",
+		"name", "encryption_key_id", "request", "response", "stream", "session",
 	}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
@@ -398,6 +525,15 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 					Encrypt:     sqlData["encrypt"].(bool),
 				}
 			}
+
+			// Handle policy_eval_input_retention if present
+			if retentionStr, ok := requestData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+				retention, err := parseDuration(retentionStr)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("invalid request policy_eval_input_retention: %w", err))
+				}
+				req.Request.PolicyEvalInputRetention = retention
+			}
 		}
 	}
 
@@ -409,6 +545,15 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 				Encrypt:        responseData["encrypt"].(bool),
 				MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
 			}
+
+			// Handle policy_eval_input_retention if present
+			if retentionStr, ok := responseData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+				retention, err := parseDuration(retentionStr)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("invalid response policy_eval_input_retention: %w", err))
+				}
+				req.Response.PolicyEvalInputRetention = retention
+			}
 		}
 	}
 
@@ -418,6 +563,23 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 			streamData := streamSet.List()[0].(map[string]interface{})
 			req.Stream = &corev1.LogConfigurationStream{
 				Encrypt: streamData["encrypt"].(bool),
+			}
+		}
+	}
+
+	// Handle session changes
+	if d.HasChange("session") {
+		if sessionSet := d.Get("session").(*schema.Set); sessionSet.Len() > 0 {
+			sessionData := sessionSet.List()[0].(map[string]interface{})
+			req.Session = &corev1.LogConfigurationSession{}
+
+			// Handle policy_eval_input_retention if present
+			if retentionStr, ok := sessionData["policy_eval_input_retention"].(string); ok && retentionStr != "" {
+				retention, err := parseDuration(retentionStr)
+				if err != nil {
+					return diag.FromErr(fmt.Errorf("invalid session policy_eval_input_retention: %w", err))
+				}
+				req.Session.PolicyEvalInputRetention = retention
 			}
 		}
 	}

@@ -17,7 +17,6 @@ Managing Log Configuration with Formal.
 
 ### Required
 
-- `encryption_key_id` (String) The ID of the encryption key to use for this log configuration.
 - `name` (String) The name of this log configuration.
 - `request` (Block Set, Min: 1, Max: 1) Request logging configuration. (see [below for nested schema](#nestedblock--request))
 - `response` (Block Set, Min: 1, Max: 1) Response logging configuration. (see [below for nested schema](#nestedblock--response))
@@ -25,6 +24,8 @@ Managing Log Configuration with Formal.
 
 ### Optional
 
+- `encryption_key_id` (String) The ID of the encryption key to use for this log configuration.
+- `session` (Block Set, Max: 1) Session logging configuration. (see [below for nested schema](#nestedblock--session))
 - `stream` (Block Set, Max: 1) Stream logging configuration. (see [below for nested schema](#nestedblock--stream))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -44,6 +45,7 @@ Required:
 Optional:
 
 - `max_payload_size` (Number) Maximum size of request payloads to log.
+- `policy_eval_input_retention` (String) Duration to retain policy evaluation inputs for requests. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.
 - `sql` (Block Set, Max: 1) SQL logging configuration for requests. (see [below for nested schema](#nestedblock--request--sql))
 
 <a id="nestedblock--request--sql"></a>
@@ -66,6 +68,7 @@ Required:
 Optional:
 
 - `max_payload_size` (Number) Maximum size of response payloads to log.
+- `policy_eval_input_retention` (String) Duration to retain policy evaluation inputs for responses. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.
 
 
 <a id="nestedblock--scope"></a>
@@ -80,6 +83,14 @@ Optional:
 - `connector_id` (String) The ID of the connector (required when type is connector).
 - `resource_id` (String) The ID of the resource (required when type is resource).
 - `space_id` (String) The ID of the space (required when type is space).
+
+
+<a id="nestedblock--session"></a>
+### Nested Schema for `session`
+
+Optional:
+
+- `policy_eval_input_retention` (String) Duration to retain policy evaluation inputs for sessions. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.
 
 
 <a id="nestedblock--stream"></a>
