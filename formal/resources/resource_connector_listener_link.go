@@ -17,12 +17,13 @@ import (
 func ResourceConnectorListenerLink() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description:   "Registering a Connector Listener Link with Formal.",
-		CreateContext: resourceConnectorListenerLinkCreate,
-		ReadContext:   resourceConnectorListenerLinkRead,
-		UpdateContext: resourceConnectorListenerLinkUpdate,
-		DeleteContext: resourceConnectorListenerLinkDelete,
-		SchemaVersion: 1,
+		Description:        "Registering a Connector Listener Link with Formal.",
+		DeprecationMessage: "This resource is deprecated. Declare the connector ID on the connector listener resource instead.",
+		CreateContext:      resourceConnectorListenerLinkCreate,
+		ReadContext:        resourceConnectorListenerLinkRead,
+		UpdateContext:      resourceConnectorListenerLinkUpdate,
+		DeleteContext:      resourceConnectorListenerLinkDelete,
+		SchemaVersion:      1,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
 		},
