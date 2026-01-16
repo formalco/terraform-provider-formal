@@ -22,6 +22,8 @@ Registering a Connector Configuration with Formal.
 ### Optional
 
 - `log_level` (String) The log level to be configured for this Connector.
+- `otel_endpoint_hostname` (String) The OpenTelemetry endpoint hostname for this Connector. Defaults to 'localhost'.
+- `otel_endpoint_port` (Number) The OpenTelemetry endpoint port for this Connector. Defaults to 4317.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only

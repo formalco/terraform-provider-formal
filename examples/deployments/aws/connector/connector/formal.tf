@@ -20,6 +20,8 @@ resource "formal_connector" "main" {
 resource "formal_connector_configuration" "main" {
   connector_id = formal_connector.main.id
   log_level    = "debug"
+  otel_endpoint_hostname = "localhost"
+  otel_endpoint_port     = 4317
 }
 
 
