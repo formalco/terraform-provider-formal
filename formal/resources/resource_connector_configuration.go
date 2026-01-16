@@ -52,6 +52,20 @@ func ResourceConnectorConfiguration() *schema.Resource {
 				Optional:    true,
 				Default:     "info",
 			},
+			"otel_endpoint_hostname": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The OpenTelemetry endpoint hostname for this Connector. Defaults to 'localhost'.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "localhost",
+			},
+			"otel_endpoint_port": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The OpenTelemetry endpoint port for this Connector. Defaults to 4317.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     4317,
+			},
 		},
 	}
 }
@@ -63,9 +77,14 @@ func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.Resourc
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
 
+	otelHostname := d.Get("otel_endpoint_hostname").(string)
+	otelPort := int32(d.Get("otel_endpoint_port").(int))
+
 	req := &corev1.CreateConnectorConfigurationRequest{
-		ConnectorId: d.Get("connector_id").(string),
-		LogLevel:    d.Get("log_level").(string),
+		ConnectorId:          d.Get("connector_id").(string),
+		LogLevel:             d.Get("log_level").(string),
+		OtelEndpointHostname: &otelHostname,
+		OtelEndpointPort:     &otelPort,
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorConfiguration(ctx, connect.NewRequest(req))
@@ -103,6 +122,8 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	d.Set("id", res.Msg.ConnectorConfiguration.Id)
 	d.Set("connector_id", res.Msg.ConnectorConfiguration.ConnectorId)
 	d.Set("log_level", res.Msg.ConnectorConfiguration.LogLevel)
+	d.Set("otel_endpoint_hostname", res.Msg.ConnectorConfiguration.OtelEndpointHostname)
+	d.Set("otel_endpoint_port", res.Msg.ConnectorConfiguration.OtelEndpointPort)
 
 	d.SetId(res.Msg.ConnectorConfiguration.Id)
 
@@ -118,17 +139,21 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 
 	connectorConfigurationId := d.Id()
 
-	fieldsThatCanChange := []string{"log_level"}
+	fieldsThatCanChange := []string{"log_level", "otel_endpoint_hostname", "otel_endpoint_port"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.FromErr(errors.New(err))
 	}
 
 	logLevel := d.Get("log_level").(string)
+	otelHostname := d.Get("otel_endpoint_hostname").(string)
+	otelPort := int32(d.Get("otel_endpoint_port").(int))
 
 	req := connect.NewRequest(&corev1.UpdateConnectorConfigurationRequest{
-		Id:       connectorConfigurationId,
-		LogLevel: &logLevel,
+		Id:                   connectorConfigurationId,
+		LogLevel:             &logLevel,
+		OtelEndpointHostname: &otelHostname,
+		OtelEndpointPort:     &otelPort,
 	})
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorConfiguration(ctx, req)
