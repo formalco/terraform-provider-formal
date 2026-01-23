@@ -214,7 +214,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 
 	const ErrorTolerance = 5
 	currentErrors := 0
-	deleteTimeStart := time.Now()
+	deleteTimeStart := time.Now().UTC()
 	for {
 		// Retrieve status
 		_, err = c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: dsId}))
