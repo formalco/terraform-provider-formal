@@ -34,8 +34,10 @@ func New(version string) func() *schema.Provider {
 				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
-				"formal_resource": datasources.Resource(),
-				"formal_group":    datasources.Group(),
+				"formal_resource":  datasources.Resource(),
+				"formal_group":     datasources.Group(),
+				"formal_space":     datasources.Space(),
+				"formal_connector": datasources.Connector(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_connector":                         resource.ResourceConnector(),
