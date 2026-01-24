@@ -20,7 +20,7 @@ Creating a Policy in Formal.
 - `description` (String) Policy Description.
 - `module` (String) The module describing how the policy works. Create one in the Formal Console.
 - `name` (String) Policy Name
-- `notification` (String) Notification settings for this policy.
+- `notification` (String) Notification settings for this policy. It can be one of the following: 'all', 'consumer', 'owner', or 'none'.
 - `owner` (String) Owner of this policy: it can be either a group name or a user email.
 - `status` (String) Defines the current status of the policy. It can be one of the following: 'draft', 'dry-run', or 'active'.
 
