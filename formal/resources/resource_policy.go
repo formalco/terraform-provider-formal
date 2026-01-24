@@ -85,13 +85,13 @@ func ResourcePolicy() *schema.Resource {
 			},
 			"notification": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Notification settings for this policy. It can be one of the following: 'all', 'consumer', 'owner', or 'none'.",
+				Description: "Notification settings for this policy. It can be one of the following: 'all', 'consumer', 'owners', or 'none'.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"all",
 					"consumer",
-					"owner",
+					"owners",
 					"none",
 				}, false),
 			},
