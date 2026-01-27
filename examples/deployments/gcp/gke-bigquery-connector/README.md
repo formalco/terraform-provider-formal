@@ -58,26 +58,21 @@ terraform apply
 
 You should now be able to connect to BigQuery using the Connector.
 
-For example, using the `bq` CLI:
-
-```bash
-CONNECTOR_IP=$(terraform output -raw kubernetes_service_external_ip)
-bq query --api http://${CONNECTOR_IP}:7777 'SELECT 1'
-```
-
-Or from within your GKE cluster, using the internal hostname:
+By default, the Connector is deployed with an internal load balancer, which is only accessible from within the VPC. You can connect from within your GKE cluster using the internal hostname:
 
 ```bash
 CONNECTOR_HOSTNAME=$(terraform output -raw kubernetes_service_internal_hostname)
 bq query --api http://${CONNECTOR_HOSTNAME}:7777 'SELECT 1'
 ```
 
-Or using port forward:
+For local development or testing, you can use port forwarding:
 
 ```bash
 kubectl port-forward services/formal-connector 7777
 bq query --api http://localhost:7777 'SELECT 1'
 ```
+
+If you need external access from outside the VPC, you can modify the service configuration in `helm/values.yaml` to use an external load balancer by removing the `cloud.google.com/load-balancer-type` annotation.
 
 > 💡 **Note:** If you don't want Terraform to manage the Connector deployment in your GKE cluster, you can remove the `helm_release` resource from `main.tf`. You will need to run Terraform first, then Helm configured with the appropriate values.
 
