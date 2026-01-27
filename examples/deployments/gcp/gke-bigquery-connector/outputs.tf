@@ -1,5 +1,5 @@
-output "kubernetes_service_external_ip" {
-  description = "External IP address of the connector"
+output "kubernetes_service_ip" {
+  description = "Load balancer IP address of the connector (internal by default)"
   value       = data.kubernetes_service.formal_connector.status[0].load_balancer[0].ingress[0].ip
 }
 
