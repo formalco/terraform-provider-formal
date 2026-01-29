@@ -285,6 +285,14 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(res.Msg.Cloud.Id)
 	d.Set("name", res.Msg.Cloud.Name)
 
+	existingAwsConfig := d.Get("aws").([]interface{})
+	var existingAwsCustomerRoleArn string
+
+	if len(existingAwsConfig) > 0 {
+		existingAwsConfig := existingAwsConfig[0].(map[string]interface{})
+		existingAwsCustomerRoleArn = existingAwsConfig["aws_customer_role_arn"].(string)
+	}
+
 	switch data := res.Msg.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
 		d.Set("type", "aws")
@@ -300,8 +308,13 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"enable_s3_autodiscovery":       data.Aws.AwsEnableS3Autodiscovery,
 			"allow_s3_access":               data.Aws.AwsAllowS3Access,
 			"s3_bucket_arn":                 data.Aws.AwsS3BucketArn,
-			"aws_customer_role_arn":         data.Aws.AwsCustomerRoleArn,
 		}
+
+		// Only set the customer role ARN if it was set in the existing config
+		if existingAwsCustomerRoleArn != "" {
+			awsConfig["aws_customer_role_arn"] = data.Aws.AwsCustomerRoleArn
+		}
+
 		if err := d.Set("aws", []interface{}{awsConfig}); err != nil {
 			return diag.FromErr(err)
 		}
@@ -319,7 +332,6 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_enable_s3_autodiscovery", data.Aws.AwsEnableS3Autodiscovery)
 		d.Set("aws_allow_s3_access", data.Aws.AwsAllowS3Access)
 		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
-		d.Set("aws_customer_role_arn", data.Aws.AwsCustomerRoleArn)
 	}
 
 	return diags
@@ -333,7 +345,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "aws_customer_role_arn"}...)
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
