@@ -116,3 +116,5 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251213004720-97cd9d5aeac2 // indirect
 )
+
+replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260129144440-6c7a65eee39c
