@@ -15,18 +15,20 @@ import (
 
 func Group() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for looking up a Group by name.",
+		Description: "Data source for looking up a Group by ID or by name. Use either `id` or `name`, but not both.",
 		ReadContext: groupRead,
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Description: "The name of the Group.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"id": {
-				Description: "The Formal ID for this Group.",
-				Type:        schema.TypeString,
-				Computed:    true,
+				Description:  "The ID of this Group.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+			},
+			"name": {
+				Description:  "The name of the Group to look up. Use this to fetch a group by name.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
 			},
 			"description": {
 				Description: "Description for this Group.",
@@ -46,40 +48,48 @@ func groupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		return diag.Errorf("name must be specified")
-	}
+	var group *corev1.Group
 
-	filterValue, err := anypb.New(&wrapperspb.StringValue{
-		Value: name.(string),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// List groups with name filter
-	res, err := c.Grpc.Sdk.GroupServiceClient.ListGroups(ctx, connect.NewRequest(&corev1.ListGroupsRequest{
-		Filter: &corev1.Filter{
-			Field: &corev1.Field{
-				Key:      "name",
-				Operator: "equals",
-				Value:    filterValue,
+	if groupID, ok := d.GetOk("id"); ok {
+		res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, connect.NewRequest(&corev1.GetGroupRequest{Id: groupID.(string)}))
+		if err != nil {
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				return diag.Errorf("no group found with id %s", groupID)
+			}
+			return diag.FromErr(err)
+		}
+		group = res.Msg.Group
+	} else {
+		name := d.Get("name").(string)
+		filterValue, err := anypb.New(&wrapperspb.StringValue{
+			Value: name,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		res, err := c.Grpc.Sdk.GroupServiceClient.ListGroups(ctx, connect.NewRequest(&corev1.ListGroupsRequest{
+			Filter: &corev1.Filter{
+				Field: &corev1.Field{
+					Key:      "name",
+					Operator: "equals",
+					Value:    filterValue,
+				},
 			},
-		},
-		Limit: 1,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(res.Msg.Groups) == 0 {
-		return diag.Errorf("no group found with name %s", name)
+			Limit: 1,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(res.Msg.Groups) == 0 {
+			return diag.Errorf("no group found with name %s", name)
+		}
+		group = res.Msg.Groups[0]
 	}
 
-	d.SetId(res.Msg.Groups[0].Id)
-	d.Set("name", res.Msg.Groups[0].Name)
-	d.Set("description", res.Msg.Groups[0].Description)
-	d.Set("termination_protection", res.Msg.Groups[0].TerminationProtection)
+	d.SetId(group.Id)
+	d.Set("name", group.Name)
+	d.Set("description", group.Description)
+	d.Set("termination_protection", group.TerminationProtection)
 
 	return diags
 }

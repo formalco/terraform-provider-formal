@@ -15,21 +15,28 @@ import (
 
 func Resource() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for looking up a Resource by name.",
+		Description: "Data source for looking up a Resource by ID or by name. Use either `id` or `name`, but not both.",
 		ReadContext: resourceRead,
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Description: "The name of the Resource.",
-				Type:        schema.TypeString,
-				Required:    true,
+			"id": {
+				Description:  "The ID of this Resource.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
 			},
-			"hostname": {
-				Description: "Hostname of the Resource.",
-				Type:        schema.TypeString,
-				Computed:    true,
+			"name": {
+				Description:  "The name of the Resource to look up. Use this to fetch a resource by name.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
 			},
 			"technology": {
 				Description: "Technology of the Resource.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"hostname": {
+				Description: "Hostname of the Resource.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -66,47 +73,57 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta interface{})
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		return diag.Errorf("name must be specified")
-	}
+	var resource *corev1.Resource
 
-	filterValue, err := anypb.New(&wrapperspb.StringValue{
-		Value: name.(string),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// List resources with name filter
-	res, err := c.Grpc.Sdk.ResourceServiceClient.ListResources(ctx, connect.NewRequest(&corev1.ListResourcesRequest{
-		Filter: &corev1.Filter{
-			Field: &corev1.Field{
-				Key:      "name",
-				Operator: "equals",
-				Value:    filterValue,
+	if resourceID, ok := d.GetOk("id"); ok {
+		res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, connect.NewRequest(&corev1.GetResourceRequest{Id: resourceID.(string)}))
+		if err != nil {
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				return diag.Errorf("no resource found with id %s", resourceID)
+			}
+			return diag.FromErr(err)
+		}
+		resource = res.Msg.Resource
+	} else {
+		name := d.Get("name").(string)
+		filterValue, err := anypb.New(&wrapperspb.StringValue{
+			Value: name,
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		res, err := c.Grpc.Sdk.ResourceServiceClient.ListResources(ctx, connect.NewRequest(&corev1.ListResourcesRequest{
+			Filter: &corev1.Filter{
+				Field: &corev1.Field{
+					Key:      "name",
+					Operator: "equals",
+					Value:    filterValue,
+				},
 			},
-		},
-		Limit: 1,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(res.Msg.Resources) == 0 {
-		return diag.Errorf("no resource found with name %s", name)
+			Limit: 1,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(res.Msg.Resources) == 0 {
+			return diag.Errorf("no resource found with name %s", name)
+		}
+		resource = res.Msg.Resources[0]
 	}
 
-	d.SetId(res.Msg.Resources[0].Id)
-	d.Set("name", res.Msg.Resources[0].Name)
-	d.Set("hostname", res.Msg.Resources[0].Hostname)
-	d.Set("port", res.Msg.Resources[0].Port)
-	d.Set("technology", res.Msg.Resources[0].Technology)
-	d.Set("environment", res.Msg.Resources[0].Environment)
-	d.Set("termination_protection", res.Msg.Resources[0].TerminationProtection)
-	if res.Msg.Resources[0].Space != nil {
-		d.Set("space_id", res.Msg.Resources[0].Space.Id)
+	d.SetId(resource.Id)
+	d.Set("name", resource.Name)
+	d.Set("hostname", resource.Hostname)
+	d.Set("port", resource.Port)
+	d.Set("technology", resource.Technology)
+	d.Set("environment", resource.Environment)
+	d.Set("termination_protection", resource.TerminationProtection)
+	if resource.Space != nil {
+		d.Set("space_id", resource.Space.Id)
 	}
-	d.Set("created_at", res.Msg.Resources[0].CreatedAt.AsTime().Unix())
+	if resource.CreatedAt != nil {
+		d.Set("created_at", resource.CreatedAt.AsTime().Unix())
+	}
 
 	return diags
 }
