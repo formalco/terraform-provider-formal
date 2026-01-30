@@ -15,16 +15,23 @@ import (
 
 func Connector() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for looking up a Connector by name.",
+		Description: "Data source for looking up a Connector by name or by ID. Use either `name` or `id`, but not both.",
 		ReadContext: connectorRead,
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Description: "The name of the Connector.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"id": {
-				Description: "The Formal ID for this Connector.",
+				Description:  "The ID of the Connector to look up.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+			},
+			"name": {
+				Description:  "The name of the Connector to look up. Use this to fetch a connector by name.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+			},
+			"space_id": {
+				Description: "The ID of the Space the Connector is in.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -39,11 +46,6 @@ func Connector() *schema.Resource {
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
-			"space_id": {
-				Description: "The ID of the Space the Connector is in.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
 		},
 	}
 }
@@ -52,39 +54,50 @@ func connectorRead(ctx context.Context, d *schema.ResourceData, meta interface{}
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		return diag.Errorf("name must be specified")
-	}
+	var connector *corev1.Connector
 
-	filterValue, err := anypb.New(&wrapperspb.StringValue{
-		Value: name.(string),
-	})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// List connectors with name filter
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.ListConnectors(ctx, connect.NewRequest(&corev1.ListConnectorsRequest{
-		Filter: &corev1.Filter{
-			Field: &corev1.Field{
-				Key:      "name",
-				Operator: "equals",
-				Value:    filterValue,
+	if connectorID, ok := d.GetOk("id"); ok {
+		// Fetch by ID using GetConnector (https://docs.joinformal.com/api-reference/corev1connectorservice/getconnector)
+		res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnector(ctx, connect.NewRequest(&corev1.GetConnectorRequest{Id: connectorID.(string)}))
+		if err != nil {
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				return diag.Errorf("no connector found with id %s", connectorID)
+			}
+			return diag.FromErr(err)
+		}
+		connector = res.Msg.Connector
+	} else {
+		// Fetch by name using ListConnectors with filter
+		name, ok := d.GetOk("name")
+		if !ok {
+			return diag.Errorf("name or id is required")
+		}
+		filterValue, err := anypb.New(&wrapperspb.StringValue{
+			Value: name.(string),
+		})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		res, err := c.Grpc.Sdk.ConnectorServiceClient.ListConnectors(ctx, connect.NewRequest(&corev1.ListConnectorsRequest{
+			Filter: &corev1.Filter{
+				Field: &corev1.Field{
+					Key:      "name",
+					Operator: "equals",
+					Value:    filterValue,
+				},
 			},
-		},
-		Limit: 1,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-	if len(res.Msg.Connectors) == 0 {
-		return diag.Errorf("no connector found with name %s", name)
+			Limit: 1,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if len(res.Msg.Connectors) == 0 {
+			return diag.Errorf("no connector found with name %s", name)
+		}
+		connector = res.Msg.Connectors[0]
 	}
 
-	connector := res.Msg.Connectors[0]
-
-	// Get API key separately
+	// Get API key separately (GetConnectorApiKey)
 	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, connect.NewRequest(&corev1.GetConnectorApiKeyRequest{Id: connector.Id}))
 	if err != nil {
 		return diag.FromErr(err)

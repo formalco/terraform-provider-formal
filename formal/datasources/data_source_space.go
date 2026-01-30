@@ -13,18 +13,20 @@ import (
 
 func Space() *schema.Resource {
 	return &schema.Resource{
-		Description: "Data source for looking up a Space by name.",
+		Description: "Data source for looking up a Space by ID or by name. Use either `id` or `name`, but not both.",
 		ReadContext: spaceRead,
 		Schema: map[string]*schema.Schema{
-			"name": {
-				Description: "The name of the Space.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"id": {
-				Description: "The Formal ID for this Space.",
-				Type:        schema.TypeString,
-				Computed:    true,
+				Description:  "The Formal ID for this Space.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
+			},
+			"name": {
+				Description:  "The name of the Space to look up. Use this to fetch a space by name.",
+				Type:         schema.TypeString,
+				Optional:     true,
+				ExactlyOneOf: []string{"id", "name"},
 			},
 			"description": {
 				Description: "Description of the Space.",
@@ -49,40 +51,51 @@ func spaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	name, ok := d.GetOk("name")
-	if !ok {
-		return diag.Errorf("name must be specified")
-	}
-	nameStr := name.(string)
+	var space *corev1.Space
 
-	// List spaces with search filter to narrow down results
-	res, err := c.Grpc.Sdk.SpaceServiceClient.ListSpaces(ctx, connect.NewRequest(&corev1.ListSpacesRequest{
-		Search:       nameStr,
-		SearchFields: []string{"name"},
-		Limit:        100,
-	}))
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
-	// Find exact match by name
-	var foundSpace *corev1.Space
-	for _, space := range res.Msg.Spaces {
-		if space.Name == nameStr {
-			foundSpace = space
-			break
+	if spaceID, ok := d.GetOk("id"); ok {
+		res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceID.(string)}))
+		if err != nil {
+			if connect.CodeOf(err) == connect.CodeNotFound {
+				return diag.Errorf("no space found with id %s", spaceID)
+			}
+			return diag.FromErr(err)
 		}
+		space = res.Msg.Space
+	} else {
+		name, ok := d.GetOk("name")
+		if !ok {
+			return diag.Errorf("name or id is required")
+		}
+		nameStr := name.(string)
+		res, err := c.Grpc.Sdk.SpaceServiceClient.ListSpaces(ctx, connect.NewRequest(&corev1.ListSpacesRequest{
+			Search:       nameStr,
+			SearchFields: []string{"name"},
+			Limit:        100,
+		}))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		var foundSpace *corev1.Space
+		for _, s := range res.Msg.Spaces {
+			if s.Name == nameStr {
+				foundSpace = s
+				break
+			}
+		}
+		if foundSpace == nil {
+			return diag.Errorf("no space found with name %s", nameStr)
+		}
+		space = foundSpace
 	}
 
-	if foundSpace == nil {
-		return diag.Errorf("no space found with name %s", nameStr)
+	d.SetId(space.Id)
+	d.Set("name", space.Name)
+	d.Set("description", space.Description)
+	d.Set("termination_protection", space.TerminationProtection)
+	if space.CreatedAt != nil {
+		d.Set("created_at", space.CreatedAt.AsTime().Unix())
 	}
-
-	d.SetId(foundSpace.Id)
-	d.Set("name", foundSpace.Name)
-	d.Set("description", foundSpace.Description)
-	d.Set("termination_protection", foundSpace.TerminationProtection)
-	d.Set("created_at", foundSpace.CreatedAt.AsTime().Unix())
 
 	return diags
 }
