@@ -71,22 +71,15 @@ func spaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) di
 		res, err := c.Grpc.Sdk.SpaceServiceClient.ListSpaces(ctx, connect.NewRequest(&corev1.ListSpacesRequest{
 			Search:       nameStr,
 			SearchFields: []string{"name"},
-			Limit:        100,
+			Limit:        1,
 		}))
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		var foundSpace *corev1.Space
-		for _, s := range res.Msg.Spaces {
-			if s.Name == nameStr {
-				foundSpace = s
-				break
-			}
+		if len(res.Msg.Spaces) == 0 {
+			return diag.Errorf("no space found with name %s", name)
 		}
-		if foundSpace == nil {
-			return diag.Errorf("no space found with name %s", nameStr)
-		}
-		space = foundSpace
+		space = res.Msg.Spaces[0]
 	}
 
 	d.SetId(space.Id)
