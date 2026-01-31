@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"google.golang.org/protobuf/types/known/durationpb"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -66,6 +67,13 @@ func ResourceConnectorConfiguration() *schema.Resource {
 				Optional:    true,
 				Default:     4317,
 			},
+			"resources_health_checks_frequency_seconds": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The frequency in seconds for resource health checks. Must be between 10 and 3600 seconds. Defaults to 60.",
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Default:     60,
+			},
 		},
 	}
 }
@@ -79,12 +87,14 @@ func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.Resourc
 
 	otelHostname := d.Get("otel_endpoint_hostname").(string)
 	otelPort := int32(d.Get("otel_endpoint_port").(int))
+	resourcesHealthChecksFrequencySeconds := int32(d.Get("resources_health_checks_frequency_seconds").(int))
 
 	req := &corev1.CreateConnectorConfigurationRequest{
-		ConnectorId:          d.Get("connector_id").(string),
-		LogLevel:             d.Get("log_level").(string),
-		OtelEndpointHostname: &otelHostname,
-		OtelEndpointPort:     &otelPort,
+		ConnectorId:                    d.Get("connector_id").(string),
+		LogLevel:                       d.Get("log_level").(string),
+		OtelEndpointHostname:           &otelHostname,
+		OtelEndpointPort:               &otelPort,
+		ResourcesHealthChecksFrequency: durationpb.New(time.Duration(resourcesHealthChecksFrequencySeconds) * time.Second),
 	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorConfiguration(ctx, connect.NewRequest(req))
@@ -124,6 +134,7 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	d.Set("log_level", res.Msg.ConnectorConfiguration.LogLevel)
 	d.Set("otel_endpoint_hostname", res.Msg.ConnectorConfiguration.OtelEndpointHostname)
 	d.Set("otel_endpoint_port", res.Msg.ConnectorConfiguration.OtelEndpointPort)
+	d.Set("resources_health_checks_frequency_seconds", int(res.Msg.ConnectorConfiguration.ResourcesHealthChecksFrequency.AsDuration().Seconds()))
 
 	d.SetId(res.Msg.ConnectorConfiguration.Id)
 
@@ -139,7 +150,7 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 
 	connectorConfigurationId := d.Id()
 
-	fieldsThatCanChange := []string{"log_level", "otel_endpoint_hostname", "otel_endpoint_port"}
+	fieldsThatCanChange := []string{"log_level", "otel_endpoint_hostname", "otel_endpoint_port", "resources_health_checks_frequency_seconds"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.FromErr(errors.New(err))
@@ -148,12 +159,14 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 	logLevel := d.Get("log_level").(string)
 	otelHostname := d.Get("otel_endpoint_hostname").(string)
 	otelPort := int32(d.Get("otel_endpoint_port").(int))
+	resourcesHealthChecksFrequencySeconds := int32(d.Get("resources_health_checks_frequency_seconds").(int))
 
 	req := connect.NewRequest(&corev1.UpdateConnectorConfigurationRequest{
-		Id:                   connectorConfigurationId,
-		LogLevel:             &logLevel,
-		OtelEndpointHostname: &otelHostname,
-		OtelEndpointPort:     &otelPort,
+		Id:                             connectorConfigurationId,
+		LogLevel:                       &logLevel,
+		OtelEndpointHostname:           &otelHostname,
+		OtelEndpointPort:               &otelPort,
+		ResourcesHealthChecksFrequency: durationpb.New(time.Duration(resourcesHealthChecksFrequencySeconds) * time.Second),
 	})
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorConfiguration(ctx, req)
