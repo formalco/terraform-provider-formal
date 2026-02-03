@@ -212,9 +212,15 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if res.Msg.User.Type == "machine" {
 		res, err := c.Grpc.Sdk.UserServiceClient.GetMachineUserCredentials(ctx, connect.NewRequest(&corev1.GetMachineUserCredentialsRequest{Id: userId}))
 		if err != nil {
-			return diag.FromErr(err)
+			if connect.CodeOf(err) == connect.CodePermissionDenied {
+				// User doesn't have permission to get machine user credentials
+				tflog.Warn(ctx, "Permission denied to get machine user credentials for user "+userId+", skipping machine_user_access_token", map[string]interface{}{"err": err})
+			} else {
+				return diag.FromErr(err)
+			}
+		} else {
+			d.Set("machine_user_access_token", res.Msg.Password)
 		}
-		d.Set("machine_user_access_token", res.Msg.Password)
 	}
 
 	switch info := res.Msg.User.Info.(type) {
@@ -278,7 +284,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 
 	const ErrorTolerance = 5
 	currentErrors := 0
-	deleteTimeStart := time.Now()
+	deleteTimeStart := time.Now().UTC()
 	for {
 		// Retrieve status
 		_, err = c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: userId}))

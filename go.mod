@@ -1,6 +1,6 @@
 module github.com/formalco/terraform-provider-formal
 
-go 1.25
+go 1.25.0
 
 replace github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
 
@@ -34,9 +34,9 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260115232218-b7f298826cda.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260131034057-3e06b60928da.1
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/formalco/go-sdk/sdk/v2 v2.11.0
+	github.com/formalco/go-sdk/sdk/v2 v2.12.0
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	google.golang.org/grpc v1.75.1 // indirect
@@ -52,7 +52,7 @@ require (
 
 require (
 	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260115232218-b7f298826cda.2 // indirect
-	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20241220201140-4c5ba75caaf8.1 // indirect
+	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	dario.cat/mergo v1.0.1 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
@@ -113,6 +113,8 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/stoewer/go-strcase v1.3.1 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20251213004720-97cd9d5aeac2 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260122232226-8e98ce8d340d // indirect
 )
+
+replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260129144440-6c7a65eee39c

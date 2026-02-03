@@ -24,6 +24,7 @@ Registering a Connector Configuration with Formal.
 - `log_level` (String) The log level to be configured for this Connector.
 - `otel_endpoint_hostname` (String) The OpenTelemetry endpoint hostname for this Connector. Defaults to 'localhost'.
 - `otel_endpoint_port` (Number) The OpenTelemetry endpoint port for this Connector. Defaults to 4317.
+- `resources_health_checks_frequency_seconds` (Number) The frequency in seconds for resource health checks. Must be between 10 and 3600 seconds. Defaults to 60.
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
