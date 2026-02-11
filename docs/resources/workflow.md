@@ -20,6 +20,10 @@ Workflows enable automation of actions based on triggers. A workflow is defined 
 - `code` (String) The workflow definition in YAML format. Defines the trigger and actions for the workflow.
 - `name` (String) The name of the workflow. Must be unique within the organization.
 
+### Optional
+
+- `status` (String) The workflow status. Accepted values are `active` and `draft`.
+
 ### Read-Only
 
 - `id` (String) The unique identifier of the workflow.

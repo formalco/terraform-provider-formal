@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -39,17 +40,30 @@ func ResourceWorkflow() *schema.Resource {
 				Type:        schema.TypeString,
 				Required:    true,
 			},
+			"status": {
+				Description: "The workflow status. Accepted values are `active` and `draft`.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "active",
+				ValidateFunc: validation.StringInSlice([]string{
+					"active",
+					"draft",
+				}, false),
+			},
 		},
 	}
 }
 
 func resourceWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
+	status := d.Get("status").(string)
+	req := &corev1.CreateWorkflowRequest{
+		Name:   d.Get("name").(string),
+		Code:   d.Get("code").(string),
+		Status: &status,
+	}
 
-	res, err := c.Grpc.Sdk.WorkflowServiceClient.CreateWorkflow(ctx, connect.NewRequest(&corev1.CreateWorkflowRequest{
-		Name: d.Get("name").(string),
-		Code: d.Get("code").(string),
-	}))
+	res, err := c.Grpc.Sdk.WorkflowServiceClient.CreateWorkflow(ctx, connect.NewRequest(req))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -77,6 +91,7 @@ func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta inte
 	d.Set("id", res.Msg.Workflow.Id)
 	d.Set("name", res.Msg.Workflow.Name)
 	d.Set("code", res.Msg.Workflow.Code)
+	d.Set("status", res.Msg.Workflow.GetStatus())
 
 	return nil
 }
@@ -84,12 +99,16 @@ func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta inte
 func resourceWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	if d.HasChange("name") || d.HasChange("code") {
-		_, err := c.Grpc.Sdk.WorkflowServiceClient.UpdateWorkflow(ctx, connect.NewRequest(&corev1.UpdateWorkflowRequest{
-			Id:   d.Id(),
-			Name: d.Get("name").(string),
-			Code: d.Get("code").(string),
-		}))
+	if d.HasChange("name") || d.HasChange("code") || d.HasChange("status") {
+		status := d.Get("status").(string)
+		req := &corev1.UpdateWorkflowRequest{
+			Id:     d.Id(),
+			Name:   d.Get("name").(string),
+			Code:   d.Get("code").(string),
+			Status: &status,
+		}
+
+		_, err := c.Grpc.Sdk.WorkflowServiceClient.UpdateWorkflow(ctx, connect.NewRequest(req))
 		if err != nil {
 			return diag.FromErr(err)
 		}
