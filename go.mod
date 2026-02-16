@@ -10,7 +10,6 @@ require (
 	connectrpc.com/connect v1.19.1
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/crypto v0.48.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -43,7 +42,7 @@ require (
 )
 
 require (
-	buf.build/go/protovalidate v0.14.0
+	buf.build/go/protovalidate v1.1.2
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.24.0
 	github.com/hashicorp/terraform-plugin-log v0.9.0
@@ -112,7 +111,7 @@ require (
 
 require (
 	github.com/antlr4-go/antlr/v4 v4.13.1 // indirect
-	github.com/google/cel-go v0.25.0 // indirect
+	github.com/google/cel-go v0.26.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
