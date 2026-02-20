@@ -46,11 +46,12 @@ func ResourceConnectorSatelliteLink() *schema.Resource {
 				ForceNew:    true,
 			},
 			"satellite_type": {
-				Description: "The type of satellite being linked. Must be one of: `data_classifier` or `policy_data_loader`.",
+				Description: "The type of satellite being linked. Must be one of: `ai`, `data_classifier` or `policy_data_loader`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringInSlice([]string{
+					"ai",
 					"data_classifier",
 					"policy_data_loader",
 				}, false),
