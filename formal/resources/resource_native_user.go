@@ -61,12 +61,14 @@ func ResourceNativeUser() *schema.Resource {
 				Optional:     true,
 				WriteOnly:    true,
 				ExactlyOneOf: []string{"native_user_secret", "native_user_secret_wo"},
+				RequiredWith: []string{"native_user_secret_wo_version"},
 			},
 			"native_user_secret_wo_version": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Version trigger for `native_user_secret_wo`. Increment this value to update the secret.",
-				Type:        schema.TypeInt,
-				Optional:    true,
+				Description:  "Version trigger for `native_user_secret_wo`. Increment this value to update the secret.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{"native_user_secret_wo"},
 			},
 			"use_as_default": {
 				// This description is used by the documentation generator and the language server.
