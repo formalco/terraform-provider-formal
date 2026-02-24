@@ -144,6 +144,11 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
+			"aws_formal_iam_role_arn": {
+				Description: "The ARN of the IAM role Formal will use to access your resources.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"aws_formal_pingback_arn": {
 				Description: "The SNS topic ARN CloudFormation can use to send events to Formal.",
 				Type:        schema.TypeString,
@@ -322,6 +327,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_template_body", data.Aws.TemplateBody)
 		d.Set("aws_formal_stack_name", data.Aws.AwsFormalStackName)
 		d.Set("aws_formal_iam_role", data.Aws.AwsFormalIamRole)
+		d.Set("aws_formal_iam_role_arn", data.Aws.AwsFormalIamRoleArn)
 		d.Set("aws_formal_pingback_arn", data.Aws.AwsFormalPingbackArn)
 
 		d.Set("aws_enable_eks_autodiscovery", data.Aws.AwsEnableEksAutodiscovery)

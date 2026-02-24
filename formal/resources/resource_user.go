@@ -253,7 +253,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 		Name:                  name,
 		FirstName:             firstName,
 		LastName:              lastName,
-		TerminationProtection: &terminationProtection,
+		TerminationProtection: terminationProtection,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
