@@ -36,6 +36,7 @@ Registering a Cloud integration.
 - `aws_enable_redshift_autodiscovery` (Boolean) Whether AWS Redshift autodiscovery is enabled or not.
 - `aws_enable_s3_autodiscovery` (Boolean) Whether AWS S3 autodiscovery is enabled or not.
 - `aws_formal_iam_role` (String) The IAM role ID Formal will use to access your resources.
+- `aws_formal_iam_role_arn` (String) The ARN of the IAM role Formal will use to access your resources.
 - `aws_formal_pingback_arn` (String) The SNS topic ARN CloudFormation can use to send events to Formal.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
