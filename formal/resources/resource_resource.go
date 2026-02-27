@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/samber/lo"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -107,8 +108,30 @@ func ResourceResource() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"aliases": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Aliases to apply to the Resource.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
 		},
 	}
+}
+
+func getAliasesFromResourceData(d *schema.ResourceData) ([]string, error) {
+	aliasesSet, ok := d.Get("aliases").(*schema.Set)
+	if !ok {
+		return nil, fmt.Errorf("error reading aliases")
+	}
+
+	aliases := lo.Map(aliasesSet.List(), func(item interface{}, _ int) string {
+		return strings.TrimSpace(item.(string))
+	})
+
+	return aliases, nil
 }
 
 func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
@@ -131,6 +154,10 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
 	tags := d.Get("tags").(map[string]interface{})
+	aliases, err := getAliasesFromResourceData(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
 	msg := &corev1.CreateResourceRequest{
 		Name:                  name,
@@ -140,6 +167,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 		Environment:           environment,
 		TerminationProtection: terminationProtection,
 		Tags:                  make([]*corev1.ResourceTag, 0, len(tags)),
+		Aliases:               aliases,
 	}
 
 	for key, value := range tags {
@@ -207,6 +235,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	if res.Msg.Resource.Space != nil {
 		d.Set("space_id", res.Msg.Resource.Space.Id)
 	}
+	d.Set("aliases", res.Msg.Resource.Aliases)
 	d.SetId(res.Msg.Resource.Id)
 
 	tags := make(map[string]string)
@@ -229,7 +258,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id", "tags"}
+	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id", "tags", "aliases"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
@@ -298,6 +327,22 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 		}
 
 		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(msg))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
+	if d.HasChange("aliases") {
+		aliases, err := getAliasesFromResourceData(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
+		msg := &corev1.UpdateResourceRequest{
+			Id:      datastoreId,
+			Aliases: &corev1.UpdateResourceRequest_UpdateResourceAlias{Aliases: aliases},
+		}
+		_, err = c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(msg))
 		if err != nil {
 			return diag.FromErr(err)
 		}
