@@ -24,6 +24,7 @@ Registering a Resource with Formal.
 
 ### Optional
 
+- `aliases` (Set of String) Aliases to apply to the Resource.
 - `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
 - `space_id` (String) The ID of the Space to create the Resource in.
 - `tags` (Map of String) Tags to apply to the Resource.

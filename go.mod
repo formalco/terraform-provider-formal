@@ -34,11 +34,12 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260224220658-cf1710810d62.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260227064633-55a213ddd9df.1
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/formalco/go-sdk/sdk/v2 v2.12.0
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
+	github.com/samber/lo v1.47.0
 	google.golang.org/grpc v1.75.1 // indirect
 )
 
@@ -51,7 +52,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260224220658-cf1710810d62.2 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260227064633-55a213ddd9df.2 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 // indirect
 	cel.dev/expr v0.24.0 // indirect
 	dario.cat/mergo v1.0.2 // indirect
