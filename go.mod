@@ -39,7 +39,7 @@ require (
 	github.com/formalco/go-sdk/sdk/v2 v2.12.0
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/samber/lo v1.47.0
+	github.com/samber/lo v1.53.0
 	google.golang.org/grpc v1.78.0 // indirect
 )
 
