@@ -92,7 +92,7 @@ You can configure the Formal Provider to disable retrieving sensitive values fro
 
 ### Deploying with a Managed Cloud model
 
-Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](https://app.joinformal.com).
+Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](https://app.formal.ai).
 
 
 ## Examples
