@@ -52,6 +52,7 @@ func New(version string) func() *schema.Provider {
 				"formal_policy_data_loader":                resource.ResourcePolicyDataLoader(),
 				"formal_group":                             resource.ResourceGroup(),
 				"formal_group_user_link":                   resource.ResourceGroupLinkUser(),
+				"formal_form":                              resource.ResourceForm(),
 				"formal_resource":                          resource.ResourceResource(),
 				"formal_sidecar":                           resource.ResourceSidecar(),
 				"formal_native_user":                       resource.ResourceNativeUser(),
