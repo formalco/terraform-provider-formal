@@ -2,8 +2,8 @@ buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-202512091757
 buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1/go.mod h1:tvtbpgaVXZX4g6Pn+AnzFycuRK3MOz5HJfEGeEllXYM=
 buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260309200955-4fffe54012c1.2 h1:2ajb69PLE0LjGhBeVOdXiLWRnWiBGxY1XY372Tt4U3k=
 buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260309200955-4fffe54012c1.2/go.mod h1:+IVVxTj1Zm/1uTPeNlYfO3SbYVTmU3iZ0rhAUGlTe6Q=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260309200955-4fffe54012c1.1 h1:y5IaQiSh4cxqSNv3gKyzerQRAJ/gNfwvAZGSb0cyu+Y=
-buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260309200955-4fffe54012c1.1/go.mod h1:1dHiBGQoihkXZQkToxnFLSdzNSqSBKXROUMlOnbPcQY=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260312235415-363cf09ff73f.1 h1:9gXXIKJTMX7eaedpi2ojV4PR3yWo7cquYWitLnQy8+A=
+buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260312235415-363cf09ff73f.1/go.mod h1:1dHiBGQoihkXZQkToxnFLSdzNSqSBKXROUMlOnbPcQY=
 buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 h1:1L6+uMVRfpetc9KKitISZKmsWGn70Bn6k+TkYYxhW0k=
 buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1/go.mod h1:KAAU6zfI4aGOR/SiWil31PiNwdpo1SlqZidcB3z+sL0=
 buf.build/go/protovalidate v0.14.0 h1:kr/rC/no+DtRyYX+8KXLDxNnI1rINz0imk5K44ZpZ3A=
