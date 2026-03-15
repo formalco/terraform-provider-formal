@@ -146,22 +146,6 @@ resource "formal_resource_health_check" "name" {
   database_name = "test-1"
 }
 
-resource "formal_data_domain" "name" {
-  name = "name"
-  description = "description"
-  included_paths = ["main.path"]
-  excluded_paths = ["main.path2"]
-    dynamic "owners" {
-    for_each = [
-      { object_type = "firstObjectType", object_id = "firstObjectId" }
-    ]
-    content {
-      object_type = owners.value.object_type
-      object_id = owners.value.object_id
-    }
-  }
-}
-
 resource "formal_tracker" "name" {
   resource_id = formal_resource.postgres1.id
   path = "dummy.path"
