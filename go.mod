@@ -11,7 +11,7 @@ require (
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
@@ -23,24 +23,24 @@ require (
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	go.opentelemetry.io/otel v1.40.0 // indirect
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
-	golang.org/x/mod v0.32.0 // indirect
-	golang.org/x/net v0.51.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
-	golang.org/x/tools v0.41.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260312235415-363cf09ff73f.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260407003237-0f9dcda538d6.1
 	github.com/fatih/color v1.16.0 // indirect
 	github.com/formalco/go-sdk/sdk/v2 v2.12.0
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/samber/lo v1.47.0
-	google.golang.org/grpc v1.78.0 // indirect
+	google.golang.org/grpc v1.79.3 // indirect
 )
 
 require (
@@ -52,9 +52,9 @@ require (
 )
 
 require (
-	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260309200955-4fffe54012c1.2 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.19.1-20260407003237-0f9dcda538d6.2 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 // indirect
-	cel.dev/expr v0.24.0 // indirect
+	cel.dev/expr v0.25.1 // indirect
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/Kunde21/markdownfmt/v3 v3.1.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
@@ -122,7 +122,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/stoewer/go-strcase v1.3.1 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319171110-e3a33c96fb44 // indirect
 )
 
 replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260129144440-6c7a65eee39c
