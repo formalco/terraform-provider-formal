@@ -72,6 +72,15 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 						},
+						"autodiscovery_regions": {
+							Description: "The regions to enable resource autodiscovery for.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Computed:    true,
+							Elem: &schema.Schema{
+								Type: schema.TypeString,
+							},
+						},
 						"enable_eks_autodiscovery": {
 							Description: "Enables resource autodiscovery for EKS clusters.",
 							Type:        schema.TypeBool,
@@ -217,6 +226,22 @@ func ResourceIntegrationCloud() *schema.Resource {
 	}
 }
 
+func expandStringList(items interface{}) []string {
+	switch values := items.(type) {
+	case []string:
+		return append([]string(nil), values...)
+	case []interface{}:
+		result := make([]string, 0, len(values))
+		for _, item := range values {
+			result = append(result, item.(string))
+		}
+
+		return result
+	default:
+		return nil
+	}
+}
+
 func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
@@ -234,6 +259,11 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			enableEc2Autodiscovery := awsConfig["enable_ec2_autodiscovery"].(bool)
 			enableS3Autodiscovery := awsConfig["enable_s3_autodiscovery"].(bool)
 			allowS3Access := awsConfig["allow_s3_access"].(bool)
+
+			autodiscoveryRegions := expandStringList(awsConfig["autodiscovery_regions"])
+			if len(autodiscoveryRegions) == 0 {
+				autodiscoveryRegions = []string{cloudRegion}
+			}
 
 			var customerRoleArn *string
 			awsCustomerRoleArn := awsConfig["aws_customer_role_arn"].(string)
@@ -257,6 +287,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 						CustomerRoleArn:             customerRoleArn,
+						AutodiscoveryRegions:        autodiscoveryRegions,
 					},
 				},
 			}))
@@ -313,6 +344,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"enable_s3_autodiscovery":       data.Aws.AwsEnableS3Autodiscovery,
 			"allow_s3_access":               data.Aws.AwsAllowS3Access,
 			"s3_bucket_arn":                 data.Aws.AwsS3BucketArn,
+			"autodiscovery_regions":         data.Aws.AwsAutodiscoveryRegions,
 		}
 
 		// Only set the customer role ARN if it was set in the existing config
@@ -378,6 +410,11 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 				customerRoleArn = &awsCustomerRoleArn
 			}
 
+			autodiscoveryRegions := expandStringList(awsConfig["autodiscovery_regions"])
+			if len(autodiscoveryRegions) == 0 {
+				autodiscoveryRegions = []string{d.Get("cloud_region").(string)}
+			}
+
 			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Aws{
@@ -392,6 +429,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						AllowS3Access:               &allowS3Access,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 						CustomerRoleArn:             customerRoleArn,
+						AutodiscoveryRegions:        autodiscoveryRegions,
 					},
 				},
 			}))

@@ -250,9 +250,9 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 
 	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&corev1.UpdateUserRequest{
 		Id:                    userId,
-		Name:                  name,
-		FirstName:             firstName,
-		LastName:              lastName,
+		Name:                  &name,
+		FirstName:             &firstName,
+		LastName:              &lastName,
 		TerminationProtection: terminationProtection,
 	}))
 	if err != nil {
