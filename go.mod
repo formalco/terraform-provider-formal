@@ -8,7 +8,7 @@ replace github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0
 
 require (
 	connectrpc.com/connect v1.19.1
-	github.com/BurntSushi/toml v1.5.0 // indirect
+	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
@@ -125,4 +125,4 @@ require (
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260319171110-e3a33c96fb44 // indirect
 )
 
-replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260129144440-6c7a65eee39c
+replace github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260430212403-afb116e4412f
