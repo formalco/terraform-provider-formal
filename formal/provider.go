@@ -61,7 +61,6 @@ func New(version string) func() *schema.Provider {
 				"formal_user":                              resource.ResourceUser(),
 				"formal_integration_log":                   resource.ResourceIntegrationLogs(),
 				"formal_integration_bi":                    resource.ResourceIntegrationBI(),
-				"formal_integration_data_catalog":          resource.ResourceIntegrationDataCatalog(),
 				"formal_integration_cloud":                 resource.ResourceIntegrationCloud(),
 				"formal_integration_mdm":                   resource.ResourceIntegrationMDM(),
 				"formal_satellite":                         resource.ResourceSatellite(),
