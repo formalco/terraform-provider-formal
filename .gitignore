@@ -37,6 +37,8 @@ website/vendor
 .terraform.lock.hcl
 *.tfstate*
 *.tfvars
+!tests/**/*.tfvars
+!examples/policies/environment.tfvars
 build.sh
 dev
 
