@@ -73,6 +73,7 @@ Required:
 Optional:
 
 - `input` (Map of String) Optional payload for options retrieval.
+- `input_json` (String) Optional payload for options retrieval as a JSON object string. Use this when the payload contains non-string JSON values such as numbers, booleans, arrays, or nested objects. Mutually exclusive with input.
 
 <a id="nestedblock--field--config--options_source--command"></a>
 ### Nested Schema for `field.config.options_source.command`

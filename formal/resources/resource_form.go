@@ -2,7 +2,9 @@ package resource
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -145,6 +147,13 @@ func ResourceForm() *schema.Resource {
 													Type:        schema.TypeMap,
 													Optional:    true,
 												},
+												"input_json": {
+													Description:  "Optional payload for options retrieval as a JSON object string. Use this when the payload contains non-string JSON values such as numbers, booleans, arrays, or nested objects. Mutually exclusive with input.",
+													Type:         schema.TypeString,
+													Optional:     true,
+													ValidateFunc: validateJSONObjectString,
+													StateFunc:    canonicalizeJSONString,
+												},
 												"transform": {
 													Description: "CEL expression that transforms the response into options.",
 													Type:        schema.TypeString,
@@ -221,7 +230,8 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := d.Set("description", form.Description); err != nil {
 		return diag.FromErr(err)
 	}
-	if err := d.Set("field", flattenProtoFormFields(form.Fields)); err != nil {
+	currentFields, _ := d.Get("field").([]interface{})
+	if err := d.Set("field", normalizeProtoFormFields(form.Fields, currentFields)); err != nil {
 		return diag.FromErr(err)
 	}
 	if form.CreatedAt != nil {
@@ -356,13 +366,32 @@ func expandTerraformFormFieldConfig(configMap map[string]interface{}, fieldIndex
 				Transform:     optionsSourceMap["transform"].(string),
 			}
 
-			rawInput, hasInput := optionsSourceMap["input"]
-			if hasInput && rawInput != nil {
-				inputMap, ok := rawInput.(map[string]interface{})
-				if !ok {
-					return nil, fmt.Errorf("field[%d].config.options_source.input has invalid structure", fieldIndex)
+			rawInputJSON, _ := optionsSourceMap["input_json"].(string)
+			rawInputJSON = strings.TrimSpace(rawInputJSON)
+			hasInputJSON := rawInputJSON != ""
+
+			rawInput := optionsSourceMap["input"]
+			inputMap, hasInputValues, err := expandTerraformFormFieldOptionsSourceInput(rawInput)
+			if err != nil {
+				return nil, fmt.Errorf("field[%d].config.options_source.input has invalid structure", fieldIndex)
+			}
+
+			if hasInputJSON {
+				if hasInputValues {
+					return nil, fmt.Errorf("field[%d].config.options_source.input and input_json are mutually exclusive", fieldIndex)
 				}
 
+				inputJSONMap, err := parseJSONObjectString(rawInputJSON)
+				if err != nil {
+					return nil, fmt.Errorf("field[%d].config.options_source.input_json is invalid JSON: %w", fieldIndex, err)
+				}
+
+				inputStruct, err := structpb.NewStruct(inputJSONMap)
+				if err != nil {
+					return nil, fmt.Errorf("field[%d].config.options_source.input_json is invalid: %w", fieldIndex, err)
+				}
+				optionsSource.Input = inputStruct
+			} else if hasInputValues {
 				inputStruct, err := structpb.NewStruct(inputMap)
 				if err != nil {
 					return nil, fmt.Errorf("field[%d].config.options_source.input is invalid: %w", fieldIndex, err)
@@ -381,8 +410,22 @@ func expandTerraformFormFieldConfig(configMap map[string]interface{}, fieldIndex
 	return config, nil
 }
 
-func flattenProtoFormFields(protoFields []*corev1.FormField) []interface{} {
+func expandTerraformFormFieldOptionsSourceInput(rawInput interface{}) (map[string]interface{}, bool, error) {
+	if rawInput == nil {
+		return nil, false, nil
+	}
+
+	inputMap, ok := rawInput.(map[string]interface{})
+	if !ok {
+		return nil, false, fmt.Errorf("input has invalid structure")
+	}
+
+	return inputMap, len(inputMap) > 0, nil
+}
+
+func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []interface{}) []interface{} {
 	tfFields := make([]interface{}, 0, len(protoFields))
+	currentFieldsByID := terraformFormFieldsByID(currentFields)
 
 	for _, protoField := range protoFields {
 		field := map[string]interface{}{
@@ -392,7 +435,7 @@ func flattenProtoFormFields(protoFields []*corev1.FormField) []interface{} {
 		}
 
 		if protoField.Config != nil {
-			config := flattenProtoFormFieldConfig(protoField.Config)
+			config := normalizeProtoFormFieldConfig(protoField.Config, terraformFormFieldConfig(currentFieldsByID[protoField.Id]))
 			if config != nil {
 				field["config"] = []interface{}{config}
 			}
@@ -404,7 +447,7 @@ func flattenProtoFormFields(protoFields []*corev1.FormField) []interface{} {
 	return tfFields
 }
 
-func flattenProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig) map[string]interface{} {
+func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentConfig ...map[string]interface{}) map[string]interface{} {
 	if protoConfig == nil {
 		return nil
 	}
@@ -435,7 +478,14 @@ func flattenProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig) map[string
 		}
 
 		if protoConfig.OptionsSource.Input != nil {
-			optionsSource["input"] = protoConfig.OptionsSource.Input.AsMap()
+			inputMap := protoConfig.OptionsSource.Input.AsMap()
+			if terraformFormFieldConfigUsesInputJSON(currentConfig...) {
+				optionsSource["input_json"] = mustCanonicalJSONString(inputMap)
+			} else if terraformFormFieldConfigUsesInput(currentConfig...) {
+				optionsSource["input"] = inputMap
+			} else {
+				optionsSource["input_json"] = mustCanonicalJSONString(inputMap)
+			}
 		}
 
 		config["options_source"] = []interface{}{optionsSource}
@@ -446,4 +496,118 @@ func flattenProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig) map[string
 	}
 
 	return config
+}
+
+func terraformFormFieldsByID(tfFields []interface{}) map[string]map[string]interface{} {
+	fieldsByID := make(map[string]map[string]interface{}, len(tfFields))
+	for _, rawField := range tfFields {
+		fieldMap, ok := rawField.(map[string]interface{})
+		if !ok {
+			continue
+		}
+
+		id, ok := fieldMap["id"].(string)
+		if !ok || id == "" {
+			continue
+		}
+
+		fieldsByID[id] = fieldMap
+	}
+
+	return fieldsByID
+}
+
+func terraformFormFieldConfig(tfField map[string]interface{}) map[string]interface{} {
+	if tfField == nil {
+		return nil
+	}
+
+	configList, ok := tfField["config"].([]interface{})
+	if !ok || len(configList) == 0 {
+		return nil
+	}
+
+	configMap, ok := configList[0].(map[string]interface{})
+	if !ok {
+		return nil
+	}
+
+	return configMap
+}
+
+func terraformFormFieldConfigUsesInputJSON(configs ...map[string]interface{}) bool {
+	if len(configs) == 0 || configs[0] == nil {
+		return false
+	}
+
+	optionsSourceList, ok := configs[0]["options_source"].([]interface{})
+	if !ok || len(optionsSourceList) == 0 {
+		return false
+	}
+
+	optionsSourceMap, ok := optionsSourceList[0].(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	inputJSON, ok := optionsSourceMap["input_json"].(string)
+	return ok && strings.TrimSpace(inputJSON) != ""
+}
+
+func terraformFormFieldConfigUsesInput(configs ...map[string]interface{}) bool {
+	if len(configs) == 0 || configs[0] == nil {
+		return false
+	}
+
+	optionsSourceList, ok := configs[0]["options_source"].([]interface{})
+	if !ok || len(optionsSourceList) == 0 {
+		return false
+	}
+
+	optionsSourceMap, ok := optionsSourceList[0].(map[string]interface{})
+	if !ok {
+		return false
+	}
+
+	inputMap, ok := optionsSourceMap["input"].(map[string]interface{})
+	return ok && len(inputMap) > 0
+}
+
+func validateJSONObjectString(value interface{}, key string) ([]string, []error) {
+	if _, err := parseJSONObjectString(value.(string)); err != nil {
+		return nil, []error{fmt.Errorf("%s must be a valid JSON object: %w", key, err)}
+	}
+
+	return nil, nil
+}
+
+func canonicalizeJSONString(value interface{}) string {
+	canonicalJSON, err := parseJSONObjectString(value.(string))
+	if err != nil {
+		return value.(string)
+	}
+
+	return mustCanonicalJSONString(canonicalJSON)
+}
+
+func parseJSONObjectString(inputJSON string) (map[string]interface{}, error) {
+	var inputMap map[string]interface{}
+	if err := json.Unmarshal([]byte(strings.TrimSpace(inputJSON)), &inputMap); err != nil {
+		return nil, err
+	}
+
+	if inputMap == nil {
+		return nil, fmt.Errorf("expected JSON object")
+	}
+
+	return inputMap, nil
+}
+
+func mustCanonicalJSONString(inputMap map[string]interface{}) string {
+	canonicalJSON, err := json.Marshal(inputMap)
+	if err != nil {
+		return "{}"
+	}
+
+	return string(canonicalJSON)
 }
