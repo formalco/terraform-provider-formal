@@ -11,7 +11,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/stretchr/testify v1.11.1 // indirect
-	golang.org/x/crypto v0.49.0 // indirect
+	golang.org/x/crypto v0.50.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
@@ -22,13 +22,13 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	go.opentelemetry.io/otel v1.40.0 // indirect
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
-	golang.org/x/mod v0.33.0 // indirect
-	golang.org/x/net v0.52.0 // indirect
+	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
+	golang.org/x/mod v0.35.0 // indirect
+	golang.org/x/net v0.53.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
-	golang.org/x/sys v0.42.0 // indirect
-	golang.org/x/text v0.35.0 // indirect
-	golang.org/x/tools v0.42.0 // indirect
+	golang.org/x/sys v0.43.0 // indirect
+	golang.org/x/text v0.36.0 // indirect
+	golang.org/x/tools v0.44.0 // indirect
 	google.golang.org/protobuf v1.36.11
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
@@ -69,9 +69,7 @@ require (
 	github.com/clipperhouse/stringish v0.1.1 // indirect
 	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/cloudflare/circl v1.6.3 // indirect
-	github.com/cyphar/filepath-securejoin v0.6.1 // indirect
-	github.com/go-git/go-billy/v5 v5.7.0 // indirect
-	github.com/go-git/go-git/v5 v5.16.5 // indirect
+	github.com/go-git/go-git/v5 v5.19.0 // indirect
 	github.com/go-test/deep v1.0.4 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
@@ -95,7 +93,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oklog/run v1.1.0 // indirect
-	github.com/pjbgf/sha1cd v0.5.0 // indirect
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
