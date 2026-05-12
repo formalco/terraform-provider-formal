@@ -19,7 +19,7 @@ func TestResourceConnectorConfigurationSchemaIncludesRenameUpgrader(t *testing.T
 }
 
 func TestResourceConnectorConfigurationStateUpgradeV1MigratesLegacyKey(t *testing.T) {
-	rawState := map[string]interface{}{
+	rawState := map[string]any{
 		"resources_health_checks_frequency_seconds": 300,
 	}
 
@@ -38,7 +38,7 @@ func TestResourceConnectorConfigurationStateUpgradeV1MigratesLegacyKey(t *testin
 }
 
 func TestResourceConnectorConfigurationStateUpgradeV1KeepsExistingNewKey(t *testing.T) {
-	rawState := map[string]interface{}{
+	rawState := map[string]any{
 		"resources_health_checks_frequency_seconds": 300,
 		"resources_health_checks_frequency":         120,
 	}

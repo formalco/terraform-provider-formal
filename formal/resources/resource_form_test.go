@@ -2,6 +2,7 @@ package resource
 
 import (
 	"encoding/json"
+	"maps"
 	"testing"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
@@ -9,7 +10,7 @@ import (
 )
 
 func TestExpandTerraformFormFieldConfigOptionsSourceInputJSON(t *testing.T) {
-	config, err := expandTerraformFormFieldConfig(formFieldConfigWithOptionsSource(map[string]interface{}{
+	config, err := expandTerraformFormFieldConfig(formFieldConfigWithOptionsSource(map[string]any{
 		"input_json": `{
 			"limit": 500,
 			"order": "desc",
@@ -30,7 +31,7 @@ func TestExpandTerraformFormFieldConfigOptionsSourceInputJSON(t *testing.T) {
 		t.Fatalf("expected boolean exact true, got %#v", got)
 	}
 
-	searchFields, ok := inputMap["searchFields"].([]interface{})
+	searchFields, ok := inputMap["searchFields"].([]any)
 	if !ok {
 		t.Fatalf("expected searchFields to be an array, got %#v", inputMap["searchFields"])
 	}
@@ -41,8 +42,8 @@ func TestExpandTerraformFormFieldConfigOptionsSourceInputJSON(t *testing.T) {
 }
 
 func TestExpandTerraformFormFieldConfigRejectsInputAndInputJSON(t *testing.T) {
-	_, err := expandTerraformFormFieldConfig(formFieldConfigWithOptionsSource(map[string]interface{}{
-		"input": map[string]interface{}{
+	_, err := expandTerraformFormFieldConfig(formFieldConfigWithOptionsSource(map[string]any{
+		"input": map[string]any{
 			"limit": "500",
 		},
 		"input_json": `{"limit":500}`,
@@ -53,10 +54,10 @@ func TestExpandTerraformFormFieldConfigRejectsInputAndInputJSON(t *testing.T) {
 }
 
 func TestNormalizeProtoFormFieldConfigUsesInputJSONForNativeValues(t *testing.T) {
-	input, err := structpb.NewStruct(map[string]interface{}{
+	input, err := structpb.NewStruct(map[string]any{
 		"limit":        500,
 		"order":        "desc",
-		"searchFields": []interface{}{"name", "technology", "hostname"},
+		"searchFields": []any{"name", "technology", "hostname"},
 	})
 	if err != nil {
 		t.Fatalf("unexpected struct creation error: %v", err)
@@ -74,7 +75,7 @@ func TestNormalizeProtoFormFieldConfigUsesInputJSONForNativeValues(t *testing.T)
 		},
 	})
 
-	optionsSource := config["options_source"].([]interface{})[0].(map[string]interface{})
+	optionsSource := config["options_source"].([]any)[0].(map[string]any)
 	if _, exists := optionsSource["input"]; exists {
 		t.Fatalf("expected non-string payload to be flattened as input_json, got input: %#v", optionsSource["input"])
 	}
@@ -84,7 +85,7 @@ func TestNormalizeProtoFormFieldConfigUsesInputJSONForNativeValues(t *testing.T)
 		t.Fatalf("expected input_json string, got %#v", optionsSource["input_json"])
 	}
 
-	var inputMap map[string]interface{}
+	var inputMap map[string]any
 	if err := json.Unmarshal([]byte(inputJSON), &inputMap); err != nil {
 		t.Fatalf("expected valid input_json, got error: %v", err)
 	}
@@ -95,7 +96,7 @@ func TestNormalizeProtoFormFieldConfigUsesInputJSONForNativeValues(t *testing.T)
 }
 
 func TestNormalizeProtoFormFieldConfigPreservesInputMap(t *testing.T) {
-	input, err := structpb.NewStruct(map[string]interface{}{
+	input, err := structpb.NewStruct(map[string]any{
 		"limit": "500",
 		"order": "desc",
 	})
@@ -103,8 +104,8 @@ func TestNormalizeProtoFormFieldConfigPreservesInputMap(t *testing.T) {
 		t.Fatalf("unexpected struct creation error: %v", err)
 	}
 
-	tfConfig := formFieldConfigWithOptionsSource(map[string]interface{}{
-		"input": map[string]interface{}{
+	tfConfig := formFieldConfigWithOptionsSource(map[string]any{
+		"input": map[string]any{
 			"limit": "500",
 			"order": "desc",
 		},
@@ -122,12 +123,12 @@ func TestNormalizeProtoFormFieldConfigPreservesInputMap(t *testing.T) {
 		},
 	}, tfConfig)
 
-	optionsSource := config["options_source"].([]interface{})[0].(map[string]interface{})
+	optionsSource := config["options_source"].([]any)[0].(map[string]any)
 	if _, exists := optionsSource["input_json"]; exists {
 		t.Fatalf("expected string payload to keep using input, got input_json: %#v", optionsSource["input_json"])
 	}
 
-	inputMap, ok := optionsSource["input"].(map[string]interface{})
+	inputMap, ok := optionsSource["input"].(map[string]any)
 	if !ok {
 		t.Fatalf("expected input map, got %#v", optionsSource["input"])
 	}
@@ -138,7 +139,7 @@ func TestNormalizeProtoFormFieldConfigPreservesInputMap(t *testing.T) {
 }
 
 func TestNormalizeProtoFormFieldConfigPreservesAllStringInputJSON(t *testing.T) {
-	tfConfig := formFieldConfigWithOptionsSource(map[string]interface{}{
+	tfConfig := formFieldConfigWithOptionsSource(map[string]any{
 		"input_json": `{"search":"hello","order":"desc"}`,
 	})
 
@@ -148,7 +149,7 @@ func TestNormalizeProtoFormFieldConfigPreservesAllStringInputJSON(t *testing.T) 
 	}
 
 	normalizedConfig := normalizeProtoFormFieldConfig(config, tfConfig)
-	optionsSource := normalizedConfig["options_source"].([]interface{})[0].(map[string]interface{})
+	optionsSource := normalizedConfig["options_source"].([]any)[0].(map[string]any)
 	if _, exists := optionsSource["input"]; exists {
 		t.Fatalf("expected all-string input_json payload to stay input_json, got input: %#v", optionsSource["input"])
 	}
@@ -158,7 +159,7 @@ func TestNormalizeProtoFormFieldConfigPreservesAllStringInputJSON(t *testing.T) 
 		t.Fatalf("expected input_json string, got %#v", optionsSource["input_json"])
 	}
 
-	var inputMap map[string]interface{}
+	var inputMap map[string]any
 	if err := json.Unmarshal([]byte(inputJSON), &inputMap); err != nil {
 		t.Fatalf("expected valid input_json, got error: %v", err)
 	}
@@ -168,23 +169,21 @@ func TestNormalizeProtoFormFieldConfigPreservesAllStringInputJSON(t *testing.T) 
 	}
 }
 
-func formFieldConfigWithOptionsSource(optionsSource map[string]interface{}) map[string]interface{} {
-	baseOptionsSource := map[string]interface{}{
+func formFieldConfigWithOptionsSource(optionsSource map[string]any) map[string]any {
+	baseOptionsSource := map[string]any{
 		"app":             "Resource",
 		"machine_user_id": "machine-user-id",
 		"transform":       "body.resources",
-		"command": []interface{}{
-			map[string]interface{}{
+		"command": []any{
+			map[string]any{
 				"name": "Resources",
 			},
 		},
 	}
 
-	for key, value := range optionsSource {
-		baseOptionsSource[key] = value
-	}
+	maps.Copy(baseOptionsSource, optionsSource)
 
-	return map[string]interface{}{
-		"options_source": []interface{}{baseOptionsSource},
+	return map[string]any{
+		"options_source": []any{baseOptionsSource},
 	}
 }

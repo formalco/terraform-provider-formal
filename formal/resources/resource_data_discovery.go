@@ -63,7 +63,7 @@ func ResourceDataDiscovery() *schema.Resource {
 				Description: "Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `18h`, `24h` or a valid cron expression, for example `0 4,16 * * *` to run daily at 04:00 and 16:00 UTC.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+				ValidateFunc: func(val any, key string) (warns []string, errs []error) {
 					v := val.(string)
 					predefinedSchedules := map[string]bool{
 						"6h":  true,
@@ -101,7 +101,7 @@ func ResourceDataDiscovery() *schema.Resource {
 	}
 }
 
-func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -132,7 +132,7 @@ func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -151,7 +151,7 @@ func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -185,7 +185,7 @@ func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceDataDiscoveryDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataDiscoveryDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 	// Warning or errors can be collected in a slice type

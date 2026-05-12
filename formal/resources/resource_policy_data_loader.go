@@ -112,7 +112,7 @@ func ResourcePolicyDataLoader() *schema.Resource {
 	}
 }
 
-func resourcePolicyDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyDataLoaderCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -136,7 +136,7 @@ func resourcePolicyDataLoaderCreate(ctx context.Context, d *schema.ResourceData,
 	return resourcePolicyDataLoaderRead(ctx, d, meta)
 }
 
-func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -147,7 +147,7 @@ func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, m
 	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.GetPolicyDataLoader(ctx, connect.NewRequest(&corev1.GetPolicyDataLoaderRequest{Id: loaderId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Loader was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Loader was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -170,7 +170,7 @@ func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	loaderId := d.Id()
@@ -206,7 +206,7 @@ func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourcePolicyDataLoaderRead(ctx, d, meta)
 }
 
-func resourcePolicyDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePolicyDataLoaderDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

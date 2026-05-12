@@ -58,7 +58,7 @@ func ResourceSatelliteLink() *schema.Resource {
 	}
 }
 
-func resourceSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -80,7 +80,7 @@ func resourceSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -94,7 +94,7 @@ func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteLink(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Satellite link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Satellite link was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -112,7 +112,7 @@ func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

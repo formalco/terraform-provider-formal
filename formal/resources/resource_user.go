@@ -103,7 +103,7 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
-func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -160,7 +160,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			}
-			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving User: ", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors+1)+" retrieving User: ", map[string]any{"err": err})
 			currentErrors++
 			time.Sleep(15 * time.Second)
 			continue
@@ -185,7 +185,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	return diags
 }
 
-func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -195,7 +195,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Role with ID "+userId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Role with ID "+userId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -214,7 +214,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodePermissionDenied {
 				// User doesn't have permission to get machine user credentials
-				tflog.Warn(ctx, "Permission denied to get machine user credentials for user "+userId+", skipping machine_user_access_token", map[string]interface{}{"err": err})
+				tflog.Warn(ctx, "Permission denied to get machine user credentials for user "+userId+", skipping machine_user_access_token", map[string]any{"err": err})
 			} else {
 				return diag.FromErr(err)
 			}
@@ -237,7 +237,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return diags
 }
 
-func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -264,7 +264,7 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	return diags
 }
 
-func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -290,7 +290,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 		_, err = c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: userId}))
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
-				tflog.Info(ctx, "User deleted", map[string]interface{}{"user_id": userId})
+				tflog.Info(ctx, "User deleted", map[string]any{"user_id": userId})
 				// User was deleted
 				break
 			}
@@ -299,7 +299,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta interf
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			}
-			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on User Status: ", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on User Status: ", map[string]any{"err": err})
 			currentErrors++
 		}
 

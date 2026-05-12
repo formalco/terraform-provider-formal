@@ -50,7 +50,7 @@ func Connector() *schema.Resource {
 	}
 }
 
-func connectorRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func connectorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

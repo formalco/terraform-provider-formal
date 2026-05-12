@@ -62,7 +62,7 @@ func ResourceNativeUserLink() *schema.Resource {
 	}
 }
 
-func resourceNativeUserLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -90,7 +90,7 @@ func resourceNativeUserLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceNativeUserLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -110,7 +110,7 @@ func resourceNativeUserLinkUpdate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -122,7 +122,7 @@ func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, met
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
-			tflog.Warn(ctx, "The Native User Link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Native User Link was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -147,7 +147,7 @@ func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, met
 	return diags
 }
 
-func resourceNativeUserLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserLinkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

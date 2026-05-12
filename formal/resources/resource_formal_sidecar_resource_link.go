@@ -64,7 +64,7 @@ func ResourceSidecarResourceLink() *schema.Resource {
 	}
 }
 
-func resourceSidecarResourceLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarResourceLinkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -86,7 +86,7 @@ func resourceSidecarResourceLinkCreate(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
-func resourceSidecarResourceLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarResourceLinkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -107,7 +107,7 @@ func resourceSidecarResourceLinkRead(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceSidecarResourceLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarResourceLinkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -129,7 +129,7 @@ func resourceSidecarResourceLinkDelete(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
-func resourceSidecarResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarResourceLinkUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

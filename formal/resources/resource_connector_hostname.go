@@ -101,7 +101,7 @@ func ResourceConnectorHostname() *schema.Resource {
 	}
 }
 
-func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -139,7 +139,7 @@ func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -150,7 +150,7 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	stateConf := &retry.StateChangeConf{
 		Pending: []string{"tls_issuing", "dns_record_pending"}, // States we wait on
 		Target:  []string{"ready"},                             // Custom target state
-		Refresh: func() (interface{}, string, error) {
+		Refresh: func() (any, string, error) {
 			req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
 				Id: &corev1.GetConnectorHostnameRequest_HostnameId{
 					HostnameId: connectorHostnameId,
@@ -160,7 +160,7 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 			res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
 			if err != nil {
 				if connect.CodeOf(err) == connect.CodeNotFound {
-					tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+					tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 					d.SetId("")
 					return nil, "", fmt.Errorf("resource not found")
 				}
@@ -171,7 +171,7 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 			tlsStatus := res.Msg.ConnectorHostname.TlsCertificateStatus
 			dnsStatus := res.Msg.ConnectorHostname.DnsRecordStatus
 
-			tflog.Info(ctx, "Polling for TLS and DNS readiness", map[string]interface{}{
+			tflog.Info(ctx, "Polling for TLS and DNS readiness", map[string]any{
 				"tls_certificate_status": tlsStatus,
 				"dns_record_status":      dnsStatus,
 			})
@@ -206,7 +206,7 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Connector Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -225,7 +225,7 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -265,7 +265,7 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceConnectorHostnameDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorHostnameDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

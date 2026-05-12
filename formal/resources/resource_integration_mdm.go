@@ -62,7 +62,7 @@ func ResourceIntegrationMDM() *schema.Resource {
 	}
 }
 
-func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -73,7 +73,7 @@ func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m
 	if v, ok := d.GetOk("kandji"); ok {
 		kandjiConfigs := v.(*schema.Set).List()
 		if len(kandjiConfigs) > 0 {
-			kandjiConfig := kandjiConfigs[0].(map[string]interface{})
+			kandjiConfig := kandjiConfigs[0].(map[string]any)
 
 			request := corev1.CreateIntegrationMDMRequest{
 				Name: d.Get("name").(string),
@@ -104,7 +104,7 @@ func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -127,7 +127,7 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m i
 	return diags
 }
 
-func resourceIntegrationMDMDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationMDMDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics

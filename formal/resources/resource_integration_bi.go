@@ -80,7 +80,7 @@ func ResourceIntegrationBI() *schema.Resource {
 	}
 }
 
-func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -95,7 +95,7 @@ func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, me
 		// As we expect only one item in the set, we can iterate through the set
 		// Though not typical for sets, this is a pattern in Terraform when a set is used to ensure uniqueness
 		for _, metabaseConfig := range metabaseSet.List() {
-			config := metabaseConfig.(map[string]interface{})
+			config := metabaseConfig.(map[string]any)
 
 			metabase := &corev1.CreateBIIntegrationRequest_Metabase{}
 			if val, exists := config["hostname"]; exists && val != nil {
@@ -137,7 +137,7 @@ func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -156,14 +156,14 @@ func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta
 
 	switch data := res.Msg.Integration.Type.(type) {
 	case *corev1.BIIntegration_Metabase_:
-		metabaseConfig := map[string]interface{}{
+		metabaseConfig := map[string]any{
 			"hostname": data.Metabase.Hostname,
 			"username": data.Metabase.Username,
 			"password": data.Metabase.Password,
 		}
 
 		// Create a new set to store the metabase configuration
-		metabaseSet := schema.NewSet(schema.HashResource(ResourceIntegrationBI().Schema["metabase"].Elem.(*schema.Resource)), []interface{}{metabaseConfig})
+		metabaseSet := schema.NewSet(schema.HashResource(ResourceIntegrationBI().Schema["metabase"].Elem.(*schema.Resource)), []any{metabaseConfig})
 		d.Set("metabase", metabaseSet)
 	}
 
@@ -171,7 +171,7 @@ func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceIntegrationBIDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationBIDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

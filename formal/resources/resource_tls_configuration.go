@@ -82,7 +82,7 @@ func ResourceTlsConfiguration() *schema.Resource {
 	}
 }
 
-func resourceTlsConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTlsConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -120,7 +120,7 @@ func resourceTlsConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -144,7 +144,7 @@ func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -174,7 +174,7 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceTlsConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceTlsConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

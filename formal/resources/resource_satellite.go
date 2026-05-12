@@ -86,7 +86,7 @@ func ResourceSatellite() *schema.Resource {
 	}
 }
 
-func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -117,7 +117,7 @@ func resourceSatelliteCreate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -148,7 +148,7 @@ func resourceSatelliteRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -193,7 +193,7 @@ func resourceSatelliteUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceSatelliteDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

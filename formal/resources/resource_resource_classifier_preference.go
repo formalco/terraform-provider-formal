@@ -68,7 +68,7 @@ func ResourceResourceClassifierConfiguration() *schema.Resource {
 	}
 }
 
-func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -112,7 +112,7 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 	return diags
 }
 
-func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -136,7 +136,7 @@ func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.
 	return diags
 }
 
-func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -180,7 +180,7 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 	return diags
 }
 
-func resourceResourceClassifierConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceClassifierConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

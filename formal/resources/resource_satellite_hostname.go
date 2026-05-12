@@ -66,7 +66,7 @@ func ResourceSatelliteHostname() *schema.Resource {
 	}
 }
 
-func resourceSatelliteHostnameCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteHostnameCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -89,7 +89,7 @@ func resourceSatelliteHostnameCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -103,7 +103,7 @@ func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteHostname(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Satellite hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Satellite hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -122,7 +122,7 @@ func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceSatelliteHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -148,7 +148,7 @@ func resourceSatelliteHostnameUpdate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceSatelliteHostnameDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSatelliteHostnameDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

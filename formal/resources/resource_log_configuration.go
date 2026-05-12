@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -56,13 +57,11 @@ func ResourceLogConfiguration() *schema.Resource {
 							Description: "The type of scope (resource, connector, space, org).",
 							Type:        schema.TypeString,
 							Required:    true,
-							ValidateFunc: func(val interface{}, key string) (warns []string, errs []error) {
+							ValidateFunc: func(val any, key string) (warns []string, errs []error) {
 								v := val.(string)
 								valid := []string{"resource", "connector", "space", "org"}
-								for _, validVal := range valid {
-									if v == validVal {
-										return
-									}
+								if slices.Contains(valid, v) {
+									return
 								}
 								errs = append(errs, fmt.Errorf("%q must be one of %v", key, valid))
 								return
@@ -244,7 +243,7 @@ func formatDuration(d *durationpb.Duration) string {
 	return fmt.Sprintf("%dd", days)
 }
 
-func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	req := &corev1.CreateLogConfigurationRequest{
@@ -259,7 +258,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle scope
 	if scopeSet := d.Get("scope").(*schema.Set); scopeSet.Len() > 0 {
-		scopeData := scopeSet.List()[0].(map[string]interface{})
+		scopeData := scopeSet.List()[0].(map[string]any)
 		scopeType := scopeData["type"].(string)
 		req.Scope = &corev1.LogConfigurationScope{}
 
@@ -294,7 +293,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle request
 	if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
-		requestData := requestSet.List()[0].(map[string]interface{})
+		requestData := requestSet.List()[0].(map[string]any)
 		req.Request = &corev1.LogConfigurationRequest{
 			Encrypt:        requestData["encrypt"].(bool),
 			MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
@@ -303,7 +302,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 		// Handle SQL config if present
 		if sqlSetRaw, ok := requestData["sql"]; ok {
 			if sqlSet := sqlSetRaw.(*schema.Set); sqlSet != nil && sqlSet.Len() > 0 {
-				sqlData := sqlSet.List()[0].(map[string]interface{})
+				sqlData := sqlSet.List()[0].(map[string]any)
 				req.Request.Sql = &corev1.LogConfigurationSql{
 					StripValues: sqlData["strip_values"].(bool),
 					Encrypt:     sqlData["encrypt"].(bool),
@@ -323,7 +322,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle response
 	if responseSet := d.Get("response").(*schema.Set); responseSet.Len() > 0 {
-		responseData := responseSet.List()[0].(map[string]interface{})
+		responseData := responseSet.List()[0].(map[string]any)
 		req.Response = &corev1.LogConfigurationResponse{
 			Encrypt:        responseData["encrypt"].(bool),
 			MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
@@ -341,7 +340,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle stream
 	if streamSet := d.Get("stream").(*schema.Set); streamSet.Len() > 0 {
-		streamData := streamSet.List()[0].(map[string]interface{})
+		streamData := streamSet.List()[0].(map[string]any)
 		req.Stream = &corev1.LogConfigurationStream{
 			Encrypt: streamData["encrypt"].(bool),
 		}
@@ -349,7 +348,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle session
 	if sessionSet := d.Get("session").(*schema.Set); sessionSet.Len() > 0 {
-		sessionData := sessionSet.List()[0].(map[string]interface{})
+		sessionData := sessionSet.List()[0].(map[string]any)
 		req.Session = &corev1.LogConfigurationSession{}
 
 		// Handle policy_eval_input_retention if present
@@ -371,7 +370,7 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceLogConfigurationRead(ctx, d, meta)
 }
 
-func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -380,7 +379,7 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogConfiguration(ctx, connect.NewRequest(&corev1.GetLogConfigurationRequest{Id: configId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Log Configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Log Configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -394,7 +393,7 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 
 	// Set scope
 	if logConfig.Scope != nil {
-		scopeData := map[string]interface{}{}
+		scopeData := map[string]any{}
 		switch logConfig.Scope.Scope {
 		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_RESOURCE:
 			scopeData["type"] = "resource"
@@ -414,23 +413,23 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 		case corev1.LogConfigurationScopeType_LOG_CONFIGURATION_SCOPE_TYPE_ORG:
 			scopeData["type"] = "org"
 		}
-		d.Set("scope", []interface{}{scopeData})
+		d.Set("scope", []any{scopeData})
 	}
 
 	// Set request
 	if logConfig.Request != nil {
-		requestData := map[string]interface{}{
+		requestData := map[string]any{
 			"encrypt":          logConfig.Request.Encrypt,
 			"max_payload_size": logConfig.Request.MaxPayloadSize,
 		}
 
 		// Set SQL config if present
 		if logConfig.Request.Sql != nil {
-			sqlData := map[string]interface{}{
+			sqlData := map[string]any{
 				"strip_values": logConfig.Request.Sql.StripValues,
 				"encrypt":      logConfig.Request.Sql.Encrypt,
 			}
-			requestData["sql"] = []interface{}{sqlData}
+			requestData["sql"] = []any{sqlData}
 		}
 
 		// Set policy_eval_input_retention if present
@@ -438,12 +437,12 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 			requestData["policy_eval_input_retention"] = formatDuration(logConfig.Request.PolicyEvalInputRetention)
 		}
 
-		d.Set("request", []interface{}{requestData})
+		d.Set("request", []any{requestData})
 	}
 
 	// Set response
 	if logConfig.Response != nil {
-		responseData := map[string]interface{}{
+		responseData := map[string]any{
 			"encrypt":          logConfig.Response.Encrypt,
 			"max_payload_size": logConfig.Response.MaxPayloadSize,
 		}
@@ -453,27 +452,27 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 			responseData["policy_eval_input_retention"] = formatDuration(logConfig.Response.PolicyEvalInputRetention)
 		}
 
-		d.Set("response", []interface{}{responseData})
+		d.Set("response", []any{responseData})
 	}
 
 	// Set stream
 	if logConfig.Stream != nil {
-		streamData := map[string]interface{}{
+		streamData := map[string]any{
 			"encrypt": logConfig.Stream.Encrypt,
 		}
-		d.Set("stream", []interface{}{streamData})
+		d.Set("stream", []any{streamData})
 	}
 
 	// Set session
 	if logConfig.Session != nil {
-		sessionData := map[string]interface{}{}
+		sessionData := map[string]any{}
 
 		// Set policy_eval_input_retention if present
 		if logConfig.Session.PolicyEvalInputRetention != nil {
 			sessionData["policy_eval_input_retention"] = formatDuration(logConfig.Session.PolicyEvalInputRetention)
 		}
 
-		d.Set("session", []interface{}{sessionData})
+		d.Set("session", []any{sessionData})
 	}
 
 	d.Set("created_at", logConfig.CreatedAt.AsTime().String())
@@ -483,7 +482,7 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	configId := d.Id()
 
@@ -511,7 +510,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	// Handle request changes
 	if d.HasChange("request") {
 		if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
-			requestData := requestSet.List()[0].(map[string]interface{})
+			requestData := requestSet.List()[0].(map[string]any)
 			req.Request = &corev1.LogConfigurationRequest{
 				Encrypt:        requestData["encrypt"].(bool),
 				MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
@@ -519,7 +518,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 
 			// Handle SQL config if present
 			if sqlSet := requestData["sql"].(*schema.Set); sqlSet.Len() > 0 {
-				sqlData := sqlSet.List()[0].(map[string]interface{})
+				sqlData := sqlSet.List()[0].(map[string]any)
 				req.Request.Sql = &corev1.LogConfigurationSql{
 					StripValues: sqlData["strip_values"].(bool),
 					Encrypt:     sqlData["encrypt"].(bool),
@@ -540,7 +539,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	// Handle response changes
 	if d.HasChange("response") {
 		if responseSet := d.Get("response").(*schema.Set); responseSet.Len() > 0 {
-			responseData := responseSet.List()[0].(map[string]interface{})
+			responseData := responseSet.List()[0].(map[string]any)
 			req.Response = &corev1.LogConfigurationResponse{
 				Encrypt:        responseData["encrypt"].(bool),
 				MaxPayloadSize: int64(responseData["max_payload_size"].(int)),
@@ -560,7 +559,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	// Handle stream changes
 	if d.HasChange("stream") {
 		if streamSet := d.Get("stream").(*schema.Set); streamSet.Len() > 0 {
-			streamData := streamSet.List()[0].(map[string]interface{})
+			streamData := streamSet.List()[0].(map[string]any)
 			req.Stream = &corev1.LogConfigurationStream{
 				Encrypt: streamData["encrypt"].(bool),
 			}
@@ -570,7 +569,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	// Handle session changes
 	if d.HasChange("session") {
 		if sessionSet := d.Get("session").(*schema.Set); sessionSet.Len() > 0 {
-			sessionData := sessionSet.List()[0].(map[string]interface{})
+			sessionData := sessionSet.List()[0].(map[string]any)
 			req.Session = &corev1.LogConfigurationSession{}
 
 			// Handle policy_eval_input_retention if present
@@ -592,7 +591,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceLogConfigurationRead(ctx, d, meta)
 }
 
-func resourceLogConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceLogConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

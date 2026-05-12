@@ -81,7 +81,7 @@ func ResourcePermission() *schema.Resource {
 	}
 }
 
-func resourcePermissionCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePermissionCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -106,7 +106,7 @@ func resourcePermissionCreate(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -116,7 +116,7 @@ func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Permission was deleted
-			tflog.Warn(ctx, "The Permission with ID "+permissionId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Permission with ID "+permissionId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -136,7 +136,7 @@ func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta in
 	return diags
 }
 
-func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	permissionId := d.Id()
@@ -167,7 +167,7 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	return diag.Errorf("At the moment you can only update a permission's name, description, code and status. Please delete and recreate the Permission")
 }
 
-func resourcePermissionDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourcePermissionDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -201,7 +201,7 @@ func resourcePermissionInstanceResourceV0() *schema.Resource {
 	}
 }
 
-func resourcePermissionStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func resourcePermissionStateUpgradeV0(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
 	if rawState == nil {
 		return nil, fmt.Errorf("sidecar resource state upgrade failed, state is nil")
 	}

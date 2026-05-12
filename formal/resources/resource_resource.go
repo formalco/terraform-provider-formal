@@ -127,14 +127,14 @@ func getAliasesFromResourceData(d *schema.ResourceData) ([]string, error) {
 		return nil, fmt.Errorf("error reading aliases")
 	}
 
-	aliases := lo.Map(aliasesSet.List(), func(item interface{}, _ int) string {
+	aliases := lo.Map(aliasesSet.List(), func(item any, _ int) string {
 		return strings.TrimSpace(item.(string))
 	})
 
 	return aliases, nil
 }
 
-func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -153,7 +153,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	environment := d.Get("environment").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
-	tags := d.Get("tags").(map[string]interface{})
+	tags := d.Get("tags").(map[string]any)
 	aliases, err := getAliasesFromResourceData(d)
 	if err != nil {
 		return diag.FromErr(err)
@@ -206,7 +206,7 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
@@ -217,7 +217,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Datastore was deleted
-			tflog.Warn(ctx, "The datastore was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The datastore was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -250,7 +250,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -309,7 +309,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	}
 
 	if d.HasChange("tags") {
-		tags := d.Get("tags").(map[string]interface{})
+		tags := d.Get("tags").(map[string]any)
 
 		msg := &corev1.UpdateResourceRequest{
 			Id:   datastoreId,
@@ -353,7 +353,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 	// Warning or errors can be collected in a slice type

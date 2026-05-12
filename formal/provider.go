@@ -88,8 +88,8 @@ func New(version string) func() *schema.Provider {
 	}
 }
 
-func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (interface{}, diag.Diagnostics) {
-	return func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
+func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (any, diag.Diagnostics) {
+	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
 		apiKey := d.Get("api_key").(string)
 		if apiKey == "" {
 			apiKey = os.Getenv("FORMAL_API_KEY")

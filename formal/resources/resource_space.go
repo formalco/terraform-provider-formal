@@ -68,7 +68,7 @@ func ResourceSpace() *schema.Resource {
 	}
 }
 
-func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -93,7 +93,7 @@ func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta inter
 	return diags
 }
 
-func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -104,7 +104,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Space was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Space was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -122,7 +122,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta interfa
 	return diags
 }
 
-func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -148,7 +148,7 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta inter
 	return diags
 }
 
-func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -175,7 +175,7 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta inter
 		_, err = c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceId}))
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
-				tflog.Info(ctx, "Space deleted", map[string]interface{}{"space_id": spaceId})
+				tflog.Info(ctx, "Space deleted", map[string]any{"space_id": spaceId})
 				// Space was deleted
 				break
 			}
@@ -184,7 +184,7 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta inter
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			}
-			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Space Status: ", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Space Status: ", map[string]any{"err": err})
 			currentErrors++
 		}
 

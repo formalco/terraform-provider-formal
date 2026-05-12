@@ -54,7 +54,7 @@ func ResourceWorkflow() *schema.Resource {
 	}
 }
 
-func resourceWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	status := d.Get("status").(string)
 	req := &corev1.CreateWorkflowRequest{
@@ -73,7 +73,7 @@ func resourceWorkflowCreate(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceWorkflowRead(ctx, d, meta)
 }
 
-func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	workflowId := d.Id()
@@ -81,7 +81,7 @@ func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta inte
 	res, err := c.Grpc.Sdk.WorkflowServiceClient.GetWorkflow(ctx, connect.NewRequest(&corev1.GetWorkflowRequest{Id: workflowId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Workflow with ID "+workflowId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Workflow with ID "+workflowId+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return nil
 		}
@@ -96,7 +96,7 @@ func resourceWorkflowRead(ctx context.Context, d *schema.ResourceData, meta inte
 	return nil
 }
 
-func resourceWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	if d.HasChange("name") || d.HasChange("code") || d.HasChange("status") {
@@ -117,7 +117,7 @@ func resourceWorkflowUpdate(ctx context.Context, d *schema.ResourceData, meta in
 	return resourceWorkflowRead(ctx, d, meta)
 }
 
-func resourceWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceWorkflowDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	_, err := c.Grpc.Sdk.WorkflowServiceClient.DeleteWorkflow(ctx, connect.NewRequest(&corev1.DeleteWorkflowRequest{Id: d.Id()}))
