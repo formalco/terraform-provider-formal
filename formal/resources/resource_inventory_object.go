@@ -66,7 +66,7 @@ func ResourceInventoryObject() *schema.Resource {
 	}
 }
 
-func resourceInventoryObjectCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	objectType := d.Get("type").(string)
@@ -102,13 +102,13 @@ func resourceInventoryObjectCreate(ctx context.Context, d *schema.ResourceData, 
 	return resourceInventoryObjectRead(ctx, d, meta)
 }
 
-func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, connect.NewRequest(&corev1.GetInventoryObjectRequest{Id: d.Id()}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The inventory object was not found; it may have been deleted outside Terraform.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The inventory object was not found; it may have been deleted outside Terraform.", map[string]any{"err": err})
 			d.SetId("")
 			return nil
 		}
@@ -141,7 +141,7 @@ func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, me
 	return nil
 }
 
-func resourceInventoryObjectDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteInventoryObject(ctx, connect.NewRequest(&corev1.DeleteInventoryObjectRequest{Id: d.Id()}))

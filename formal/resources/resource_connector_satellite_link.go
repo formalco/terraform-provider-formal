@@ -70,7 +70,7 @@ func ResourceConnectorSatelliteLink() *schema.Resource {
 	}
 }
 
-func resourceConnectorSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -93,7 +93,7 @@ func resourceConnectorSatelliteLinkCreate(ctx context.Context, d *schema.Resourc
 	return diags
 }
 
-func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -107,7 +107,7 @@ func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceD
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorSatelliteLink(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Connector satellite link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Connector satellite link was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -126,7 +126,7 @@ func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func resourceConnectorSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

@@ -58,7 +58,7 @@ func ResourceGroupLinkUser() *schema.Resource {
 
 const roleLinkGroupTerraformIdDelimiter = "#_#"
 
-func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -82,7 +82,7 @@ func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, me
 	return diags
 }
 
-func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -95,7 +95,7 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
-			tflog.Warn(ctx, "The Group-User link was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Group-User link was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -123,11 +123,11 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceGroupLinkUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	return diag.Errorf("Group User Links are immutable. Please create a new roleLinkGroup.")
 }
 
-func resourceGroupLinkUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceGroupLinkUserDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

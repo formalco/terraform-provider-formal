@@ -76,7 +76,7 @@ func ResourceEncryptionKey() *schema.Resource {
 	}
 }
 
-func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	decryptorUri := d.Get("decryptor_uri").(string)
@@ -96,7 +96,7 @@ func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, me
 	return resourceEncryptionKeyRead(ctx, d, meta)
 }
 
-func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -105,7 +105,7 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 	res, err := c.Grpc.Sdk.LogsServiceClient.GetEncryptionKey(ctx, connect.NewRequest(&corev1.GetEncryptionKeyRequest{Id: keyId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Encryption Key was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Encryption Key was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -124,7 +124,7 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
-func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	keyId := d.Id()
 
@@ -161,7 +161,7 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 	return resourceEncryptionKeyRead(ctx, d, meta)
 }
 
-func resourceEncryptionKeyDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceEncryptionKeyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

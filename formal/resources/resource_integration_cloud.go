@@ -204,9 +204,9 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Computed:    true,
 			},
 		},
-		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m interface{}) error {
+		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, m any) error {
 			if v, ok := d.GetOk("aws"); ok {
-				awsConfigs := v.([]interface{})
+				awsConfigs := v.([]any)
 				if len(awsConfigs) > 0 {
 					oldVersion, newVersion := d.GetChange("aws.0.template_version")
 					if oldVersion != newVersion {
@@ -226,11 +226,11 @@ func ResourceIntegrationCloud() *schema.Resource {
 	}
 }
 
-func expandStringList(items interface{}) []string {
+func expandStringList(items any) []string {
 	switch values := items.(type) {
 	case []string:
 		return append([]string(nil), values...)
-	case []interface{}:
+	case []any:
 		result := make([]string, 0, len(values))
 		for _, item := range values {
 			result = append(result, item.(string))
@@ -242,16 +242,16 @@ func expandStringList(items interface{}) []string {
 	}
 }
 
-func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	name := d.Get("name").(string)
 	cloudRegion := d.Get("cloud_region").(string)
 
 	if v, ok := d.GetOk("aws"); ok {
-		awsConfigs := v.([]interface{})
+		awsConfigs := v.([]any)
 		if len(awsConfigs) > 0 {
-			awsConfig := awsConfigs[0].(map[string]interface{})
+			awsConfig := awsConfigs[0].(map[string]any)
 			enableEksAutodiscovery := awsConfig["enable_eks_autodiscovery"].(bool)
 			enableRdsAutodiscovery := awsConfig["enable_rds_autodiscovery"].(bool)
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
@@ -300,7 +300,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
-func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -311,7 +311,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Integration was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Integration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -321,11 +321,11 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(res.Msg.Cloud.Id)
 	d.Set("name", res.Msg.Cloud.Name)
 
-	existingAwsConfig := d.Get("aws").([]interface{})
+	existingAwsConfig := d.Get("aws").([]any)
 	var existingAwsCustomerRoleArn string
 
 	if len(existingAwsConfig) > 0 {
-		existingAwsConfig := existingAwsConfig[0].(map[string]interface{})
+		existingAwsConfig := existingAwsConfig[0].(map[string]any)
 		existingAwsCustomerRoleArn = existingAwsConfig["aws_customer_role_arn"].(string)
 	}
 
@@ -334,7 +334,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("type", "aws")
 		d.Set("cloud_region", data.Aws.AwsCloudRegion)
 
-		awsConfig := map[string]interface{}{
+		awsConfig := map[string]any{
 			"template_version":              data.Aws.AwsTemplateVersion,
 			"enable_eks_autodiscovery":      data.Aws.AwsEnableEksAutodiscovery,
 			"enable_rds_autodiscovery":      data.Aws.AwsEnableRdsAutodiscovery,
@@ -352,7 +352,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			awsConfig["aws_customer_role_arn"] = data.Aws.AwsCustomerRoleArn
 		}
 
-		if err := d.Set("aws", []interface{}{awsConfig}); err != nil {
+		if err := d.Set("aws", []any{awsConfig}); err != nil {
 			return diag.FromErr(err)
 		}
 
@@ -375,7 +375,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	integrationId := d.Id()
 
@@ -392,9 +392,9 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 	var err error
 
 	if v, ok := d.GetOk("aws"); ok {
-		awsConfigs := v.([]interface{})
+		awsConfigs := v.([]any)
 		if len(awsConfigs) > 0 {
-			awsConfig := awsConfigs[0].(map[string]interface{})
+			awsConfig := awsConfigs[0].(map[string]any)
 			enableEksAutodiscovery := awsConfig["enable_eks_autodiscovery"].(bool)
 			enableRdsAutodiscovery := awsConfig["enable_rds_autodiscovery"].(bool)
 			enableRedshiftAutodiscovery := awsConfig["enable_redshift_autodiscovery"].(bool)
@@ -442,7 +442,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
-func resourceIntegrationCloudDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceIntegrationCloudDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

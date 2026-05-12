@@ -62,7 +62,7 @@ func ResourceDataLabel() *schema.Resource {
 	}
 }
 
-func resourceDataLabelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataLabelCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -87,7 +87,7 @@ func resourceDataLabelCreate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -98,7 +98,7 @@ func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta int
 	res, err := c.Grpc.Sdk.InventoryServiceClient.GetDataLabel(ctx, connect.NewRequest(&corev1.GetDataLabelRequest{Id: dataLabelId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -115,7 +115,7 @@ func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -146,7 +146,7 @@ func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta i
 	return diags
 }
 
-func resourceDataLabelDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceDataLabelDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

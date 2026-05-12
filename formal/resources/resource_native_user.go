@@ -87,7 +87,7 @@ func ResourceNativeUser() *schema.Resource {
 	}
 }
 
-func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
@@ -136,7 +136,7 @@ func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -147,7 +147,7 @@ func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
-			tflog.Warn(ctx, "The Native User "+id+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Native User "+id+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -165,7 +165,7 @@ func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta in
 	return diags
 }
 
-func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -225,7 +225,7 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	return diags
 }
 
-func resourceNativeUserDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceNativeUserDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics

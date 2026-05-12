@@ -58,7 +58,7 @@ func ResourceInventoryObjectDataLabelLink() *schema.Resource {
 	}
 }
 
-func resourceInventoryObjectDataLabelLinkCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectDataLabelLinkCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -88,7 +88,7 @@ func resourceInventoryObjectDataLabelLinkCreate(ctx context.Context, d *schema.R
 	return diags
 }
 
-func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -97,7 +97,7 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, connect.NewRequest(&corev1.GetInventoryObjectRequest{Id: d.Id()}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -114,7 +114,7 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 	return diags
 }
 
-func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -142,7 +142,7 @@ func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.R
 	return diags
 }
 
-func resourceInventoryObjectDataLabelLinkDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceInventoryObjectDataLabelLinkDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

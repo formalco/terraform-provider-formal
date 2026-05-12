@@ -44,7 +44,7 @@ func Group() *schema.Resource {
 	}
 }
 
-func groupRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func groupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

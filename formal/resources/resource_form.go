@@ -182,10 +182,10 @@ func ResourceForm() *schema.Resource {
 	}
 }
 
-func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	fields, err := expandTerraformFormFields(d.Get("field").([]interface{}))
+	fields, err := expandTerraformFormFields(d.Get("field").([]any))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -204,7 +204,7 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceFormRead(ctx, d, meta)
 }
 
-func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	formID := d.Id()
@@ -212,7 +212,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	res, err := c.Grpc.Sdk.WorkflowServiceClient.GetForm(ctx, connect.NewRequest(&corev1.GetFormRequest{Id: formID}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Form with ID "+formID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Form with ID "+formID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return nil
 		}
@@ -230,7 +230,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	if err := d.Set("description", form.Description); err != nil {
 		return diag.FromErr(err)
 	}
-	currentFields, _ := d.Get("field").([]interface{})
+	currentFields, _ := d.Get("field").([]any)
 	if err := d.Set("field", normalizeProtoFormFields(form.Fields, currentFields)); err != nil {
 		return diag.FromErr(err)
 	}
@@ -248,11 +248,11 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta interfac
 	return nil
 }
 
-func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	if d.HasChange("name") || d.HasChange("description") || d.HasChange("field") {
-		fields, err := expandTerraformFormFields(d.Get("field").([]interface{}))
+		fields, err := expandTerraformFormFields(d.Get("field").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -271,7 +271,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta interf
 	return resourceFormRead(ctx, d, meta)
 }
 
-func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	_, err := c.Grpc.Sdk.WorkflowServiceClient.DeleteForm(ctx, connect.NewRequest(&corev1.DeleteFormRequest{Id: d.Id()}))
@@ -283,11 +283,11 @@ func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta interf
 	return nil
 }
 
-func expandTerraformFormFields(tfFields []interface{}) ([]*corev1.FormField, error) {
+func expandTerraformFormFields(tfFields []any) ([]*corev1.FormField, error) {
 	fields := make([]*corev1.FormField, 0, len(tfFields))
 
 	for idx, rawField := range tfFields {
-		fieldMap, ok := rawField.(map[string]interface{})
+		fieldMap, ok := rawField.(map[string]any)
 		if !ok {
 			return nil, fmt.Errorf("field[%d] has invalid structure", idx)
 		}
@@ -300,9 +300,9 @@ func expandTerraformFormFields(tfFields []interface{}) ([]*corev1.FormField, err
 
 		rawConfig, hasConfig := fieldMap["config"]
 		if hasConfig {
-			configList := rawConfig.([]interface{})
+			configList := rawConfig.([]any)
 			if len(configList) > 0 {
-				configMap, ok := configList[0].(map[string]interface{})
+				configMap, ok := configList[0].(map[string]any)
 				if !ok {
 					return nil, fmt.Errorf("field[%d].config has invalid structure", idx)
 				}
@@ -321,14 +321,14 @@ func expandTerraformFormFields(tfFields []interface{}) ([]*corev1.FormField, err
 	return fields, nil
 }
 
-func expandTerraformFormFieldConfig(configMap map[string]interface{}, fieldIndex int) (*corev1.FormFieldConfig, error) {
+func expandTerraformFormFieldConfig(configMap map[string]any, fieldIndex int) (*corev1.FormFieldConfig, error) {
 	config := &corev1.FormFieldConfig{}
 
 	rawOptions, hasOptions := configMap["option"]
 	if hasOptions {
-		optionRows := rawOptions.([]interface{})
+		optionRows := rawOptions.([]any)
 		for optionIndex, row := range optionRows {
-			optionMap, ok := row.(map[string]interface{})
+			optionMap, ok := row.(map[string]any)
 			if !ok {
 				return nil, fmt.Errorf("field[%d].config.option[%d] has invalid structure", fieldIndex, optionIndex)
 			}
@@ -341,18 +341,18 @@ func expandTerraformFormFieldConfig(configMap map[string]interface{}, fieldIndex
 
 	rawOptionsSource, hasOptionsSource := configMap["options_source"]
 	if hasOptionsSource {
-		optionsSourceList := rawOptionsSource.([]interface{})
+		optionsSourceList := rawOptionsSource.([]any)
 		if len(optionsSourceList) > 0 {
-			optionsSourceMap, ok := optionsSourceList[0].(map[string]interface{})
+			optionsSourceMap, ok := optionsSourceList[0].(map[string]any)
 			if !ok {
 				return nil, fmt.Errorf("field[%d].config.options_source has invalid structure", fieldIndex)
 			}
 
-			commandRows := optionsSourceMap["command"].([]interface{})
+			commandRows := optionsSourceMap["command"].([]any)
 			if len(commandRows) == 0 {
 				return nil, fmt.Errorf("field[%d].config.options_source.command is required", fieldIndex)
 			}
-			commandMap, ok := commandRows[0].(map[string]interface{})
+			commandMap, ok := commandRows[0].(map[string]any)
 			if !ok {
 				return nil, fmt.Errorf("field[%d].config.options_source.command has invalid structure", fieldIndex)
 			}
@@ -410,12 +410,12 @@ func expandTerraformFormFieldConfig(configMap map[string]interface{}, fieldIndex
 	return config, nil
 }
 
-func expandTerraformFormFieldOptionsSourceInput(rawInput interface{}) (map[string]interface{}, bool, error) {
+func expandTerraformFormFieldOptionsSourceInput(rawInput any) (map[string]any, bool, error) {
 	if rawInput == nil {
 		return nil, false, nil
 	}
 
-	inputMap, ok := rawInput.(map[string]interface{})
+	inputMap, ok := rawInput.(map[string]any)
 	if !ok {
 		return nil, false, fmt.Errorf("input has invalid structure")
 	}
@@ -423,12 +423,12 @@ func expandTerraformFormFieldOptionsSourceInput(rawInput interface{}) (map[strin
 	return inputMap, len(inputMap) > 0, nil
 }
 
-func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []interface{}) []interface{} {
-	tfFields := make([]interface{}, 0, len(protoFields))
+func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []any) []any {
+	tfFields := make([]any, 0, len(protoFields))
 	currentFieldsByID := terraformFormFieldsByID(currentFields)
 
 	for _, protoField := range protoFields {
-		field := map[string]interface{}{
+		field := map[string]any{
 			"id":   protoField.Id,
 			"name": protoField.Name,
 			"type": protoField.Type,
@@ -437,7 +437,7 @@ func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []i
 		if protoField.Config != nil {
 			config := normalizeProtoFormFieldConfig(protoField.Config, terraformFormFieldConfig(currentFieldsByID[protoField.Id]))
 			if config != nil {
-				field["config"] = []interface{}{config}
+				field["config"] = []any{config}
 			}
 		}
 
@@ -447,17 +447,17 @@ func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []i
 	return tfFields
 }
 
-func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentConfig ...map[string]interface{}) map[string]interface{} {
+func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentConfig ...map[string]any) map[string]any {
 	if protoConfig == nil {
 		return nil
 	}
 
-	config := map[string]interface{}{}
+	config := map[string]any{}
 
 	if len(protoConfig.Options) > 0 {
-		options := make([]interface{}, 0, len(protoConfig.Options))
+		options := make([]any, 0, len(protoConfig.Options))
 		for _, protoOption := range protoConfig.Options {
-			options = append(options, map[string]interface{}{
+			options = append(options, map[string]any{
 				"label": protoOption.Label,
 				"value": protoOption.Value,
 			})
@@ -466,12 +466,12 @@ func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentC
 	}
 
 	if protoConfig.OptionsSource != nil {
-		optionsSource := map[string]interface{}{
+		optionsSource := map[string]any{
 			"app":             protoConfig.OptionsSource.App,
 			"machine_user_id": protoConfig.OptionsSource.MachineUserId,
 			"transform":       protoConfig.OptionsSource.Transform,
-			"command": []interface{}{
-				map[string]interface{}{
+			"command": []any{
+				map[string]any{
 					"name": protoConfig.OptionsSource.Command.GetName(),
 				},
 			},
@@ -488,7 +488,7 @@ func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentC
 			}
 		}
 
-		config["options_source"] = []interface{}{optionsSource}
+		config["options_source"] = []any{optionsSource}
 	}
 
 	if len(config) == 0 {
@@ -498,10 +498,10 @@ func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentC
 	return config
 }
 
-func terraformFormFieldsByID(tfFields []interface{}) map[string]map[string]interface{} {
-	fieldsByID := make(map[string]map[string]interface{}, len(tfFields))
+func terraformFormFieldsByID(tfFields []any) map[string]map[string]any {
+	fieldsByID := make(map[string]map[string]any, len(tfFields))
 	for _, rawField := range tfFields {
-		fieldMap, ok := rawField.(map[string]interface{})
+		fieldMap, ok := rawField.(map[string]any)
 		if !ok {
 			continue
 		}
@@ -517,17 +517,17 @@ func terraformFormFieldsByID(tfFields []interface{}) map[string]map[string]inter
 	return fieldsByID
 }
 
-func terraformFormFieldConfig(tfField map[string]interface{}) map[string]interface{} {
+func terraformFormFieldConfig(tfField map[string]any) map[string]any {
 	if tfField == nil {
 		return nil
 	}
 
-	configList, ok := tfField["config"].([]interface{})
+	configList, ok := tfField["config"].([]any)
 	if !ok || len(configList) == 0 {
 		return nil
 	}
 
-	configMap, ok := configList[0].(map[string]interface{})
+	configMap, ok := configList[0].(map[string]any)
 	if !ok {
 		return nil
 	}
@@ -535,17 +535,17 @@ func terraformFormFieldConfig(tfField map[string]interface{}) map[string]interfa
 	return configMap
 }
 
-func terraformFormFieldConfigUsesInputJSON(configs ...map[string]interface{}) bool {
+func terraformFormFieldConfigUsesInputJSON(configs ...map[string]any) bool {
 	if len(configs) == 0 || configs[0] == nil {
 		return false
 	}
 
-	optionsSourceList, ok := configs[0]["options_source"].([]interface{})
+	optionsSourceList, ok := configs[0]["options_source"].([]any)
 	if !ok || len(optionsSourceList) == 0 {
 		return false
 	}
 
-	optionsSourceMap, ok := optionsSourceList[0].(map[string]interface{})
+	optionsSourceMap, ok := optionsSourceList[0].(map[string]any)
 	if !ok {
 		return false
 	}
@@ -554,26 +554,26 @@ func terraformFormFieldConfigUsesInputJSON(configs ...map[string]interface{}) bo
 	return ok && strings.TrimSpace(inputJSON) != ""
 }
 
-func terraformFormFieldConfigUsesInput(configs ...map[string]interface{}) bool {
+func terraformFormFieldConfigUsesInput(configs ...map[string]any) bool {
 	if len(configs) == 0 || configs[0] == nil {
 		return false
 	}
 
-	optionsSourceList, ok := configs[0]["options_source"].([]interface{})
+	optionsSourceList, ok := configs[0]["options_source"].([]any)
 	if !ok || len(optionsSourceList) == 0 {
 		return false
 	}
 
-	optionsSourceMap, ok := optionsSourceList[0].(map[string]interface{})
+	optionsSourceMap, ok := optionsSourceList[0].(map[string]any)
 	if !ok {
 		return false
 	}
 
-	inputMap, ok := optionsSourceMap["input"].(map[string]interface{})
+	inputMap, ok := optionsSourceMap["input"].(map[string]any)
 	return ok && len(inputMap) > 0
 }
 
-func validateJSONObjectString(value interface{}, key string) ([]string, []error) {
+func validateJSONObjectString(value any, key string) ([]string, []error) {
 	if _, err := parseJSONObjectString(value.(string)); err != nil {
 		return nil, []error{fmt.Errorf("%s must be a valid JSON object: %w", key, err)}
 	}
@@ -581,7 +581,7 @@ func validateJSONObjectString(value interface{}, key string) ([]string, []error)
 	return nil, nil
 }
 
-func canonicalizeJSONString(value interface{}) string {
+func canonicalizeJSONString(value any) string {
 	canonicalJSON, err := parseJSONObjectString(value.(string))
 	if err != nil {
 		return value.(string)
@@ -590,8 +590,8 @@ func canonicalizeJSONString(value interface{}) string {
 	return mustCanonicalJSONString(canonicalJSON)
 }
 
-func parseJSONObjectString(inputJSON string) (map[string]interface{}, error) {
-	var inputMap map[string]interface{}
+func parseJSONObjectString(inputJSON string) (map[string]any, error) {
+	var inputMap map[string]any
 	if err := json.Unmarshal([]byte(strings.TrimSpace(inputJSON)), &inputMap); err != nil {
 		return nil, err
 	}
@@ -603,7 +603,7 @@ func parseJSONObjectString(inputJSON string) (map[string]interface{}, error) {
 	return inputMap, nil
 }
 
-func mustCanonicalJSONString(inputMap map[string]interface{}) string {
+func mustCanonicalJSONString(inputMap map[string]any) string {
 	canonicalJSON, err := json.Marshal(inputMap)
 	if err != nil {
 		return "{}"

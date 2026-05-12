@@ -67,7 +67,7 @@ func ResourceConnectorListener() *schema.Resource {
 	}
 }
 
-func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -103,7 +103,7 @@ func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -114,7 +114,7 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorListener(ctx, connect.NewRequest(&corev1.GetConnectorListenerRequest{Id: connectorListenerId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Connector listener was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Connector listener was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -133,7 +133,7 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -162,7 +162,7 @@ func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceConnectorListenerDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorListenerDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

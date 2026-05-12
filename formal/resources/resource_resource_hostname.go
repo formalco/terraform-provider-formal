@@ -66,7 +66,7 @@ func ResourceResourceHostname() *schema.Resource {
 	}
 }
 
-func resourceResourceHostnameCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -90,7 +90,7 @@ func resourceResourceHostnameCreate(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -105,7 +105,7 @@ func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, m
 	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHostname(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Resource Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Resource Hostname was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -122,7 +122,7 @@ func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
-func resourceResourceHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -156,7 +156,7 @@ func resourceResourceHostnameUpdate(ctx context.Context, d *schema.ResourceData,
 	return diags
 }
 
-func resourceResourceHostnameDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceResourceHostnameDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 

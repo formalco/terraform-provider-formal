@@ -105,7 +105,7 @@ func ResourceSidecar() *schema.Resource {
 	}
 }
 
-func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -131,7 +131,7 @@ func resourceSidecarCreate(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -142,7 +142,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	res, err := c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: sidecarId}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Sidecar was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -167,7 +167,7 @@ func resourceSidecarRead(ctx context.Context, d *schema.ResourceData, meta inter
 	return diags
 }
 
-func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -193,7 +193,7 @@ func resourceSidecarUpdate(ctx context.Context, d *schema.ResourceData, meta int
 	return diags
 }
 
-func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -220,7 +220,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 		_, err = c.Grpc.Sdk.SidecarServiceClient.GetSidecar(ctx, connect.NewRequest(&corev1.GetSidecarRequest{Id: dsId}))
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
-				tflog.Info(ctx, "Sidecar deleted", map[string]interface{}{"sidecar_id": dsId})
+				tflog.Info(ctx, "Sidecar deleted", map[string]any{"sidecar_id": dsId})
 				// Sidecar was deleted
 				break
 			}
@@ -229,7 +229,7 @@ func resourceSidecarDelete(ctx context.Context, d *schema.ResourceData, meta int
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
 			}
-			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Sidecar Status: ", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "Experienced an error #"+strconv.Itoa(currentErrors)+" checking on Sidecar Status: ", map[string]any{"err": err})
 			currentErrors++
 		}
 
@@ -256,7 +256,7 @@ func resourceSidecarInstanceResourceV0() *schema.Resource {
 	}
 }
 
-func resourceSidecarStateUpgradeV0(ctx context.Context, rawState map[string]interface{}, meta interface{}) (map[string]interface{}, error) {
+func resourceSidecarStateUpgradeV0(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
 	if rawState == nil {
 		return nil, fmt.Errorf("sidecar resource state upgrade failed, state is nil")
 	}

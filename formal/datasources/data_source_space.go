@@ -47,7 +47,7 @@ func Space() *schema.Resource {
 	}
 }
 
-func spaceRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func spaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

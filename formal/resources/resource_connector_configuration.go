@@ -85,7 +85,7 @@ func ResourceConnectorConfiguration() *schema.Resource {
 	}
 }
 
-func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -114,7 +114,7 @@ func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.Resourc
 	return diags
 }
 
-func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -129,7 +129,7 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorConfiguration(ctx, req)
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Connector configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The Connector configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -148,7 +148,7 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
-func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -185,7 +185,7 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 	return diags
 }
 
-func resourceConnectorConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorConfigurationDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
 
@@ -217,7 +217,7 @@ func resourceConnectorConfigurationInstanceResourceV1() *schema.Resource {
 	}
 }
 
-func resourceConnectorConfigurationStateUpgradeV1(_ context.Context, rawState map[string]interface{}, _ interface{}) (map[string]interface{}, error) {
+func resourceConnectorConfigurationStateUpgradeV1(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
 	if rawState == nil {
 		return nil, fmt.Errorf("connector configuration resource state upgrade failed, state is nil")
 	}

@@ -165,7 +165,7 @@ func getWriteOnlyApiKey(d *schema.ResourceData, providerBlock string) (string, d
 
 func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderConfig, diag.Diagnostics) {
 	if v, ok := d.GetOk("formal_ai_satellite"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
 			return &corev1.ConnectorAiProviderConfig{
 				Provider: &corev1.ConnectorAiProviderConfig_FormalAiSatellite{
@@ -175,7 +175,7 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("gemini"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
 			apiKey, diags := getWriteOnlyApiKey(d, "gemini")
 			if diags.HasError() {
@@ -189,9 +189,9 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("google_vertex_ai"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
-			cfg := configs[0].(map[string]interface{})
+			cfg := configs[0].(map[string]any)
 			return &corev1.ConnectorAiProviderConfig{
 				Provider: &corev1.ConnectorAiProviderConfig_GoogleVertexAi{
 					GoogleVertexAi: &corev1.GoogleVertexAiConfig{
@@ -203,7 +203,7 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("anthropic"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
 			apiKey, diags := getWriteOnlyApiKey(d, "anthropic")
 			if diags.HasError() {
@@ -217,9 +217,9 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("aws_bedrock"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
-			cfg := configs[0].(map[string]interface{})
+			cfg := configs[0].(map[string]any)
 			return &corev1.ConnectorAiProviderConfig{
 				Provider: &corev1.ConnectorAiProviderConfig_AwsBedrock{
 					AwsBedrock: &corev1.AwsBedrockConfig{Region: cfg["region"].(string)},
@@ -228,7 +228,7 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("openai"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
 			apiKey, diags := getWriteOnlyApiKey(d, "openai")
 			if diags.HasError() {
@@ -242,9 +242,9 @@ func buildAiProviderConfig(d *schema.ResourceData) (*corev1.ConnectorAiProviderC
 		}
 	}
 	if v, ok := d.GetOk("azure_ai"); ok {
-		configs := v.([]interface{})
+		configs := v.([]any)
 		if len(configs) > 0 {
-			cfg := configs[0].(map[string]interface{})
+			cfg := configs[0].(map[string]any)
 			apiKey, diags := getWriteOnlyApiKey(d, "azure_ai")
 			if diags.HasError() {
 				return nil, diags
@@ -268,31 +268,31 @@ func setAiProviderState(d *schema.ResourceData, provider *corev1.ConnectorAiProv
 
 	switch p := provider.Config.Provider.(type) {
 	case *corev1.ConnectorAiProviderConfig_FormalAiSatellite:
-		d.Set("formal_ai_satellite", []interface{}{map[string]interface{}{}})
+		d.Set("formal_ai_satellite", []any{map[string]any{}})
 	case *corev1.ConnectorAiProviderConfig_Gemini:
 		// api_key is write-only, nothing to read back
 	case *corev1.ConnectorAiProviderConfig_GoogleVertexAi:
-		d.Set("google_vertex_ai", []interface{}{map[string]interface{}{
+		d.Set("google_vertex_ai", []any{map[string]any{
 			"gcp_project_id": p.GoogleVertexAi.GcpProjectId,
 			"region":         p.GoogleVertexAi.Region,
 		}})
 	case *corev1.ConnectorAiProviderConfig_Anthropic:
 		// api_key is write-only, nothing to read back
 	case *corev1.ConnectorAiProviderConfig_AwsBedrock:
-		d.Set("aws_bedrock", []interface{}{map[string]interface{}{
+		d.Set("aws_bedrock", []any{map[string]any{
 			"region": p.AwsBedrock.Region,
 		}})
 	case *corev1.ConnectorAiProviderConfig_Openai:
 		// api_key is write-only, nothing to read back
 	case *corev1.ConnectorAiProviderConfig_AzureAi:
-		d.Set("azure_ai", []interface{}{map[string]interface{}{
+		d.Set("azure_ai", []any{map[string]any{
 			"endpoint":        p.AzureAi.Endpoint,
 			"api_key_version": d.Get("azure_ai.0.api_key_version"),
 		}})
 	}
 }
 
-func resourceConnectorAiProviderCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorAiProviderCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	config, diags := buildAiProviderConfig(d)
@@ -313,7 +313,7 @@ func resourceConnectorAiProviderCreate(ctx context.Context, d *schema.ResourceDa
 	return nil
 }
 
-func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
@@ -324,7 +324,7 @@ func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData
 	}))
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The connector AI provider was not found, which means it may have been deleted without using this Terraform config.", map[string]interface{}{"err": err})
+			tflog.Warn(ctx, "The connector AI provider was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return diags
 		}
@@ -336,7 +336,7 @@ func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData
 	return diags
 }
 
-func resourceConnectorAiProviderUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorAiProviderUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	config, diags := buildAiProviderConfig(d)
@@ -355,7 +355,7 @@ func resourceConnectorAiProviderUpdate(ctx context.Context, d *schema.ResourceDa
 	return resourceConnectorAiProviderRead(ctx, d, meta)
 }
 
-func resourceConnectorAiProviderDelete(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+func resourceConnectorAiProviderDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 

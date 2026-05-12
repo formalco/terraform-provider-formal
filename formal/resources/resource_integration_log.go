@@ -125,7 +125,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 	}
 }
 
-func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -139,7 +139,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.GetOk("datadog"); ok {
 		ddConfigs := v.(*schema.Set).List()
 		if len(ddConfigs) > 0 {
-			ddConfig := ddConfigs[0].(map[string]interface{})
+			ddConfig := ddConfigs[0].(map[string]any)
 
 			integration := &corev1.CreateIntegrationLogRequest_Datadog_{
 				Datadog: &corev1.CreateIntegrationLogRequest_Datadog{
@@ -159,7 +159,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.GetOk("splunk"); ok {
 		splunkConfigs := v.(*schema.Set).List()
 		if len(splunkConfigs) > 0 {
-			splunkConfig := splunkConfigs[0].(map[string]interface{})
+			splunkConfig := splunkConfigs[0].(map[string]any)
 
 			integration := &corev1.CreateIntegrationLogRequest_Splunk_{
 				Splunk: &corev1.CreateIntegrationLogRequest_Splunk{
@@ -179,7 +179,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 	if v, ok := d.GetOk("aws_s3"); ok {
 		awsConfigs := v.(*schema.Set).List()
 		if len(awsConfigs) > 0 {
-			awsConfig := awsConfigs[0].(map[string]interface{})
+			awsConfig := awsConfigs[0].(map[string]any)
 
 			integration := &corev1.CreateIntegrationLogRequest_AwsS3_{
 				AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
@@ -210,7 +210,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics
@@ -234,7 +234,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 	return diags
 }
 
-func resourceIntegrationLogsDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
+func resourceIntegrationLogsDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
 	var diags diag.Diagnostics
