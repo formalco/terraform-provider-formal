@@ -113,6 +113,13 @@ func ResourceIntegrationLogs() *schema.Resource {
 							Type:        schema.TypeString,
 							Required:    true,
 						},
+						"s3_bucket_prefix": {
+							Description: "AWS S3 bucket prefix to write logs under. Defaults to the bucket root.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+							ForceNew:    true,
+						},
 						"cloud_integration_id": {
 							Description: "Cloud Integration ID.",
 							Type:        schema.TypeString,
@@ -185,6 +192,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 				AwsS3: &corev1.CreateIntegrationLogRequest_AwsS3{
 					CloudIntegrationId: awsConfig["cloud_integration_id"].(string),
 					BucketName:         awsConfig["s3_bucket_name"].(string),
+					BucketPrefix:       awsConfig["s3_bucket_prefix"].(string),
 				},
 			}
 			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
@@ -228,6 +236,16 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 	d.Set("integration", res.Msg.Integration.Integration)
 	d.Set("termination_protection", res.Msg.Integration.TerminationProtection)
 	d.Set("created_at", res.Msg.Integration.CreatedAt.AsTime().Unix())
+	if awsS3 := res.Msg.Integration.GetAwsS3(); awsS3 != nil {
+		d.Set("aws_s3", []map[string]any{
+			{
+				"cloud_integration_id": awsS3.CloudIntegrationId,
+				"s3_bucket_name":       awsS3.BucketName,
+				"s3_bucket_prefix":     awsS3.BucketPrefix,
+				"region":               awsS3.Region,
+			},
+		})
+	}
 
 	d.SetId(res.Msg.Integration.Id)
 

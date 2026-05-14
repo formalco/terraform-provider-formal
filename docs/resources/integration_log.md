@@ -38,6 +38,10 @@ Required:
 - `cloud_integration_id` (String) Cloud Integration ID.
 - `s3_bucket_name` (String) AWS S3 Bucket Name.
 
+Optional:
+
+- `s3_bucket_prefix` (String) AWS S3 bucket prefix to write logs under. Defaults to the bucket root.
+
 Read-Only:
 
 - `region` (String) AWS Region.
