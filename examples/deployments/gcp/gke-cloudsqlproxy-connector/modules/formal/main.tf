@@ -53,9 +53,3 @@ resource "formal_connector_listener_rule" "postgres_rule" {
   type                  = "technology"
   rule                  = "postgres"
 }
-
-# Listener Link
-resource "formal_connector_listener_link" "postgres_link" {
-  connector_id          = formal_connector.main.id
-  connector_listener_id = formal_connector_listener.postgres_listener.id
-}

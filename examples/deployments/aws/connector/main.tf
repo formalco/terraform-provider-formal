@@ -76,8 +76,3 @@ resource "formal_connector_listener_rule" "echo" {
   type                  = "resource"
   rule                  = formal_resource.echo.id
 }
-
-resource "formal_connector_listener_link" "echo" {
-  connector_id          = module.demo_connector.connector_id
-  connector_listener_id = formal_connector_listener.echo.id
-}
