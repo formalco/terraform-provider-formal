@@ -76,19 +76,15 @@ resource "formal_connector" "kubernetes_connector" {
 }
 
 resource "formal_connector_listener" "kubernetes_listener" {
-  name = "kubernetes-listener"
-  port = 443
+  name         = "kubernetes-listener"
+  port         = 443
+  connector_id = formal_connector.kubernetes_connector.id
 }
 
 resource "formal_connector_listener_rule" "kubernetes_rule" {
   connector_listener_id = formal_connector_listener.kubernetes_listener.id
   type                  = "technology"
   rule                  = "kubernetes"
-}
-
-resource "formal_connector_listener_link" "kubernetes_link" {
-  connector_id          = formal_connector.kubernetes_connector.id
-  connector_listener_id = formal_connector_listener.kubernetes_listener.id
 }
 
 # Create the IAM role for the connector and bind it to the created service account

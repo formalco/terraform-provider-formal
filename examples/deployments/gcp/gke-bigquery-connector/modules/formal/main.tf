@@ -25,18 +25,13 @@ resource "formal_resource" "bigquery" {
 
 # BigQuery Listener
 resource "formal_connector_listener" "bigquery_listener" {
-  name = "bigquery-listener"
-  port = var.bigquery_port
+  name         = "bigquery-listener"
+  port         = var.bigquery_port
+  connector_id = formal_connector.main.id
 }
 
 resource "formal_connector_listener_rule" "bigquery_rule" {
   connector_listener_id = formal_connector_listener.bigquery_listener.id
   type                  = "resource"
   rule                  = formal_resource.bigquery.id
-}
-
-# Listener Link
-resource "formal_connector_listener_link" "bigquery_link" {
-  connector_id          = formal_connector.main.id
-  connector_listener_id = formal_connector_listener.bigquery_listener.id
 }
