@@ -25,14 +25,6 @@ resource "formal_resource" "postgres1" {
   }
 }
 
-resource "formal_user" "human" {
-  type = "human"
-  name = "terraform-test-policy-human-user"
-  first_name = "test2"
-  last_name = "test2"
-  email = "test@test-formal.com"
-}
-
 resource "formal_policy" "name" {
   description            = "terraform-test-policy"
   module                 = <<EOT
@@ -48,8 +40,6 @@ pre_request := {
 }
 EOT
   name                   = "terraform-test-local-formal_policy-with-termination-protection"
-  notification           = "none"
-  owner       = formal_user.human.email
   status                 = "active"
   termination_protection = var.termination_protection
 }

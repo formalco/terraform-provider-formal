@@ -12,12 +12,10 @@ provider "formal" {
 }
 
 resource "formal_policy" "decrypt" {
-  name         = "decrypt"
-  description  = "decrpyt any columns that has the name encrypted-col."
-  owner        = "john@company.com"
-  notification = "none"
-  status       = "active"
-  module       = <<-EOF
+  name        = "decrypt"
+  description = "decrpyt any columns that has the name encrypted-col."
+  status      = "active"
+  module      = <<-EOF
 package formal.v2
 
 import future.keywords.if
@@ -31,12 +29,10 @@ EOF
 
 
 resource "formal_policy" "mask_emails" {
-  name         = "mask-email"
-  description  = "Mask any column that has the data label email_address."
-  owner        = "john@company.com"
-  notification = "consumer"
-  status       = "active"
-  module       = <<-EOF
+  name        = "mask-email"
+  description = "Mask any column that has the data label email_address."
+  status      = "active"
+  module      = <<-EOF
 package formal.v2
 
 import future.keywords.if
@@ -48,12 +44,10 @@ EOF
 }
 
 resource "formal_policy" "row_level_hashing" {
-  name         = "test-row-level-hashing-eu"
-  description  = "hash every row that has the eu column set to true."
-  owner        = "john@company.com"
-  notification = "all"
-  status       = "active"
-  module       = <<-EOF
+  name        = "test-row-level-hashing-eu"
+  description = "hash every row that has the eu column set to true."
+  status      = "active"
+  module      = <<-EOF
 package formal.v2
 
 import future.keywords.if
@@ -66,12 +60,10 @@ EOF
 }
 
 resource "formal_policy" "block_db_with_formal_message" {
-  name         = "block_db_with_formal_message"
-  description  = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
-  owner        = "john@company.com"
-  notification = "all"
-  status       = "active"
-  module       = <<-EOF
+  name        = "block_db_with_formal_message"
+  description = "this policy block connection to sidecar based on the name of db and drop the connection with a formal message"
+  status      = "active"
+  module      = <<-EOF
 package formal.v2
 
 import future.keywords.if
@@ -89,12 +81,10 @@ EOF
 
 
 resource "formal_policy" "http_pre_request_name_hash" {
-  name         = "http_pre_request_name_hash"
-  description  = "this policy hash every names in body request of HTTP requests"
-  owner        = "john@company.com"
-  notification = "all"
-  status       = "active"
-  module       = <<-EOF
+  name        = "http_pre_request_name_hash"
+  description = "this policy hash every names in body request of HTTP requests"
+  status      = "active"
+  module      = <<-EOF
 package formal.v2
 
 import future.keywords.if
