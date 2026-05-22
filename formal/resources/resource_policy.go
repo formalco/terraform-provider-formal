@@ -3,7 +3,6 @@ package resource
 import (
 	"context"
 	"fmt"
-	"net/mail"
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
@@ -27,12 +26,17 @@ func ResourcePolicy() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
-		SchemaVersion: 1,
+		SchemaVersion: 2,
 		StateUpgraders: []schema.StateUpgrader{
 			{
 				Version: 0,
 				Type:    resourcePolicyInstanceResourceV0().CoreConfigSchema().ImpliedType(),
 				Upgrade: resourcePolicyStateUpgradeV0,
+			},
+			{
+				Version: 1,
+				Type:    resourcePolicyInstanceResourceV1().CoreConfigSchema().ImpliedType(),
+				Upgrade: resourcePolicyStateUpgradeV1,
 			},
 		},
 		Schema: map[string]*schema.Schema{
@@ -83,24 +87,6 @@ func ResourcePolicy() *schema.Resource {
 					"active",
 				}, false),
 			},
-			"notification": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Notification settings for this policy. It can be one of the following: 'all', 'consumer', 'owners', or 'none'.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ValidateFunc: validation.StringInSlice([]string{
-					"all",
-					"consumer",
-					"owners",
-					"none",
-				}, false),
-			},
-			"owner": {
-				// This description is used by the documentation generator and the language server.
-				Description: "Owner of this policy: it can be either a group name or a user email.",
-				Type:        schema.TypeString,
-				Required:    true,
-			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
 				Description: "If set to true, this Policy cannot be deleted.",
@@ -144,7 +130,6 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 	Name := d.Get("name").(string)
 	Description := d.Get("description").(string)
 	Module := d.Get("module").(string)
-	Notification := d.Get("notification").(string)
 	Status := d.Get("status").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
@@ -152,21 +137,8 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 		Name:                  Name,
 		Description:           Description,
 		Code:                  Module,
-		Notification:          Notification,
 		Status:                Status,
 		TerminationProtection: TerminationProtection,
-	}
-
-	owner := d.Get("owner").(string)
-	parsedEmail, _ := mail.ParseAddress(owner)
-	if parsedEmail != nil {
-		newPolicy.Owner = &corev1.CreatePolicyRequest_UserEmail{
-			UserEmail: owner,
-		}
-	} else {
-		newPolicy.Owner = &corev1.CreatePolicyRequest_GroupName{
-			GroupName: owner,
-		}
 	}
 
 	res, err := c.Grpc.Sdk.PoliciesServiceClient.CreatePolicy(ctx, connect.NewRequest(newPolicy))
@@ -202,7 +174,6 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	d.Set("name", res.Msg.Policy.Name)
 	d.Set("description", res.Msg.Policy.Description)
 	d.Set("module", res.Msg.Policy.Code)
-	d.Set("notification", res.Msg.Policy.Notification)
 	d.Set("status", res.Msg.Policy.Status)
 	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
 
@@ -216,11 +187,10 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("notification") || d.HasChange("owner") || d.HasChange("active") || d.HasChange("status") || d.HasChange("termination_protection") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("status") || d.HasChange("termination_protection") {
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 		Module := d.Get("module").(string)
-		Notification := d.Get("notification").(string)
 		Status := d.Get("status").(string)
 		TerminationProtection := d.Get("termination_protection").(bool)
 
@@ -229,21 +199,8 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 			Name:                  Name,
 			Description:           Description,
 			Code:                  Module,
-			Notification:          Notification,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
-		}
-
-		owner := d.Get("owner").(string)
-		parsedEmail, _ := mail.ParseAddress(owner)
-		if parsedEmail != nil {
-			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_UserEmail{
-				UserEmail: owner,
-			}
-		} else {
-			updatedPolicy.Owner = &corev1.UpdatePolicyRequest_GroupName{
-				GroupName: owner,
-			}
 		}
 
 		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
@@ -253,7 +210,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 
 		return resourcePolicyRead(ctx, d, meta)
 	}
-	return diag.Errorf("At the moment you can only update a policy's name, description, module, notification, owner and active status. Please delete and recreate the Policy")
+	return diag.Errorf("At the moment you can only update a policy's name, description, module and status. Please delete and recreate the Policy")
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -288,6 +245,64 @@ func resourcePolicyInstanceResourceV0() *schema.Resource {
 			},
 		},
 	}
+}
+
+func resourcePolicyInstanceResourceV1() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"name": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"description": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"module": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"id": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"created_at": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"updated_at": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"status": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"notification": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"owner": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
+			"termination_protection": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+		},
+	}
+}
+
+func resourcePolicyStateUpgradeV1(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	if rawState == nil {
+		return nil, fmt.Errorf("policy resource state upgrade failed, state is nil")
+	}
+
+	delete(rawState, "owner")
+	delete(rawState, "notification")
+
+	return rawState, nil
 }
 
 func resourcePolicyStateUpgradeV0(ctx context.Context, rawState map[string]any, meta any) (map[string]any, error) {
