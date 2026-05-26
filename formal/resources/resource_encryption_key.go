@@ -48,16 +48,23 @@ func ResourceEncryptionKey() *schema.Resource {
 				Required:    true,
 			},
 			"algorithm": {
-				Description: "The algorithm used for encryption. Can be either 'aes_random' or 'aes_deterministic'.",
+				Description: "The algorithm used for encryption. One of 'aes_random', 'aes_deterministic' (symmetric), or 'rsaes_oaep_sha256' (asymmetric).",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"aes_random",
 					"aes_deterministic",
+					"rsaes_oaep_sha256",
 				}, false),
 			},
 			"decryptor_uri": {
 				Description: "The URI of the decryptor (e.g., a URL to a Lambda function, either directly or via API Gateway). This is used to decrypt the data on the frontend only (and is never called by the Formal Control Plane backend).",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "",
+			},
+			"public_key_pem": {
+				Description: "PEM-encoded RSA public key for client-side encryption. Required when 'algorithm' is 'rsaes_oaep_sha256'. Typically wired from another resource, e.g. `data.aws_kms_public_key.<name>.public_key_pem` for an asymmetric AWS KMS key.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
@@ -85,6 +92,9 @@ func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, me
 		KeyId:        d.Get("key_id").(string),
 		Algorithm:    d.Get("algorithm").(string),
 		DecryptorUri: &decryptorUri,
+	}
+	if pem := d.Get("public_key_pem").(string); pem != "" {
+		req.PublicKeyPem = &pem
 	}
 
 	res, err := c.Grpc.Sdk.LogsServiceClient.CreateEncryptionKey(ctx, connect.NewRequest(req))
@@ -117,6 +127,7 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 	d.Set("key_id", res.Msg.EncryptionKey.KeyId)
 	d.Set("algorithm", res.Msg.EncryptionKey.Algorithm)
 	d.Set("decryptor_uri", res.Msg.EncryptionKey.DecryptorUri)
+	d.Set("public_key_pem", res.Msg.EncryptionKey.PublicKeyPem)
 	d.Set("created_at", res.Msg.EncryptionKey.CreatedAt.AsTime().String())
 	d.Set("updated_at", res.Msg.EncryptionKey.UpdatedAt.AsTime().String())
 
@@ -128,7 +139,7 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 	c := meta.(*clients.Clients)
 	keyId := d.Id()
 
-	fieldsThatCanChange := []string{"key_provider", "key_id", "algorithm", "decryptor_uri"}
+	fieldsThatCanChange := []string{"key_provider", "key_id", "algorithm", "decryptor_uri", "public_key_pem"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
@@ -152,6 +163,10 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 	if d.HasChange("decryptor_uri") {
 		decryptorUri := d.Get("decryptor_uri").(string)
 		req.DecryptorUri = &decryptorUri
+	}
+	if d.HasChange("public_key_pem") {
+		pem := d.Get("public_key_pem").(string)
+		req.PublicKeyPem = &pem
 	}
 
 	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateEncryptionKey(ctx, connect.NewRequest(req))
