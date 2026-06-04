@@ -58,6 +58,7 @@ func New(version string) func() *schema.Provider {
 				"formal_sidecar":                           resource.ResourceSidecar(),
 				"formal_native_user":                       resource.ResourceNativeUser(),
 				"formal_native_user_link":                  resource.ResourceNativeUserLink(),
+				"formal_network_rule":                      resource.ResourceNetworkRule(),
 				"formal_user":                              resource.ResourceUser(),
 				"formal_integration_log":                   resource.ResourceIntegrationLogs(),
 				"formal_integration_bi":                    resource.ResourceIntegrationBI(),
