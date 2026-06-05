@@ -29,7 +29,13 @@ func ResourceDialConfiguration() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
-			if d.Get("dial_method").(string) == "gcp_cloudsql" && d.Get("dial_target").(string) == "" {
+			if d.Get("dial_method").(string) != "gcp_cloudsql" {
+				return nil
+			}
+			if !d.NewValueKnown("dial_target") {
+				return nil
+			}
+			if d.Get("dial_target").(string) == "" {
 				return fmt.Errorf("dial_target is required when dial_method is gcp_cloudsql")
 			}
 			return nil
