@@ -75,6 +75,7 @@ func New(version string) func() *schema.Provider {
 				"formal_resource_health_check":             resource.ResourceHealthCheck(),
 				"formal_resource_hostname":                 resource.ResourceResourceHostname(),
 				"formal_resource_tls_configuration":        resource.ResourceTlsConfiguration(),
+				"formal_resource_dial_configuration":       resource.ResourceDialConfiguration(),
 				"formal_space":                             resource.ResourceSpace(),
 				"formal_log_configuration":                 resource.ResourceLogConfiguration(),
 				"formal_encryption_key":                    resource.ResourceEncryptionKey(),
