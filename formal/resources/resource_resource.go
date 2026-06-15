@@ -70,7 +70,6 @@ func ResourceResource() *schema.Resource {
 				Description: "The port your Resource is listening on.",
 				Type:        schema.TypeInt,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
@@ -252,83 +251,52 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any
 
 func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-	var diags diag.Diagnostics
-
 	datastoreId := d.Id()
 
-	// Only enable updates to these fields, err otherwise
-
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "termination_protection", "space_id", "tags", "aliases"}
+	fieldsThatCanChange := []string{"name", "environment", "hostname", "port", "termination_protection", "space_id", "tags", "aliases"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
+	req := &corev1.UpdateResourceRequest{Id: datastoreId}
+
 	if d.HasChange("name") {
 		name := d.Get("name").(string)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
-			Id:   datastoreId,
-			Name: &name,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
-
+		req.Name = &name
 	}
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
-			Id:                    datastoreId,
-			TerminationProtection: &terminationProtection,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		req.TerminationProtection = &terminationProtection
 	}
 
 	if d.HasChange("space_id") {
 		spaceId := d.Get("space_id").(string)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
-			Id:      datastoreId,
-			SpaceId: &spaceId,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		req.SpaceId = &spaceId
 	}
 
 	if d.HasChange("hostname") {
 		hostname := d.Get("hostname").(string)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(&corev1.UpdateResourceRequest{
-			Id:       datastoreId,
-			Hostname: &hostname,
-		}))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		req.Hostname = &hostname
+	}
+
+	if d.HasChange("port") {
+		port := int32(d.Get("port").(int))
+		req.Port = &port
 	}
 
 	if d.HasChange("tags") {
 		tags := d.Get("tags").(map[string]any)
-
-		msg := &corev1.UpdateResourceRequest{
-			Id:   datastoreId,
-			Tags: &corev1.UpdateResourceRequest_UpdateResourceTag{Tags: make([]*corev1.ResourceTag, 0, len(tags))},
-		}
+		req.Tags = &corev1.UpdateResourceRequest_UpdateResourceTag{Tags: make([]*corev1.ResourceTag, 0, len(tags))}
 		for key, value := range tags {
 			valueString, ok := value.(string)
 			if !ok {
 				return diag.FromErr(fmt.Errorf("error reading tag value"))
 			}
-			msg.Tags.Tags = append(msg.Tags.Tags, &corev1.ResourceTag{
+			req.Tags.Tags = append(req.Tags.Tags, &corev1.ResourceTag{
 				Key:   key,
 				Value: valueString,
 			})
-		}
-
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(msg))
-		if err != nil {
-			return diag.FromErr(err)
 		}
 	}
 
@@ -337,20 +305,15 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta a
 		if err != nil {
 			return diag.FromErr(err)
 		}
-
-		msg := &corev1.UpdateResourceRequest{
-			Id:      datastoreId,
-			Aliases: &corev1.UpdateResourceRequest_UpdateResourceAlias{Aliases: aliases},
-		}
-		_, err = c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(msg))
-		if err != nil {
-			return diag.FromErr(err)
-		}
+		req.Aliases = &corev1.UpdateResourceRequest_UpdateResourceAlias{Aliases: aliases}
 	}
 
-	resourceDatastoreRead(ctx, d, meta)
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(req))
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
-	return diags
+	return resourceDatastoreRead(ctx, d, meta)
 }
 
 func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
