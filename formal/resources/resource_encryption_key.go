@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"time"
 
@@ -28,6 +29,17 @@ func ResourceEncryptionKey() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		CustomizeDiff: func(_ context.Context, d *schema.ResourceDiff, _ any) error {
+			// Only constrain new keys: existing keys keep their stored (possibly
+			// deprecated) algorithm so they stay planable.
+			if d.Id() != "" {
+				return nil
+			}
+			if alg, _ := d.Get("algorithm").(string); alg != "" && alg != "rsaes_oaep_sha256" {
+				return fmt.Errorf("algorithm %q is no longer supported; create encryption keys with rsaes_oaep_sha256", alg)
+			}
+			return nil
+		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				Description: "The ID of this encryption key.",
@@ -48,9 +60,11 @@ func ResourceEncryptionKey() *schema.Resource {
 				Required:    true,
 			},
 			"algorithm": {
-				Description: "The algorithm used for encryption. One of 'aes_random', 'aes_deterministic' (symmetric), or 'rsaes_oaep_sha256' (asymmetric).",
+				Description: "Deprecated. Symmetric and deterministic algorithms ('aes_random', 'aes_deterministic') are no longer supported. Encryption keys use asymmetric RSA ('rsaes_oaep_sha256'), which is the default.",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Deprecated:  "Symmetric and deterministic algorithms are no longer supported. Encryption keys now use asymmetric RSA (rsaes_oaep_sha256) by default; this field can be removed.",
 				ValidateFunc: validation.StringInSlice([]string{
 					"aes_random",
 					"aes_deterministic",
@@ -64,7 +78,7 @@ func ResourceEncryptionKey() *schema.Resource {
 				Default:     "",
 			},
 			"public_key_pem": {
-				Description: "PEM-encoded RSA public key for client-side encryption. Required when 'algorithm' is 'rsaes_oaep_sha256'. Typically wired from another resource, e.g. `data.aws_kms_public_key.<name>.public_key_pem` for an asymmetric AWS KMS key.",
+				Description: "PEM-encoded RSA public key for client-side encryption. Required for all encryption keys. Typically wired from another resource, e.g. `data.aws_kms_public_key.<name>.public_key_pem` for an asymmetric AWS KMS key.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
@@ -87,10 +101,14 @@ func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, me
 	c := meta.(*clients.Clients)
 
 	decryptorUri := d.Get("decryptor_uri").(string)
+	algorithm := "rsaes_oaep_sha256"
+	if v, ok := d.GetOk("algorithm"); ok {
+		algorithm = v.(string)
+	}
 	req := &corev1.CreateEncryptionKeyRequest{
 		Provider:     d.Get("key_provider").(string),
 		KeyId:        d.Get("key_id").(string),
-		Algorithm:    d.Get("algorithm").(string),
+		Algorithm:    algorithm,
 		DecryptorUri: &decryptorUri,
 	}
 	if pem := d.Get("public_key_pem").(string); pem != "" {
