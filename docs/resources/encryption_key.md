@@ -17,8 +17,8 @@ Registering an Encryption Key with Formal.
 
 ### Required
 
-- `key_id` (String) The ID of the key in the provider's system (e.g., key ARN for AWS KMS).
-- `key_provider` (String) The provider of the encryption key. Currently only 'aws' is supported.
+- `key_id` (String) The ID of the key in the provider's system (key ARN for AWS KMS, or the crypto key version resource name for GCP KMS).
+- `key_provider` (String) The provider of the encryption key. One of 'aws-kms' or 'gcp-kms' ('aws' is a deprecated alias for 'aws-kms').
 
 ### Optional
 

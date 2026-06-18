@@ -31,9 +31,12 @@ func ResourceEncryptionKey() *schema.Resource {
 		},
 		CustomizeDiff: func(_ context.Context, d *schema.ResourceDiff, _ any) error {
 			// Only constrain new keys: existing keys keep their stored (possibly
-			// deprecated) algorithm so they stay planable.
+			// deprecated) provider/algorithm so they stay planable.
 			if d.Id() != "" {
 				return nil
+			}
+			if provider, _ := d.Get("key_provider").(string); provider == "aws" {
+				return fmt.Errorf("key_provider %q is deprecated; create encryption keys with aws-kms", provider)
 			}
 			if alg, _ := d.Get("algorithm").(string); alg != "" && alg != "rsaes_oaep_sha256" {
 				return fmt.Errorf("algorithm %q is no longer supported; create encryption keys with rsaes_oaep_sha256", alg)
@@ -47,15 +50,17 @@ func ResourceEncryptionKey() *schema.Resource {
 				Computed:    true,
 			},
 			"key_provider": {
-				Description: "The provider of the encryption key. Currently only 'aws' is supported.",
+				Description: "The provider of the encryption key. One of 'aws-kms' or 'gcp-kms' ('aws' is a deprecated alias for 'aws-kms').",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
+					"aws-kms",
+					"gcp-kms",
 					"aws",
 				}, false),
 			},
 			"key_id": {
-				Description: "The ID of the key in the provider's system (e.g., key ARN for AWS KMS).",
+				Description: "The ID of the key in the provider's system (key ARN for AWS KMS, or the crypto key version resource name for GCP KMS).",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
