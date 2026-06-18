@@ -29,14 +29,14 @@ func ResourceDialConfiguration() *schema.Resource {
 		},
 
 		CustomizeDiff: func(ctx context.Context, d *schema.ResourceDiff, meta any) error {
-			if d.Get("dial_method").(string) != "gcp_cloudsql" {
+			if d.Get("dial_method").(string) == "tcp" {
 				return nil
 			}
 			if !d.NewValueKnown("dial_target") {
 				return nil
 			}
 			if d.Get("dial_target").(string) == "" {
-				return fmt.Errorf("dial_target is required when dial_method is gcp_cloudsql")
+				return fmt.Errorf("dial_target is required when dial_method is not tcp")
 			}
 			return nil
 		},
@@ -54,16 +54,17 @@ func ResourceDialConfiguration() *schema.Resource {
 				ForceNew:    true,
 			},
 			"dial_method": {
-				Description: "How the connector dials this resource's upstream. Supported values are: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library — `dial_target` must be set to the `project:region:instance` connection name).",
+				Description: "How the connector dials this resource's upstream. Supported values: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library; set `dial_target` to the `project:region:instance` connection name), `aws_ssm` (dial via AWS Systems Manager; set `dial_target` to the target instance or cluster ARN).",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"tcp",
 					"gcp_cloudsql",
+					"aws_ssm",
 				}, false),
 			},
 			"dial_target": {
-				Description: "Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. Leave empty for `tcp`.",
+				Description: "Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. For `aws_ssm`, the target instance or cluster ARN. Leave empty for `tcp`.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",
