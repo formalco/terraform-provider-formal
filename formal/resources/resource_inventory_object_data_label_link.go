@@ -104,11 +104,16 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if res.Msg.Object.GetColumn() != nil {
-		d.Set("resource_id", res.Msg.Object.GetColumn().ResourceId)
-		d.Set("path", res.Msg.Object.GetColumn().Path)
-		d.Set("data_label", res.Msg.Object.GetColumn().DataLabel)
-		d.Set("locked", res.Msg.Object.GetColumn().DataLabelLockedForSidecar)
+	if col := res.Msg.Object.GetColumn(); col != nil {
+		d.Set("resource_id", col.ResourceId)
+		d.Set("path", col.Path)
+		d.Set("data_label", col.DataLabel)
+		d.Set("locked", col.DataLabelLockedForSidecar)
+	} else if sub := res.Msg.Object.GetSubColumn(); sub != nil {
+		d.Set("resource_id", sub.ResourceId)
+		d.Set("path", sub.Path)
+		d.Set("data_label", sub.DataLabel)
+		d.Set("locked", sub.DataLabelLockedForSidecar)
 	}
 
 	return diags

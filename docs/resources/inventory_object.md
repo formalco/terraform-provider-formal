@@ -3,12 +3,12 @@
 page_title: "formal_inventory_object Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Registering an inventory object (db, schema, table, column) with Formal. Useful for seeding the inventory in test fixtures so that connectors load it at startup instead of relying on inline discovery.
+  Registering an inventory object (db, schema, table, column, sub-column) with Formal. Useful for seeding the inventory in test fixtures so that connectors load it at startup instead of relying on inline discovery.
 ---
 
 # formal_inventory_object (Resource)
 
-Registering an inventory object (db, schema, table, column) with Formal. Useful for seeding the inventory in test fixtures so that connectors load it at startup instead of relying on inline discovery.
+Registering an inventory object (db, schema, table, column, sub-column) with Formal. Useful for seeding the inventory in test fixtures so that connectors load it at startup instead of relying on inline discovery.
 
 
 
@@ -20,11 +20,12 @@ Registering an inventory object (db, schema, table, column) with Formal. Useful 
 - `name` (String) Last segment of the path (e.g. `email`).
 - `path` (String) Hierarchical path of the object (e.g. `mydb.public.users.email`).
 - `resource_id` (String) Resource (datastore) ID this object belongs to.
-- `type` (String) Object type. One of `db`, `schema`, `table`, `column`.
+- `type` (String) Object type. One of `db`, `schema`, `table`, `column`, `sub-column`.
 
 ### Optional
 
 - `data_type` (String) Column data type (e.g. `varchar`). Required when `type` is `column`, ignored otherwise.
+- `sub_type` (String) Sub-column type. One of `json`, `hstore`. Required when `type` is `sub-column`, ignored otherwise.
 
 ### Read-Only
 
