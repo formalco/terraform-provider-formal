@@ -10,7 +10,7 @@ replace (
 
 require (
 	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260604132637-f2597f95760d.1
-	buf.build/go/protovalidate v0.14.0
+	buf.build/go/protovalidate v1.2.0
 	connectrpc.com/connect v1.20.0
 	github.com/formalco/go-sdk/sdk/v2 v2.14.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -24,7 +24,7 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20251209175733-2a1774d88802.1 // indirect
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260415201107-50325440f8f2.1 // indirect
 	buf.build/gen/go/formal/core/connectrpc/go v1.20.0-20260604132637-f2597f95760d.1 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 // indirect
 	cel.dev/expr v0.25.1 // indirect
@@ -49,7 +49,7 @@ require (
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/go-test/deep v1.1.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/cel-go v0.26.0 // indirect
+	github.com/google/cel-go v0.28.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.29.0 // indirect
@@ -95,7 +95,6 @@ require (
 	github.com/skeema/knownhosts v1.3.2 // indirect
 	github.com/spf13/afero v1.15.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/stoewer/go-strcase v1.3.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
