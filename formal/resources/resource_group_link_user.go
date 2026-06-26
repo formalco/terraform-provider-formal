@@ -56,8 +56,6 @@ func ResourceGroupLinkUser() *schema.Resource {
 	}
 }
 
-const roleLinkGroupTerraformIdDelimiter = "#_#"
-
 func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
