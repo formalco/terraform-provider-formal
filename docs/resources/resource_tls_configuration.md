@@ -23,6 +23,10 @@ Creating a TLS Configuration of a Resource in Formal.
 ### Optional
 
 - `tls_ca_truststore` (String) PEM encoded CA certificate to verify resource certificates. Only required if resource certificates are not trusted by the root CA truststore.
+- `tls_client_cert` (String) Client certificate the connector presents to the resource for mutual TLS. Either the PEM, or the name of an environment variable read on the connector when `tls_client_cert_is_env` is set.
+- `tls_client_cert_is_env` (Boolean) When true, `tls_client_cert` is the name of an environment variable read on the connector rather than the literal PEM.
+- `tls_client_key` (String, Sensitive) Private key paired with `tls_client_cert`. Either the PEM, or the name of an environment variable read on the connector when `tls_client_key_is_env` is set.
+- `tls_client_key_is_env` (Boolean) When true, `tls_client_key` is the name of an environment variable read on the connector rather than the literal PEM.
 - `tls_min_version` (String) Minimum TLS version to be used for connections.
 
 ### Read-Only

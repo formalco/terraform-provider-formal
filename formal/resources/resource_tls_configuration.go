@@ -78,6 +78,31 @@ func ResourceTlsConfiguration() *schema.Resource {
 				Type:        schema.TypeString,
 				Optional:    true,
 			},
+			"tls_client_cert": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Client certificate the connector presents to the resource for mutual TLS. Either the PEM, or the name of an environment variable read on the connector when `tls_client_cert_is_env` is set.",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
+			"tls_client_key": {
+				// This description is used by the documentation generator and the language server.
+				Description: "Private key paired with `tls_client_cert`. Either the PEM, or the name of an environment variable read on the connector when `tls_client_key_is_env` is set.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Sensitive:   true,
+			},
+			"tls_client_cert_is_env": {
+				// This description is used by the documentation generator and the language server.
+				Description: "When true, `tls_client_cert` is the name of an environment variable read on the connector rather than the literal PEM.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
+			"tls_client_key_is_env": {
+				// This description is used by the documentation generator and the language server.
+				Description: "When true, `tls_client_key` is the name of an environment variable read on the connector rather than the literal PEM.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+			},
 		},
 	}
 }
@@ -95,10 +120,14 @@ func resourceTlsConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	tlsCaTrustStore := d.Get("tls_ca_truststore").(string)
 
 	msg := &corev1.CreateResourceTlsConfigurationRequest{
-		ResourceId:      resourceId,
-		TlsConfig:       tlsConfig,
-		TlsMinVersion:   tlsMinVersion,
-		TlsCaTruststore: tlsCaTrustStore,
+		ResourceId:         resourceId,
+		TlsConfig:          tlsConfig,
+		TlsMinVersion:      tlsMinVersion,
+		TlsCaTruststore:    tlsCaTrustStore,
+		TlsClientCert:      d.Get("tls_client_cert").(string),
+		TlsClientKey:       d.Get("tls_client_key").(string),
+		TlsClientCertIsEnv: d.Get("tls_client_cert_is_env").(bool),
+		TlsClientKeyIsEnv:  d.Get("tls_client_key_is_env").(bool),
 	}
 
 	v, err := protovalidate.New()
@@ -138,6 +167,10 @@ func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("tls_config", res.Msg.ResourceTlsConfiguration.TlsConfig)
 	d.Set("tls_min_version", res.Msg.ResourceTlsConfiguration.TlsMinVersion)
 	d.Set("tls_ca_truststore", res.Msg.ResourceTlsConfiguration.TlsCaTruststore)
+	d.Set("tls_client_cert", res.Msg.ResourceTlsConfiguration.TlsClientCert)
+	d.Set("tls_client_key", res.Msg.ResourceTlsConfiguration.TlsClientKey)
+	d.Set("tls_client_cert_is_env", res.Msg.ResourceTlsConfiguration.TlsClientCertIsEnv)
+	d.Set("tls_client_key_is_env", res.Msg.ResourceTlsConfiguration.TlsClientKeyIsEnv)
 
 	d.SetId(res.Msg.ResourceTlsConfiguration.Id)
 
@@ -150,7 +183,7 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	resourceTlsConfig := d.Id()
 
-	fieldsThatCanChange := []string{"tls_config", "tls_min_version", "tls_ca_truststore"}
+	fieldsThatCanChange := []string{"tls_config", "tls_min_version", "tls_ca_truststore", "tls_client_cert", "tls_client_key", "tls_client_cert_is_env", "tls_client_key_is_env"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
@@ -158,12 +191,20 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	tlsConfig := d.Get("tls_config").(string)
 	tlsMinVersion := d.Get("tls_min_version").(string)
 	tlsCaTrustStore := d.Get("tls_ca_truststore").(string)
+	tlsClientCert := d.Get("tls_client_cert").(string)
+	tlsClientKey := d.Get("tls_client_key").(string)
+	tlsClientCertIsEnv := d.Get("tls_client_cert_is_env").(bool)
+	tlsClientKeyIsEnv := d.Get("tls_client_key_is_env").(bool)
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceTlsConfigurationRequest{
-		Id:              resourceTlsConfig,
-		TlsConfig:       tlsConfig,
-		TlsMinVersion:   tlsMinVersion,
-		TlsCaTruststore: tlsCaTrustStore,
+		Id:                 resourceTlsConfig,
+		TlsConfig:          tlsConfig,
+		TlsMinVersion:      tlsMinVersion,
+		TlsCaTruststore:    tlsCaTrustStore,
+		TlsClientCert:      &tlsClientCert,
+		TlsClientKey:       &tlsClientKey,
+		TlsClientCertIsEnv: &tlsClientCertIsEnv,
+		TlsClientKeyIsEnv:  &tlsClientKeyIsEnv,
 	}))
 	if err != nil {
 		return diag.FromErr(err)
