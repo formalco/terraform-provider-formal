@@ -19,7 +19,7 @@ description: |-
 
 - `hostname` (String) The hostname of the created sidecar.
 - `name` (String) Friendly name for this Sidecar.
-- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `ssh`, and `aws`.
+- `technology` (String) Technology of the Datastore: supported values are `snowflake`, `postgres`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `ssh`, `aws`, and `gcp`.
 
 ### Optional
 
