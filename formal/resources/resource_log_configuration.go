@@ -61,10 +61,10 @@ func ResourceLogConfiguration() *schema.Resource {
 								v := val.(string)
 								valid := []string{"resource", "connector", "space", "org"}
 								if slices.Contains(valid, v) {
-									return
+									return warns, errs
 								}
 								errs = append(errs, fmt.Errorf("%q must be one of %v", key, valid))
-								return
+								return warns, errs
 							},
 						},
 						"resource_id": {

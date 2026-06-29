@@ -72,12 +72,12 @@ func ResourceDataDiscovery() *schema.Resource {
 						"24h": true,
 					}
 					if predefinedSchedules[v] {
-						return
+						return warns, errs
 					}
 					if _, err := cron.ParseStandard(v); err != nil {
 						errs = append(errs, fmt.Errorf("%q must be a valid cron expression or one of the predefined schedules ('6h', '12h', '18h', '24h')", key))
 					}
-					return
+					return warns, errs
 				},
 			},
 			"deletion_policy": {
