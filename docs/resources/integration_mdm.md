@@ -21,7 +21,9 @@ Registering a Integration MDM app.
 
 ### Optional
 
-- `kandji` (Block Set, Max: 1) Configuration block for Kandji integration. (see [below for nested schema](#nestedblock--kandji))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `kandji` (Block List, Max: 1) Configuration block for Kandji integration. (see [below for nested schema](#nestedblock--kandji))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -33,7 +35,9 @@ Registering a Integration MDM app.
 
 Required:
 
-- `api_key` (String) API Key of your Kandji organization.
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `api_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) API Key of your Kandji organization. This value is not stored in Terraform state. To rotate the key, change this value and run `terraform apply -replace=<resource address>`.
 - `api_url` (String) API URL of your Kandji organization.
 
 

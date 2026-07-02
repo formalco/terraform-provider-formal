@@ -6,6 +6,7 @@ import (
 
 	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
@@ -17,6 +18,7 @@ func ResourceIntegrationMDM() *schema.Resource {
 		Description:   "Registering a Integration MDM app.",
 		CreateContext: resourceIntegrationMDMCreate,
 		ReadContext:   resourceIntegrationMDMRead,
+		UpdateContext: resourceIntegrationMDMUpdate,
 		DeleteContext: resourceIntegrationMDMDelete,
 
 		Timeouts: &schema.ResourceTimeout{
@@ -24,6 +26,14 @@ func ResourceIntegrationMDM() *schema.Resource {
 		},
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
+		},
+		SchemaVersion: 1,
+		StateUpgraders: []schema.StateUpgrader{
+			{
+				Version: 0,
+				Type:    resourceIntegrationMDMV0().CoreConfigSchema().ImpliedType(),
+				Upgrade: migrateIntegrationMDMStateV0,
+			},
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
@@ -39,21 +49,22 @@ func ResourceIntegrationMDM() *schema.Resource {
 			},
 			"kandji": {
 				Description: "Configuration block for Kandji integration.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Optional:    true,
 				MaxItems:    1,
-				ForceNew:    true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
-							Description: "API Key of your Kandji organization.",
+							Description: "API Key of your Kandji organization. This value is not stored in Terraform state. To rotate the key, change this value and run `terraform apply -replace=<resource address>`.",
 							Type:        schema.TypeString,
 							Required:    true,
+							WriteOnly:   true,
 						},
 						"api_url": {
 							Description: "API URL of your Kandji organization.",
 							Type:        schema.TypeString,
 							Required:    true,
+							ForceNew:    true,
 						},
 					},
 				},
@@ -65,43 +76,37 @@ func ResourceIntegrationMDM() *schema.Resource {
 func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
-	var diags diag.Diagnostics
-	var res *connect.Response[corev1.CreateIntegrationMDMResponse]
-	var err error
-
-	// Check if Kandji is configured
-	if v, ok := d.GetOk("kandji"); ok {
-		kandjiConfigs := v.(*schema.Set).List()
-		if len(kandjiConfigs) > 0 {
-			kandjiConfig := kandjiConfigs[0].(map[string]any)
-
-			request := corev1.CreateIntegrationMDMRequest{
-				Name: d.Get("name").(string),
-				Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
-					Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
-						ApiKey: kandjiConfig["api_key"].(string),
-						ApiUrl: kandjiConfig["api_url"].(string),
-					},
-				},
-			}
-			res, err = c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, connect.NewRequest(&request))
-		}
+	kandjiList, ok := d.GetOk("kandji")
+	if !ok || len(kandjiList.([]any)) == 0 {
+		return diag.Errorf("kandji integration configuration is required")
 	}
 
-	// Handle error if any
+	kandjiConfig := kandjiList.([]any)[0].(map[string]any)
+
+	apiKeyVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("kandji").Index(cty.NumberIntVal(0)).GetAttr("api_key"))
+	if rawDiags.HasError() {
+		return diag.Errorf("failed to get kandji api_key: %v", rawDiags)
+	}
+	if apiKeyVal.IsNull() || apiKeyVal.Type() != cty.String {
+		return diag.Errorf("kandji api_key is required")
+	}
+
+	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, connect.NewRequest(&corev1.CreateIntegrationMDMRequest{
+		Name: d.Get("name").(string),
+		Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
+			Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
+				ApiKey: apiKeyVal.AsString(),
+				ApiUrl: kandjiConfig["api_url"].(string),
+			},
+		},
+	}))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	// Assuming you need to handle a situation where none are configured
-	if res == nil {
-		return diag.Errorf("No integration configuration found")
-	}
-
 	d.SetId(res.Msg.Integration.Id)
 
-	resourceIntegrationMDMRead(ctx, d, m)
-	return diags
+	return resourceIntegrationMDMRead(ctx, d, m)
 }
 
 func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
@@ -119,12 +124,82 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m a
 	}
 
 	d.Set("name", res.Msg.Integration.Name)
-	d.Set("integration", res.Msg.Integration.Integration)
-	d.Set("created_at", res.Msg.Integration.CreatedAt.AsTime().Unix())
+
+	if kandji := res.Msg.Integration.GetKandji(); kandji != nil {
+		d.Set("kandji", []map[string]any{
+			{"api_url": kandji.GetApiUrl()},
+		})
+	}
 
 	d.SetId(res.Msg.Integration.Id)
 
 	return diags
+}
+
+func resourceIntegrationMDMUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
+	return diag.Errorf("api_key cannot be updated in-place; use `terraform apply -replace=<resource address>` to recreate the resource (for example, `terraform apply -replace=formal_integration_mdm.example`)")
+}
+
+func resourceIntegrationMDMV0() *schema.Resource {
+	return &schema.Resource{
+		Schema: map[string]*schema.Schema{
+			"id":   {Type: schema.TypeString, Computed: true},
+			"name": {Type: schema.TypeString, Required: true},
+			"kandji": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				MaxItems: 1,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_key": {Type: schema.TypeString, Required: true},
+						"api_url": {Type: schema.TypeString, Required: true},
+					},
+				},
+			},
+		},
+	}
+}
+
+func migrateIntegrationMDMStateV0(_ context.Context, rawState map[string]any, _ any) (map[string]any, error) {
+	elems, ok := kandjiElementsFromV0State(rawState["kandji"])
+	if !ok {
+		return rawState, nil
+	}
+
+	migrated := make([]any, 0, len(elems))
+	for _, elem := range elems {
+		migrated = append(migrated, map[string]any{"api_url": elem["api_url"]})
+	}
+	rawState["kandji"] = migrated
+
+	return rawState, nil
+}
+
+func kandjiElementsFromV0State(raw any) ([]map[string]any, bool) {
+	var items []any
+
+	switch v := raw.(type) {
+	case *schema.Set:
+		if v.Len() == 0 {
+			return nil, false
+		}
+		items = v.List()
+	case []any:
+		items = v
+	default:
+		return nil, false
+	}
+
+	elems := make([]map[string]any, 0, len(items))
+	for _, item := range items {
+		elem, ok := item.(map[string]any)
+		if !ok {
+			return nil, false
+		}
+		elems = append(elems, elem)
+	}
+
+	return elems, len(elems) > 0
 }
 
 func resourceIntegrationMDMDelete(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
