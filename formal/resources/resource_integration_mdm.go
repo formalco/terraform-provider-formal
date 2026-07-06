@@ -48,10 +48,11 @@ func ResourceIntegrationMDM() *schema.Resource {
 				ForceNew:    true,
 			},
 			"kandji": {
-				Description: "Configuration block for Kandji integration.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
+				Description:   "Configuration block for Kandji integration.",
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"fleet", "jamf"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"api_key": {
@@ -69,6 +70,58 @@ func ResourceIntegrationMDM() *schema.Resource {
 					},
 				},
 			},
+			"fleet": {
+				Description:   "Configuration block for Fleet integration.",
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"kandji", "jamf"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_key": {
+							Description: "API key for your Fleet server. This value is not stored in Terraform state. To rotate the key, change this value and run `terraform apply -replace=<resource address>`.",
+							Type:        schema.TypeString,
+							Required:    true,
+							WriteOnly:   true,
+						},
+						"api_url": {
+							Description: "API URL of your Fleet server.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+					},
+				},
+			},
+			"jamf": {
+				Description:   "Configuration block for Jamf Pro integration.",
+				Type:          schema.TypeList,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"kandji", "fleet"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"api_key": {
+							Description: "OAuth client secret for your Jamf Pro API client. This value is not stored in Terraform state. To rotate the secret, change this value and run `terraform apply -replace=<resource address>`.",
+							Type:        schema.TypeString,
+							Required:    true,
+							WriteOnly:   true,
+						},
+						"api_url": {
+							Description: "API URL of your Jamf Pro instance.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+						"client_id": {
+							Description: "OAuth client ID for your Jamf Pro API client.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -76,30 +129,76 @@ func ResourceIntegrationMDM() *schema.Resource {
 func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
 	c := m.(*clients.Clients)
 
-	kandjiList, ok := d.GetOk("kandji")
-	if !ok || len(kandjiList.([]any)) == 0 {
-		return diag.Errorf("kandji integration configuration is required")
-	}
+	name := d.Get("name").(string)
 
-	kandjiConfig := kandjiList.([]any)[0].(map[string]any)
+	var req *corev1.CreateIntegrationMDMRequest
 
-	apiKeyVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("kandji").Index(cty.NumberIntVal(0)).GetAttr("api_key"))
-	if rawDiags.HasError() {
-		return diag.Errorf("failed to get kandji api_key: %v", rawDiags)
-	}
-	if apiKeyVal.IsNull() || apiKeyVal.Type() != cty.String {
-		return diag.Errorf("kandji api_key is required")
-	}
+	if kandjiList, ok := d.GetOk("kandji"); ok && len(kandjiList.([]any)) > 0 {
+		kandjiConfig := kandjiList.([]any)[0].(map[string]any)
 
-	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, connect.NewRequest(&corev1.CreateIntegrationMDMRequest{
-		Name: d.Get("name").(string),
-		Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
-			Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
-				ApiKey: apiKeyVal.AsString(),
-				ApiUrl: kandjiConfig["api_url"].(string),
+		apiKeyVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("kandji").Index(cty.NumberIntVal(0)).GetAttr("api_key"))
+		if rawDiags.HasError() {
+			return diag.Errorf("failed to get kandji api_key: %v", rawDiags)
+		}
+		if apiKeyVal.IsNull() || apiKeyVal.Type() != cty.String {
+			return diag.Errorf("kandji api_key is required")
+		}
+
+		req = &corev1.CreateIntegrationMDMRequest{
+			Name: name,
+			Integration: &corev1.CreateIntegrationMDMRequest_Kandji_{
+				Kandji: &corev1.CreateIntegrationMDMRequest_Kandji{
+					ApiKey: apiKeyVal.AsString(),
+					ApiUrl: kandjiConfig["api_url"].(string),
+				},
 			},
-		},
-	}))
+		}
+	} else if fleetList, ok := d.GetOk("fleet"); ok && len(fleetList.([]any)) > 0 {
+		fleetConfig := fleetList.([]any)[0].(map[string]any)
+
+		apiKeyVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("fleet").Index(cty.NumberIntVal(0)).GetAttr("api_key"))
+		if rawDiags.HasError() {
+			return diag.Errorf("failed to get fleet api_key: %v", rawDiags)
+		}
+		if apiKeyVal.IsNull() || apiKeyVal.Type() != cty.String {
+			return diag.Errorf("fleet api_key is required")
+		}
+
+		req = &corev1.CreateIntegrationMDMRequest{
+			Name: name,
+			Integration: &corev1.CreateIntegrationMDMRequest_Fleet_{
+				Fleet: &corev1.CreateIntegrationMDMRequest_Fleet{
+					ApiKey: apiKeyVal.AsString(),
+					ApiUrl: fleetConfig["api_url"].(string),
+				},
+			},
+		}
+	} else if jamfList, ok := d.GetOk("jamf"); ok && len(jamfList.([]any)) > 0 {
+		jamfConfig := jamfList.([]any)[0].(map[string]any)
+
+		apiKeyVal, rawDiags := d.GetRawConfigAt(cty.GetAttrPath("jamf").Index(cty.NumberIntVal(0)).GetAttr("api_key"))
+		if rawDiags.HasError() {
+			return diag.Errorf("failed to get jamf api_key: %v", rawDiags)
+		}
+		if apiKeyVal.IsNull() || apiKeyVal.Type() != cty.String {
+			return diag.Errorf("jamf api_key is required")
+		}
+
+		req = &corev1.CreateIntegrationMDMRequest{
+			Name: name,
+			Integration: &corev1.CreateIntegrationMDMRequest_Jamf_{
+				Jamf: &corev1.CreateIntegrationMDMRequest_Jamf{
+					ClientId: jamfConfig["client_id"].(string),
+					ApiKey:   apiKeyVal.AsString(),
+					ApiUrl:   jamfConfig["api_url"].(string),
+				},
+			},
+		}
+	} else {
+		return diag.Errorf("exactly one of kandji, fleet, or jamf integration configuration is required")
+	}
+
+	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, connect.NewRequest(req))
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -125,9 +224,25 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m a
 
 	d.Set("name", res.Msg.Integration.Name)
 
+	// Clear all blocks first to avoid stale data
+	d.Set("kandji", []map[string]any{})
+	d.Set("fleet", []map[string]any{})
+	d.Set("jamf", []map[string]any{})
+
 	if kandji := res.Msg.Integration.GetKandji(); kandji != nil {
 		d.Set("kandji", []map[string]any{
 			{"api_url": kandji.GetApiUrl()},
+		})
+	} else if fleet := res.Msg.Integration.GetFleet(); fleet != nil {
+		d.Set("fleet", []map[string]any{
+			{"api_url": fleet.GetApiUrl()},
+		})
+	} else if jamf := res.Msg.Integration.GetJamf(); jamf != nil {
+		d.Set("jamf", []map[string]any{
+			{
+				"api_url":   jamf.GetApiUrl(),
+				"client_id": jamf.GetClientId(),
+			},
 		})
 	}
 
@@ -137,7 +252,7 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m a
 }
 
 func resourceIntegrationMDMUpdate(ctx context.Context, d *schema.ResourceData, m any) diag.Diagnostics {
-	return diag.Errorf("api_key cannot be updated in-place; use `terraform apply -replace=<resource address>` to recreate the resource (for example, `terraform apply -replace=formal_integration_mdm.example`)")
+	return diag.Errorf("credentials cannot be updated in-place; use `terraform apply -replace=<resource address>` to recreate the resource (for example, `terraform apply -replace=formal_integration_mdm.example`)")
 }
 
 func resourceIntegrationMDMV0() *schema.Resource {

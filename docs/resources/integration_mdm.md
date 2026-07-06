@@ -23,12 +23,37 @@ Registering a Integration MDM app.
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
+- `fleet` (Block List, Max: 1) Configuration block for Fleet integration. (see [below for nested schema](#nestedblock--fleet))
+- `jamf` (Block List, Max: 1) Configuration block for Jamf Pro integration. (see [below for nested schema](#nestedblock--jamf))
 - `kandji` (Block List, Max: 1) Configuration block for Kandji integration. (see [below for nested schema](#nestedblock--kandji))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `id` (String) The ID of the App.
+
+<a id="nestedblock--fleet"></a>
+### Nested Schema for `fleet`
+
+Required:
+
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `api_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) API key for your Fleet server. This value is not stored in Terraform state. To rotate the key, change this value and run `terraform apply -replace=<resource address>`.
+- `api_url` (String) API URL of your Fleet server.
+
+
+<a id="nestedblock--jamf"></a>
+### Nested Schema for `jamf`
+
+Required:
+
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `api_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) OAuth client secret for your Jamf Pro API client. This value is not stored in Terraform state. To rotate the secret, change this value and run `terraform apply -replace=<resource address>`.
+- `api_url` (String) API URL of your Jamf Pro instance.
+- `client_id` (String) OAuth client ID for your Jamf Pro API client.
+
 
 <a id="nestedblock--kandji"></a>
 ### Nested Schema for `kandji`
