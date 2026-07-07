@@ -29,7 +29,7 @@ resource "formal_integration_cloud" "gcp" {
 
 # 2. Provision the GCP-side resources (service account, workload identity pool
 #    provider) using the Formal-maintained Google module. It consumes the
-#    integration ID and the AWS role ARN Formal reported back.
+#    integration fields reported back.
 module "formal_gcp" {
   source = "github.com/formalco/terraform-formal-gcp"
 
