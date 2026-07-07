@@ -17,14 +17,15 @@ Registering a Cloud integration.
 
 ### Required
 
-- `cloud_region` (String) Region of the cloud provider.
 - `name` (String) Name of the Integration.
 
 ### Optional
 
 - `aws` (Block List, Max: 1) Configuration block for AWS integration. (see [below for nested schema](#nestedblock--aws))
+- `cloud_region` (String) Region of the cloud provider. (AWS only)
+- `gcp` (Block List, Max: 1) Configuration block for GCP integration. (see [below for nested schema](#nestedblock--gcp))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
-- `type` (String, Deprecated) Type of the Integration. (Supported: aws)
+- `type` (String, Deprecated) Type of the Integration. (Supported: aws, gcp)
 
 ### Read-Only
 
@@ -38,9 +39,13 @@ Registering a Cloud integration.
 - `aws_formal_iam_role` (String) The IAM role ID Formal will use to access your resources.
 - `aws_formal_iam_role_arn` (String) The ARN of the IAM role Formal will use to access your resources.
 - `aws_formal_pingback_arn` (String) The SNS topic ARN CloudFormation can use to send events to Formal.
+- `aws_formal_role_arn` (String) The AWS IAM role ARN Formal uses to federate into your GCP workload identity pool.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
+- `gcp_project_id` (String) The GCP project ID this integration grants Formal access to.
+- `gcp_service_account_email` (String) The GCP service account email created for this integration.
+- `gcp_workload_identity_pool_provider` (String) The GCP workload identity pool provider created for this integration.
 - `id` (String) The ID of the Integration.
 
 <a id="nestedblock--aws"></a>
@@ -62,6 +67,14 @@ Optional:
 - `enable_redshift_autodiscovery` (Boolean) Enables resource autodiscovery for Redshift clusters.
 - `enable_s3_autodiscovery` (Boolean) Enables resource autodiscovery for S3 buckets.
 - `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
+
+
+<a id="nestedblock--gcp"></a>
+### Nested Schema for `gcp`
+
+Required:
+
+- `project_id` (String) The GCP project ID this integration grants Formal access to.
 
 
 <a id="nestedblock--timeouts"></a>

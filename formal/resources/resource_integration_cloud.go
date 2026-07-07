@@ -39,7 +39,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 			},
 			"type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Type of the Integration. (Supported: aws)",
+				Description: "Type of the Integration. (Supported: aws, gcp)",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "aws",
@@ -54,17 +54,19 @@ func ResourceIntegrationCloud() *schema.Resource {
 			},
 			"cloud_region": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Region of the cloud provider.",
+				Description: "Region of the cloud provider. (AWS only)",
 				Type:        schema.TypeString,
-				Required:    true,
+				Optional:    true,
 				ForceNew:    true,
 			},
 			"aws": {
-				Description: "Configuration block for AWS integration.",
-				Type:        schema.TypeList,
-				Optional:    true,
-				MaxItems:    1,
-				ForceNew:    false,
+				Description:  "Configuration block for AWS integration.",
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     1,
+				ForceNew:     false,
+				ExactlyOneOf: []string{"aws", "gcp"},
+				RequiredWith: []string{"cloud_region"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"template_version": {
@@ -137,6 +139,44 @@ func ResourceIntegrationCloud() *schema.Resource {
 						},
 					},
 				},
+			},
+			"gcp": {
+				Description:  "Configuration block for GCP integration.",
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     1,
+				ForceNew:     true,
+				ExactlyOneOf: []string{"aws", "gcp"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"project_id": {
+							Description: "The GCP project ID this integration grants Formal access to.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+					},
+				},
+			},
+			"gcp_project_id": {
+				Description: "The GCP project ID this integration grants Formal access to.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"gcp_service_account_email": {
+				Description: "The GCP service account email created for this integration.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"gcp_workload_identity_pool_provider": {
+				Description: "The GCP workload identity pool provider created for this integration.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"aws_formal_role_arn": {
+				Description: "The AWS IAM role ARN Formal uses to federate into your GCP workload identity pool.",
+				Type:        schema.TypeString,
+				Computed:    true,
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -297,6 +337,27 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			d.SetId(res.Msg.Id)
 		}
 	}
+
+	if v, ok := d.GetOk("gcp"); ok {
+		gcpConfigs := v.([]any)
+		if len(gcpConfigs) > 0 {
+			gcpConfig := gcpConfigs[0].(map[string]any)
+
+			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
+				Name: name,
+				Cloud: &corev1.CreateCloudIntegrationRequest_Gcp{
+					Gcp: &corev1.CreateCloudIntegrationRequest_GCP{
+						ProjectId: gcpConfig["project_id"].(string),
+					},
+				},
+			}))
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			d.SetId(res.Msg.Id)
+		}
+	}
+
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
@@ -370,6 +431,20 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_enable_s3_autodiscovery", data.Aws.AwsEnableS3Autodiscovery)
 		d.Set("aws_allow_s3_access", data.Aws.AwsAllowS3Access)
 		d.Set("aws_s3_bucket_arn", data.Aws.AwsS3BucketArn)
+	case *corev1.CloudIntegration_Gcp:
+		d.Set("type", "gcp")
+
+		gcpConfig := map[string]any{
+			"project_id": data.Gcp.GcpProjectId,
+		}
+		if err := d.Set("gcp", []any{gcpConfig}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.Set("gcp_project_id", data.Gcp.GcpProjectId)
+		d.Set("gcp_service_account_email", data.Gcp.GcpServiceAccountEmail)
+		d.Set("gcp_workload_identity_pool_provider", data.Gcp.GcpWorkloadIdentityPoolProvider)
+		d.Set("aws_formal_role_arn", data.Gcp.AwsFormalRoleArn)
 	}
 
 	return diags
