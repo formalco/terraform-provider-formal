@@ -44,6 +44,9 @@ Registering a Cloud integration.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
 - `gcp_allow_gcs_access` (Boolean) Whether the Cloud Integration is allowed to write logs to GCS.
+- `gcp_enable_cloudsql_instances_autodiscovery` (Boolean) Whether GCP Cloud SQL instances autodiscovery is enabled or not.
+- `gcp_enable_compute_instances_autodiscovery` (Boolean) Whether GCP Compute Engine instances autodiscovery is enabled or not.
+- `gcp_enable_gke_clusters_autodiscovery` (Boolean) Whether GCP GKE clusters autodiscovery is enabled or not.
 - `gcp_gcs_buckets` (List of String) The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.
 - `gcp_project_id` (String) The GCP project ID this integration grants Formal access to.
 - `gcp_roles` (List of String) The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.
@@ -82,6 +85,9 @@ Required:
 Optional:
 
 - `allow_gcs_access` (Boolean) Allows the Cloud Integration to write logs to GCS buckets for Log Integrations.
+- `enable_cloudsql_instances_autodiscovery` (Boolean) Enables resource autodiscovery for Cloud SQL instances.
+- `enable_compute_instances_autodiscovery` (Boolean) Enables resource autodiscovery for Compute Engine instances.
+- `enable_gke_clusters_autodiscovery` (Boolean) Enables resource autodiscovery for GKE clusters.
 - `gcs_buckets` (List of String) GCS buckets Formal may write logs to. An empty list with access allowed grants all buckets in the project; a non-empty list restricts writes to those buckets.
 
 

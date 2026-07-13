@@ -145,7 +145,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:         schema.TypeList,
 				Optional:     true,
 				MaxItems:     1,
-				ForceNew:     true,
+				ForceNew:     false,
 				ExactlyOneOf: []string{"aws", "gcp"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -160,14 +160,30 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Type:        schema.TypeBool,
 							Optional:    true,
 							Default:     false,
-							ForceNew:    true,
 						},
 						"gcs_buckets": {
 							Description: "GCS buckets Formal may write logs to. An empty list with access allowed grants all buckets in the project; a non-empty list restricts writes to those buckets.",
 							Type:        schema.TypeList,
 							Optional:    true,
-							ForceNew:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"enable_compute_instances_autodiscovery": {
+							Description: "Enables resource autodiscovery for Compute Engine instances.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+						"enable_gke_clusters_autodiscovery": {
+							Description: "Enables resource autodiscovery for GKE clusters.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+						"enable_cloudsql_instances_autodiscovery": {
+							Description: "Enables resource autodiscovery for Cloud SQL instances.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
 						},
 					},
 				},
@@ -202,6 +218,21 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"gcp_enable_compute_instances_autodiscovery": {
+				Description: "Whether GCP Compute Engine instances autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"gcp_enable_gke_clusters_autodiscovery": {
+				Description: "Whether GCP GKE clusters autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"gcp_enable_cloudsql_instances_autodiscovery": {
+				Description: "Whether GCP Cloud SQL instances autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
 			},
 			"gcp_roles": {
 				Description: "The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.",
@@ -292,6 +323,37 @@ func ResourceIntegrationCloud() *schema.Resource {
 					}
 				}
 			}
+
+			if v, ok := d.GetOk("gcp"); ok {
+				gcpConfigs := v.([]any)
+				if len(gcpConfigs) > 0 {
+					// The backend derives gcp_roles from the enabled capabilities, so
+					// mark it for recomputation whenever one of them changes.
+					rolesMayChange := false
+
+					if oldVal, newVal := d.GetChange("gcp.0.allow_gcs_access"); oldVal != newVal {
+						d.SetNew("gcp_allow_gcs_access", newVal)
+						rolesMayChange = true
+					}
+					if d.HasChange("gcp.0.gcs_buckets") {
+						_, newBuckets := d.GetChange("gcp.0.gcs_buckets")
+						d.SetNew("gcp_gcs_buckets", newBuckets)
+						rolesMayChange = true
+					}
+
+					for _, key := range []string{"enable_compute_instances_autodiscovery", "enable_gke_clusters_autodiscovery", "enable_cloudsql_instances_autodiscovery"} {
+						oldVal, newVal := d.GetChange(fmt.Sprintf("gcp.0.%s", key))
+						if oldVal != newVal {
+							d.SetNew(fmt.Sprintf("gcp_%s", key), newVal)
+							rolesMayChange = true
+						}
+					}
+
+					if rolesMayChange {
+						d.SetNewComputed("gcp_roles")
+					}
+				}
+			}
 			return nil
 		},
 	}
@@ -373,14 +435,20 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 		gcpConfigs := v.([]any)
 		if len(gcpConfigs) > 0 {
 			gcpConfig := gcpConfigs[0].(map[string]any)
+			enableComputeInstancesAutodiscovery := gcpConfig["enable_compute_instances_autodiscovery"].(bool)
+			enableGkeClustersAutodiscovery := gcpConfig["enable_gke_clusters_autodiscovery"].(bool)
+			enableCloudsqlInstancesAutodiscovery := gcpConfig["enable_cloudsql_instances_autodiscovery"].(bool)
 
 			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
 				Name: name,
 				Cloud: &corev1.CreateCloudIntegrationRequest_Gcp{
 					Gcp: &corev1.CreateCloudIntegrationRequest_GCP{
-						ProjectId:      gcpConfig["project_id"].(string),
-						AllowGcsAccess: gcpConfig["allow_gcs_access"].(bool),
-						GcsBuckets:     expandStringList(gcpConfig["gcs_buckets"]),
+						ProjectId:                            gcpConfig["project_id"].(string),
+						AllowGcsAccess:                       gcpConfig["allow_gcs_access"].(bool),
+						GcsBuckets:                           expandStringList(gcpConfig["gcs_buckets"]),
+						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
+						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,
+						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
 					},
 				},
 			}))
@@ -468,9 +536,12 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("type", "gcp")
 
 		gcpConfig := map[string]any{
-			"project_id":       data.Gcp.GcpProjectId,
-			"allow_gcs_access": data.Gcp.GcpAllowGcsAccess,
-			"gcs_buckets":      data.Gcp.GcpGcsBuckets,
+			"project_id":                              data.Gcp.GcpProjectId,
+			"allow_gcs_access":                        data.Gcp.GcpAllowGcsAccess,
+			"gcs_buckets":                             data.Gcp.GcpGcsBuckets,
+			"enable_compute_instances_autodiscovery":  data.Gcp.GcpEnableComputeInstancesAutodiscovery,
+			"enable_gke_clusters_autodiscovery":       data.Gcp.GcpEnableGkeClustersAutodiscovery,
+			"enable_cloudsql_instances_autodiscovery": data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery,
 		}
 		if err := d.Set("gcp", []any{gcpConfig}); err != nil {
 			return diag.FromErr(err)
@@ -482,6 +553,9 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_role_arn", data.Gcp.AwsFormalRoleArn)
 		d.Set("gcp_allow_gcs_access", data.Gcp.GcpAllowGcsAccess)
 		d.Set("gcp_gcs_buckets", data.Gcp.GcpGcsBuckets)
+		d.Set("gcp_enable_compute_instances_autodiscovery", data.Gcp.GcpEnableComputeInstancesAutodiscovery)
+		d.Set("gcp_enable_gke_clusters_autodiscovery", data.Gcp.GcpEnableGkeClustersAutodiscovery)
+		d.Set("gcp_enable_cloudsql_instances_autodiscovery", data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery)
 		d.Set("gcp_roles", data.Gcp.GcpRoles)
 	}
 
@@ -492,11 +566,11 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 	c := meta.(*clients.Clients)
 	integrationId := d.Id()
 
-	fieldsThatCanBeUpdated := []string{"aws"}
+	fieldsThatCanBeUpdated := []string{"aws", "gcp"}
 
 	// These fields can't be updated, but they can still be changed by
-	// CustomizeDiff when their 'aws.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn"}...)
+	// CustomizeDiff when their 'aws.0.' or 'gcp.0.' counterpart has changes
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
@@ -543,6 +617,30 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
 						CustomerRoleArn:             customerRoleArn,
 						AutodiscoveryRegions:        autodiscoveryRegions,
+					},
+				},
+			}))
+		}
+	}
+
+	if v, ok := d.GetOk("gcp"); ok {
+		gcpConfigs := v.([]any)
+		if len(gcpConfigs) > 0 {
+			gcpConfig := gcpConfigs[0].(map[string]any)
+			allowGcsAccess := gcpConfig["allow_gcs_access"].(bool)
+			enableComputeInstancesAutodiscovery := gcpConfig["enable_compute_instances_autodiscovery"].(bool)
+			enableGkeClustersAutodiscovery := gcpConfig["enable_gke_clusters_autodiscovery"].(bool)
+			enableCloudsqlInstancesAutodiscovery := gcpConfig["enable_cloudsql_instances_autodiscovery"].(bool)
+
+			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+				Id: integrationId,
+				Cloud: &corev1.UpdateCloudIntegrationRequest_Gcp{
+					Gcp: &corev1.UpdateCloudIntegrationRequest_GCP{
+						AllowGcsAccess:                       &allowGcsAccess,
+						GcsBuckets:                           expandStringList(gcpConfig["gcs_buckets"]),
+						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
+						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,
+						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
 					},
 				},
 			}))
