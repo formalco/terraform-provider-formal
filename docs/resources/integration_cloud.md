@@ -43,7 +43,10 @@ Registering a Cloud integration.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
+- `gcp_allow_gcs_access` (Boolean) Whether the Cloud Integration is allowed to write logs to GCS.
+- `gcp_gcs_buckets` (List of String) The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.
 - `gcp_project_id` (String) The GCP project ID this integration grants Formal access to.
+- `gcp_roles` (List of String) The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.
 - `gcp_service_account_email` (String) The GCP service account email created for this integration.
 - `gcp_workload_identity_pool_provider` (String) The GCP workload identity pool provider created for this integration.
 - `id` (String) The ID of the Integration.
@@ -75,6 +78,11 @@ Optional:
 Required:
 
 - `project_id` (String) The GCP project ID this integration grants Formal access to.
+
+Optional:
+
+- `allow_gcs_access` (Boolean) Allows the Cloud Integration to write logs to GCS buckets for Log Integrations.
+- `gcs_buckets` (List of String) GCS buckets Formal may write logs to. An empty list with access allowed grants all buckets in the project; a non-empty list restricts writes to those buckets.
 
 
 <a id="nestedblock--timeouts"></a>

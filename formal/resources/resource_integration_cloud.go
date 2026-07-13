@@ -155,6 +155,20 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Required:    true,
 							ForceNew:    true,
 						},
+						"allow_gcs_access": {
+							Description: "Allows the Cloud Integration to write logs to GCS buckets for Log Integrations.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+							ForceNew:    true,
+						},
+						"gcs_buckets": {
+							Description: "GCS buckets Formal may write logs to. An empty list with access allowed grants all buckets in the project; a non-empty list restricts writes to those buckets.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							ForceNew:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 					},
 				},
 			},
@@ -177,6 +191,23 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Description: "The AWS IAM role ARN Formal uses to federate into your GCP workload identity pool.",
 				Type:        schema.TypeString,
 				Computed:    true,
+			},
+			"gcp_allow_gcs_access": {
+				Description: "Whether the Cloud Integration is allowed to write logs to GCS.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"gcp_gcs_buckets": {
+				Description: "The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"gcp_roles": {
+				Description: "The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -347,7 +378,9 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 				Name: name,
 				Cloud: &corev1.CreateCloudIntegrationRequest_Gcp{
 					Gcp: &corev1.CreateCloudIntegrationRequest_GCP{
-						ProjectId: gcpConfig["project_id"].(string),
+						ProjectId:      gcpConfig["project_id"].(string),
+						AllowGcsAccess: gcpConfig["allow_gcs_access"].(bool),
+						GcsBuckets:     expandStringList(gcpConfig["gcs_buckets"]),
 					},
 				},
 			}))
@@ -435,7 +468,9 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("type", "gcp")
 
 		gcpConfig := map[string]any{
-			"project_id": data.Gcp.GcpProjectId,
+			"project_id":       data.Gcp.GcpProjectId,
+			"allow_gcs_access": data.Gcp.GcpAllowGcsAccess,
+			"gcs_buckets":      data.Gcp.GcpGcsBuckets,
 		}
 		if err := d.Set("gcp", []any{gcpConfig}); err != nil {
 			return diag.FromErr(err)
@@ -445,6 +480,9 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("gcp_service_account_email", data.Gcp.GcpServiceAccountEmail)
 		d.Set("gcp_workload_identity_pool_provider", data.Gcp.GcpWorkloadIdentityPoolProvider)
 		d.Set("aws_formal_role_arn", data.Gcp.AwsFormalRoleArn)
+		d.Set("gcp_allow_gcs_access", data.Gcp.GcpAllowGcsAccess)
+		d.Set("gcp_gcs_buckets", data.Gcp.GcpGcsBuckets)
+		d.Set("gcp_roles", data.Gcp.GcpRoles)
 	}
 
 	return diags

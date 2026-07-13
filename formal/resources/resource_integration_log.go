@@ -45,7 +45,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "aws_s3"},
+				ConflictsWith: []string{"splunk", "aws_s3", "gcs"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -72,7 +72,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"datadog", "aws_s3"},
+				ConflictsWith: []string{"datadog", "aws_s3", "gcs"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -99,7 +99,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog"},
+				ConflictsWith: []string{"splunk", "datadog", "gcs"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -115,6 +115,35 @@ func ResourceIntegrationLogs() *schema.Resource {
 						},
 						"s3_bucket_prefix": {
 							Description: "AWS S3 bucket prefix to write logs under. Defaults to the bucket root.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+							ForceNew:    true,
+						},
+						"cloud_integration_id": {
+							Description: "Cloud Integration ID.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
+			"gcs": {
+				Description:   "Configuration block for Google Cloud Storage integration.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"gcs_bucket_name": {
+							Description: "GCS Bucket Name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"gcs_bucket_prefix": {
+							Description: "GCS bucket prefix to write logs under. Defaults to the bucket root.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Default:     "",
@@ -202,6 +231,25 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if v, ok := d.GetOk("gcs"); ok {
+		gcsConfigs := v.(*schema.Set).List()
+		if len(gcsConfigs) > 0 {
+			gcsConfig := gcsConfigs[0].(map[string]any)
+
+			integration := &corev1.CreateIntegrationLogRequest_Gcs_{
+				Gcs: &corev1.CreateIntegrationLogRequest_Gcs{
+					CloudIntegrationId: gcsConfig["cloud_integration_id"].(string),
+					BucketName:         gcsConfig["gcs_bucket_name"].(string),
+					BucketPrefix:       gcsConfig["gcs_bucket_prefix"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			}))
+		}
+	}
+
 	// Handle error if any
 	if err != nil {
 		return diag.FromErr(err)
@@ -243,6 +291,15 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 				"s3_bucket_name":       awsS3.BucketName,
 				"s3_bucket_prefix":     awsS3.BucketPrefix,
 				"region":               awsS3.Region,
+			},
+		})
+	}
+	if gcs := res.Msg.Integration.GetGcs(); gcs != nil {
+		d.Set("gcs", []map[string]any{
+			{
+				"cloud_integration_id": gcs.CloudIntegrationId,
+				"gcs_bucket_name":      gcs.BucketName,
+				"gcs_bucket_prefix":    gcs.BucketPrefix,
 			},
 		})
 	}

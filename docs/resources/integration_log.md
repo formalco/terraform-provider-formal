@@ -23,6 +23,7 @@ Registering a Integration Logs app.
 
 - `aws_s3` (Block Set, Max: 1) Configuration block for AWS S3 integration. (see [below for nested schema](#nestedblock--aws_s3))
 - `datadog` (Block Set, Max: 1) Configuration block for Datadog integration. (see [below for nested schema](#nestedblock--datadog))
+- `gcs` (Block Set, Max: 1) Configuration block for Google Cloud Storage integration. (see [below for nested schema](#nestedblock--gcs))
 - `splunk` (Block Set, Max: 1) Configuration block for Splunk integration. (see [below for nested schema](#nestedblock--splunk))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
@@ -55,6 +56,19 @@ Required:
 - `account_id` (String) Account ID of Datadog.
 - `api_key` (String) API Key of Datadog.
 - `site` (String) URL of your Datadog app.
+
+
+<a id="nestedblock--gcs"></a>
+### Nested Schema for `gcs`
+
+Required:
+
+- `cloud_integration_id` (String) Cloud Integration ID.
+- `gcs_bucket_name` (String) GCS Bucket Name.
+
+Optional:
+
+- `gcs_bucket_prefix` (String) GCS bucket prefix to write logs under. Defaults to the bucket root.
 
 
 <a id="nestedblock--splunk"></a>
