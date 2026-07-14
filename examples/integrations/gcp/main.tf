@@ -41,8 +41,11 @@ resource "formal_integration_cloud" "gcp" {
   name = "gcp-integration"
 
   gcp {
-    project_id       = var.gcp_project_id
-    allow_gcs_access = true
+    project_id                              = var.gcp_project_id
+    enable_compute_instances_autodiscovery  = true
+    enable_gke_clusters_autodiscovery       = true
+    enable_cloudsql_instances_autodiscovery = true
+    allow_gcs_access                        = true
   }
 }
 
