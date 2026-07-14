@@ -55,6 +55,7 @@ func New(version string) func() *schema.Provider {
 				"formal_group":                             resource.ResourceGroup(),
 				"formal_group_user_link":                   resource.ResourceGroupLinkUser(),
 				"formal_form":                              resource.ResourceForm(),
+				"formal_hook":                              resource.ResourceHook(),
 				"formal_resource":                          resource.ResourceResource(),
 				"formal_sidecar":                           resource.ResourceSidecar(),
 				"formal_native_user":                       resource.ResourceNativeUser(),
