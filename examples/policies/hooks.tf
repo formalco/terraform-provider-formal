@@ -9,6 +9,10 @@ resource "formal_hook" "risk" {
     "AWS_SESSION_TOKEN",
     "AWS_REGION",
   ]
+  allowlisted_network_hosts = [
+    "169.254.170.2",
+    "sts.eu-west-1.amazonaws.com",
+  ]
   code = <<-JS
     export default function hook(input, env) {
       return {

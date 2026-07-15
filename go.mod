@@ -10,7 +10,7 @@ replace (
 )
 
 require (
-	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260715022245-5067dd3ef642.1
+	buf.build/gen/go/formal/core/protocolbuffers/go v1.36.11-20260715181400-a0b95f6b8c2a.1
 	buf.build/go/protovalidate v1.2.0
 	connectrpc.com/connect v1.20.0
 	github.com/formalco/go-sdk/sdk/v2 v2.15.0
@@ -26,7 +26,7 @@ require (
 
 require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260415201107-50325440f8f2.1 // indirect
-	buf.build/gen/go/formal/core/connectrpc/go v1.20.0-20260715022245-5067dd3ef642.1 // indirect
+	buf.build/gen/go/formal/core/connectrpc/go v1.20.0-20260715181400-a0b95f6b8c2a.1 // indirect
 	buf.build/gen/go/grpc-ecosystem/grpc-gateway/protocolbuffers/go v1.36.11-20260102203250-6467306b4f62.1 // indirect
 	cel.dev/expr v0.25.1 // indirect
 	dario.cat/mergo v1.0.2 // indirect

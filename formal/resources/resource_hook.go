@@ -77,6 +77,15 @@ func ResourceHook() *schema.Resource {
 					ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`), "environment variable name must match ^[A-Za-z_][A-Za-z0-9_]*$"),
 				},
 			},
+			"allowlisted_network_hosts": {
+				Description: "Hostnames and IP addresses the hook may contact at evaluation time. Schemes, paths, and ports are not accepted. All ports on each host are allowed.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringIsNotEmpty,
+				},
+			},
 			"created_at": {
 				Description: "When the hook was created.",
 				Type:        schema.TypeString,
@@ -101,10 +110,24 @@ func getAllowlistedEnvironmentVariables(d *schema.ResourceData) ([]string, error
 	}), nil
 }
 
+func getAllowlistedNetworkHosts(d *schema.ResourceData) ([]string, error) {
+	raw, ok := d.Get("allowlisted_network_hosts").(*schema.Set)
+	if !ok {
+		return nil, fmt.Errorf("error reading allowlisted_network_hosts")
+	}
+	return lo.Map(raw.List(), func(item any, _ int) string {
+		return item.(string)
+	}), nil
+}
+
 func resourceHookCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	allowlistedEnv, err := getAllowlistedEnvironmentVariables(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	allowlistedNetworkHosts, err := getAllowlistedNetworkHosts(d)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -116,6 +139,7 @@ func resourceHookCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		Status:                          d.Get("status").(string),
 		TimeoutMs:                       int32(d.Get("timeout_ms").(int)),
 		AllowlistedEnvironmentVariables: allowlistedEnv,
+		AllowlistedNetworkHosts:         allowlistedNetworkHosts,
 	}
 
 	res, err := c.Grpc.Sdk.HookServiceClient.CreateHook(ctx, connect.NewRequest(req))
@@ -151,6 +175,7 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("status", hook.Status)
 	d.Set("timeout_ms", int(hook.TimeoutMs))
 	d.Set("allowlisted_environment_variables", hook.AllowlistedEnvironmentVariables)
+	d.Set("allowlisted_network_hosts", hook.AllowlistedNetworkHosts)
 	if hook.CreatedAt != nil {
 		d.Set("created_at", hook.CreatedAt.AsTime().UTC().Format(time.RFC3339))
 	}
@@ -164,8 +189,12 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 func resourceHookUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("code") || d.HasChange("status") || d.HasChange("timeout_ms") || d.HasChange("allowlisted_environment_variables") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("code") || d.HasChange("status") || d.HasChange("timeout_ms") || d.HasChange("allowlisted_environment_variables") || d.HasChange("allowlisted_network_hosts") {
 		allowlistedEnv, err := getAllowlistedEnvironmentVariables(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		allowlistedNetworkHosts, err := getAllowlistedNetworkHosts(d)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -179,6 +208,7 @@ func resourceHookUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 				Status:                          d.Get("status").(string),
 				TimeoutMs:                       int32(d.Get("timeout_ms").(int)),
 				AllowlistedEnvironmentVariables: allowlistedEnv,
+				AllowlistedNetworkHosts:         allowlistedNetworkHosts,
 			},
 		}
 
