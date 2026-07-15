@@ -17,11 +17,12 @@ Hooks are JavaScript functions evaluated during policy decisions. Policies refer
 
 ### Required
 
-- `code` (String) The hook implementation as JavaScript. Must be a default-exported function (for example `export default function hook(input) { ... }`).
+- `code` (String) The hook implementation as JavaScript. Must be a default-exported function (for example `export default function hook(input, env) { ... }`). The optional second argument receives allowlisted process environment variables.
 - `name` (String) The name of the hook. Must be unique within the organization and match `^[A-Za-z_][A-Za-z0-9_]*$`. Policies reference this name as `input.hooks.<name>`.
 
 ### Optional
 
+- `allowlisted_environment_variables` (Set of String) Names of process environment variables the hook may read via its second `env` argument at evaluation time. Each name must match `^[A-Za-z_][A-Za-z0-9_]*$`. Variables that are unset on the connector or desktop process are omitted from `env`.
 - `description` (String) The hook description.
 - `status` (String) The hook status. Accepted values are `active` and `draft`. Only active hooks can be referenced by policies.
 - `timeout_ms` (Number) Maximum time in milliseconds the hook may run during policy evaluation. Must be between 1 and 60000.

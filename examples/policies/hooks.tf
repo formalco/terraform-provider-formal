@@ -3,9 +3,18 @@ resource "formal_hook" "risk" {
   description = "Score request risk for policy decisions"
   status      = "active"
   timeout_ms  = 5000
-  code        = <<-JS
-    export default function hook(input) {
-      return { score: 1 };
+  allowlisted_environment_variables = [
+    "AWS_ACCESS_KEY_ID",
+    "AWS_SECRET_ACCESS_KEY",
+    "AWS_SESSION_TOKEN",
+    "AWS_REGION",
+  ]
+  code = <<-JS
+    export default function hook(input, env) {
+      return {
+        score: 1,
+        region: env["AWS_REGION"],
+      };
     }
   JS
 }

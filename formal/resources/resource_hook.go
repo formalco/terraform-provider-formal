@@ -2,6 +2,7 @@ package resource
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/samber/lo"
 
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
@@ -45,7 +47,7 @@ func ResourceHook() *schema.Resource {
 				Default:     "",
 			},
 			"code": {
-				Description: "The hook implementation as JavaScript. Must be a default-exported function (for example `export default function hook(input) { ... }`).",
+				Description: "The hook implementation as JavaScript. Must be a default-exported function (for example `export default function hook(input, env) { ... }`). The optional second argument receives allowlisted process environment variables.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -66,6 +68,15 @@ func ResourceHook() *schema.Resource {
 				Default:      5000,
 				ValidateFunc: validation.IntBetween(1, 60000),
 			},
+			"allowlisted_environment_variables": {
+				Description: "Names of process environment variables the hook may read via its second `env` argument at evaluation time. Each name must match `^[A-Za-z_][A-Za-z0-9_]*$`. Variables that are unset on the connector or desktop process are omitted from `env`.",
+				Type:        schema.TypeSet,
+				Optional:    true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringMatch(regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`), "environment variable name must match ^[A-Za-z_][A-Za-z0-9_]*$"),
+				},
+			},
 			"created_at": {
 				Description: "When the hook was created.",
 				Type:        schema.TypeString,
@@ -80,15 +91,31 @@ func ResourceHook() *schema.Resource {
 	}
 }
 
+func getAllowlistedEnvironmentVariables(d *schema.ResourceData) ([]string, error) {
+	raw, ok := d.Get("allowlisted_environment_variables").(*schema.Set)
+	if !ok {
+		return nil, fmt.Errorf("error reading allowlisted_environment_variables")
+	}
+	return lo.Map(raw.List(), func(item any, _ int) string {
+		return item.(string)
+	}), nil
+}
+
 func resourceHookCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
+	allowlistedEnv, err := getAllowlistedEnvironmentVariables(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	req := &corev1.CreateHookRequest{
-		Name:        d.Get("name").(string),
-		Description: d.Get("description").(string),
-		Code:        d.Get("code").(string),
-		Status:      d.Get("status").(string),
-		TimeoutMs:   int32(d.Get("timeout_ms").(int)),
+		Name:                            d.Get("name").(string),
+		Description:                     d.Get("description").(string),
+		Code:                            d.Get("code").(string),
+		Status:                          d.Get("status").(string),
+		TimeoutMs:                       int32(d.Get("timeout_ms").(int)),
+		AllowlistedEnvironmentVariables: allowlistedEnv,
 	}
 
 	res, err := c.Grpc.Sdk.HookServiceClient.CreateHook(ctx, connect.NewRequest(req))
@@ -123,6 +150,7 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("code", hook.Code)
 	d.Set("status", hook.Status)
 	d.Set("timeout_ms", int(hook.TimeoutMs))
+	d.Set("allowlisted_environment_variables", hook.AllowlistedEnvironmentVariables)
 	if hook.CreatedAt != nil {
 		d.Set("created_at", hook.CreatedAt.AsTime().UTC().Format(time.RFC3339))
 	}
@@ -136,19 +164,25 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 func resourceHookUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("code") || d.HasChange("status") || d.HasChange("timeout_ms") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("code") || d.HasChange("status") || d.HasChange("timeout_ms") || d.HasChange("allowlisted_environment_variables") {
+		allowlistedEnv, err := getAllowlistedEnvironmentVariables(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+
 		req := &corev1.UpdateHookRequest{
 			Hook: &corev1.Hook{
-				Id:          d.Id(),
-				Name:        d.Get("name").(string),
-				Description: d.Get("description").(string),
-				Code:        d.Get("code").(string),
-				Status:      d.Get("status").(string),
-				TimeoutMs:   int32(d.Get("timeout_ms").(int)),
+				Id:                              d.Id(),
+				Name:                            d.Get("name").(string),
+				Description:                     d.Get("description").(string),
+				Code:                            d.Get("code").(string),
+				Status:                          d.Get("status").(string),
+				TimeoutMs:                       int32(d.Get("timeout_ms").(int)),
+				AllowlistedEnvironmentVariables: allowlistedEnv,
 			},
 		}
 
-		_, err := c.Grpc.Sdk.HookServiceClient.UpdateHook(ctx, connect.NewRequest(req))
+		_, err = c.Grpc.Sdk.HookServiceClient.UpdateHook(ctx, connect.NewRequest(req))
 		if err != nil {
 			return diag.FromErr(err)
 		}
