@@ -78,7 +78,7 @@ func ResourceHook() *schema.Resource {
 				},
 			},
 			"allowlisted_network_hosts": {
-				Description: "Hostnames and IP addresses the hook may contact at evaluation time. Schemes, paths, and ports are not accepted. All ports on each host are allowed.",
+				Description: "Hostnames, IP addresses, and CIDR ranges the hook may contact at evaluation time. Schemes, paths, and ports are not accepted. All ports on each host are allowed.",
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Elem: &schema.Schema{

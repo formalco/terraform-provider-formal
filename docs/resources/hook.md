@@ -23,7 +23,7 @@ Hooks are JavaScript functions evaluated during policy decisions. Policies refer
 ### Optional
 
 - `allowlisted_environment_variables` (Set of String) Names of process environment variables the hook may read via its second `env` argument at evaluation time. Each name must match `^[A-Za-z_][A-Za-z0-9_]*$`. Variables that are unset on the connector or desktop process are omitted from `env`.
-- `allowlisted_network_hosts` (Set of String) Hostnames and IP addresses the hook may contact at evaluation time. Schemes, paths, and ports are not accepted. All ports on each host are allowed.
+- `allowlisted_network_hosts` (Set of String) Hostnames, IP addresses, and CIDR ranges the hook may contact at evaluation time. Schemes, paths, and ports are not accepted. All ports on each host are allowed.
 - `description` (String) The hook description.
 - `status` (String) The hook status. Accepted values are `active` and `draft`. Only active hooks can be referenced by policies.
 - `timeout_ms` (Number) Maximum time in milliseconds the hook may run during policy evaluation. Must be between 1 and 60000.

@@ -134,7 +134,6 @@ tool (
 	connectrpc.com/connect/cmd/protoc-gen-connect-go
 	github.com/bazelbuild/bazelisk
 	github.com/envoyproxy/protoc-gen-validate
-	github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway
 	github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2
 	github.com/rhysd/actionlint/cmd/actionlint
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc
