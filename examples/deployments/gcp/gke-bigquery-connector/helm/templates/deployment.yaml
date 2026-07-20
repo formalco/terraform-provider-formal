@@ -51,12 +51,6 @@ spec:
                 secretKeyRef:
                   name: {{ include "connector.fullname" . }}
                   key: formal-api-key
-            - name: SERVER_CONNECT_TLS
-              value: "true"
-            - name: CLIENT_LISTEN_TLS
-              value: "false"
-            - name: LOG_LEVEL
-              value: "info"
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
       imagePullSecrets:

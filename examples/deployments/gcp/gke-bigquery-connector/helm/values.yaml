@@ -2,7 +2,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 image:
-  repository: 654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector
+  repository: us-docker.pkg.dev/formal-public-assets/formalco-prod-connector/formalco-prod-connector
   pullPolicy: Always
   tag: "latest"
 
@@ -48,13 +48,6 @@ service:
 secrets:
   ecrAccessKeyId: ""
   ecrSecretAccessKey: ""
-
-ecrCredentials:
-  region: "eu-west-1"
-  schedule: "0 */6 * * *"
-  registryUrl: "654654333078.dkr.ecr.eu-west-1.amazonaws.com"
-  successfulJobsHistoryLimit: 3
-  failedJobsHistoryLimit: 1
 
 securityContext: {}
 podSecurityContext: {}

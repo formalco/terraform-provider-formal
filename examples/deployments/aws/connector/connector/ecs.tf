@@ -34,16 +34,6 @@ resource "aws_ecs_task_definition" "main" {
           containerPort = port
           hostPort      = port
       }])
-      environment = [
-        {
-          name  = "SERVER_CONNECT_TLS"
-          value = "true"
-        },
-        {
-          name  = "CLIENT_LISTEN_TLS"
-          value = "true"
-        },
-      ]
       secrets = [
         {
           name      = "FORMAL_CONTROL_PLANE_API_KEY"

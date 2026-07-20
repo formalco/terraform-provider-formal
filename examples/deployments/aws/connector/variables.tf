@@ -69,7 +69,7 @@ variable "container_memory" {
 variable "connector_image" {
   description = "Container image for the Formal connector"
   type        = string
-  default     = "654654333078.dkr.ecr.eu-west-1.amazonaws.com/formalco-prod-connector:latest"
+  default     = "654654333078.dkr.ecr.us-east-1.amazonaws.com/formalco-prod-connector:latest"
 }
 
 variable "connector_ports" {
