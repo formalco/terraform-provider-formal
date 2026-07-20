@@ -63,30 +63,20 @@ module "formal" {
   gcp_service_account_email = module.wif.service_account_email
 }
 
-# ECR credentials job for pulling Formal Connector image from ECR
-resource "helm_release" "ecr_cred" {
-  name       = "formal-ecr-cred"
-  repository = "https://formalco.github.io/helm-charts"
-  chart      = "ecr-cred"
-  version    = "0.3.0"
-  namespace  = var.namespace
-
-  values = [yamlencode({
-    ecrAccessKeyId     = var.ecr_access_key_id
-    ecrSecretAccessKey = var.ecr_secret_access_key
-  })]
-}
-
 resource "helm_release" "formal_connector" {
   name       = "formal-connector"
   repository = "https://formalco.github.io/helm-charts"
   chart      = "connector"
-  version    = "0.11.0"
+  version    = "0.14.0"
   namespace  = var.namespace
 
   values = [yamlencode({
-    formalAPIKey        = module.formal.connector_api_key
-    pullWithCredentials = true
+    formalAPIKey = module.formal.connector_api_key
+
+    # Use Formal's public GCP Artifact Registry image on GKE (no ECR credentials needed)
+    image = {
+      repository = "us-docker.pkg.dev/formal-public-assets/formalco-prod-connector/formalco-prod-connector"
+    }
 
     ports = [
       {
@@ -99,6 +89,7 @@ resource "helm_release" "formal_connector" {
       create = true
       name   = "formal-connector"
       annotations = {
+        # Workload Identity: allow the Connector pod to impersonate the GCP SA (Cloud SQL IAM auth)
         "iam.gke.io/gcp-service-account" = module.wif.service_account_email
       }
     }
@@ -106,6 +97,7 @@ resource "helm_release" "formal_connector" {
     service = {
       type = "LoadBalancer"
       annotations = {
+        # Internal Load Balancer (VPC-only). Remove this annotation for an external LB.
         "cloud.google.com/load-balancer-type" = "Internal"
       }
     }
@@ -138,7 +130,7 @@ resource "helm_release" "formal_connector" {
     ]
   })]
 
-  depends_on = [module.wif, helm_release.ecr_cred]
+  depends_on = [module.wif]
 }
 
 data "kubernetes_service" "formal_connector" {

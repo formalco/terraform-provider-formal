@@ -4,13 +4,15 @@ This directory contains a demonstration of how to set up a Formal Connector in G
 
 It contains:
 * A Terraform configuration to set up the required GCP and Formal resources
-* Deployment of the official Formal Helm charts (`formal/connector` and `formal/ecr-cred`)
+* Deployment of the official Formal Helm chart (`formal/connector`) with GCP-specific service and Workload Identity annotations
+* The Connector image pulled from Formal's public GCP Artifact Registry (`us-docker.pkg.dev/formal-public-assets/...`)
 * Cloud SQL Proxy configured as a sidecar container for secure connectivity
 * GCP IAM authentication handled by the Formal Connector
 
 You can use it as-is to set up a Formal Connector in your GKE cluster, or as a starting point to integrate the Connector in your existing deployment pipeline.
 
 Formal general purpose documentation is available at [docs.joinformal.com](https://docs.joinformal.com).
+Helm charts are available at [github.com/formalco/helm-charts](https://github.com/formalco/helm-charts).
 
 
 ## Architecture
@@ -49,7 +51,6 @@ On your side, you need:
 
 On the Formal side, you need:
 * A Formal API key, that you can create in the Formal Console.
-* Formal ECR credentials (ask your Formal contact for access).
 
 
 ## Setup
@@ -62,8 +63,6 @@ region                        = "your-region"
 cluster_name                  = "your-cluster-name"
 cloud_sql_instance_connection = "your-project:your-region:your-instance"
 formal_api_key                = "your-formal-api-key"
-ecr_access_key_id             = "your-ecr-access-key-id"
-ecr_secret_access_key         = "your-ecr-secret-access-key"
 
 # Optional variables
 namespace      = "default"
@@ -100,10 +99,16 @@ psql "host=localhost port=5432 user=<formal-user> dbname=<database>@cloudsql-con
 
 If you need external access from outside the VPC, you can modify the service configuration in `main.tf` to use an external load balancer by removing the `cloud.google.com/load-balancer-type` annotation.
 
-> **Note:** If you don't want Terraform to manage the Connector deployment in your GKE cluster, you can remove the `helm_release` resources from `main.tf`. You will need to run Terraform first, then Helm configured with the appropriate values.
+> **Note:** If you don't want Terraform to manage the Connector deployment in your GKE cluster, you can remove the `helm_release` resource from `main.tf`. You will need to run Terraform first, then Helm configured with the appropriate values.
 
 
 ## Customization
+
+The connector is deployed from the public Formal Helm repository (`https://formalco.github.io/helm-charts`). GCP-specific values are set in `main.tf`:
+
+* `image.repository` set to Formal's public GCP Artifact Registry image
+* `serviceAccount.annotations["iam.gke.io/gcp-service-account"]` for Workload Identity (Cloud SQL IAM auth at runtime)
+* `service.annotations["cloud.google.com/load-balancer-type"] = "Internal"` for an internal load balancer
 
 ### Using Private IP
 
