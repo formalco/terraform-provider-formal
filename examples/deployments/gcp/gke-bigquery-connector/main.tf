@@ -61,31 +61,51 @@ module "formal" {
   bigquery_port  = 7777
 }
 
-locals {
-  helm_values_file = fileexists(var.helm_values) ? var.helm_values : "helm/values.yaml"
-}
-
 resource "helm_release" "formal_connector" {
-  name      = "formal-connector"
-  chart     = "./helm"
-  namespace = var.namespace
+  name       = "formal-connector"
+  repository = "https://formalco.github.io/helm-charts"
+  chart      = "connector"
+  version    = "0.14.0"
+  namespace  = var.namespace
 
-  values = [
-    file(local.helm_values_file),
-    yamlencode({
-      googleServiceAccount = module.wif.service_account_email
-      formalAPIKey         = module.formal.connector_api_key
-      connectorId          = module.formal.connector_id
-      secrets = {
-        ecrAccessKeyId     = var.ecr_access_key_id
-        ecrSecretAccessKey = var.ecr_secret_access_key
+  values = [yamlencode({
+    formalAPIKey = module.formal.connector_api_key
+
+    # Use Formal's public GCP Artifact Registry image on GKE (no ECR credentials needed)
+    image = {
+      repository = "us-docker.pkg.dev/formal-public-assets/formalco-prod-connector/formalco-prod-connector"
+    }
+
+    ports = [
+      {
+        name = "bigquery"
+        port = 7777
       }
-      ports = {
-        bigquery    = 7777
-        healthCheck = 8080
+    ]
+
+    serviceAccount = {
+      create = true
+      name   = "formal-connector"
+      annotations = {
+        # Workload Identity: allow the Connector pod to impersonate the GCP SA (BigQuery access)
+        "iam.gke.io/gcp-service-account" = module.wif.service_account_email
       }
-    })
-  ]
+    }
+
+    service = {
+      type = "LoadBalancer"
+      annotations = {
+        # Internal Load Balancer (VPC-only). Remove this annotation for an external LB.
+        "cloud.google.com/load-balancer-type" = "Internal"
+        # By default, Google Cloud Load Balancer's forwarding rule has
+        # global access disabled: client VMs, Cloud VPN tunnels, or Cloud
+        # Interconnect attachments (VLANs) must be located in the same
+        # region as the internal passthrough Network Load Balancer. To
+        # support clients in all regions, uncomment the following line:
+        # "networking.gke.io/internal-load-balancer-allow-global-access" = "true"
+      }
+    }
+  })]
 
   depends_on = [module.wif]
 }

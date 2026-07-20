@@ -3,12 +3,14 @@
 This directory contains a demonstration of how to set up a Formal Connector in GKE, connecting to BigQuery with Workload Identity Federation.
 
 It contains:
-* A Helm chart that defines the Connector deployment within Kubernetes
-* A Terraform configuration to set up the required GCP and Formal resources, and managing the Helm chart deployment
+* A Terraform configuration to set up the required GCP and Formal resources
+* Deployment of the official Formal Helm chart (`formal/connector`) with GCP-specific service and Workload Identity annotations
+* The Connector image pulled from Formal's public GCP Artifact Registry (`us-docker.pkg.dev/formal-public-assets/...`)
 
 You can use it as-is to set up a Formal Connector in your GKE cluster, or as a starting point to integrate the Connector in your existing deployment pipeline.
 
 Formal general purpose documentation is available at [docs.joinformal.com](https://docs.joinformal.com).
+Helm charts are available at [github.com/formalco/helm-charts](https://github.com/formalco/helm-charts).
 
 
 ## Prerequisites
@@ -16,11 +18,11 @@ Formal general purpose documentation is available at [docs.joinformal.com](https
 On your side, you need:
 * Helm, Terraform and `gcloud` CLI installed.
 * `gcloud` CLI configured and authenticated. You (or your Terraform runner) need to have write access to both the GCP project and the GKE cluster.
+* A GKE cluster with Workload Identity enabled.
 * The last step below will require a Google Workspace admin to manually configure domain-wide delegation.
 
 On the Formal side, you need:
 * A Formal API key, that you can create in the Formal Console.
-* A Formal ECR repository (ask your Formal contact for access).
 
 
 ## Setup
@@ -28,16 +30,13 @@ On the Formal side, you need:
 1. Create a `terraform.tfvars` file:
 ```hcl
 # Required variables
-project_id = "your-project-id"
-region = "your-region"
-cluster_name = "your-cluster-name"
+project_id     = "your-project-id"
+region         = "your-region"
+cluster_name   = "your-cluster-name"
 formal_api_key = "your-formal-api-key"
-ecr_access_key_id = "your-ecr-access-key-id"
-ecr_secret_access_key = "your-ecr-secret-access-key"
 
 # Optional variables
-namespace = "your-cluster-namespace"  # default: "default"
-helm_values = "my-values.yaml"  # default: "helm/values.yaml"
+namespace = "default"
 ```
 
 2. Initialize and apply the Terraform configuration:
@@ -72,9 +71,25 @@ kubectl port-forward services/formal-connector 7777
 bq query --api http://localhost:7777 'SELECT 1'
 ```
 
-If you need external access from outside the VPC, you can modify the service configuration in `helm/values.yaml` to use an external load balancer by removing the `cloud.google.com/load-balancer-type` annotation.
+If you need external access from outside the VPC, you can modify the service configuration in `main.tf` to use an external load balancer by removing the `cloud.google.com/load-balancer-type` annotation.
 
-> 💡 **Note:** If you don't want Terraform to manage the Connector deployment in your GKE cluster, you can remove the `helm_release` resource from `main.tf`. You will need to run Terraform first, then Helm configured with the appropriate values.
+> **Note:** If you don't want Terraform to manage the Connector deployment in your GKE cluster, you can remove the `helm_release` resource from `main.tf`. You will need to run Terraform first, then Helm configured with the appropriate values.
+
+
+## Customization
+
+The connector is deployed from the public Formal Helm repository (`https://formalco.github.io/helm-charts`). GCP-specific values are set in `main.tf`:
+
+* `image.repository` set to Formal's public GCP Artifact Registry image
+* `serviceAccount.annotations["iam.gke.io/gcp-service-account"]` for Workload Identity (BigQuery access at runtime)
+* `service.annotations["cloud.google.com/load-balancer-type"] = "Internal"` for an internal load balancer
+
+To inspect the full set of chart defaults:
+
+```bash
+helm repo add formal https://formalco.github.io/helm-charts
+helm show values formal/connector
+```
 
 
 ## Troubleshooting
@@ -84,5 +99,6 @@ If you encounter issues, here are a few things you can check:
 * Check the Connector pod status for any issues (e.g. `kubectl describe pod ...`)
 * Check the logs of the Connector pod (e.g. `kubectl logs ...`)
 * Check Kubernetes events (e.g. `kubectl get events`)
+* Verify the Workload Identity binding is correctly configured
 
 If you still encounter issues, please reach out to us!

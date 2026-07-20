@@ -24,20 +24,3 @@ variable "formal_api_key" {
   type        = string
   sensitive   = true
 }
-
-variable "ecr_access_key_id" {
-  description = "ECR access key ID"
-  type        = string
-}
-
-variable "ecr_secret_access_key" {
-  description = "ECR secret access key"
-  type        = string
-  sensitive   = true
-}
-
-variable "helm_values" {
-  description = "Path to the Helm values file. If not found, will use the default values.yaml from the chart"
-  type        = string
-  default     = "helm/values.yaml"
-}

@@ -9,12 +9,12 @@ output "kubernetes_service_internal_hostname" {
 }
 
 output "formal_connector_id" {
-  description = "ID of the connector (needed for the Helm chart)"
+  description = "ID of the connector"
   value       = module.formal.connector_id
 }
 
 output "google_service_account_email" {
-  description = "Email of the service account created for the connector (needed for the Helm chart)"
+  description = "Email of the service account created for the connector"
   value       = module.wif.service_account_email
 }
 
