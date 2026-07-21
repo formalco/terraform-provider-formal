@@ -10,11 +10,11 @@ terraform {
 provider "formal" {}
 
 resource "formal_resource" "postgres1" {
-  hostname                   = "terraform-test-postgres1"
-  name                       = "terraform-test-postgres1"
-  technology                 = "postgres"
-  environment                = "DEV"
-  port                       = 5432
+  hostname    = "terraform-test-postgres1"
+  name        = "terraform-test-postgres1"
+  technology  = "postgres"
+  environment = "DEV"
+  port        = 5432
   timeouts {
     create = "1m"
   }
@@ -23,12 +23,12 @@ resource "formal_resource" "postgres1" {
 
 resource "formal_resource_hostname" "name" {
   resource_id = formal_resource.postgres1.id
-  hostname = "terraform-test-hostname-postgres1"
-  name = "terraform-test-name-postgres1"
+  hostname    = "terraform-test-hostname-postgres1"
+  name        = "terraform-test-name-postgres1"
 }
 
 resource "formal_integration_bi" "name" {
-  name              = "terraform-test-integration-app"
+  name = "terraform-test-integration-app"
   metabase {
     hostname = "metabase.com"
     password = "metabasepassword"
@@ -38,25 +38,25 @@ resource "formal_integration_bi" "name" {
 }
 
 resource "formal_integration_log" "datadog" {
-  name           = "terraform-test-integration-log-datadog"
+  name = "terraform-test-integration-log-datadog"
   datadog {
-    site = "test.com"
-    api_key = "test"
+    site       = "test.com"
+    api_key    = "test"
     account_id = "test"
   }
 }
 
 resource "formal_integration_log" "splunk" {
-  name           = "terraform-test-integration-log-splunk"
+  name = "terraform-test-integration-log-splunk"
   splunk {
     access_token = "aaaaa"
-    port = 443
-    host     = "splunk.com"
+    port         = 443
+    host         = "splunk.com"
   }
 }
 
 resource "formal_integration_log" "s3" {
-  name                  = "terraform-test-integration-log-s3"
+  name = "terraform-test-integration-log-s3"
   aws_s3 {
     access_key_id     = "aaaaa"
     access_key_secret = "aaaaa"
@@ -66,7 +66,7 @@ resource "formal_integration_log" "s3" {
 }
 
 resource "formal_native_user" "name" {
-  resource_id       = formal_resource.postgres1.id
+  resource_id        = formal_resource.postgres1.id
   native_user_id     = "postgres1"
   native_user_secret = "postgres1"
 }
@@ -77,11 +77,11 @@ resource "formal_user" "name" {
 }
 
 resource "formal_user" "human" {
-  type = "human"
-  name = "terraform-test-human-user"
+  type       = "human"
+  name       = "terraform-test-human-user"
   first_name = "test2"
-  last_name = "test2"
-  email = "test@test-formal.com"
+  last_name  = "test2"
+  email      = "test@test-formal.com"
 }
 
 resource "formal_native_user_link" "name" {
@@ -91,8 +91,8 @@ resource "formal_native_user_link" "name" {
 }
 
 resource "formal_policy" "name" {
-  description  = "terraform-test-policy"
-  module       = <<EOT
+  description = "terraform-test-policy"
+  module      = <<EOT
 package formal.v2
 
 import future.keywords.if
@@ -104,56 +104,43 @@ pre_request := {
   input.datastore.id == "${formal_resource.postgres1.id}"
 }
 EOT
-  name         = "terraform-test-policy"
-  status       = "draft"
+  name        = "terraform-test-policy"
+  status      = "draft"
 }
 
 resource "formal_policy_data_loader" "name" {
-  name = "test-policy-data-loader"
-  description = "description"
-  key = "test"
-  status = "draft"
-  worker_code = "console.log({})"
-  worker_runtime = "nodejs18.x"
-  worker_schedule = "0 0 * * * *"
+  name                   = "test-policy-data-loader"
+  description            = "description"
+  key                    = "test"
+  status                 = "draft"
+  worker_code            = "console.log({})"
+  worker_runtime         = "nodejs18.x"
+  worker_schedule        = "0 0 * * * *"
   termination_protection = false
 }
 
 
 resource "formal_satellite" "name" {
-  name = "terraform-test-satellite"
+  name                   = "terraform-test-satellite"
   termination_protection = false
-  space_id = formal_space.name.id
-}
-
-resource "formal_sidecar" "name" {
-  name               = "terraform-test-sidecar"
-  hostname               = "test.com"
-  technology         = "postgres"
-  termination_protection = false
-}
-
-resource "formal_sidecar_resource_link" "name" {
-  resource_id = formal_resource.postgres1.id
-  port         = 5432
-  sidecar_id   = formal_sidecar.name.id
+  space_id               = formal_space.name.id
 }
 
 resource "formal_resource_health_check" "name" {
-  resource_id = formal_resource.postgres1.id
+  resource_id   = formal_resource.postgres1.id
   database_name = "test-1"
 }
 
 resource "formal_tracker" "name" {
-  resource_id = formal_resource.postgres1.id
-  path = "dummy.path"
+  resource_id            = formal_resource.postgres1.id
+  path                   = "dummy.path"
   allow_clear_text_value = true
 }
 
 resource "formal_data_discovery" "name" {
-  resource_id = formal_resource.postgres1.id
-  native_user_id = formal_native_user.name.id
-  schedule = "12h"
+  resource_id     = formal_resource.postgres1.id
+  native_user_id  = formal_native_user.name.id
+  schedule        = "12h"
   deletion_policy = "mark_for_deletion"
 }
 
