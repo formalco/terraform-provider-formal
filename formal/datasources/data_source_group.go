@@ -3,13 +3,13 @@ package datasources
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -51,14 +51,14 @@ func groupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	var group *corev1.Group
 
 	if groupID, ok := d.GetOk("id"); ok {
-		res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, connect.NewRequest(&corev1.GetGroupRequest{Id: groupID.(string)}))
+		res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, &corev1.GetGroupRequest{Id: groupID.(string)})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				return diag.Errorf("no group found with id %s", groupID)
 			}
 			return diag.FromErr(err)
 		}
-		group = res.Msg.Group
+		group = res.Group
 	} else {
 		name := d.Get("name").(string)
 		filterValue, err := anypb.New(&wrapperspb.StringValue{
@@ -67,7 +67,7 @@ func groupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		res, err := c.Grpc.Sdk.GroupServiceClient.ListGroups(ctx, connect.NewRequest(&corev1.ListGroupsRequest{
+		res, err := c.Grpc.Sdk.GroupServiceClient.ListGroups(ctx, &corev1.ListGroupsRequest{
 			Filter: &corev1.Filter{
 				Field: &corev1.Field{
 					Key:      "name",
@@ -76,14 +76,14 @@ func groupRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 				},
 			},
 			Limit: 1,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Msg.Groups) == 0 {
+		if len(res.Groups) == 0 {
 			return diag.Errorf("no group found with name %s", name)
 		}
-		group = res.Msg.Groups[0]
+		group = res.Groups[0]
 	}
 
 	d.SetId(group.Id)

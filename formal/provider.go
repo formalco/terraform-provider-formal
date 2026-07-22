@@ -102,7 +102,10 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		}
 		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		grpc := api.NewClient(apiKey, returnSensitiveValue)
+		grpc, err := api.NewClient(apiKey, returnSensitiveValue)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
 
 		return &clients.Clients{Grpc: grpc}, nil
 	}

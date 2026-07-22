@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -93,12 +93,12 @@ func resourceConnectorListenerRuleCreate(ctx context.Context, d *schema.Resource
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListenerRule(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListenerRule(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorListenerRule.Id)
+	d.SetId(res.ConnectorListenerRule.Id)
 
 	resourceConnectorListenerRuleRead(ctx, d, meta)
 
@@ -113,9 +113,9 @@ func resourceConnectorListenerRuleRead(ctx context.Context, d *schema.ResourceDa
 
 	connectorListenerRuleId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetConnectorListenerRuleRequest{
+	req := &corev1.GetConnectorListenerRuleRequest{
 		Id: connectorListenerRuleId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorListenerRule(ctx, req)
 	if err != nil {
@@ -127,13 +127,13 @@ func resourceConnectorListenerRuleRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorListenerRule.Id)
-	d.Set("connector_listener_id", res.Msg.ConnectorListenerRule.Listener.Id)
-	d.Set("type", res.Msg.ConnectorListenerRule.Type)
-	d.Set("rule", res.Msg.ConnectorListenerRule.Rule)
-	d.Set("termination_protection", res.Msg.ConnectorListenerRule.TerminationProtection)
+	d.Set("id", res.ConnectorListenerRule.Id)
+	d.Set("connector_listener_id", res.ConnectorListenerRule.Listener.Id)
+	d.Set("type", res.ConnectorListenerRule.Type)
+	d.Set("rule", res.ConnectorListenerRule.Rule)
+	d.Set("termination_protection", res.ConnectorListenerRule.TerminationProtection)
 
-	d.SetId(res.Msg.ConnectorListenerRule.Id)
+	d.SetId(res.ConnectorListenerRule.Id)
 
 	return diags
 }
@@ -154,10 +154,10 @@ func resourceConnectorListenerRuleUpdate(ctx context.Context, d *schema.Resource
 
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	req := connect.NewRequest(&corev1.UpdateConnectorListenerRuleRequest{
+	req := &corev1.UpdateConnectorListenerRuleRequest{
 		Id:                    connectorListenerRuleId,
 		TerminationProtection: &terminationProtection,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListenerRule(ctx, req)
 	if err != nil {
@@ -182,9 +182,9 @@ func resourceConnectorListenerRuleDelete(ctx context.Context, d *schema.Resource
 		return diag.Errorf("Connector listener cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteConnectorListenerRuleRequest{
+	req := &corev1.DeleteConnectorListenerRuleRequest{
 		Id: connectorListenerRuleId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorListenerRule(ctx, req)
 	if err != nil {

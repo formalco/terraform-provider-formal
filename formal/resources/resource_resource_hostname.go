@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -80,12 +80,12 @@ func resourceResourceHostnameCreate(ctx context.Context, d *schema.ResourceData,
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceHostname(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ResourceHostname.Id)
+	d.SetId(res.ResourceHostname.Id)
 	resourceResourceHostnameRead(ctx, d, meta)
 	return diags
 }
@@ -98,9 +98,9 @@ func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, m
 
 	resourceHostnameId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetResourceHostnameRequest{
+	req := &corev1.GetResourceHostnameRequest{
 		Id: resourceHostnameId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHostname(ctx, req)
 	if err != nil {
@@ -112,12 +112,12 @@ func resourceResourceHostnameRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ResourceHostname.Id)
-	d.Set("resource_id", res.Msg.ResourceHostname.Resource.Id)
-	d.Set("hostname", res.Msg.ResourceHostname.Hostname)
-	d.Set("name", res.Msg.ResourceHostname.Name)
+	d.Set("id", res.ResourceHostname.Id)
+	d.Set("resource_id", res.ResourceHostname.Resource.Id)
+	d.Set("hostname", res.ResourceHostname.Hostname)
+	d.Set("name", res.ResourceHostname.Name)
 
-	d.SetId(res.Msg.ResourceHostname.Id)
+	d.SetId(res.ResourceHostname.Id)
 
 	return diags
 }
@@ -140,12 +140,12 @@ func resourceResourceHostnameUpdate(ctx context.Context, d *schema.ResourceData,
 	name := d.Get("name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	req := connect.NewRequest(&corev1.UpdateResourceHostnameRequest{
+	req := &corev1.UpdateResourceHostnameRequest{
 		Id:                    resourceHostnameId,
 		Name:                  &name,
 		Hostname:              &hostname,
 		TerminationProtection: &terminationProtection,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceHostname(ctx, req)
 	if err != nil {
@@ -170,9 +170,9 @@ func resourceResourceHostnameDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Resource Hostname cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteResourceHostnameRequest{
+	req := &corev1.DeleteResourceHostnameRequest{
 		Id: resourceHostnameId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceHostname(ctx, req)
 	if err != nil {

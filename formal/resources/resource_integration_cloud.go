@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -404,7 +404,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 				customerRoleArn = &awsCustomerRoleArn
 			}
 
-			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
+			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, &corev1.CreateCloudIntegrationRequest{
 				Name:        name,
 				CloudRegion: cloudRegion,
 
@@ -423,11 +423,11 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						AutodiscoveryRegions:        autodiscoveryRegions,
 					},
 				},
-			}))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			d.SetId(res.Msg.Id)
+			d.SetId(res.Id)
 		}
 	}
 
@@ -439,7 +439,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			enableGkeClustersAutodiscovery := gcpConfig["enable_gke_clusters_autodiscovery"].(bool)
 			enableCloudsqlInstancesAutodiscovery := gcpConfig["enable_cloudsql_instances_autodiscovery"].(bool)
 
-			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, connect.NewRequest(&corev1.CreateCloudIntegrationRequest{
+			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, &corev1.CreateCloudIntegrationRequest{
 				Name: name,
 				Cloud: &corev1.CreateCloudIntegrationRequest_Gcp{
 					Gcp: &corev1.CreateCloudIntegrationRequest_GCP{
@@ -451,11 +451,11 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
 					},
 				},
-			}))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
-			d.SetId(res.Msg.Id)
+			d.SetId(res.Id)
 		}
 	}
 
@@ -468,9 +468,9 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 
 	integrationId := d.Id()
 
-	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.GetIntegrationCloud(ctx, connect.NewRequest(&corev1.GetIntegrationCloudRequest{
+	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.GetIntegrationCloud(ctx, &corev1.GetIntegrationCloudRequest{
 		Id: integrationId,
-	}))
+	})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Integration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -480,8 +480,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Cloud.Id)
-	d.Set("name", res.Msg.Cloud.Name)
+	d.SetId(res.Cloud.Id)
+	d.Set("name", res.Cloud.Name)
 
 	existingAwsConfig := d.Get("aws").([]any)
 	var existingAwsCustomerRoleArn string
@@ -491,7 +491,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		existingAwsCustomerRoleArn = existingAwsConfig["aws_customer_role_arn"].(string)
 	}
 
-	switch data := res.Msg.Cloud.Cloud.(type) {
+	switch data := res.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
 		d.Set("type", "aws")
 		d.Set("cloud_region", data.Aws.AwsCloudRegion)
@@ -602,7 +602,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 				autodiscoveryRegions = []string{d.Get("cloud_region").(string)}
 			}
 
-			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, &corev1.UpdateCloudIntegrationRequest{
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Aws{
 					Aws: &corev1.UpdateCloudIntegrationRequest_AWS{
@@ -619,7 +619,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						AutodiscoveryRegions:        autodiscoveryRegions,
 					},
 				},
-			}))
+			})
 		}
 	}
 
@@ -632,7 +632,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 			enableGkeClustersAutodiscovery := gcpConfig["enable_gke_clusters_autodiscovery"].(bool)
 			enableCloudsqlInstancesAutodiscovery := gcpConfig["enable_cloudsql_instances_autodiscovery"].(bool)
 
-			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, &corev1.UpdateCloudIntegrationRequest{
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Gcp{
 					Gcp: &corev1.UpdateCloudIntegrationRequest_GCP{
@@ -643,7 +643,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
 					},
 				},
-			}))
+			})
 		}
 	}
 
@@ -659,7 +659,7 @@ func resourceIntegrationCloudDelete(ctx context.Context, d *schema.ResourceData,
 
 	integrationId := d.Id()
 
-	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.DeleteCloudIntegration(ctx, connect.NewRequest(&corev1.DeleteCloudIntegrationRequest{Id: integrationId}))
+	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.DeleteCloudIntegration(ctx, &corev1.DeleteCloudIntegrationRequest{Id: integrationId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

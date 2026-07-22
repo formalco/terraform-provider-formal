@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -75,12 +75,12 @@ func resourceConnectorListenerLinkCreate(ctx context.Context, d *schema.Resource
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListenerLink(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListenerLink(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorListenerLink.Id)
+	d.SetId(res.ConnectorListenerLink.Id)
 
 	resourceConnectorListenerLinkRead(ctx, d, meta)
 
@@ -95,9 +95,9 @@ func resourceConnectorListenerLinkRead(ctx context.Context, d *schema.ResourceDa
 
 	connectorListenerLinkId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetConnectorListenerLinkRequest{
+	req := &corev1.GetConnectorListenerLinkRequest{
 		Id: connectorListenerLinkId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorListenerLink(ctx, req)
 	if err != nil {
@@ -109,12 +109,12 @@ func resourceConnectorListenerLinkRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorListenerLink.Id)
-	d.Set("connector_listener_id", res.Msg.ConnectorListenerLink.Listener.Id)
-	d.Set("connector_id", res.Msg.ConnectorListenerLink.Connector.Id)
-	d.Set("termination_protection", res.Msg.ConnectorListenerLink.TerminationProtection)
+	d.Set("id", res.ConnectorListenerLink.Id)
+	d.Set("connector_listener_id", res.ConnectorListenerLink.Listener.Id)
+	d.Set("connector_id", res.ConnectorListenerLink.Connector.Id)
+	d.Set("termination_protection", res.ConnectorListenerLink.TerminationProtection)
 
-	d.SetId(res.Msg.ConnectorListenerLink.Id)
+	d.SetId(res.ConnectorListenerLink.Id)
 
 	return diags
 }
@@ -135,10 +135,10 @@ func resourceConnectorListenerLinkUpdate(ctx context.Context, d *schema.Resource
 
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	req := connect.NewRequest(&corev1.UpdateConnectorListenerLinkRequest{
+	req := &corev1.UpdateConnectorListenerLinkRequest{
 		Id:                    connectorListenerLinkId,
 		TerminationProtection: &terminationProtection,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListenerLink(ctx, req)
 	if err != nil {
@@ -163,9 +163,9 @@ func resourceConnectorListenerLinkDelete(ctx context.Context, d *schema.Resource
 		return diag.Errorf("Connector listener link cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteConnectorListenerLinkRequest{
+	req := &corev1.DeleteConnectorListenerLinkRequest{
 		Id: connectorListenerLinkId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorListenerLink(ctx, req)
 	if err != nil {

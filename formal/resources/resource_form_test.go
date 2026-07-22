@@ -5,8 +5,9 @@ import (
 	"maps"
 	"testing"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"google.golang.org/protobuf/types/known/structpb"
+
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 )
 
 func TestExpandTerraformFormFieldConfigOptionsSourceInputJSON(t *testing.T) {

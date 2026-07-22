@@ -6,13 +6,13 @@ import (
 	"strconv"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -110,7 +110,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 	var diags diag.Diagnostics
 
 	userType := d.Get("type").(string)
-	var res *connect.Response[corev1.CreateUserResponse]
+	var res *corev1.CreateUserResponse
 	var err error
 
 	switch userType {
@@ -122,12 +122,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 				Email:     d.Get("email").(string),
 			},
 		}
-		res, err = c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, connect.NewRequest(&corev1.CreateUserRequest{
+		res, err = c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, &corev1.CreateUserRequest{
 			Type:                  d.Get("type").(string),
 			Info:                  user,
 			ExpireAt:              timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
 			TerminationProtection: d.Get("termination_protection").(bool),
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -138,12 +138,12 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 				Name: d.Get("name").(string),
 			},
 		}
-		res, err = c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, connect.NewRequest(&corev1.CreateUserRequest{
+		res, err = c.Grpc.Sdk.UserServiceClient.CreateUser(ctx, &corev1.CreateUserRequest{
 			Type:                  d.Get("type").(string),
 			Info:                  user,
 			ExpireAt:              timestamppb.New(time.Unix(int64(d.Get("expire_at").(int)), 0)),
 			TerminationProtection: d.Get("termination_protection").(bool),
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -155,7 +155,7 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 	currentErrors := 0
 	for {
 		// Retrieve status
-		createdUser, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: res.Msg.User.Id}))
+		createdUser, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, &corev1.GetUserRequest{Id: res.User.Id})
 		if err != nil {
 			if currentErrors >= ErrorTolerance {
 				return diag.FromErr(err)
@@ -172,13 +172,13 @@ func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		}
 
 		// Check status
-		if createdUser.Msg.User != nil {
+		if createdUser.User != nil {
 			break
 		}
 		time.Sleep(15 * time.Second)
 	}
 
-	d.SetId(res.Msg.User.Id)
+	d.SetId(res.User.Id)
 
 	resourceUserRead(ctx, d, meta)
 
@@ -191,7 +191,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	userId := d.Id()
 
-	res, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: userId}))
+	res, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, &corev1.GetUserRequest{Id: userId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
@@ -203,14 +203,14 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	}
 
 	// Should map to all fields of RoleOrgItem
-	d.Set("id", res.Msg.User.Id)
-	d.Set("type", res.Msg.User.Type)
-	d.Set("db_username", res.Msg.User.DbUsername)
-	d.Set("expire_at", res.Msg.User.ExpireAt.AsTime().Unix())
-	d.Set("termination_protection", res.Msg.User.TerminationProtection)
+	d.Set("id", res.User.Id)
+	d.Set("type", res.User.Type)
+	d.Set("db_username", res.User.DbUsername)
+	d.Set("expire_at", res.User.ExpireAt.AsTime().Unix())
+	d.Set("termination_protection", res.User.TerminationProtection)
 
-	if res.Msg.User.Type == "machine" {
-		res, err := c.Grpc.Sdk.UserServiceClient.GetMachineUserCredentials(ctx, connect.NewRequest(&corev1.GetMachineUserCredentialsRequest{Id: userId}))
+	if res.User.Type == "machine" {
+		res, err := c.Grpc.Sdk.UserServiceClient.GetMachineUserCredentials(ctx, &corev1.GetMachineUserCredentialsRequest{Id: userId})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodePermissionDenied {
 				// User doesn't have permission to get machine user credentials
@@ -219,11 +219,11 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 				return diag.FromErr(err)
 			}
 		} else {
-			d.Set("machine_user_access_token", res.Msg.Password)
+			d.Set("machine_user_access_token", res.Password)
 		}
 	}
 
-	switch info := res.Msg.User.Info.(type) {
+	switch info := res.User.Info.(type) {
 	case *corev1.User_Human_:
 		d.Set("first_name", info.Human.FirstName)
 		d.Set("last_name", info.Human.LastName)
@@ -248,13 +248,13 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	lastName := d.Get("last_name").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, connect.NewRequest(&corev1.UpdateUserRequest{
+	_, err := c.Grpc.Sdk.UserServiceClient.UpdateUser(ctx, &corev1.UpdateUserRequest{
 		Id:                    userId,
 		Name:                  &name,
 		FirstName:             &firstName,
 		LastName:              &lastName,
 		TerminationProtection: terminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -277,7 +277,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.Errorf("User cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, connect.NewRequest(&corev1.DeleteUserRequest{Id: userId}))
+	_, err := c.Grpc.Sdk.UserServiceClient.DeleteUser(ctx, &corev1.DeleteUserRequest{Id: userId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -287,7 +287,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 	deleteTimeStart := time.Now().UTC()
 	for {
 		// Retrieve status
-		_, err = c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: userId}))
+		_, err = c.Grpc.Sdk.UserServiceClient.GetUser(ctx, &corev1.GetUserRequest{Id: userId})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				tflog.Info(ctx, "User deleted", map[string]any{"user_id": userId})

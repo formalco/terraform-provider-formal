@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -95,12 +95,12 @@ func resourcePermissionCreate(ctx context.Context, d *schema.ResourceData, meta 
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.PermissionsServiceClient.CreatePermission(ctx, connect.NewRequest(newPermission))
+	res, err := c.Grpc.Sdk.PermissionsServiceClient.CreatePermission(ctx, newPermission)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Permission.Id)
+	d.SetId(res.Permission.Id)
 
 	resourcePermissionRead(ctx, d, meta)
 	return diags
@@ -112,7 +112,7 @@ func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta an
 
 	permissionId := d.Id()
 
-	res, err := c.Grpc.Sdk.PermissionsServiceClient.GetPermission(ctx, connect.NewRequest(&corev1.GetPermissionRequest{Id: permissionId}))
+	res, err := c.Grpc.Sdk.PermissionsServiceClient.GetPermission(ctx, &corev1.GetPermissionRequest{Id: permissionId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Permission was deleted
@@ -124,12 +124,12 @@ func resourcePermissionRead(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	// Should map to all fields of Permission
-	d.Set("id", res.Msg.Permission.Id)
-	d.Set("name", res.Msg.Permission.Name)
-	d.Set("description", res.Msg.Permission.Description)
-	d.Set("code", res.Msg.Permission.Code)
-	d.Set("status", res.Msg.Permission.Status)
-	d.Set("termination_protection", res.Msg.Permission.TerminationProtection)
+	d.Set("id", res.Permission.Id)
+	d.Set("name", res.Permission.Name)
+	d.Set("description", res.Permission.Description)
+	d.Set("code", res.Permission.Code)
+	d.Set("status", res.Permission.Status)
+	d.Set("termination_protection", res.Permission.TerminationProtection)
 
 	d.SetId(permissionId)
 
@@ -157,7 +157,7 @@ func resourcePermissionUpdate(ctx context.Context, d *schema.ResourceData, meta 
 			TerminationProtection: TerminationProtection,
 		}
 
-		_, err := c.Grpc.Sdk.PermissionsServiceClient.UpdatePermission(ctx, connect.NewRequest(updatedPermission))
+		_, err := c.Grpc.Sdk.PermissionsServiceClient.UpdatePermission(ctx, updatedPermission)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -180,7 +180,7 @@ func resourcePermissionDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Permission cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.PermissionsServiceClient.DeletePermission(ctx, connect.NewRequest(&corev1.DeletePermissionRequest{Id: permissionId}))
+	_, err := c.Grpc.Sdk.PermissionsServiceClient.DeletePermission(ctx, &corev1.DeletePermissionRequest{Id: permissionId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -209,11 +209,11 @@ func resourcePermissionStateUpgradeV0(ctx context.Context, rawState map[string]a
 	c := meta.(*clients.Clients)
 
 	if val, ok := rawState["id"]; ok {
-		res, err := c.Grpc.Sdk.PermissionsServiceClient.GetPermission(ctx, connect.NewRequest(&corev1.GetPermissionRequest{Id: val.(string)}))
+		res, err := c.Grpc.Sdk.PermissionsServiceClient.GetPermission(ctx, &corev1.GetPermissionRequest{Id: val.(string)})
 		if err != nil {
 			return nil, err
 		}
-		rawState["status"] = res.Msg.Permission.Status
+		rawState["status"] = res.Permission.Status
 	}
 
 	return rawState, nil

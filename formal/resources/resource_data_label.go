@@ -4,13 +4,13 @@ import (
 	"context"
 	"strings"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -75,12 +75,12 @@ func resourceDataLabelCreate(ctx context.Context, d *schema.ResourceData, meta a
 		ClassifierData: d.Get("classifier_data").(string),
 	}
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.CreateDataLabel(ctx, connect.NewRequest(createReq))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.CreateDataLabel(ctx, createReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.DataLabel.Id)
+	d.SetId(res.DataLabel.Id)
 
 	resourceDataLabelRead(ctx, d, meta)
 
@@ -95,7 +95,7 @@ func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta any
 
 	dataLabelId := d.Id()
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.GetDataLabel(ctx, connect.NewRequest(&corev1.GetDataLabelRequest{Id: dataLabelId}))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.GetDataLabel(ctx, &corev1.GetDataLabelRequest{Id: dataLabelId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -105,12 +105,12 @@ func resourceDataLabelRead(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.DataLabel.Id)
-	d.Set("name", res.Msg.DataLabel.Name)
-	d.Set("classifier_type", res.Msg.DataLabel.ClassifierType)
-	d.Set("classifier_data", res.Msg.DataLabel.ClassifierData)
+	d.Set("id", res.DataLabel.Id)
+	d.Set("name", res.DataLabel.Name)
+	d.Set("classifier_type", res.DataLabel.ClassifierType)
+	d.Set("classifier_data", res.DataLabel.ClassifierData)
 
-	d.SetId(res.Msg.DataLabel.Id)
+	d.SetId(res.DataLabel.Id)
 
 	return diags
 }
@@ -131,12 +131,12 @@ func resourceDataLabelUpdate(ctx context.Context, d *schema.ResourceData, meta a
 	classifier_type := d.Get("classifier_type").(string)
 	classifier_data := d.Get("classifier_data").(string)
 
-	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateDataLabel(ctx, connect.NewRequest(&corev1.UpdateDataLabelRequest{
+	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateDataLabel(ctx, &corev1.UpdateDataLabelRequest{
 		Id:             dataLabelId,
 		Name:           name,
 		ClassifierType: classifier_type,
 		ClassifierData: classifier_data,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -155,7 +155,7 @@ func resourceDataLabelDelete(ctx context.Context, d *schema.ResourceData, meta a
 
 	dataLabelId := d.Id()
 
-	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteDataLabel(ctx, connect.NewRequest(&corev1.DeleteDataLabelRequest{Id: dataLabelId}))
+	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteDataLabel(ctx, &corev1.DeleteDataLabelRequest{Id: dataLabelId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

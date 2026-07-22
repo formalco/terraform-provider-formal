@@ -4,11 +4,10 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -168,7 +167,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 
 	name := d.Get("name").(string)
 
-	var res *connect.Response[corev1.CreateIntegrationLogResponse]
+	var res *corev1.CreateIntegrationLogResponse
 	var err error
 
 	// Check if Datadog is configured
@@ -184,10 +183,10 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					AccountId: ddConfig["account_id"].(string),
 				},
 			}
-			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
 				Name:        name,
 				Integration: integration,
-			}))
+			})
 		}
 	}
 
@@ -204,10 +203,10 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					AccessToken: splunkConfig["access_token"].(string),
 				},
 			}
-			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
 				Name:        name,
 				Integration: integration,
-			}))
+			})
 		}
 	}
 
@@ -224,10 +223,10 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					BucketPrefix:       awsConfig["s3_bucket_prefix"].(string),
 				},
 			}
-			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
 				Name:        name,
 				Integration: integration,
-			}))
+			})
 		}
 	}
 
@@ -243,10 +242,10 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					BucketPrefix:       gcsConfig["gcs_bucket_prefix"].(string),
 				},
 			}
-			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, connect.NewRequest(&corev1.CreateIntegrationLogRequest{
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
 				Name:        name,
 				Integration: integration,
-			}))
+			})
 		}
 	}
 
@@ -260,7 +259,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("No integration configuration found")
 	}
 
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 
 	resourceIntegrationLogsRead(ctx, d, m)
 	return diags
@@ -273,18 +272,18 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 
 	id := d.Id()
 
-	res, err := c.Grpc.Sdk.IntegrationsLogServiceClient.GetIntegrationLog(ctx, connect.NewRequest(&corev1.GetIntegrationLogRequest{
+	res, err := c.Grpc.Sdk.IntegrationsLogServiceClient.GetIntegrationLog(ctx, &corev1.GetIntegrationLogRequest{
 		Id: id,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", res.Msg.Integration.Name)
-	d.Set("integration", res.Msg.Integration.Integration)
-	d.Set("termination_protection", res.Msg.Integration.TerminationProtection)
-	d.Set("created_at", res.Msg.Integration.CreatedAt.AsTime().Unix())
-	if awsS3 := res.Msg.Integration.GetAwsS3(); awsS3 != nil {
+	d.Set("name", res.Integration.Name)
+	d.Set("integration", res.Integration.Integration)
+	d.Set("termination_protection", res.Integration.TerminationProtection)
+	d.Set("created_at", res.Integration.CreatedAt.AsTime().Unix())
+	if awsS3 := res.Integration.GetAwsS3(); awsS3 != nil {
 		d.Set("aws_s3", []map[string]any{
 			{
 				"cloud_integration_id": awsS3.CloudIntegrationId,
@@ -294,7 +293,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 			},
 		})
 	}
-	if gcs := res.Msg.Integration.GetGcs(); gcs != nil {
+	if gcs := res.Integration.GetGcs(); gcs != nil {
 		d.Set("gcs", []map[string]any{
 			{
 				"cloud_integration_id": gcs.CloudIntegrationId,
@@ -304,7 +303,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 		})
 	}
 
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 
 	return diags
 }
@@ -316,9 +315,9 @@ func resourceIntegrationLogsDelete(ctx context.Context, d *schema.ResourceData, 
 
 	id := d.Id()
 
-	_, err := c.Grpc.Sdk.IntegrationsLogServiceClient.DeleteIntegrationLog(ctx, connect.NewRequest(&corev1.DeleteIntegrationLogRequest{
+	_, err := c.Grpc.Sdk.IntegrationsLogServiceClient.DeleteIntegrationLog(ctx, &corev1.DeleteIntegrationLogRequest{
 		Id: id,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

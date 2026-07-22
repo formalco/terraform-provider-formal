@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/retry"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -123,12 +123,12 @@ func resourceConnectorHostnameCreate(ctx context.Context, d *schema.ResourceData
 		req.PrivateKey = []byte(privateKey)
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorHostname(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorHostname.Id)
+	d.SetId(res.ConnectorHostname.Id)
 	resourceConnectorHostnameRead(ctx, d, meta)
 
 	if certificate != "" && privateKey != "" {
@@ -151,11 +151,11 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 		Pending: []string{"tls_issuing", "dns_record_pending"}, // States we wait on
 		Target:  []string{"ready"},                             // Custom target state
 		Refresh: func() (any, string, error) {
-			req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
+			req := &corev1.GetConnectorHostnameRequest{
 				Id: &corev1.GetConnectorHostnameRequest_HostnameId{
 					HostnameId: connectorHostnameId,
 				},
-			})
+			}
 
 			res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
 			if err != nil {
@@ -168,8 +168,8 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 			}
 
 			// Check TlsCertificateStatus and DnsRecordStatus
-			tlsStatus := res.Msg.ConnectorHostname.TlsCertificateStatus
-			dnsStatus := res.Msg.ConnectorHostname.DnsRecordStatus
+			tlsStatus := res.ConnectorHostname.TlsCertificateStatus
+			dnsStatus := res.ConnectorHostname.DnsRecordStatus
 
 			tflog.Info(ctx, "Polling for TLS and DNS readiness", map[string]any{
 				"tls_certificate_status": tlsStatus,
@@ -197,11 +197,11 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.Errorf("Error waiting for TLS certificate and DNS record to become active: %s", err)
 	}
 
-	req := connect.NewRequest(&corev1.GetConnectorHostnameRequest{
+	req := &corev1.GetConnectorHostnameRequest{
 		Id: &corev1.GetConnectorHostnameRequest_HostnameId{
 			HostnameId: connectorHostnameId,
 		},
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorHostname(ctx, req)
 	if err != nil {
@@ -213,14 +213,14 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorHostname.Id)
-	d.Set("connector_id", res.Msg.ConnectorHostname.Connector.Id)
-	d.Set("hostname", res.Msg.ConnectorHostname.Hostname)
-	d.Set("termination_protection", res.Msg.ConnectorHostname.TerminationProtection)
-	d.Set("tls_certificate_status", res.Msg.ConnectorHostname.TlsCertificateStatus)
-	d.Set("dns_record", res.Msg.ConnectorHostname.DnsRecord)
-	d.Set("dns_record_status", res.Msg.ConnectorHostname.DnsRecordStatus)
-	d.SetId(res.Msg.ConnectorHostname.Id)
+	d.Set("id", res.ConnectorHostname.Id)
+	d.Set("connector_id", res.ConnectorHostname.Connector.Id)
+	d.Set("hostname", res.ConnectorHostname.Hostname)
+	d.Set("termination_protection", res.ConnectorHostname.TerminationProtection)
+	d.Set("tls_certificate_status", res.ConnectorHostname.TlsCertificateStatus)
+	d.Set("dns_record", res.ConnectorHostname.DnsRecord)
+	d.Set("dns_record_status", res.ConnectorHostname.DnsRecordStatus)
+	d.SetId(res.ConnectorHostname.Id)
 
 	return diags
 }
@@ -243,13 +243,13 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 	dnsRecord := d.Get("dns_record").(string)
 	certificate := d.Get("certificate").(string)
 	privateKey := d.Get("private_key").(string)
-	req := connect.NewRequest(&corev1.UpdateConnectorHostnameRequest{
+	req := &corev1.UpdateConnectorHostnameRequest{
 		Id:                    connectorHostnameId,
 		TerminationProtection: &terminationProtection,
 		DnsRecord:             &dnsRecord,
 		Certificate:           []byte(certificate),
 		PrivateKey:            []byte(privateKey),
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorHostname(ctx, req)
 	if err != nil {
@@ -279,9 +279,9 @@ func resourceConnectorHostnameDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Connector Hostname cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteConnectorHostnameRequest{
+	req := &corev1.DeleteConnectorHostnameRequest{
 		Id: connectorHostnameId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorHostname(ctx, req)
 	if err != nil {

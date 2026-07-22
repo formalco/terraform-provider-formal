@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -81,12 +81,12 @@ func resourceSpaceCreate(ctx context.Context, d *schema.ResourceData, meta any) 
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.SpaceServiceClient.CreateSpace(ctx, connect.NewRequest(spaceReq))
+	res, err := c.Grpc.Sdk.SpaceServiceClient.CreateSpace(ctx, spaceReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Space.Id)
+	d.SetId(res.Space.Id)
 
 	resourceSpaceRead(ctx, d, meta)
 
@@ -101,7 +101,7 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	spaceId := d.Id()
 
-	res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceId}))
+	res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, &corev1.GetSpaceRequest{Id: spaceId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Space was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -111,13 +111,13 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.Space.Id)
-	d.Set("name", res.Msg.Space.Name)
-	d.Set("description", res.Msg.Space.Description)
-	d.Set("created_at", res.Msg.Space.CreatedAt.AsTime().Unix())
-	d.Set("termination_protection", res.Msg.Space.TerminationProtection)
+	d.Set("id", res.Space.Id)
+	d.Set("name", res.Space.Name)
+	d.Set("description", res.Space.Description)
+	d.Set("created_at", res.Space.CreatedAt.AsTime().Unix())
+	d.Set("termination_protection", res.Space.TerminationProtection)
 
-	d.SetId(res.Msg.Space.Id)
+	d.SetId(res.Space.Id)
 
 	return diags
 }
@@ -138,7 +138,7 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 	terminationProtection := d.Get("termination_protection").(bool)
 	description := d.Get("description").(string)
 
-	_, err := c.Grpc.Sdk.SpaceServiceClient.UpdateSpace(ctx, connect.NewRequest(&corev1.UpdateSpaceRequest{Id: spaceId, Name: &name, TerminationProtection: &terminationProtection, Description: &description}))
+	_, err := c.Grpc.Sdk.SpaceServiceClient.UpdateSpace(ctx, &corev1.UpdateSpaceRequest{Id: spaceId, Name: &name, TerminationProtection: &terminationProtection, Description: &description})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -162,7 +162,7 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) 
 		return diag.Errorf("Space cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.SpaceServiceClient.DeleteSpace(ctx, connect.NewRequest(&corev1.DeleteSpaceRequest{Id: spaceId}))
+	_, err := c.Grpc.Sdk.SpaceServiceClient.DeleteSpace(ctx, &corev1.DeleteSpaceRequest{Id: spaceId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -172,7 +172,7 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) 
 	deleteTimeStart := time.Now().UTC()
 	for {
 		// Retrieve status
-		_, err = c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceId}))
+		_, err = c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, &corev1.GetSpaceRequest{Id: spaceId})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				tflog.Info(ctx, "Space deleted", map[string]any{"space_id": spaceId})

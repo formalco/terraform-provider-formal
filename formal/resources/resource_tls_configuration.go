@@ -4,14 +4,13 @@ import (
 	"context"
 	"strings"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"buf.build/go/protovalidate"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -138,12 +137,12 @@ func resourceTlsConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 		return diag.FromErr(err)
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceTlsConfiguration(ctx, connect.NewRequest(msg))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceTlsConfiguration(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ResourceTlsConfiguration.Id)
+	d.SetId(res.ResourceTlsConfiguration.Id)
 
 	resourceTlsConfigurationRead(ctx, d, meta)
 	return diags
@@ -158,21 +157,21 @@ func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 		ResourceTlsConfigurationId: d.Id(),
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.GetResourceTlsConfigurationRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceTlsConfiguration(ctx, &corev1.GetResourceTlsConfigurationRequest{Id: &id})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("resource_id", res.Msg.ResourceTlsConfiguration.ResourceId)
-	d.Set("tls_config", res.Msg.ResourceTlsConfiguration.TlsConfig)
-	d.Set("tls_min_version", res.Msg.ResourceTlsConfiguration.TlsMinVersion)
-	d.Set("tls_ca_truststore", res.Msg.ResourceTlsConfiguration.TlsCaTruststore)
-	d.Set("tls_client_cert", res.Msg.ResourceTlsConfiguration.TlsClientCert)
-	d.Set("tls_client_key", res.Msg.ResourceTlsConfiguration.TlsClientKey)
-	d.Set("tls_client_cert_is_env", res.Msg.ResourceTlsConfiguration.TlsClientCertIsEnv)
-	d.Set("tls_client_key_is_env", res.Msg.ResourceTlsConfiguration.TlsClientKeyIsEnv)
+	d.Set("resource_id", res.ResourceTlsConfiguration.ResourceId)
+	d.Set("tls_config", res.ResourceTlsConfiguration.TlsConfig)
+	d.Set("tls_min_version", res.ResourceTlsConfiguration.TlsMinVersion)
+	d.Set("tls_ca_truststore", res.ResourceTlsConfiguration.TlsCaTruststore)
+	d.Set("tls_client_cert", res.ResourceTlsConfiguration.TlsClientCert)
+	d.Set("tls_client_key", res.ResourceTlsConfiguration.TlsClientKey)
+	d.Set("tls_client_cert_is_env", res.ResourceTlsConfiguration.TlsClientCertIsEnv)
+	d.Set("tls_client_key_is_env", res.ResourceTlsConfiguration.TlsClientKeyIsEnv)
 
-	d.SetId(res.Msg.ResourceTlsConfiguration.Id)
+	d.SetId(res.ResourceTlsConfiguration.Id)
 
 	return diags
 }
@@ -196,7 +195,7 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 	tlsClientCertIsEnv := d.Get("tls_client_cert_is_env").(bool)
 	tlsClientKeyIsEnv := d.Get("tls_client_key_is_env").(bool)
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceTlsConfigurationRequest{
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceTlsConfiguration(ctx, &corev1.UpdateResourceTlsConfigurationRequest{
 		Id:                 resourceTlsConfig,
 		TlsConfig:          tlsConfig,
 		TlsMinVersion:      tlsMinVersion,
@@ -205,7 +204,7 @@ func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 		TlsClientKey:       &tlsClientKey,
 		TlsClientCertIsEnv: &tlsClientCertIsEnv,
 		TlsClientKeyIsEnv:  &tlsClientKeyIsEnv,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -222,7 +221,7 @@ func resourceTlsConfigurationDelete(ctx context.Context, d *schema.ResourceData,
 
 	resourceTlsConfigurationId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceTlsConfiguration(ctx, connect.NewRequest(&corev1.DeleteResourceTlsConfigurationRequest{Id: resourceTlsConfigurationId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceTlsConfiguration(ctx, &corev1.DeleteResourceTlsConfigurationRequest{Id: resourceTlsConfigurationId})
 	if err != nil {
 		tflog.Warn(ctx, err.Error())
 		return diag.FromErr(err)

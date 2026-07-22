@@ -3,13 +3,13 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -118,18 +118,18 @@ func resourceNativeUserCreate(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("one of `native_user_secret` or `native_user_secret_wo` must be specified")
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUser(ctx, connect.NewRequest(&corev1.CreateNativeUserRequest{
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUser(ctx, &corev1.CreateNativeUserRequest{
 		ResourceId:            ResourceId,
 		Username:              Username,
 		Secret:                Secret,
 		UseAsDefault:          UseAsDefault,
 		TerminationProtection: TerminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.NativeUser.Id)
+	d.SetId(res.NativeUser.Id)
 
 	resourceNativeUserRead(ctx, d, meta)
 
@@ -143,7 +143,7 @@ func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta an
 
 	id := d.Get("id").(string)
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetNativeUser(ctx, connect.NewRequest(&corev1.GetNativeUserRequest{Id: id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetNativeUser(ctx, &corev1.GetNativeUserRequest{Id: id})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
@@ -155,12 +155,12 @@ func resourceNativeUserRead(ctx context.Context, d *schema.ResourceData, meta an
 	}
 
 	// Should map to all fields of UserOrgItem
-	d.Set("resource_id", res.Msg.NativeUser.ResourceId)
-	d.Set("native_user_id", res.Msg.NativeUser.Username)
-	d.Set("use_as_default", res.Msg.NativeUser.UseAsDefault)
-	d.Set("termination_protection", res.Msg.NativeUser.TerminationProtection)
+	d.Set("resource_id", res.NativeUser.ResourceId)
+	d.Set("native_user_id", res.NativeUser.Username)
+	d.Set("use_as_default", res.NativeUser.UseAsDefault)
+	d.Set("termination_protection", res.NativeUser.TerminationProtection)
 
-	d.SetId(res.Msg.NativeUser.Id)
+	d.SetId(res.NativeUser.Id)
 
 	return diags
 }
@@ -178,10 +178,10 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 	if d.HasChange("use_as_default") {
 		useAsDefault := d.Get("use_as_default").(bool)
 		if useAsDefault {
-			_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+			_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, &corev1.UpdateNativeUserRequest{
 				Id:           id,
 				UseAsDefault: &useAsDefault,
-			}))
+			})
 			if err != nil {
 				return diag.FromErr(err)
 			}
@@ -200,10 +200,10 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 				secret = woVal.AsString()
 			}
 		}
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, &corev1.UpdateNativeUserRequest{
 			Id:     id,
 			Secret: &secret,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -211,10 +211,10 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, connect.NewRequest(&corev1.UpdateNativeUserRequest{
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, &corev1.UpdateNativeUserRequest{
 			Id:                    id,
 			TerminationProtection: &terminationProtection,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -236,7 +236,7 @@ func resourceNativeUserDelete(ctx context.Context, d *schema.ResourceData, meta 
 		return diag.Errorf("Native User cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUser(ctx, connect.NewRequest(&corev1.DeleteNativeUserRequest{Id: d.Id()}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUser(ctx, &corev1.DeleteNativeUserRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
 	}

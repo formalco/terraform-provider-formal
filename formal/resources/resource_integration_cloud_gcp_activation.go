@@ -3,12 +3,12 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -51,7 +51,7 @@ func resourceIntegrationCloudGCPActivationUpsert(ctx context.Context, d *schema.
 	serviceAccountEmail := d.Get("service_account_email").(string)
 	workloadIdentityPoolProvider := d.Get("workload_identity_pool_provider").(string)
 
-	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, connect.NewRequest(&corev1.UpdateCloudIntegrationRequest{
+	_, err := c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, &corev1.UpdateCloudIntegrationRequest{
 		Id: integrationId,
 		Cloud: &corev1.UpdateCloudIntegrationRequest_Gcp{
 			Gcp: &corev1.UpdateCloudIntegrationRequest_GCP{
@@ -59,7 +59,7 @@ func resourceIntegrationCloudGCPActivationUpsert(ctx context.Context, d *schema.
 				WorkloadIdentityPoolProvider: &workloadIdentityPoolProvider,
 			},
 		},
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -74,9 +74,9 @@ func resourceIntegrationCloudGCPActivationRead(ctx context.Context, d *schema.Re
 
 	integrationId := d.Id()
 
-	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.GetIntegrationCloud(ctx, connect.NewRequest(&corev1.GetIntegrationCloudRequest{
+	res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.GetIntegrationCloud(ctx, &corev1.GetIntegrationCloudRequest{
 		Id: integrationId,
-	}))
+	})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Integration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -86,9 +86,9 @@ func resourceIntegrationCloudGCPActivationRead(ctx context.Context, d *schema.Re
 		return diag.FromErr(err)
 	}
 
-	d.Set("integration_id", res.Msg.Cloud.Id)
+	d.Set("integration_id", res.Cloud.Id)
 
-	if gcp, ok := res.Msg.Cloud.Cloud.(*corev1.CloudIntegration_Gcp); ok {
+	if gcp, ok := res.Cloud.Cloud.(*corev1.CloudIntegration_Gcp); ok {
 		d.Set("service_account_email", gcp.Gcp.GcpServiceAccountEmail)
 		d.Set("workload_identity_pool_provider", gcp.Gcp.GcpWorkloadIdentityPoolProvider)
 	}

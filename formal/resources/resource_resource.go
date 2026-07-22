@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"buf.build/go/protovalidate"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -14,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/samber/lo"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -193,12 +193,12 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResource(ctx, connect.NewRequest(msg))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResource(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Resource.Id)
+	d.SetId(res.Resource.Id)
 
 	resourceDatastoreRead(ctx, d, meta)
 
@@ -212,7 +212,7 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any
 
 	datastoreId := d.Id()
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, connect.NewRequest(&corev1.GetResourceRequest{Id: datastoreId}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, &corev1.GetResourceRequest{Id: datastoreId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Datastore was deleted
@@ -223,22 +223,22 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.Resource.Id)
-	d.Set("name", res.Msg.Resource.Name)
-	d.Set("hostname", res.Msg.Resource.Hostname)
-	d.Set("port", res.Msg.Resource.Port)
-	d.Set("technology", res.Msg.Resource.Technology)
-	d.Set("technology_provider", res.Msg.Resource.Provider)
-	d.Set("environment", res.Msg.Resource.Environment)
-	d.Set("termination_protection", res.Msg.Resource.TerminationProtection)
-	if res.Msg.Resource.Space != nil {
-		d.Set("space_id", res.Msg.Resource.Space.Id)
+	d.Set("id", res.Resource.Id)
+	d.Set("name", res.Resource.Name)
+	d.Set("hostname", res.Resource.Hostname)
+	d.Set("port", res.Resource.Port)
+	d.Set("technology", res.Resource.Technology)
+	d.Set("technology_provider", res.Resource.Provider)
+	d.Set("environment", res.Resource.Environment)
+	d.Set("termination_protection", res.Resource.TerminationProtection)
+	if res.Resource.Space != nil {
+		d.Set("space_id", res.Resource.Space.Id)
 	}
-	d.Set("aliases", res.Msg.Resource.Aliases)
-	d.SetId(res.Msg.Resource.Id)
+	d.Set("aliases", res.Resource.Aliases)
+	d.SetId(res.Resource.Id)
 
 	tags := make(map[string]string)
-	for _, tag := range res.Msg.Resource.Tags {
+	for _, tag := range res.Resource.Tags {
 		if tag == nil {
 			continue
 		}
@@ -308,7 +308,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta a
 		req.Aliases = &corev1.UpdateResourceRequest_UpdateResourceAlias{Aliases: aliases}
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, connect.NewRequest(req))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -329,7 +329,7 @@ func resourceDatastoreDelete(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.Errorf("Datastore cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResource(ctx, connect.NewRequest(&corev1.DeleteResourceRequest{Id: dsId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResource(ctx, &corev1.DeleteResourceRequest{Id: dsId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

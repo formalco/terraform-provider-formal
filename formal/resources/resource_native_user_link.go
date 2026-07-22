@@ -3,12 +3,12 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -74,17 +74,17 @@ func resourceNativeUserLinkCreate(ctx context.Context, d *schema.ResourceData, m
 	formalIdentityType := d.Get("formal_identity_type").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.CreateNativeUserIdentityLinkRequest{
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateNativeUserIdentityLink(ctx, &corev1.CreateNativeUserIdentityLinkRequest{
 		NativeUserId:          nativeUserId,
 		IdentityId:            formalIdentityId,
 		IdentityType:          formalIdentityType,
 		TerminationProtection: terminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Link.Id)
+	d.SetId(res.Link.Id)
 
 	resourceNativeUserLinkRead(ctx, d, meta)
 	return diags
@@ -96,10 +96,10 @@ func resourceNativeUserLinkUpdate(ctx context.Context, d *schema.ResourceData, m
 
 	if d.HasChange("termination_protection") {
 		terminationProtection := d.Get("termination_protection").(bool)
-		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.UpdateNativeUserIdentityLinkRequest{
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUserIdentityLink(ctx, &corev1.UpdateNativeUserIdentityLinkRequest{
 			Id:                    d.Id(),
 			TerminationProtection: &terminationProtection,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -116,9 +116,9 @@ func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, met
 
 	nativeUserIdentityId := d.Id()
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.GetNativeUserIdentityLinkRequest{
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetNativeUserIdentityLink(ctx, &corev1.GetNativeUserIdentityLinkRequest{
 		Id: nativeUserIdentityId,
-	}))
+	})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
@@ -129,7 +129,7 @@ func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, met
 		return diag.FromErr(err)
 	}
 
-	switch info := res.Msg.Link.Identity.(type) {
+	switch info := res.Link.Identity.(type) {
 	case *corev1.NativeUserLink_User:
 		d.Set("formal_identity_id", info.User.Id)
 	case *corev1.NativeUserLink_Group:
@@ -137,12 +137,12 @@ func resourceNativeUserLinkRead(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Should map to all fields of
-	d.Set("resource_id", res.Msg.Link.NativeUser.ResourceId)
-	d.Set("native_user_id", res.Msg.Link.NativeUser.Id)
-	d.Set("formal_identity_type", res.Msg.Link.Identity)
-	d.Set("termination_protection", res.Msg.Link.TerminationProtection)
+	d.Set("resource_id", res.Link.NativeUser.ResourceId)
+	d.Set("native_user_id", res.Link.NativeUser.Id)
+	d.Set("formal_identity_type", res.Link.Identity)
+	d.Set("termination_protection", res.Link.TerminationProtection)
 
-	d.SetId(res.Msg.Link.Id)
+	d.SetId(res.Link.Id)
 
 	return diags
 }
@@ -159,7 +159,7 @@ func resourceNativeUserLinkDelete(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("Native User Link cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUserIdentityLink(ctx, connect.NewRequest(&corev1.DeleteNativeUserIdentityLinkRequest{Id: id}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteNativeUserIdentityLink(ctx, &corev1.DeleteNativeUserIdentityLinkRequest{Id: id})
 	if err != nil {
 		return diag.FromErr(err)
 	}

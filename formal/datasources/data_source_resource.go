@@ -3,13 +3,13 @@ package datasources
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -76,14 +76,14 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 	var resource *corev1.Resource
 
 	if resourceID, ok := d.GetOk("id"); ok {
-		res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, connect.NewRequest(&corev1.GetResourceRequest{Id: resourceID.(string)}))
+		res, err := c.Grpc.Sdk.ResourceServiceClient.GetResource(ctx, &corev1.GetResourceRequest{Id: resourceID.(string)})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				return diag.Errorf("no resource found with id %s", resourceID)
 			}
 			return diag.FromErr(err)
 		}
-		resource = res.Msg.Resource
+		resource = res.Resource
 	} else {
 		name := d.Get("name").(string)
 		filterValue, err := anypb.New(&wrapperspb.StringValue{
@@ -92,7 +92,7 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		res, err := c.Grpc.Sdk.ResourceServiceClient.ListResources(ctx, connect.NewRequest(&corev1.ListResourcesRequest{
+		res, err := c.Grpc.Sdk.ResourceServiceClient.ListResources(ctx, &corev1.ListResourcesRequest{
 			Filter: &corev1.Filter{
 				Field: &corev1.Field{
 					Key:      "name",
@@ -101,14 +101,14 @@ func resourceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Di
 				},
 			},
 			Limit: 1,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Msg.Resources) == 0 {
+		if len(res.Resources) == 0 {
 			return diag.Errorf("no resource found with name %s", name)
 		}
-		resource = res.Msg.Resources[0]
+		resource = res.Resources[0]
 	}
 
 	d.SetId(resource.Id)

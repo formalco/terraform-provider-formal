@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -77,12 +77,12 @@ func resourceSatelliteHostnameCreate(ctx context.Context, d *schema.ResourceData
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatelliteHostname(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatelliteHostname(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.SatelliteHostname.Id)
+	d.SetId(res.SatelliteHostname.Id)
 
 	resourceSatelliteHostnameRead(ctx, d, meta)
 
@@ -96,9 +96,9 @@ func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, 
 
 	satelliteHostnameId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetSatelliteHostnameRequest{
+	req := &corev1.GetSatelliteHostnameRequest{
 		Id: satelliteHostnameId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteHostname(ctx, req)
 	if err != nil {
@@ -110,14 +110,14 @@ func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.SatelliteHostname.Id)
-	d.Set("satellite_id", res.Msg.SatelliteHostname.SatelliteId)
-	d.Set("hostname", res.Msg.SatelliteHostname.Hostname)
-	d.Set("termination_protection", res.Msg.SatelliteHostname.TerminationProtection)
-	d.Set("created_at", res.Msg.SatelliteHostname.CreatedAt.AsTime().Format(time.RFC3339))
-	d.Set("updated_at", res.Msg.SatelliteHostname.UpdatedAt.AsTime().Format(time.RFC3339))
+	d.Set("id", res.SatelliteHostname.Id)
+	d.Set("satellite_id", res.SatelliteHostname.SatelliteId)
+	d.Set("hostname", res.SatelliteHostname.Hostname)
+	d.Set("termination_protection", res.SatelliteHostname.TerminationProtection)
+	d.Set("created_at", res.SatelliteHostname.CreatedAt.AsTime().Format(time.RFC3339))
+	d.Set("updated_at", res.SatelliteHostname.UpdatedAt.AsTime().Format(time.RFC3339))
 
-	d.SetId(res.Msg.SatelliteHostname.Id)
+	d.SetId(res.SatelliteHostname.Id)
 
 	return diags
 }
@@ -133,10 +133,10 @@ func resourceSatelliteHostnameUpdate(ctx context.Context, d *schema.ResourceData
 	}
 
 	terminationProtection := d.Get("termination_protection").(bool)
-	req := connect.NewRequest(&corev1.UpdateSatelliteHostnameRequest{
+	req := &corev1.UpdateSatelliteHostnameRequest{
 		Id:                    d.Id(),
 		TerminationProtection: &terminationProtection,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.SatelliteServiceClient.UpdateSatelliteHostname(ctx, req)
 	if err != nil {
@@ -160,9 +160,9 @@ func resourceSatelliteHostnameDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Satellite hostname cannot be deleted because termination_protection is set to true")
 	}
 
-	req := connect.NewRequest(&corev1.DeleteSatelliteHostnameRequest{
+	req := &corev1.DeleteSatelliteHostnameRequest{
 		Id: satelliteHostnameId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatelliteHostname(ctx, req)
 	if err != nil {

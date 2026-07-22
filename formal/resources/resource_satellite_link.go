@@ -4,12 +4,12 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -68,12 +68,12 @@ func resourceSatelliteLinkCreate(ctx context.Context, d *schema.ResourceData, me
 		TargetSatelliteId: d.Get("target_satellite_id").(string),
 	}
 
-	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatelliteLink(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.SatelliteServiceClient.CreateSatelliteLink(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.SatelliteLink.Id)
+	d.SetId(res.SatelliteLink.Id)
 
 	resourceSatelliteLinkRead(ctx, d, meta)
 
@@ -87,9 +87,9 @@ func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta
 
 	satelliteLinkId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetSatelliteLinkRequest{
+	req := &corev1.GetSatelliteLinkRequest{
 		Id: satelliteLinkId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.SatelliteServiceClient.GetSatelliteLink(ctx, req)
 	if err != nil {
@@ -101,13 +101,13 @@ func resourceSatelliteLinkRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.SatelliteLink.Id)
-	d.Set("source_satellite_id", res.Msg.SatelliteLink.SourceSatelliteId)
-	d.Set("target_satellite_id", res.Msg.SatelliteLink.TargetSatelliteId)
-	d.Set("created_at", res.Msg.SatelliteLink.CreatedAt.AsTime().Format(time.RFC3339))
-	d.Set("updated_at", res.Msg.SatelliteLink.UpdatedAt.AsTime().Format(time.RFC3339))
+	d.Set("id", res.SatelliteLink.Id)
+	d.Set("source_satellite_id", res.SatelliteLink.SourceSatelliteId)
+	d.Set("target_satellite_id", res.SatelliteLink.TargetSatelliteId)
+	d.Set("created_at", res.SatelliteLink.CreatedAt.AsTime().Format(time.RFC3339))
+	d.Set("updated_at", res.SatelliteLink.UpdatedAt.AsTime().Format(time.RFC3339))
 
-	d.SetId(res.Msg.SatelliteLink.Id)
+	d.SetId(res.SatelliteLink.Id)
 
 	return diags
 }
@@ -119,9 +119,9 @@ func resourceSatelliteLinkDelete(ctx context.Context, d *schema.ResourceData, me
 
 	satelliteLinkId := d.Id()
 
-	req := connect.NewRequest(&corev1.DeleteSatelliteLinkRequest{
+	req := &corev1.DeleteSatelliteLinkRequest{
 		Id: satelliteLinkId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.SatelliteServiceClient.DeleteSatelliteLink(ctx, req)
 	if err != nil {

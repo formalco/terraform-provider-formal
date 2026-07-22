@@ -3,12 +3,11 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"buf.build/go/protovalidate"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -95,19 +94,19 @@ func resourceResourceClassifierConfigurationCreate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceClassifierConfiguration(ctx, connect.NewRequest(msg))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceClassifierConfiguration(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(response.Msg.ResourceClassifierConfiguration.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
-	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
-	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
-	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
-	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
+	d.SetId(response.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.ResourceClassifierConfiguration.AiAnalysisScope)
+	d.Set("created_at", response.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
@@ -119,19 +118,19 @@ func resourceResourceClassifierConfigurationRead(ctx context.Context, d *schema.
 
 	resourceId := d.Get("resource_id").(string)
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceClassifierConfiguration(ctx, connect.NewRequest(&corev1.GetResourceClassifierConfigurationRequest{ResourceId: resourceId}))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceClassifierConfiguration(ctx, &corev1.GetResourceClassifierConfigurationRequest{ResourceId: resourceId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
-	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
-	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
-	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
-	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
+	d.Set("id", response.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.ResourceClassifierConfiguration.AiAnalysisScope)
+	d.Set("created_at", response.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
@@ -163,19 +162,19 @@ func resourceResourceClassifierConfigurationUpdate(ctx context.Context, d *schem
 		return diag.FromErr(err)
 	}
 
-	response, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceClassifierConfiguration(ctx, connect.NewRequest(msg))
+	response, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceClassifierConfiguration(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", response.Msg.ResourceClassifierConfiguration.Id)
-	d.Set("resource_id", response.Msg.ResourceClassifierConfiguration.ResourceId)
-	d.Set("preference", response.Msg.ResourceClassifierConfiguration.Preference)
-	d.Set("ai_analysis_timeout_seconds", response.Msg.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
-	d.Set("enforce_strict_classifier_result_count", response.Msg.ResourceClassifierConfiguration.StrictClassifierResultCount)
-	d.Set("ai_analysis_scope", response.Msg.ResourceClassifierConfiguration.AiAnalysisScope)
-	d.Set("created_at", response.Msg.ResourceClassifierConfiguration.CreatedAt)
-	d.Set("updated_at", response.Msg.ResourceClassifierConfiguration.UpdatedAt)
+	d.Set("id", response.ResourceClassifierConfiguration.Id)
+	d.Set("resource_id", response.ResourceClassifierConfiguration.ResourceId)
+	d.Set("preference", response.ResourceClassifierConfiguration.Preference)
+	d.Set("ai_analysis_timeout_seconds", response.ResourceClassifierConfiguration.AiAnalysisTimeoutSeconds)
+	d.Set("enforce_strict_classifier_result_count", response.ResourceClassifierConfiguration.StrictClassifierResultCount)
+	d.Set("ai_analysis_scope", response.ResourceClassifierConfiguration.AiAnalysisScope)
+	d.Set("created_at", response.ResourceClassifierConfiguration.CreatedAt)
+	d.Set("updated_at", response.ResourceClassifierConfiguration.UpdatedAt)
 
 	return diags
 }
@@ -187,7 +186,7 @@ func resourceResourceClassifierConfigurationDelete(ctx context.Context, d *schem
 
 	resourceClassifierConfigurationId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceClassifierConfiguration(ctx, connect.NewRequest(&corev1.DeleteResourceClassifierConfigurationRequest{Id: resourceClassifierConfigurationId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceClassifierConfiguration(ctx, &corev1.DeleteResourceClassifierConfigurationRequest{Id: resourceClassifierConfigurationId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

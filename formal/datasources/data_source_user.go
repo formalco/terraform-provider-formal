@@ -3,13 +3,13 @@ package datasources
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -77,21 +77,21 @@ func userRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 	var user *corev1.User
 
 	if userID, ok := d.GetOk("id"); ok {
-		res, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, connect.NewRequest(&corev1.GetUserRequest{Id: userID.(string)}))
+		res, err := c.Grpc.Sdk.UserServiceClient.GetUser(ctx, &corev1.GetUserRequest{Id: userID.(string)})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				return diag.Errorf("no user found with id %s", userID)
 			}
 			return diag.FromErr(err)
 		}
-		user = res.Msg.User
+		user = res.User
 	} else {
 		dbUsername := d.Get("db_username").(string)
 		filterValue, err := anypb.New(&wrapperspb.StringValue{Value: dbUsername})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		res, err := c.Grpc.Sdk.UserServiceClient.ListUsers(ctx, connect.NewRequest(&corev1.ListUsersRequest{
+		res, err := c.Grpc.Sdk.UserServiceClient.ListUsers(ctx, &corev1.ListUsersRequest{
 			Filter: &corev1.Filter{
 				Field: &corev1.Field{
 					Key:      "db_username",
@@ -100,14 +100,14 @@ func userRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagno
 				},
 			},
 			Limit: 1,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Msg.Users) == 0 {
+		if len(res.Users) == 0 {
 			return diag.Errorf("no user found with db_username %s", dbUsername)
 		}
-		user = res.Msg.Users[0]
+		user = res.Users[0]
 	}
 
 	d.SetId(user.Id)

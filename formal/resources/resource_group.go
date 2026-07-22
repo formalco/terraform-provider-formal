@@ -3,12 +3,12 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -65,16 +65,16 @@ func resourceGroupCreate(ctx context.Context, d *schema.ResourceData, meta any) 
 	Description := d.Get("description").(string)
 	TerminationProtection := d.Get("termination_protection").(bool)
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, connect.NewRequest(&corev1.CreateGroupRequest{
+	res, err := c.Grpc.Sdk.GroupServiceClient.CreateGroup(ctx, &corev1.CreateGroupRequest{
 		Name:                  Name,
 		Description:           Description,
 		TerminationProtection: TerminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Group.Id)
+	d.SetId(res.Group.Id)
 
 	resourceGroupRead(ctx, d, meta)
 	return diags
@@ -86,7 +86,7 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta any) di
 
 	groupId := d.Id()
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, connect.NewRequest(&corev1.GetGroupRequest{Id: groupId}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.GetGroup(ctx, &corev1.GetGroupRequest{Id: groupId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Group was deleted
@@ -98,10 +98,10 @@ func resourceGroupRead(ctx context.Context, d *schema.ResourceData, meta any) di
 	}
 
 	// Should map to all fields of
-	d.Set("id", res.Msg.Group.Id)
-	d.Set("name", res.Msg.Group.Name)
-	d.Set("description", res.Msg.Group.Description)
-	d.Set("termination_protection", res.Msg.Group.TerminationProtection)
+	d.Set("id", res.Group.Id)
+	d.Set("name", res.Group.Name)
+	d.Set("description", res.Group.Description)
+	d.Set("termination_protection", res.Group.TerminationProtection)
 
 	d.SetId(groupId)
 
@@ -118,7 +118,7 @@ func resourceGroupUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 	// groupDesc := d.Get("description").(string)
 	groupTermProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, connect.NewRequest(&corev1.UpdateGroupRequest{Name: &groupName, Id: groupId, TerminationProtection: &groupTermProtection}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.UpdateGroup(ctx, &corev1.UpdateGroupRequest{Name: &groupName, Id: groupId, TerminationProtection: &groupTermProtection})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -140,7 +140,7 @@ func resourceGroupDelete(ctx context.Context, d *schema.ResourceData, meta any) 
 	}
 
 	groupId := d.Id()
-	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, connect.NewRequest(&corev1.DeleteGroupRequest{Id: groupId}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteGroup(ctx, &corev1.DeleteGroupRequest{Id: groupId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

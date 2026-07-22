@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -83,12 +83,12 @@ func resourceConnectorCreate(ctx context.Context, d *schema.ResourceData, meta a
 		connectorReq.SpaceId = &spaceId
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnector(ctx, connect.NewRequest(connectorReq))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnector(ctx, connectorReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Connector.Id)
+	d.SetId(res.Connector.Id)
 
 	resourceConnectorRead(ctx, d, meta)
 
@@ -103,7 +103,7 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta any
 
 	connectorId := d.Id()
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnector(ctx, connect.NewRequest(&corev1.GetConnectorRequest{Id: connectorId}))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnector(ctx, &corev1.GetConnectorRequest{Id: connectorId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Connector was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -113,19 +113,19 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta any
 		return diag.FromErr(err)
 	}
 
-	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, connect.NewRequest(&corev1.GetConnectorApiKeyRequest{Id: connectorId}))
+	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, &corev1.GetConnectorApiKeyRequest{Id: connectorId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.Connector.Id)
-	d.Set("name", res.Msg.Connector.Name)
-	d.Set("api_key", resApiKey.Msg.Secret)
-	d.Set("termination_protection", res.Msg.Connector.TerminationProtection)
-	if res.Msg.Connector.Space != nil {
-		d.Set("space_id", res.Msg.Connector.Space.Id)
+	d.Set("id", res.Connector.Id)
+	d.Set("name", res.Connector.Name)
+	d.Set("api_key", resApiKey.Secret)
+	d.Set("termination_protection", res.Connector.TerminationProtection)
+	if res.Connector.Space != nil {
+		d.Set("space_id", res.Connector.Space.Id)
 	}
-	d.SetId(res.Msg.Connector.Id)
+	d.SetId(res.Connector.Id)
 
 	return diags
 }
@@ -145,11 +145,11 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, meta a
 	terminationProtection := d.Get("termination_protection").(bool)
 	spaceId := d.Get("space_id").(string)
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnector(ctx, connect.NewRequest(&corev1.UpdateConnectorRequest{
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnector(ctx, &corev1.UpdateConnectorRequest{
 		Id:                    connectorId,
 		TerminationProtection: &terminationProtection,
 		SpaceId:               &spaceId,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -173,7 +173,7 @@ func resourceConnectorDelete(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.Errorf("Connector cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnector(ctx, connect.NewRequest(&corev1.DeleteConnectorRequest{Id: connectorId}))
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnector(ctx, &corev1.DeleteConnectorRequest{Id: connectorId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

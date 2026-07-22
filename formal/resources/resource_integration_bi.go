@@ -4,11 +4,10 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -127,11 +126,11 @@ func resourceIntegrationBICreate(ctx context.Context, d *schema.ResourceData, me
 		}
 	}
 
-	res, err := c.Grpc.Sdk.IntegrationBIServiceClient.CreateBIIntegration(ctx, connect.NewRequest(biIntegration))
+	res, err := c.Grpc.Sdk.IntegrationBIServiceClient.CreateBIIntegration(ctx, biIntegration)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 
 	resourceIntegrationBIRead(ctx, d, meta)
 	return diags
@@ -143,18 +142,18 @@ func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta
 
 	appId := d.Id()
 
-	res, err := c.Grpc.Sdk.IntegrationBIServiceClient.GetBIIntegration(ctx, connect.NewRequest(&corev1.GetBIIntegrationRequest{
+	res, err := c.Grpc.Sdk.IntegrationBIServiceClient.GetBIIntegration(ctx, &corev1.GetBIIntegrationRequest{
 		Id: appId,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", res.Msg.Integration.Name)
-	d.Set("sync", res.Msg.Integration.Sync)
+	d.Set("name", res.Integration.Name)
+	d.Set("sync", res.Integration.Sync)
 	d.Set("metabase", nil)
 
-	switch data := res.Msg.Integration.Type.(type) {
+	switch data := res.Integration.Type.(type) {
 	case *corev1.BIIntegration_Metabase_:
 		metabaseConfig := map[string]any{
 			"hostname": data.Metabase.Hostname,
@@ -167,7 +166,7 @@ func resourceIntegrationBIRead(ctx context.Context, d *schema.ResourceData, meta
 		d.Set("metabase", metabaseSet)
 	}
 
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 	return diags
 }
 
@@ -177,7 +176,7 @@ func resourceIntegrationBIDelete(ctx context.Context, d *schema.ResourceData, me
 
 	appId := d.Id()
 
-	_, err := c.Grpc.Sdk.IntegrationBIServiceClient.DeleteBIIntegration(ctx, connect.NewRequest(&corev1.DeleteBIIntegrationRequest{Id: appId}))
+	_, err := c.Grpc.Sdk.IntegrationBIServiceClient.DeleteBIIntegration(ctx, &corev1.DeleteBIIntegrationRequest{Id: appId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

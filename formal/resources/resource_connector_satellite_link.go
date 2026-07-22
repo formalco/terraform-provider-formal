@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -81,12 +81,12 @@ func resourceConnectorSatelliteLinkCreate(ctx context.Context, d *schema.Resourc
 		SatelliteType: d.Get("satellite_type").(string),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorSatelliteLink(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorSatelliteLink(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorSatelliteLink.Id)
+	d.SetId(res.ConnectorSatelliteLink.Id)
 
 	resourceConnectorSatelliteLinkRead(ctx, d, meta)
 
@@ -100,9 +100,9 @@ func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceD
 
 	connectorSatelliteLinkId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetConnectorSatelliteLinkRequest{
+	req := &corev1.GetConnectorSatelliteLinkRequest{
 		Id: connectorSatelliteLinkId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorSatelliteLink(ctx, req)
 	if err != nil {
@@ -114,14 +114,14 @@ func resourceConnectorSatelliteLinkRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorSatelliteLink.Id)
-	d.Set("connector_id", res.Msg.ConnectorSatelliteLink.ConnectorId)
-	d.Set("satellite_id", res.Msg.ConnectorSatelliteLink.SatelliteId)
-	d.Set("satellite_type", res.Msg.ConnectorSatelliteLink.SatelliteType)
-	d.Set("created_at", res.Msg.ConnectorSatelliteLink.CreatedAt.AsTime().Format(time.RFC3339))
-	d.Set("updated_at", res.Msg.ConnectorSatelliteLink.UpdatedAt.AsTime().Format(time.RFC3339))
+	d.Set("id", res.ConnectorSatelliteLink.Id)
+	d.Set("connector_id", res.ConnectorSatelliteLink.ConnectorId)
+	d.Set("satellite_id", res.ConnectorSatelliteLink.SatelliteId)
+	d.Set("satellite_type", res.ConnectorSatelliteLink.SatelliteType)
+	d.Set("created_at", res.ConnectorSatelliteLink.CreatedAt.AsTime().Format(time.RFC3339))
+	d.Set("updated_at", res.ConnectorSatelliteLink.UpdatedAt.AsTime().Format(time.RFC3339))
 
-	d.SetId(res.Msg.ConnectorSatelliteLink.Id)
+	d.SetId(res.ConnectorSatelliteLink.Id)
 
 	return diags
 }
@@ -133,9 +133,9 @@ func resourceConnectorSatelliteLinkDelete(ctx context.Context, d *schema.Resourc
 
 	connectorSatelliteLinkId := d.Id()
 
-	req := connect.NewRequest(&corev1.DeleteConnectorSatelliteLinkRequest{
+	req := &corev1.DeleteConnectorSatelliteLinkRequest{
 		Id: connectorSatelliteLinkId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorSatelliteLink(ctx, req)
 	if err != nil {

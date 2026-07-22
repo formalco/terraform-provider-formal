@@ -3,13 +3,13 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -108,19 +108,19 @@ func resourceInventoryObjectCreate(ctx context.Context, d *schema.ResourceData, 
 		req.SubColumn = &corev1.CreateInventoryObjectRequest_SubColumn{Path: path, Name: name, SubType: subType}
 	}
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.CreateInventoryObject(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.CreateInventoryObject(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Id)
+	d.SetId(res.Id)
 	return resourceInventoryObjectRead(ctx, d, meta)
 }
 
 func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, connect.NewRequest(&corev1.GetInventoryObjectRequest{Id: d.Id()}))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, &corev1.GetInventoryObjectRequest{Id: d.Id()})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The inventory object was not found; it may have been deleted outside Terraform.", map[string]any{"err": err})
@@ -130,7 +130,7 @@ func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, me
 		return diag.FromErr(err)
 	}
 
-	switch obj := res.Msg.Object.GetObject().(type) {
+	switch obj := res.Object.GetObject().(type) {
 	case *corev1.InventoryObject_Db:
 		d.Set("resource_id", obj.Db.ResourceId)
 		d.Set("type", "db")
@@ -165,7 +165,7 @@ func resourceInventoryObjectRead(ctx context.Context, d *schema.ResourceData, me
 func resourceInventoryObjectDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteInventoryObject(ctx, connect.NewRequest(&corev1.DeleteInventoryObjectRequest{Id: d.Id()}))
+	_, err := c.Grpc.Sdk.InventoryServiceClient.DeleteInventoryObject(ctx, &corev1.DeleteInventoryObjectRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
 	}

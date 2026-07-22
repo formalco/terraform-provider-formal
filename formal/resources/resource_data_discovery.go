@@ -6,13 +6,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/robfig/cron/v3"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -114,18 +113,18 @@ func resourceDataDiscoveryCreate(ctx context.Context, d *schema.ResourceData, me
 	DeletionPolicy := d.Get("deletion_policy").(string)
 	Path := d.Get("path").(string)
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.CreateDataDiscoveryConfigurationRequest{
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateDataDiscoveryConfiguration(ctx, &corev1.CreateDataDiscoveryConfigurationRequest{
 		ResourceId:     ResourceId,
 		NativeUserId:   NativeUserId,
 		Schedule:       Schedule,
 		DeletionPolicy: DeletionPolicy,
 		Path:           &Path,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.DataDiscoveryConfiguration.Id)
+	d.SetId(res.DataDiscoveryConfiguration.Id)
 
 	resourceDataDiscoveryRead(ctx, d, meta)
 
@@ -141,12 +140,12 @@ func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta
 		DataDiscoveryConfigurationId: d.Id(),
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.GetDataDiscoveryConfigurationRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetDataDiscoveryConfiguration(ctx, &corev1.GetDataDiscoveryConfigurationRequest{Id: &id})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.DataDiscoveryConfiguration.Id)
+	d.SetId(res.DataDiscoveryConfiguration.Id)
 
 	return diags
 }
@@ -169,13 +168,13 @@ func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, me
 	deletionPolicy := d.Get("deletion_policy").(string)
 	path := d.Get("path").(string)
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.UpdateDataDiscoveryConfigurationRequest{
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateDataDiscoveryConfiguration(ctx, &corev1.UpdateDataDiscoveryConfigurationRequest{
 		Id:             dataDiscoveryId,
 		NativeUserId:   nativeUserId,
 		Schedule:       schedule,
 		DeletionPolicy: deletionPolicy,
 		Path:           &path,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -193,7 +192,7 @@ func resourceDataDiscoveryDelete(ctx context.Context, d *schema.ResourceData, me
 
 	dataDiscoveryId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteDataDiscoveryConfiguration(ctx, connect.NewRequest(&corev1.DeleteDataDiscoveryConfigurationRequest{Id: dataDiscoveryId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteDataDiscoveryConfiguration(ctx, &corev1.DeleteDataDiscoveryConfigurationRequest{Id: dataDiscoveryId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

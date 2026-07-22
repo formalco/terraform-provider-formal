@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -104,14 +104,14 @@ func ResourcePolicy() *schema.Resource {
 			})
 
 			if d.Id() == "" || d.HasChange("module") {
-				resp, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicyCodeValidity(ctx, connect.NewRequest(&corev1.GetPolicyCodeValidityRequest{
+				resp, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicyCodeValidity(ctx, &corev1.GetPolicyCodeValidityRequest{
 					Code: d.Get("module").(string),
-				}))
+				})
 				if err != nil {
 					return fmt.Errorf("policy code validation failed: %v", err)
 				}
-				if !resp.Msg.Valid {
-					return fmt.Errorf("invalid policy code: %s", resp.Msg.Error)
+				if !resp.Valid {
+					return fmt.Errorf("invalid policy code: %s", resp.Error)
 				}
 				tflog.Debug(ctx, "Policy code validation successful")
 			}
@@ -141,12 +141,12 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 		TerminationProtection: TerminationProtection,
 	}
 
-	res, err := c.Grpc.Sdk.PoliciesServiceClient.CreatePolicy(ctx, connect.NewRequest(newPolicy))
+	res, err := c.Grpc.Sdk.PoliciesServiceClient.CreatePolicy(ctx, newPolicy)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Policy.Id)
+	d.SetId(res.Policy.Id)
 
 	resourcePolicyRead(ctx, d, meta)
 	return diags
@@ -158,7 +158,7 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	policyId := d.Id()
 
-	res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: policyId}))
+	res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, &corev1.GetPolicyRequest{Id: policyId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Policy was deleted
@@ -170,12 +170,12 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	}
 
 	// Should map to all fields of Policy
-	d.Set("id", res.Msg.Policy.Id)
-	d.Set("name", res.Msg.Policy.Name)
-	d.Set("description", res.Msg.Policy.Description)
-	d.Set("module", res.Msg.Policy.Code)
-	d.Set("status", res.Msg.Policy.Status)
-	d.Set("termination_protection", res.Msg.Policy.TerminationProtection)
+	d.Set("id", res.Policy.Id)
+	d.Set("name", res.Policy.Name)
+	d.Set("description", res.Policy.Description)
+	d.Set("module", res.Policy.Code)
+	d.Set("status", res.Policy.Status)
+	d.Set("termination_protection", res.Policy.TerminationProtection)
 
 	d.SetId(policyId)
 
@@ -203,7 +203,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 			TerminationProtection: TerminationProtection,
 		}
 
-		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, connect.NewRequest(updatedPolicy))
+		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, updatedPolicy)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -226,7 +226,7 @@ func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta any)
 		return diag.Errorf("Policy cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.PoliciesServiceClient.DeletePolicy(ctx, connect.NewRequest(&corev1.DeletePolicyRequest{Id: policyId}))
+	_, err := c.Grpc.Sdk.PoliciesServiceClient.DeletePolicy(ctx, &corev1.DeletePolicyRequest{Id: policyId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -313,11 +313,11 @@ func resourcePolicyStateUpgradeV0(ctx context.Context, rawState map[string]any, 
 	c := meta.(*clients.Clients)
 
 	if val, ok := rawState["id"]; ok {
-		res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, connect.NewRequest(&corev1.GetPolicyRequest{Id: val.(string)}))
+		res, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicy(ctx, &corev1.GetPolicyRequest{Id: val.(string)})
 		if err != nil {
 			return nil, err
 		}
-		rawState["status"] = res.Msg.Policy.Status
+		rawState["status"] = res.Policy.Status
 	}
 
 	return rawState, nil

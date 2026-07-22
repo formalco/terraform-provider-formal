@@ -7,7 +7,6 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -15,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"google.golang.org/protobuf/types/known/structpb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -190,16 +190,16 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
-	res, err := c.Grpc.Sdk.WorkflowServiceClient.CreateForm(ctx, connect.NewRequest(&corev1.CreateFormRequest{
+	res, err := c.Grpc.Sdk.WorkflowServiceClient.CreateForm(ctx, &corev1.CreateFormRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		Fields:      fields,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Form.Id)
+	d.SetId(res.Form.Id)
 
 	return resourceFormRead(ctx, d, meta)
 }
@@ -209,7 +209,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	formID := d.Id()
 
-	res, err := c.Grpc.Sdk.WorkflowServiceClient.GetForm(ctx, connect.NewRequest(&corev1.GetFormRequest{Id: formID}))
+	res, err := c.Grpc.Sdk.WorkflowServiceClient.GetForm(ctx, &corev1.GetFormRequest{Id: formID})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Form with ID "+formID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -219,7 +219,7 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	form := res.Msg.Form
+	form := res.Form
 
 	if err := d.Set("id", form.Id); err != nil {
 		return diag.FromErr(err)
@@ -257,12 +257,12 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			return diag.FromErr(err)
 		}
 
-		_, err = c.Grpc.Sdk.WorkflowServiceClient.UpdateForm(ctx, connect.NewRequest(&corev1.UpdateFormRequest{
+		_, err = c.Grpc.Sdk.WorkflowServiceClient.UpdateForm(ctx, &corev1.UpdateFormRequest{
 			Id:          d.Id(),
 			Name:        d.Get("name").(string),
 			Description: d.Get("description").(string),
 			Fields:      fields,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -274,7 +274,7 @@ func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 func resourceFormDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	_, err := c.Grpc.Sdk.WorkflowServiceClient.DeleteForm(ctx, connect.NewRequest(&corev1.DeleteFormRequest{Id: d.Id()}))
+	_, err := c.Grpc.Sdk.WorkflowServiceClient.DeleteForm(ctx, &corev1.DeleteFormRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
 	}

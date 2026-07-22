@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -14,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/samber/lo"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -142,12 +142,12 @@ func resourceHookCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		AllowlistedNetworkHosts:         allowlistedNetworkHosts,
 	}
 
-	res, err := c.Grpc.Sdk.HookServiceClient.CreateHook(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.HookServiceClient.CreateHook(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Hook.Id)
+	d.SetId(res.Hook.Id)
 
 	return resourceHookRead(ctx, d, meta)
 }
@@ -157,7 +157,7 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 
 	hookID := d.Id()
 
-	res, err := c.Grpc.Sdk.HookServiceClient.GetHook(ctx, connect.NewRequest(&corev1.GetHookRequest{Id: hookID}))
+	res, err := c.Grpc.Sdk.HookServiceClient.GetHook(ctx, &corev1.GetHookRequest{Id: hookID})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Hook with ID "+hookID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -167,7 +167,7 @@ func resourceHookRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 		return diag.FromErr(err)
 	}
 
-	hook := res.Msg.Hook
+	hook := res.Hook
 	d.Set("id", hook.Id)
 	d.Set("name", hook.Name)
 	d.Set("description", hook.Description)
@@ -212,7 +212,7 @@ func resourceHookUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 			},
 		}
 
-		_, err = c.Grpc.Sdk.HookServiceClient.UpdateHook(ctx, connect.NewRequest(req))
+		_, err = c.Grpc.Sdk.HookServiceClient.UpdateHook(ctx, req)
 		if err != nil {
 			return diag.FromErr(err)
 		}
@@ -224,7 +224,7 @@ func resourceHookUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 func resourceHookDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	_, err := c.Grpc.Sdk.HookServiceClient.DeleteHook(ctx, connect.NewRequest(&corev1.DeleteHookRequest{Id: d.Id()}))
+	_, err := c.Grpc.Sdk.HookServiceClient.DeleteHook(ctx, &corev1.DeleteHookRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -5,13 +5,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -127,12 +127,12 @@ func resourcePolicyDataLoaderCreate(ctx context.Context, d *schema.ResourceData,
 		TerminationProtection: d.Get("termination_protection").(bool),
 	}
 
-	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.CreatePolicyDataLoader(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.CreatePolicyDataLoader(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.PolicyDataLoader.Id)
+	d.SetId(res.PolicyDataLoader.Id)
 	return resourcePolicyDataLoaderRead(ctx, d, meta)
 }
 
@@ -144,7 +144,7 @@ func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, m
 
 	loaderId := d.Id()
 
-	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.GetPolicyDataLoader(ctx, connect.NewRequest(&corev1.GetPolicyDataLoaderRequest{Id: loaderId}))
+	res, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.GetPolicyDataLoader(ctx, &corev1.GetPolicyDataLoaderRequest{Id: loaderId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Loader was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -154,19 +154,19 @@ func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.PolicyDataLoader.Id)
-	d.Set("name", res.Msg.PolicyDataLoader.Name)
-	d.Set("description", res.Msg.PolicyDataLoader.Description)
-	d.Set("key", res.Msg.PolicyDataLoader.Key)
-	d.Set("worker_runtime", res.Msg.PolicyDataLoader.WorkerRuntime)
-	d.Set("worker_code", res.Msg.PolicyDataLoader.WorkerCode)
-	d.Set("worker_schedule", res.Msg.PolicyDataLoader.WorkerSchedule)
-	d.Set("status", res.Msg.PolicyDataLoader.Status)
-	d.Set("termination_protection", res.Msg.PolicyDataLoader.TerminationProtection)
-	d.Set("created_at", res.Msg.PolicyDataLoader.CreatedAt)
-	d.Set("updated_at", res.Msg.PolicyDataLoader.UpdatedAt)
+	d.Set("id", res.PolicyDataLoader.Id)
+	d.Set("name", res.PolicyDataLoader.Name)
+	d.Set("description", res.PolicyDataLoader.Description)
+	d.Set("key", res.PolicyDataLoader.Key)
+	d.Set("worker_runtime", res.PolicyDataLoader.WorkerRuntime)
+	d.Set("worker_code", res.PolicyDataLoader.WorkerCode)
+	d.Set("worker_schedule", res.PolicyDataLoader.WorkerSchedule)
+	d.Set("status", res.PolicyDataLoader.Status)
+	d.Set("termination_protection", res.PolicyDataLoader.TerminationProtection)
+	d.Set("created_at", res.PolicyDataLoader.CreatedAt)
+	d.Set("updated_at", res.PolicyDataLoader.UpdatedAt)
 
-	d.SetId(res.Msg.PolicyDataLoader.Id)
+	d.SetId(res.PolicyDataLoader.Id)
 	return diags
 }
 
@@ -189,7 +189,7 @@ func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData,
 	status := d.Get("status").(string)
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.UpdatePolicyDataLoader(ctx, connect.NewRequest(&corev1.UpdatePolicyDataLoaderRequest{
+	_, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.UpdatePolicyDataLoader(ctx, &corev1.UpdatePolicyDataLoaderRequest{
 		Id:                    loaderId,
 		Name:                  &name,
 		Description:           &description,
@@ -199,7 +199,7 @@ func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData,
 		WorkerSchedule:        &workerSchedule,
 		Status:                &status,
 		TerminationProtection: &terminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -220,7 +220,7 @@ func resourcePolicyDataLoaderDelete(ctx context.Context, d *schema.ResourceData,
 		return diag.Errorf("Policy data loader cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.DeletePolicyDataLoader(ctx, connect.NewRequest(&corev1.DeletePolicyDataLoaderRequest{Id: loaderId}))
+	_, err := c.Grpc.Sdk.PolicyDataLoaderServiceClient.DeletePolicyDataLoader(ctx, &corev1.DeletePolicyDataLoaderRequest{Id: loaderId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

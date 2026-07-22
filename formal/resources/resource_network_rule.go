@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -80,18 +80,18 @@ func ResourceNetworkRule() *schema.Resource {
 func resourceNetworkRuleCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	res, err := c.Grpc.Sdk.DesktopServiceClient.CreateDesktopRoutingRule(ctx, connect.NewRequest(&corev1.CreateDesktopRoutingRuleRequest{
+	res, err := c.Grpc.Sdk.DesktopServiceClient.CreateDesktopRoutingRule(ctx, &corev1.CreateDesktopRoutingRuleRequest{
 		Name:                  d.Get("name").(string),
 		Description:           d.Get("description").(string),
 		CelExpression:         d.Get("cel_expression").(string),
 		Status:                d.Get("status").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Rule.Id)
+	d.SetId(res.Rule.Id)
 
 	return resourceNetworkRuleRead(ctx, d, meta)
 }
@@ -100,7 +100,7 @@ func resourceNetworkRuleRead(ctx context.Context, d *schema.ResourceData, meta a
 	c := meta.(*clients.Clients)
 	ruleID := d.Id()
 
-	res, err := c.Grpc.Sdk.DesktopServiceClient.GetDesktopRoutingRule(ctx, connect.NewRequest(&corev1.GetDesktopRoutingRuleRequest{Id: ruleID}))
+	res, err := c.Grpc.Sdk.DesktopServiceClient.GetDesktopRoutingRule(ctx, &corev1.GetDesktopRoutingRuleRequest{Id: ruleID})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Network Rule with ID "+ruleID+" was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -110,7 +110,7 @@ func resourceNetworkRuleRead(ctx context.Context, d *schema.ResourceData, meta a
 		return diag.FromErr(err)
 	}
 
-	if err := setNetworkRuleState(d, res.Msg.Rule); err != nil {
+	if err := setNetworkRuleState(d, res.Rule); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -120,14 +120,14 @@ func resourceNetworkRuleRead(ctx context.Context, d *schema.ResourceData, meta a
 func resourceNetworkRuleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	_, err := c.Grpc.Sdk.DesktopServiceClient.UpdateDesktopRoutingRule(ctx, connect.NewRequest(&corev1.UpdateDesktopRoutingRuleRequest{
+	_, err := c.Grpc.Sdk.DesktopServiceClient.UpdateDesktopRoutingRule(ctx, &corev1.UpdateDesktopRoutingRuleRequest{
 		Id:                    d.Id(),
 		Name:                  d.Get("name").(string),
 		Description:           d.Get("description").(string),
 		CelExpression:         d.Get("cel_expression").(string),
 		Status:                d.Get("status").(string),
 		TerminationProtection: d.Get("termination_protection").(bool),
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -142,7 +142,7 @@ func resourceNetworkRuleDelete(ctx context.Context, d *schema.ResourceData, meta
 		return diag.Errorf("Network Rule cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.DesktopServiceClient.DeleteDesktopRoutingRule(ctx, connect.NewRequest(&corev1.DeleteDesktopRoutingRuleRequest{Id: d.Id()}))
+	_, err := c.Grpc.Sdk.DesktopServiceClient.DeleteDesktopRoutingRule(ctx, &corev1.DeleteDesktopRoutingRuleRequest{Id: d.Id()})
 	if err != nil {
 		return diag.FromErr(err)
 	}

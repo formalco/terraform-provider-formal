@@ -3,11 +3,11 @@ package datasources
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -54,26 +54,26 @@ func spaceRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagn
 	var space *corev1.Space
 
 	if spaceID, ok := d.GetOk("id"); ok {
-		res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, connect.NewRequest(&corev1.GetSpaceRequest{Id: spaceID.(string)}))
+		res, err := c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, &corev1.GetSpaceRequest{Id: spaceID.(string)})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				return diag.Errorf("no space found with id %s", spaceID)
 			}
 			return diag.FromErr(err)
 		}
-		space = res.Msg.Space
+		space = res.Space
 	} else {
 		nameStr := d.Get("name").(string)
-		res, err := c.Grpc.Sdk.SpaceServiceClient.ListSpaces(ctx, connect.NewRequest(&corev1.ListSpacesRequest{
+		res, err := c.Grpc.Sdk.SpaceServiceClient.ListSpaces(ctx, &corev1.ListSpacesRequest{
 			Search:       nameStr,
 			SearchFields: []string{"name"},
 			Limit:        100,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		var foundSpace *corev1.Space
-		for _, s := range res.Msg.Spaces {
+		for _, s := range res.Spaces {
 			if s.Name == nameStr {
 				foundSpace = s
 				break

@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -120,12 +120,12 @@ func resourceEncryptionKeyCreate(ctx context.Context, d *schema.ResourceData, me
 		req.PublicKeyPem = &pem
 	}
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.CreateEncryptionKey(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.LogsServiceClient.CreateEncryptionKey(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.EncryptionKey.Id)
+	d.SetId(res.EncryptionKey.Id)
 	return resourceEncryptionKeyRead(ctx, d, meta)
 }
 
@@ -135,7 +135,7 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 
 	keyId := d.Id()
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.GetEncryptionKey(ctx, connect.NewRequest(&corev1.GetEncryptionKeyRequest{Id: keyId}))
+	res, err := c.Grpc.Sdk.LogsServiceClient.GetEncryptionKey(ctx, &corev1.GetEncryptionKeyRequest{Id: keyId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Encryption Key was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -145,16 +145,16 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.EncryptionKey.Id)
-	d.Set("key_provider", res.Msg.EncryptionKey.Provider)
-	d.Set("key_id", res.Msg.EncryptionKey.KeyId)
-	d.Set("algorithm", res.Msg.EncryptionKey.Algorithm)
-	d.Set("decryptor_uri", res.Msg.EncryptionKey.DecryptorUri)
-	d.Set("public_key_pem", res.Msg.EncryptionKey.PublicKeyPem)
-	d.Set("created_at", res.Msg.EncryptionKey.CreatedAt.AsTime().String())
-	d.Set("updated_at", res.Msg.EncryptionKey.UpdatedAt.AsTime().String())
+	d.Set("id", res.EncryptionKey.Id)
+	d.Set("key_provider", res.EncryptionKey.Provider)
+	d.Set("key_id", res.EncryptionKey.KeyId)
+	d.Set("algorithm", res.EncryptionKey.Algorithm)
+	d.Set("decryptor_uri", res.EncryptionKey.DecryptorUri)
+	d.Set("public_key_pem", res.EncryptionKey.PublicKeyPem)
+	d.Set("created_at", res.EncryptionKey.CreatedAt.AsTime().String())
+	d.Set("updated_at", res.EncryptionKey.UpdatedAt.AsTime().String())
 
-	d.SetId(res.Msg.EncryptionKey.Id)
+	d.SetId(res.EncryptionKey.Id)
 	return diags
 }
 
@@ -192,7 +192,7 @@ func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, me
 		req.PublicKeyPem = &pem
 	}
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateEncryptionKey(ctx, connect.NewRequest(req))
+	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateEncryptionKey(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -205,7 +205,7 @@ func resourceEncryptionKeyDelete(ctx context.Context, d *schema.ResourceData, me
 
 	keyId := d.Id()
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteEncryptionKey(ctx, connect.NewRequest(&corev1.DeleteEncryptionKeyRequest{Id: keyId}))
+	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteEncryptionKey(ctx, &corev1.DeleteEncryptionKeyRequest{Id: keyId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

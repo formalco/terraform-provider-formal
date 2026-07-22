@@ -4,12 +4,11 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -198,12 +197,12 @@ func resourceIntegrationMDMCreate(ctx context.Context, d *schema.ResourceData, m
 		return diag.Errorf("exactly one of kandji, fleet, or jamf integration configuration is required")
 	}
 
-	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.CreateIntegrationMDM(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 
 	return resourceIntegrationMDMRead(ctx, d, m)
 }
@@ -215,29 +214,29 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m a
 
 	id := d.Id()
 
-	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.GetIntegrationMDM(ctx, connect.NewRequest(&corev1.GetIntegrationMDMRequest{
+	res, err := c.Grpc.Sdk.IntegrationMDMServiceClient.GetIntegrationMDM(ctx, &corev1.GetIntegrationMDMRequest{
 		Id: id,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("name", res.Msg.Integration.Name)
+	d.Set("name", res.Integration.Name)
 
 	// Clear all blocks first to avoid stale data
 	d.Set("kandji", []map[string]any{})
 	d.Set("fleet", []map[string]any{})
 	d.Set("jamf", []map[string]any{})
 
-	if kandji := res.Msg.Integration.GetKandji(); kandji != nil {
+	if kandji := res.Integration.GetKandji(); kandji != nil {
 		d.Set("kandji", []map[string]any{
 			{"api_url": kandji.GetApiUrl()},
 		})
-	} else if fleet := res.Msg.Integration.GetFleet(); fleet != nil {
+	} else if fleet := res.Integration.GetFleet(); fleet != nil {
 		d.Set("fleet", []map[string]any{
 			{"api_url": fleet.GetApiUrl()},
 		})
-	} else if jamf := res.Msg.Integration.GetJamf(); jamf != nil {
+	} else if jamf := res.Integration.GetJamf(); jamf != nil {
 		d.Set("jamf", []map[string]any{
 			{
 				"api_url":   jamf.GetApiUrl(),
@@ -246,7 +245,7 @@ func resourceIntegrationMDMRead(ctx context.Context, d *schema.ResourceData, m a
 		})
 	}
 
-	d.SetId(res.Msg.Integration.Id)
+	d.SetId(res.Integration.Id)
 
 	return diags
 }
@@ -324,9 +323,9 @@ func resourceIntegrationMDMDelete(ctx context.Context, d *schema.ResourceData, m
 
 	id := d.Id()
 
-	_, err := c.Grpc.Sdk.IntegrationMDMServiceClient.DeleteIntegrationMDM(ctx, connect.NewRequest(&corev1.DeleteIntegrationMDMRequest{
+	_, err := c.Grpc.Sdk.IntegrationMDMServiceClient.DeleteIntegrationMDM(ctx, &corev1.DeleteIntegrationMDMRequest{
 		Id: id,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

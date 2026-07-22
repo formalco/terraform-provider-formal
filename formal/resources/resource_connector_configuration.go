@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/durationpb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -104,12 +104,12 @@ func resourceConnectorConfigurationCreate(ctx context.Context, d *schema.Resourc
 		ResourcesHealthChecksFrequency: durationpb.New(time.Duration(resourcesHealthChecksFrequency) * time.Second),
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorConfiguration(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorConfiguration(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorConfiguration.Id)
+	d.SetId(res.ConnectorConfiguration.Id)
 	resourceConnectorConfigurationRead(ctx, d, meta)
 	return diags
 }
@@ -122,9 +122,9 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 
 	connectorConfigurationId := d.Id()
 
-	req := connect.NewRequest(&corev1.GetConnectorConfigurationRequest{
+	req := &corev1.GetConnectorConfigurationRequest{
 		Id: connectorConfigurationId,
-	})
+	}
 
 	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorConfiguration(ctx, req)
 	if err != nil {
@@ -136,14 +136,14 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorConfiguration.Id)
-	d.Set("connector_id", res.Msg.ConnectorConfiguration.ConnectorId)
-	d.Set("log_level", res.Msg.ConnectorConfiguration.LogLevel)
-	d.Set("otel_endpoint_hostname", res.Msg.ConnectorConfiguration.OtelEndpointHostname)
-	d.Set("otel_endpoint_port", res.Msg.ConnectorConfiguration.OtelEndpointPort)
-	d.Set("resources_health_checks_frequency", int(res.Msg.ConnectorConfiguration.ResourcesHealthChecksFrequency.AsDuration().Seconds()))
+	d.Set("id", res.ConnectorConfiguration.Id)
+	d.Set("connector_id", res.ConnectorConfiguration.ConnectorId)
+	d.Set("log_level", res.ConnectorConfiguration.LogLevel)
+	d.Set("otel_endpoint_hostname", res.ConnectorConfiguration.OtelEndpointHostname)
+	d.Set("otel_endpoint_port", res.ConnectorConfiguration.OtelEndpointPort)
+	d.Set("resources_health_checks_frequency", int(res.ConnectorConfiguration.ResourcesHealthChecksFrequency.AsDuration().Seconds()))
 
-	d.SetId(res.Msg.ConnectorConfiguration.Id)
+	d.SetId(res.ConnectorConfiguration.Id)
 
 	return diags
 }
@@ -168,13 +168,13 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 	otelPort := int32(d.Get("otel_endpoint_port").(int))
 	resourcesHealthChecksFrequency := int32(d.Get("resources_health_checks_frequency").(int))
 
-	req := connect.NewRequest(&corev1.UpdateConnectorConfigurationRequest{
+	req := &corev1.UpdateConnectorConfigurationRequest{
 		Id:                             connectorConfigurationId,
 		LogLevel:                       &logLevel,
 		OtelEndpointHostname:           &otelHostname,
 		OtelEndpointPort:               &otelPort,
 		ResourcesHealthChecksFrequency: durationpb.New(time.Duration(resourcesHealthChecksFrequency) * time.Second),
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorConfiguration(ctx, req)
 	if err != nil {
@@ -194,9 +194,9 @@ func resourceConnectorConfigurationDelete(ctx context.Context, d *schema.Resourc
 
 	connectorConfigurationId := d.Id()
 
-	req := connect.NewRequest(&corev1.DeleteConnectorConfigurationRequest{
+	req := &corev1.DeleteConnectorConfigurationRequest{
 		Id: connectorConfigurationId,
-	})
+	}
 
 	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorConfiguration(ctx, req)
 	if err != nil {

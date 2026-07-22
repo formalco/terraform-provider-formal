@@ -3,13 +3,13 @@ package datasources
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/anypb"
 	"google.golang.org/protobuf/types/known/wrapperspb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -58,14 +58,14 @@ func connectorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 
 	if connectorID, ok := d.GetOk("id"); ok {
 		// Fetch by ID using GetConnector (https://docs.joinformal.com/api-reference/corev1connectorservice/getconnector)
-		res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnector(ctx, connect.NewRequest(&corev1.GetConnectorRequest{Id: connectorID.(string)}))
+		res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnector(ctx, &corev1.GetConnectorRequest{Id: connectorID.(string)})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodeNotFound {
 				return diag.Errorf("no connector found with id %s", connectorID)
 			}
 			return diag.FromErr(err)
 		}
-		connector = res.Msg.Connector
+		connector = res.Connector
 	} else {
 		// Fetch by name using ListConnectors with filter
 		name := d.Get("name").(string)
@@ -75,7 +75,7 @@ func connectorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		res, err := c.Grpc.Sdk.ConnectorServiceClient.ListConnectors(ctx, connect.NewRequest(&corev1.ListConnectorsRequest{
+		res, err := c.Grpc.Sdk.ConnectorServiceClient.ListConnectors(ctx, &corev1.ListConnectorsRequest{
 			Filter: &corev1.Filter{
 				Field: &corev1.Field{
 					Key:      "name",
@@ -84,25 +84,25 @@ func connectorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 				},
 			},
 			Limit: 1,
-		}))
+		})
 		if err != nil {
 			return diag.FromErr(err)
 		}
-		if len(res.Msg.Connectors) == 0 {
+		if len(res.Connectors) == 0 {
 			return diag.Errorf("no connector found with name %s", name)
 		}
-		connector = res.Msg.Connectors[0]
+		connector = res.Connectors[0]
 	}
 
 	// Get API key separately (GetConnectorApiKey)
-	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, connect.NewRequest(&corev1.GetConnectorApiKeyRequest{Id: connector.Id}))
+	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, &corev1.GetConnectorApiKeyRequest{Id: connector.Id})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
 	d.SetId(connector.Id)
 	d.Set("name", connector.Name)
-	d.Set("api_key", resApiKey.Msg.Secret)
+	d.Set("api_key", resApiKey.Secret)
 	d.Set("termination_protection", connector.TerminationProtection)
 	if connector.Space != nil {
 		d.Set("space_id", connector.Space.Id)

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"buf.build/go/protovalidate"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
@@ -13,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -94,12 +94,12 @@ func resourceDialConfigurationCreate(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceDialConfiguration(ctx, connect.NewRequest(msg))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceDialConfiguration(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ResourceDialConfiguration.Id)
+	d.SetId(res.ResourceDialConfiguration.Id)
 
 	return resourceDialConfigurationRead(ctx, d, meta)
 }
@@ -113,7 +113,7 @@ func resourceDialConfigurationRead(ctx context.Context, d *schema.ResourceData, 
 		ResourceDialConfigurationId: d.Id(),
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceDialConfiguration(ctx, connect.NewRequest(&corev1.GetResourceDialConfigurationRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceDialConfiguration(ctx, &corev1.GetResourceDialConfigurationRequest{Id: &id})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The dial configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -123,11 +123,11 @@ func resourceDialConfigurationRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.Set("resource_id", res.Msg.ResourceDialConfiguration.ResourceId)
-	d.Set("dial_method", res.Msg.ResourceDialConfiguration.DialMethod)
-	d.Set("dial_target", res.Msg.ResourceDialConfiguration.DialTarget)
+	d.Set("resource_id", res.ResourceDialConfiguration.ResourceId)
+	d.Set("dial_method", res.ResourceDialConfiguration.DialMethod)
+	d.Set("dial_target", res.ResourceDialConfiguration.DialTarget)
 
-	d.SetId(res.Msg.ResourceDialConfiguration.Id)
+	d.SetId(res.ResourceDialConfiguration.Id)
 
 	return diags
 }
@@ -143,14 +143,14 @@ func resourceDialConfigurationUpdate(ctx context.Context, d *schema.ResourceData
 	dialMethod := d.Get("dial_method").(string)
 	dialTarget := d.Get("dial_target").(string)
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceDialConfiguration(ctx, connect.NewRequest(&corev1.UpdateResourceDialConfigurationRequest{
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceDialConfiguration(ctx, &corev1.UpdateResourceDialConfigurationRequest{
 		ResourceDialConfiguration: &corev1.ResourceDialConfiguration{
 			Id:         d.Id(),
 			ResourceId: d.Get("resource_id").(string),
 			DialMethod: dialMethod,
 			DialTarget: dialTarget,
 		},
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -165,7 +165,7 @@ func resourceDialConfigurationDelete(ctx context.Context, d *schema.ResourceData
 
 	resourceDialConfigurationId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceDialConfiguration(ctx, connect.NewRequest(&corev1.DeleteResourceDialConfigurationRequest{Id: resourceDialConfigurationId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceDialConfiguration(ctx, &corev1.DeleteResourceDialConfigurationRequest{Id: resourceDialConfigurationId})
 	if err != nil {
 		tflog.Warn(ctx, err.Error())
 		return diag.FromErr(err)

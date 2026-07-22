@@ -7,13 +7,13 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"google.golang.org/protobuf/types/known/durationpb"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -361,12 +361,12 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogConfiguration(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogConfiguration(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.LogConfiguration.Id)
+	d.SetId(res.LogConfiguration.Id)
 	return resourceLogConfigurationRead(ctx, d, meta)
 }
 
@@ -376,7 +376,7 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 
 	configId := d.Id()
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogConfiguration(ctx, connect.NewRequest(&corev1.GetLogConfigurationRequest{Id: configId}))
+	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogConfiguration(ctx, &corev1.GetLogConfigurationRequest{Id: configId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Log Configuration was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -386,7 +386,7 @@ func resourceLogConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 		return diag.FromErr(err)
 	}
 
-	logConfig := res.Msg.LogConfiguration
+	logConfig := res.LogConfiguration
 	d.Set("id", logConfig.Id)
 	d.Set("name", logConfig.Name)
 	d.Set("encryption_key_id", logConfig.EncryptionKeyId)
@@ -583,7 +583,7 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateLogConfiguration(ctx, connect.NewRequest(req))
+	_, err := c.Grpc.Sdk.LogsServiceClient.UpdateLogConfiguration(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -597,7 +597,7 @@ func resourceLogConfigurationDelete(ctx context.Context, d *schema.ResourceData,
 
 	configId := d.Id()
 
-	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogConfiguration(ctx, connect.NewRequest(&corev1.DeleteLogConfigurationRequest{Id: configId}))
+	_, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogConfiguration(ctx, &corev1.DeleteLogConfigurationRequest{Id: configId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

@@ -4,12 +4,11 @@ import (
 	"context"
 	"strings"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"buf.build/go/protovalidate"
-	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -89,12 +88,12 @@ func resourceHealthCheckCreate(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceHealthCheck(ctx, connect.NewRequest(msg))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.CreateResourceHealthCheck(ctx, msg)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ResourceHealthCheck.Id)
+	d.SetId(res.ResourceHealthCheck.Id)
 
 	resourceHealthCheckRead(ctx, d, meta)
 	return diags
@@ -109,16 +108,16 @@ func resourceHealthCheckRead(ctx context.Context, d *schema.ResourceData, meta a
 		ResourceHealthCheckId: d.Id(),
 	}
 
-	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHealthCheck(ctx, connect.NewRequest(&corev1.GetResourceHealthCheckRequest{Id: &id}))
+	res, err := c.Grpc.Sdk.ResourceServiceClient.GetResourceHealthCheck(ctx, &corev1.GetResourceHealthCheckRequest{Id: &id})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("resource_id", res.Msg.ResourceHealthCheck.ResourceId)
-	d.Set("database_name", res.Msg.ResourceHealthCheck.Database)
-	d.Set("termination_protection", res.Msg.ResourceHealthCheck.TerminationProtection)
+	d.Set("resource_id", res.ResourceHealthCheck.ResourceId)
+	d.Set("database_name", res.ResourceHealthCheck.Database)
+	d.Set("termination_protection", res.ResourceHealthCheck.TerminationProtection)
 
-	d.SetId(res.Msg.ResourceHealthCheck.Id)
+	d.SetId(res.ResourceHealthCheck.Id)
 
 	return diags
 }
@@ -136,10 +135,10 @@ func resourceHealthCheckUpdate(ctx context.Context, d *schema.ResourceData, meta
 
 	databaseName := d.Get("database_name").(string)
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceHealthCheck(ctx, connect.NewRequest(&corev1.UpdateResourceHealthCheckRequest{
+	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceHealthCheck(ctx, &corev1.UpdateResourceHealthCheckRequest{
 		Id:           resourceHealthCheckId,
 		DatabaseName: &databaseName,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -156,7 +155,7 @@ func resourceHealthCheckDelete(ctx context.Context, d *schema.ResourceData, meta
 
 	resourceHealthCheckId := d.Id()
 
-	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceHealthCheck(ctx, connect.NewRequest(&corev1.DeleteResourceHealthCheckRequest{Id: resourceHealthCheckId}))
+	_, err := c.Grpc.Sdk.ResourceServiceClient.DeleteResourceHealthCheck(ctx, &corev1.DeleteResourceHealthCheckRequest{Id: resourceHealthCheckId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

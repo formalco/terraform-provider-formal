@@ -3,12 +3,12 @@ package resource
 import (
 	"context"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -66,15 +66,15 @@ func resourceGroupLinkUserCreate(ctx context.Context, d *schema.ResourceData, me
 	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.CreateUserGroupLink(ctx, connect.NewRequest(&corev1.CreateUserGroupLinkRequest{GroupId: groupId, UserId: userId}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.CreateUserGroupLink(ctx, &corev1.CreateUserGroupLinkRequest{GroupId: groupId, UserId: userId})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.Set("user_id", res.Msg.UserGroupLink.User.Id)
-	d.Set("group_id", res.Msg.UserGroupLink.Group.Id)
+	d.Set("user_id", res.UserGroupLink.User.Id)
+	d.Set("group_id", res.UserGroupLink.Group.Id)
 
-	d.SetId(res.Msg.UserGroupLink.Id)
+	d.SetId(res.UserGroupLink.Id)
 
 	resourceGroupLinkUserRead(ctx, d, meta)
 	return diags
@@ -89,7 +89,7 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 	userId := d.Get("user_id").(string)
 	groupId := d.Get("group_id").(string)
 
-	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, connect.NewRequest(&corev1.ListUserGroupLinksRequest{GroupId: groupId, Limit: 500}))
+	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, &corev1.ListUserGroupLinksRequest{GroupId: groupId, Limit: 500})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
@@ -100,7 +100,7 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 		return diag.FromErr(err)
 	}
 	found := false
-	for _, user := range res.Msg.UserGroupLinks {
+	for _, user := range res.UserGroupLinks {
 		if user.User.Id == groupLinkId {
 			found = true
 			break
@@ -132,7 +132,7 @@ func resourceGroupLinkUserDelete(ctx context.Context, d *schema.ResourceData, me
 
 	linkId := d.Id()
 
-	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteUserGroupLink(ctx, connect.NewRequest(&corev1.DeleteUserGroupLinkRequest{Id: linkId}))
+	_, err := c.Grpc.Sdk.GroupServiceClient.DeleteUserGroupLink(ctx, &corev1.DeleteUserGroupLinkRequest{Id: linkId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

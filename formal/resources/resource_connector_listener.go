@@ -5,12 +5,12 @@ import (
 	"strings"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -91,12 +91,12 @@ func resourceConnectorListenerCreate(ctx context.Context, d *schema.ResourceData
 		ConnectorId:           connectorId,
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListener(ctx, connect.NewRequest(req))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorListener(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorListener.Id)
+	d.SetId(res.ConnectorListener.Id)
 
 	resourceConnectorListenerRead(ctx, d, meta)
 
@@ -111,7 +111,7 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 
 	connectorListenerId := d.Id()
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorListener(ctx, connect.NewRequest(&corev1.GetConnectorListenerRequest{Id: connectorListenerId}))
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorListener(ctx, &corev1.GetConnectorListenerRequest{Id: connectorListenerId})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Connector listener was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -121,14 +121,14 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 		return diag.FromErr(err)
 	}
 
-	d.Set("id", res.Msg.ConnectorListener.Id)
-	d.Set("name", res.Msg.ConnectorListener.Name)
-	d.Set("port", res.Msg.ConnectorListener.Port)
-	d.Set("termination_protection", res.Msg.ConnectorListener.TerminationProtection)
-	if res.Msg.ConnectorListener.Connector != nil {
-		d.Set("connector_id", res.Msg.ConnectorListener.Connector.Id)
+	d.Set("id", res.ConnectorListener.Id)
+	d.Set("name", res.ConnectorListener.Name)
+	d.Set("port", res.ConnectorListener.Port)
+	d.Set("termination_protection", res.ConnectorListener.TerminationProtection)
+	if res.ConnectorListener.Connector != nil {
+		d.Set("connector_id", res.ConnectorListener.Connector.Id)
 	}
-	d.SetId(res.Msg.ConnectorListener.Id)
+	d.SetId(res.ConnectorListener.Id)
 
 	return diags
 }
@@ -148,11 +148,11 @@ func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData
 	port := int32(d.Get("port").(int))
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListener(ctx, connect.NewRequest(&corev1.UpdateConnectorListenerRequest{
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListener(ctx, &corev1.UpdateConnectorListenerRequest{
 		Id:                    connectorListenerId,
 		Port:                  &port,
 		TerminationProtection: &terminationProtection,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -176,7 +176,7 @@ func resourceConnectorListenerDelete(ctx context.Context, d *schema.ResourceData
 		return diag.Errorf("Connector listener cannot be deleted because termination_protection is set to true")
 	}
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorListener(ctx, connect.NewRequest(&corev1.DeleteConnectorListenerRequest{Id: connectorListenerId}))
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorListener(ctx, &corev1.DeleteConnectorListenerRequest{Id: connectorListenerId})
 	if err != nil {
 		return diag.FromErr(err)
 	}

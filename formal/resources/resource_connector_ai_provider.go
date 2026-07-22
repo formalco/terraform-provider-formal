@@ -4,13 +4,13 @@ import (
 	"context"
 	"time"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -300,16 +300,16 @@ func resourceConnectorAiProviderCreate(ctx context.Context, d *schema.ResourceDa
 		return diags
 	}
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorAiProvider(ctx, connect.NewRequest(&corev1.CreateConnectorAiProviderRequest{
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.CreateConnectorAiProvider(ctx, &corev1.CreateConnectorAiProviderRequest{
 		ConnectorId: d.Get("connector_id").(string),
 		Config:      config,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.ConnectorAiProvider.Id)
-	setAiProviderState(d, res.Msg.ConnectorAiProvider)
+	d.SetId(res.ConnectorAiProvider.Id)
+	setAiProviderState(d, res.ConnectorAiProvider)
 	return nil
 }
 
@@ -317,11 +317,11 @@ func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorAiProvider(ctx, connect.NewRequest(&corev1.GetConnectorAiProviderRequest{
+	res, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorAiProvider(ctx, &corev1.GetConnectorAiProviderRequest{
 		Id: &corev1.GetConnectorAiProviderRequest_ProviderId{
 			ProviderId: d.Id(),
 		},
-	}))
+	})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The connector AI provider was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -331,8 +331,8 @@ func resourceConnectorAiProviderRead(ctx context.Context, d *schema.ResourceData
 		return diag.FromErr(err)
 	}
 
-	setAiProviderState(d, res.Msg.ConnectorAiProvider)
-	d.SetId(res.Msg.ConnectorAiProvider.Id)
+	setAiProviderState(d, res.ConnectorAiProvider)
+	d.SetId(res.ConnectorAiProvider.Id)
 	return diags
 }
 
@@ -344,10 +344,10 @@ func resourceConnectorAiProviderUpdate(ctx context.Context, d *schema.ResourceDa
 		return diags
 	}
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorAiProvider(ctx, connect.NewRequest(&corev1.UpdateConnectorAiProviderRequest{
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorAiProvider(ctx, &corev1.UpdateConnectorAiProviderRequest{
 		Id:     d.Id(),
 		Config: config,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -359,9 +359,9 @@ func resourceConnectorAiProviderDelete(ctx context.Context, d *schema.ResourceDa
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorAiProvider(ctx, connect.NewRequest(&corev1.DeleteConnectorAiProviderRequest{
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.DeleteConnectorAiProvider(ctx, &corev1.DeleteConnectorAiProviderRequest{
 		Id: d.Id(),
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}

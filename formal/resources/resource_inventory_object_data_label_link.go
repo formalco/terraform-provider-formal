@@ -4,12 +4,12 @@ import (
 	"context"
 	"strings"
 
-	corev1 "buf.build/gen/go/formal/core/protocolbuffers/go/core/v1"
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
+	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
@@ -75,12 +75,12 @@ func resourceInventoryObjectDataLabelLinkCreate(ctx context.Context, d *schema.R
 		LockStatusValidated: &lockStatusValidated,
 	}
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, connect.NewRequest(createReq))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, createReq)
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	d.SetId(res.Msg.Id)
+	d.SetId(res.Id)
 	resourceInventoryObjectDataLabelLinkRead(ctx, d, meta)
 
 	d.Set("resource_id", d)
@@ -94,7 +94,7 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 
 	var diags diag.Diagnostics
 
-	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, connect.NewRequest(&corev1.GetInventoryObjectRequest{Id: d.Id()}))
+	res, err := c.Grpc.Sdk.InventoryServiceClient.GetInventoryObject(ctx, &corev1.GetInventoryObjectRequest{Id: d.Id()})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			tflog.Warn(ctx, "The Data Label was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
@@ -104,12 +104,12 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 		return diag.FromErr(err)
 	}
 
-	if col := res.Msg.Object.GetColumn(); col != nil {
+	if col := res.Object.GetColumn(); col != nil {
 		d.Set("resource_id", col.ResourceId)
 		d.Set("path", col.Path)
 		d.Set("data_label", col.DataLabel)
 		d.Set("locked", col.DataLabelLockedForSidecar)
-	} else if sub := res.Msg.Object.GetSubColumn(); sub != nil {
+	} else if sub := res.Object.GetSubColumn(); sub != nil {
 		d.Set("resource_id", sub.ResourceId)
 		d.Set("path", sub.Path)
 		d.Set("data_label", sub.DataLabel)
@@ -132,12 +132,12 @@ func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.R
 	dataLabel := d.Get("data_label").(string)
 	lockStatusValidated := d.Get("locked").(bool)
 
-	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, connect.NewRequest(&corev1.UpdateColumnRequest{
+	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, &corev1.UpdateColumnRequest{
 		DatastoreId:         d.Get("resource_id").(string),
 		Path:                d.Get("path").(string),
 		DataLabel:           &dataLabel,
 		LockStatusValidated: &lockStatusValidated,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
@@ -157,12 +157,12 @@ func resourceInventoryObjectDataLabelLinkDelete(ctx context.Context, d *schema.R
 	emptyDataLabel := ""
 	emptyLockStatusValidated := false
 
-	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, connect.NewRequest(&corev1.UpdateColumnRequest{
+	_, err := c.Grpc.Sdk.InventoryServiceClient.UpdateColumn(ctx, &corev1.UpdateColumnRequest{
 		DatastoreId:         d.Get("resource_id").(string),
 		Path:                d.Get("path").(string),
 		DataLabel:           &emptyDataLabel,
 		LockStatusValidated: &emptyLockStatusValidated,
-	}))
+	})
 	if err != nil {
 		return diag.FromErr(err)
 	}
