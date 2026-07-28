@@ -16,6 +16,11 @@ import (
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
+// connectorListenerRuleValuePattern validates the rule value: "any", a resource
+// id (resource_*/datastore_*), or a technology name. It must match the API's
+// buf.validate constraint on the rule field.
+var connectorListenerRuleValuePattern = regexp.MustCompile(`^(any|resource_.*|datastore_.*|aws|bigquery|clickhouse|dynamodb|gcp|grpc|http|kubernetes|llm|mariadb|mcp|mongodb|mysql|postgres|rdp|redis|redshift|s3|snowflake|ssh|web)$`)
+
 func ResourceConnectorListenerRule() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
@@ -64,7 +69,7 @@ func ResourceConnectorListenerRule() *schema.Resource {
 				Required:    true,
 				ForceNew:    true,
 				ValidateFunc: validation.StringMatch(
-					regexp.MustCompile(`^(any|resource_.*|datastore_.*|postgres|mysql|snowflake|mongodb|redshift|mariadb|s3|dynamodb|documentdb|http|ssh|salesforce|kubernetes|clickhouse|redis|grpc|llm|aws|gcp)$`),
+					connectorListenerRuleValuePattern,
 					"Rule must start with 'resource_' or be a valid technology name (e.g., postgres, mysql, redis, mongodb, grpc) or 'any'",
 				),
 			},

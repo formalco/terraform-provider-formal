@@ -5,11 +5,12 @@ go 1.26.3
 replace (
 	github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
 	github.com/caddyserver/certmagic => github.com/formalco/certmagic v0.0.0-20260702195037-87834bbe3cc4
-	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260713144403-40bfcb99870e
+	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260728005734-3560c83b605d
 	github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0.0.0-20241219203747-6409e4292f34
 )
 
 require (
+	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260709200747-435963d16310.1
 	buf.build/go/protovalidate v1.2.0
 	connectrpc.com/connect v1.20.0
 	github.com/hashicorp/go-cty v1.5.0
@@ -23,7 +24,6 @@ require (
 )
 
 require (
-	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.11-20260709200747-435963d16310.1 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/cloudflare/circl v1.6.4 // indirect
 	github.com/go-test/deep v1.1.1 // indirect
@@ -41,7 +41,7 @@ require (
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.46.0 // indirect
 	golang.org/x/tools v0.47.0 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20260720211330-0afa2a65878a // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20260727163830-6c54dddc4772 // indirect
 	google.golang.org/grpc v1.81.1 // indirect
 )
 
@@ -66,7 +66,7 @@ require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
 	github.com/fatih/color v1.19.0 // indirect
-	github.com/formalco/go-sdk/v3 v3.0.1
+	github.com/formalco/go-sdk/v3 v3.0.6
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
