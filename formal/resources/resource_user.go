@@ -284,7 +284,7 @@ func resourceUserDelete(ctx context.Context, d *schema.ResourceData, meta any) d
 
 	const ErrorTolerance = 5
 	currentErrors := 0
-	deleteTimeStart := time.Now().UTC()
+	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
 		_, err = c.Grpc.Sdk.UserServiceClient.GetUser(ctx, &corev1.GetUserRequest{Id: userId})

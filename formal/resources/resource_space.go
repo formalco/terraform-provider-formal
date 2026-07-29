@@ -169,7 +169,7 @@ func resourceSpaceDelete(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	const ErrorTolerance = 5
 	currentErrors := 0
-	deleteTimeStart := time.Now().UTC()
+	deleteTimeStart := time.Now()
 	for {
 		// Retrieve status
 		_, err = c.Grpc.Sdk.SpaceServiceClient.GetSpace(ctx, &corev1.GetSpaceRequest{Id: spaceId})
