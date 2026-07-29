@@ -48,8 +48,9 @@ Registering a Cloud integration.
 - `gcp_enable_compute_instances_autodiscovery` (Boolean) Whether GCP Compute Engine instances autodiscovery is enabled or not.
 - `gcp_enable_gke_clusters_autodiscovery` (Boolean) Whether GCP GKE clusters autodiscovery is enabled or not.
 - `gcp_gcs_buckets` (List of String) The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.
+- `gcp_permissions` (List of String) The IAM permissions to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module, which grants them through a single custom role.
 - `gcp_project_id` (String) The GCP project ID this integration grants Formal access to.
-- `gcp_roles` (List of String) The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.
+- `gcp_roles` (List of String, Deprecated) The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.
 - `gcp_service_account_email` (String) The GCP service account email created for this integration.
 - `gcp_workload_identity_pool_provider` (String) The GCP workload identity pool provider created for this integration.
 - `id` (String) The ID of the Integration.

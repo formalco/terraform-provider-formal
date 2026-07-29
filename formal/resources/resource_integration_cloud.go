@@ -42,7 +42,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Description: "Type of the Integration. (Supported: aws, gcp)",
 				Type:        schema.TypeString,
 				Optional:    true,
-				Default:     "aws",
+				Computed:    true,
 				Deprecated:  "This field is deprecated and will be removed in a future version.",
 			},
 			"name": {
@@ -239,6 +239,13 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+				Deprecated:  "Use gcp_permissions, which the GCP module grants through a single custom role.",
+			},
+			"gcp_permissions": {
+				Description: "The IAM permissions to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module, which grants them through a single custom role.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -351,6 +358,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 
 					if rolesMayChange {
 						d.SetNewComputed("gcp_roles")
+						d.SetNewComputed("gcp_permissions")
 					}
 				}
 			}
@@ -557,6 +565,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("gcp_enable_gke_clusters_autodiscovery", data.Gcp.GcpEnableGkeClustersAutodiscovery)
 		d.Set("gcp_enable_cloudsql_instances_autodiscovery", data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery)
 		d.Set("gcp_roles", data.Gcp.GcpRoles)
+		d.Set("gcp_permissions", data.Gcp.GcpPermissions)
 	}
 
 	return diags
@@ -570,7 +579,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.' or 'gcp.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles"}...)
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
