@@ -44,6 +44,7 @@ func New(version string) func() *schema.Provider {
 				"formal_connector":                         resource.ResourceConnector(),
 				"formal_connector_ai_provider":             resource.ResourceConnectorAiProvider(),
 				"formal_connector_configuration":           resource.ResourceConnectorConfiguration(),
+				"formal_connector_token_encryption_key":    resource.ResourceConnectorTokenEncryptionKey(),
 				"formal_connector_hostname":                resource.ResourceConnectorHostname(),
 				"formal_connector_listener":                resource.ResourceConnectorListener(),
 				"formal_connector_listener_rule":           resource.ResourceConnectorListenerRule(),
