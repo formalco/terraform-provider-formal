@@ -6,10 +6,25 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
+
+var logCompressions = []string{"none", "gzip", "zstd"}
+
+var logCompressionValues = map[string]corev1.LogCompression{
+	"none": corev1.LogCompression_LOG_COMPRESSION_NONE,
+	"gzip": corev1.LogCompression_LOG_COMPRESSION_GZIP,
+	"zstd": corev1.LogCompression_LOG_COMPRESSION_ZSTD,
+}
+
+var logCompressionNames = map[corev1.LogCompression]string{
+	corev1.LogCompression_LOG_COMPRESSION_NONE: "none",
+	corev1.LogCompression_LOG_COMPRESSION_GZIP: "gzip",
+	corev1.LogCompression_LOG_COMPRESSION_ZSTD: "zstd",
+}
 
 func ResourceIntegrationLogs() *schema.Resource {
 	return &schema.Resource{
@@ -119,6 +134,14 @@ func ResourceIntegrationLogs() *schema.Resource {
 							Default:     "",
 							ForceNew:    true,
 						},
+						"compression": {
+							Description:  "Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "none",
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice(logCompressions, false),
+						},
 						"cloud_integration_id": {
 							Description: "Cloud Integration ID.",
 							Type:        schema.TypeString,
@@ -147,6 +170,14 @@ func ResourceIntegrationLogs() *schema.Resource {
 							Optional:    true,
 							Default:     "",
 							ForceNew:    true,
+						},
+						"compression": {
+							Description:  "Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "none",
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice(logCompressions, false),
 						},
 						"cloud_integration_id": {
 							Description: "Cloud Integration ID.",
@@ -221,6 +252,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					CloudIntegrationId: awsConfig["cloud_integration_id"].(string),
 					BucketName:         awsConfig["s3_bucket_name"].(string),
 					BucketPrefix:       awsConfig["s3_bucket_prefix"].(string),
+					Compression:        logCompressionValues[awsConfig["compression"].(string)],
 				},
 			}
 			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
@@ -240,6 +272,7 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 					CloudIntegrationId: gcsConfig["cloud_integration_id"].(string),
 					BucketName:         gcsConfig["gcs_bucket_name"].(string),
 					BucketPrefix:       gcsConfig["gcs_bucket_prefix"].(string),
+					Compression:        logCompressionValues[gcsConfig["compression"].(string)],
 				},
 			}
 			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
@@ -290,6 +323,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 				"s3_bucket_name":       awsS3.BucketName,
 				"s3_bucket_prefix":     awsS3.BucketPrefix,
 				"region":               awsS3.Region,
+				"compression":          logCompressionNames[awsS3.Compression],
 			},
 		})
 	}
@@ -299,6 +333,7 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 				"cloud_integration_id": gcs.CloudIntegrationId,
 				"gcs_bucket_name":      gcs.BucketName,
 				"gcs_bucket_prefix":    gcs.BucketPrefix,
+				"compression":          logCompressionNames[gcs.Compression],
 			},
 		})
 	}

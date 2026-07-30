@@ -41,6 +41,7 @@ Required:
 
 Optional:
 
+- `compression` (String) Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).
 - `s3_bucket_prefix` (String) AWS S3 bucket prefix to write logs under. Defaults to the bucket root.
 
 Read-Only:
@@ -68,6 +69,7 @@ Required:
 
 Optional:
 
+- `compression` (String) Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).
 - `gcs_bucket_prefix` (String) GCS bucket prefix to write logs under. Defaults to the bucket root.
 
 
