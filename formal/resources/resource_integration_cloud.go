@@ -499,6 +499,10 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		existingAwsCustomerRoleArn = existingAwsConfig["aws_customer_role_arn"].(string)
 	}
 
+	d.Set("gcp_roles", []string{})
+	d.Set("gcp_permissions", []string{})
+	d.Set("gcp_gcs_buckets", []string{})
+
 	switch data := res.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
 		d.Set("type", "aws")
