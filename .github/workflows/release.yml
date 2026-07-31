@@ -1,22 +1,16 @@
-# This GitHub action can publish assets for release when a tag is created.
-# Currently its setup to run on any tag that matches the pattern "v*" (ie. v0.1.0).
-#
-# This uses an action (hashicorp/ghaction-import-gpg) that assumes you set your 
-# private key in the `GPG_PRIVATE_KEY` secret and passphrase in the `PASSPHRASE`
-# secret. If you would rather own your own GPG handling, please fork this action
-# or use an alternative one for key handling.
-#
-# You will need to pass the `--batch` flag to `gpg` in your signing step 
-# in `goreleaser` to indicate this is being used in a non-interactive mode.
-#
 name: release
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+    paths:
+      - VERSION
   workflow_dispatch:
 permissions:
   contents: write
+concurrency:
+  group: release
+  cancel-in-progress: false
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
@@ -27,7 +21,39 @@ jobs:
         with:
           fetch-depth: 0
       -
+        name: Read VERSION
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION="$(tr -d ' \r\n' < VERSION)"
+          if [[ ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must hold a bare X.Y.Z version, got: ${VERSION}"
+            exit 1
+          fi
+          # Tag existence, not a diff against the parent commit, so re-runs and
+          # manual dispatches after a failed release pick up where they stopped.
+          if git rev-parse -q --verify "refs/tags/v${VERSION}" >/dev/null; then
+            echo "v${VERSION} is already released"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Releasing v${VERSION}"
+            echo "release=true" >> "$GITHUB_OUTPUT"
+            echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+          fi
+      -
+        name: Create and push tag
+        if: steps.version.outputs.release == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "${TAG}" -m "release ${TAG}"
+          git push origin "refs/tags/${TAG}"
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+      -
         name: Set up Go
+        if: steps.version.outputs.release == 'true'
         uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff # v5.6.0
         with:
           go-version-file: 'go.mod'
@@ -35,6 +61,7 @@ jobs:
           cache: false
       -
         name: Import GPG key
+        if: steps.version.outputs.release == 'true'
         uses: crazy-max/ghaction-import-gpg@2dc316deee8e90f13e1a351ab510b4d5bc0c82cd # v7.0.0
         id: import_gpg
         with:
@@ -42,6 +69,7 @@ jobs:
           passphrase: ${{ secrets.PASSPHRASE }}
       -
         name: Run GoReleaser
+        if: steps.version.outputs.release == 'true'
         uses: goreleaser/goreleaser-action@1a80836c5c9d9e5755a25cb59ec6f45a3b5f41a8 # v7.2.1
         with:
           distribution: goreleaser
@@ -51,4 +79,3 @@ jobs:
           GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
           # GitHub sets this automatically
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
