@@ -24,6 +24,7 @@ Registers an OIDC trust configuration used to authenticate externally signed JWT
 ### Optional
 
 - `claim_condition` (String) CEL expression evaluated against verified token claims. Must return a boolean. Defaults to `true`.
+- `end_user_email_expression` (String) Optional CEL expression over verified token claims that must evaluate to a string email. When set, federation mint resolves a Formal human by case-insensitive email. Leave unset for machine-only trusts. Examples: `claims.owner_email` (Cursor); `claims.sub.split('/').last()` (AWSReservedSSO session name when the session name is an email).
 - `jwks_uri` (String) Optional JWKS URI. When unset, Formal uses OIDC Discovery from the issuer. Must be absolute HTTPS when set.
 - `status` (String) Integration status. Accepted values are `active` and `draft`. Draft disables authentication.
 

@@ -20,6 +20,8 @@ func TestResourceIntegrationOIDCSchema(t *testing.T) {
 	require.True(t, r.Schema["machine_user_id"].Required)
 	require.Equal(t, "true", r.Schema["claim_condition"].Default)
 	require.Equal(t, "active", r.Schema["status"].Default)
+	require.True(t, r.Schema["end_user_email_expression"].Optional)
+	require.Nil(t, r.Schema["end_user_email_expression"].Default)
 	require.True(t, r.Schema["audience"].Computed)
 	require.False(t, r.Schema["issuer"].Sensitive)
 	require.False(t, r.Schema["jwks_uri"].Sensitive)
@@ -52,28 +54,32 @@ func TestFlattenIntegrationOIDC(t *testing.T) {
 	d.SetId("integrationoidc_01h45ytscbebyvny4gc8cr8ma2")
 
 	jwks := "https://issuer.example.com/keys"
+	endUserExpr := "claims.owner_email"
 	diags := flattenIntegrationOIDC(d, &corev1.IntegrationOIDC{
-		Id:             "integrationoidc_01h45ytscbebyvny4gc8cr8ma2",
-		Name:           "github-actions",
-		Issuer:         "https://token.actions.githubusercontent.com",
-		JwksUri:        &jwks,
-		MachineUserId:  "user_machine",
-		ClaimCondition: `claims.repository == "formalco/monorepo"`,
-		Status:         "active",
-		CreatedAt:      timestamppb.Now(),
-		UpdatedAt:      timestamppb.Now(),
+		Id:                     "integrationoidc_01h45ytscbebyvny4gc8cr8ma2",
+		Name:                   "github-actions",
+		Issuer:                 "https://token.actions.githubusercontent.com",
+		JwksUri:                &jwks,
+		MachineUserId:          "user_machine",
+		ClaimCondition:         `claims.repository == "formalco/monorepo"`,
+		EndUserEmailExpression: &endUserExpr,
+		Status:                 "active",
+		CreatedAt:              timestamppb.Now(),
+		UpdatedAt:              timestamppb.Now(),
 	})
 	require.Empty(t, diags)
 	require.Equal(t, "oidc.formal.ai/integrationoidc_01h45ytscbebyvny4gc8cr8ma2", d.Get("audience"))
 	require.Equal(t, "github-actions", d.Get("name"))
 	require.Equal(t, jwks, d.Get("jwks_uri"))
+	require.Equal(t, endUserExpr, d.Get("end_user_email_expression"))
 }
 
 func TestFlattenIntegrationOIDCClearsJWKSWhenAbsent(t *testing.T) {
 	t.Parallel()
 	r := ResourceIntegrationOIDC()
 	d := schema.TestResourceDataRaw(t, r.Schema, map[string]any{
-		"jwks_uri": "https://old.example.com/keys",
+		"jwks_uri":                  "https://old.example.com/keys",
+		"end_user_email_expression": "claims.owner_email",
 	})
 	d.SetId("integrationoidc_01h45ytscbebyvny4gc8cr8ma2")
 
@@ -87,4 +93,5 @@ func TestFlattenIntegrationOIDCClearsJWKSWhenAbsent(t *testing.T) {
 	})
 	require.Empty(t, diags)
 	require.Empty(t, d.Get("jwks_uri"))
+	require.Empty(t, d.Get("end_user_email_expression"))
 }

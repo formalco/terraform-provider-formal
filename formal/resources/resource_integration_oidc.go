@@ -70,6 +70,11 @@ func ResourceIntegrationOIDC() *schema.Resource {
 				Optional:    true,
 				Default:     "true",
 			},
+			"end_user_email_expression": {
+				Description: "Optional CEL expression over verified token claims that must evaluate to a string email. When set, federation mint resolves a Formal human by case-insensitive email. Leave unset for machine-only trusts. Examples: `claims.owner_email` (Cursor); `claims.sub.split('/').last()` (AWSReservedSSO session name when the session name is an email).",
+				Type:        schema.TypeString,
+				Optional:    true,
+			},
 			"status": {
 				Description: "Integration status. Accepted values are `active` and `draft`. Draft disables authentication.",
 				Type:        schema.TypeString,
@@ -171,6 +176,10 @@ func resourceIntegrationOIDCCreate(ctx context.Context, d *schema.ResourceData, 
 		jwksURI := v.(string)
 		req.JwksUri = &jwksURI
 	}
+	if v, ok := d.GetOk("end_user_email_expression"); ok {
+		expr := v.(string)
+		req.EndUserEmailExpression = &expr
+	}
 
 	res, err := c.Grpc.Sdk.IntegrationOIDCServiceClient.CreateIntegrationOIDC(ctx, req)
 	if err != nil {
@@ -213,6 +222,10 @@ func resourceIntegrationOIDCUpdate(ctx context.Context, d *schema.ResourceData, 
 		jwksURI := v.(string)
 		integration.JwksUri = &jwksURI
 	}
+	if v, ok := d.GetOk("end_user_email_expression"); ok {
+		expr := v.(string)
+		integration.EndUserEmailExpression = &expr
+	}
 
 	_, err := c.Grpc.Sdk.IntegrationOIDCServiceClient.UpdateIntegrationOIDC(ctx, &corev1.UpdateIntegrationOIDCRequest{
 		Integration: integration,
@@ -247,6 +260,11 @@ func flattenIntegrationOIDC(d *schema.ResourceData, integration *corev1.Integrat
 		d.Set("jwks_uri", *integration.JwksUri)
 	} else {
 		d.Set("jwks_uri", nil)
+	}
+	if integration.EndUserEmailExpression != nil {
+		d.Set("end_user_email_expression", *integration.EndUserEmailExpression)
+	} else {
+		d.Set("end_user_email_expression", nil)
 	}
 	if integration.CreatedAt != nil {
 		d.Set("created_at", integration.CreatedAt.AsTime().UTC().Format(time.RFC3339))

@@ -28,7 +28,12 @@ resource "formal_integration_oidc" "github_actions" {
   claim_condition = <<-CEL
     claims.repository == "formalco/monorepo"
   CEL
-  status          = "active"
+  # Optional: derive a Formal human end user by email from claims.
+  # Examples:
+  #   claims.owner_email
+  #   claims.sub.split('/').last()  # AWSReservedSSO session name when it is an email
+  # end_user_email_expression = "claims.owner_email"
+  status = "active"
 }
 
 output "oidc_audience" {
