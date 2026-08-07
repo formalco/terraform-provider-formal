@@ -33,6 +33,8 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
+	go.opentelemetry.io/otel v1.45.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.45.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
@@ -65,7 +67,6 @@ require (
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/formalco/go-sdk/v3 v3.8.0
-	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
