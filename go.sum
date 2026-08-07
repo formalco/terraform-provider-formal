@@ -62,8 +62,8 @@ github.com/envoyproxy/protoc-gen-validate v1.3.3/go.mod h1:TsndJ/ngyIdQRhMcVVGDD
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
 github.com/fatih/color v1.19.0 h1:Zp3PiM21/9Ld6FzSKyL5c/BULoe/ONr9KlbYVOfG8+w=
 github.com/fatih/color v1.19.0/go.mod h1:zNk67I0ZUT1bEGsSGyCZYZNrHuTkJJB+r6Q9VuMi0LE=
-github.com/formalco/go-sdk/v3 v3.7.1 h1:gW1n9SRkrx4j4atY/P/YLenoks8h42yR6xWDRlwij3M=
-github.com/formalco/go-sdk/v3 v3.7.1/go.mod h1:e+89quG5KTdAO9MOLGlzYEg2ebGp4oqqp84eQfxSpOY=
+github.com/formalco/go-sdk/v3 v3.7.2 h1:FySV85fjngIbrM2qW3as6oTuSBpWwTOkI1v0+mZ6qbM=
+github.com/formalco/go-sdk/v3 v3.7.2/go.mod h1:4w2PXOHqi+Oj0xoMrQU8kq75UfvCAlTJr6bzs0MdbzU=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 h1:+zs/tPmkDkHx3U66DAb0lQFJrpS6731Oaa12ikc+DiI=
@@ -314,8 +314,8 @@ gonum.org/v1/gonum v0.17.0/go.mod h1:El3tOrEuMpv2UdMrbNlKEh9vd86bmQ6vqIcDwxEOc1E
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/appengine v1.6.8 h1:IhEN5q69dyKagZPYMSdIjS2HqprW324FRQZJcGqPAsM=
 google.golang.org/appengine v1.6.8/go.mod h1:1jJ3jBArFh5pcgW8gCtRJnepW8FzD1V44FJffLiz/Ds=
-google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d h1:FarXi840EJWSHYTN3ERkADbPWjl307+FGrA22KAVjjc=
-google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d/go.mod h1:K/+WGbmBY7aNW1HDw1fJnKYo10i0DkAX6pows00dLig=
+google.golang.org/genproto/googleapis/api v0.0.0-20260807164820-c8921c73eeea h1:Jifw/kjs/r3B0uszvls/m3c3tmZs2YHGM9C+rvxP9gY=
+google.golang.org/genproto/googleapis/api v0.0.0-20260807164820-c8921c73eeea/go.mod h1:K/+WGbmBY7aNW1HDw1fJnKYo10i0DkAX6pows00dLig=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260729162451-8efbd57d26e0 h1:mJiOtnGp0k/BcSgdu03G2NwnscCfCH+h2QKUBZr18KI=
 google.golang.org/genproto/googleapis/rpc v0.0.0-20260729162451-8efbd57d26e0/go.mod h1:4Hqkh8ycfw05ld/3BWL7rJOSfebL2Q+DVDeRgYgxUU8=
 google.golang.org/grpc v1.82.1 h1:NnAxzGRA0677vCa4BUkOAnO5+FfQqVl9iUXeD0IqcGE=
