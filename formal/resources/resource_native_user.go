@@ -72,7 +72,7 @@ func ResourceNativeUser() *schema.Resource {
 			},
 			"use_as_default": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The password of the Native User.",
+				Description: "Whether the Connector uses this Native User when a connection does not name one. Defaults to false, so a Resource whose Native Users all leave this unset has no default.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 			},
@@ -177,14 +177,12 @@ func resourceNativeUserUpdate(ctx context.Context, d *schema.ResourceData, meta 
 
 	if d.HasChange("use_as_default") {
 		useAsDefault := d.Get("use_as_default").(bool)
-		if useAsDefault {
-			_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, &corev1.UpdateNativeUserRequest{
-				Id:           id,
-				UseAsDefault: &useAsDefault,
-			})
-			if err != nil {
-				return diag.FromErr(err)
-			}
+		_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateNativeUser(ctx, &corev1.UpdateNativeUserRequest{
+			Id:           id,
+			UseAsDefault: &useAsDefault,
+		})
+		if err != nil {
+			return diag.FromErr(err)
 		}
 	}
 	if d.HasChange("native_user_secret") || d.HasChange("native_user_secret_wo_version") {

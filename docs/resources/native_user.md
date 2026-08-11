@@ -28,7 +28,7 @@ This resource creates a Native User.
 - `native_user_secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only password of the Native User. This value is not stored in Terraform state. Requires Terraform 1.11+.
 - `native_user_secret_wo_version` (Number) Version trigger for `native_user_secret_wo`. Increment this value to update the secret.
 - `termination_protection` (Boolean) If set to true, this Native User cannot be deleted.
-- `use_as_default` (Boolean) The password of the Native User.
+- `use_as_default` (Boolean) Whether the Connector uses this Native User when a connection does not name one. Defaults to false, so a Resource whose Native Users all leave this unset has no default.
 
 ### Read-Only
 
