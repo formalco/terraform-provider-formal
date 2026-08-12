@@ -58,15 +58,11 @@ Registering a Cloud integration.
 <a id="nestedblock--aws"></a>
 ### Nested Schema for `aws`
 
-Required:
-
-- `template_version` (String) The template version of the CloudFormation stack. Use `latest` to stay in sync.
-
 Optional:
 
 - `allow_s3_access` (Boolean) Allows the Cloud Integration to access S3 buckets for Log Integrations.
 - `autodiscovery_regions` (List of String) The regions to enable resource autodiscovery for.
-- `aws_customer_role_arn` (String) The ARN of the IAM role that Formal assumes in your AWS account to access your resources.
+- `aws_customer_role_arn` (String) The ARN of the IAM role that Formal assumes in your AWS account to access your resources. Required unless `template_version` is set (CloudFormation path).
 - `enable_ec2_autodiscovery` (Boolean) Enables resource autodiscovery for EC2 instances.
 - `enable_ecs_autodiscovery` (Boolean) Enables resource autodiscovery for ECS clusters.
 - `enable_eks_autodiscovery` (Boolean) Enables resource autodiscovery for EKS clusters.
@@ -74,6 +70,7 @@ Optional:
 - `enable_redshift_autodiscovery` (Boolean) Enables resource autodiscovery for Redshift clusters.
 - `enable_s3_autodiscovery` (Boolean) Enables resource autodiscovery for S3 buckets.
 - `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
+- `template_version` (String) The CloudFormation template version to use when deploying `aws_cloudformation_stack`. Required unless `aws_customer_role_arn` is set. Use `latest` to stay in sync. See https://docs.joinformal.com/docs/changelog/cloudformation for version history.
 
 
 <a id="nestedblock--gcp"></a>

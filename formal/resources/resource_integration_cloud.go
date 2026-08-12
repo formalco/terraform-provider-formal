@@ -70,9 +70,11 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"template_version": {
-							Description: "The template version of the CloudFormation stack. Use `latest` to stay in sync.",
-							Type:        schema.TypeString,
-							Required:    true,
+							Description:  "The CloudFormation template version to use when deploying `aws_cloudformation_stack`. Required unless `aws_customer_role_arn` is set. Use `latest` to stay in sync. See https://docs.joinformal.com/docs/changelog/cloudformation for version history.",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Computed:     true,
+							AtLeastOneOf: []string{"aws.0.template_version", "aws.0.aws_customer_role_arn"},
 						},
 						"autodiscovery_regions": {
 							Description: "The regions to enable resource autodiscovery for.",
@@ -132,10 +134,10 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Default:     "*",
 						},
 						"aws_customer_role_arn": {
-							Description: "The ARN of the IAM role that Formal assumes in your AWS account to access your resources.",
-							Type:        schema.TypeString,
-							Optional:    true,
-							Default:     "",
+							Description:  "The ARN of the IAM role that Formal assumes in your AWS account to access your resources. Required unless `template_version` is set (CloudFormation path).",
+							Type:         schema.TypeString,
+							Optional:     true,
+							AtLeastOneOf: []string{"aws.0.template_version", "aws.0.aws_customer_role_arn"},
 						},
 					},
 				},
@@ -407,9 +409,27 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 			}
 
 			var customerRoleArn *string
-			awsCustomerRoleArn := awsConfig["aws_customer_role_arn"].(string)
-			if awsCustomerRoleArn != "" {
-				customerRoleArn = &awsCustomerRoleArn
+			if v, ok := d.GetOk("aws.0.aws_customer_role_arn"); ok {
+				awsCustomerRoleArn := v.(string)
+				if awsCustomerRoleArn != "" {
+					customerRoleArn = &awsCustomerRoleArn
+				}
+			}
+
+			awsCreate := &corev1.CreateCloudIntegrationRequest_AWS{
+				EnableEksAutodiscovery:      &enableEksAutodiscovery,
+				EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
+				EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
+				EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
+				EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
+				EnableS3Autodiscovery:       &enableS3Autodiscovery,
+				AllowS3Access:               &allowS3Access,
+				S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
+				CustomerRoleArn:             customerRoleArn,
+				AutodiscoveryRegions:        autodiscoveryRegions,
+			}
+			if templateVersion, ok := d.GetOk("aws.0.template_version"); ok {
+				awsCreate.TemplateVersion = templateVersion.(string)
 			}
 
 			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, &corev1.CreateCloudIntegrationRequest{
@@ -417,19 +437,7 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 				CloudRegion: cloudRegion,
 
 				Cloud: &corev1.CreateCloudIntegrationRequest_Aws{
-					Aws: &corev1.CreateCloudIntegrationRequest_AWS{
-						TemplateVersion:             awsConfig["template_version"].(string),
-						EnableEksAutodiscovery:      &enableEksAutodiscovery,
-						EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
-						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
-						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
-						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
-						EnableS3Autodiscovery:       &enableS3Autodiscovery,
-						AllowS3Access:               &allowS3Access,
-						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
-						CustomerRoleArn:             customerRoleArn,
-						AutodiscoveryRegions:        autodiscoveryRegions,
-					},
+					Aws: awsCreate,
 				},
 			})
 			if err != nil {
@@ -491,13 +499,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.SetId(res.Cloud.Id)
 	d.Set("name", res.Cloud.Name)
 
-	existingAwsConfig := d.Get("aws").([]any)
-	var existingAwsCustomerRoleArn string
-
-	if len(existingAwsConfig) > 0 {
-		existingAwsConfig := existingAwsConfig[0].(map[string]any)
-		existingAwsCustomerRoleArn = existingAwsConfig["aws_customer_role_arn"].(string)
-	}
+	_, templateVersionInConfig := d.GetOk("aws.0.template_version")
+	_, customerRoleArnInConfig := d.GetOk("aws.0.aws_customer_role_arn")
 
 	d.Set("gcp_roles", []string{})
 	d.Set("gcp_permissions", []string{})
@@ -509,7 +512,6 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("cloud_region", data.Aws.AwsCloudRegion)
 
 		awsConfig := map[string]any{
-			"template_version":              data.Aws.AwsTemplateVersion,
 			"enable_eks_autodiscovery":      data.Aws.AwsEnableEksAutodiscovery,
 			"enable_rds_autodiscovery":      data.Aws.AwsEnableRdsAutodiscovery,
 			"enable_redshift_autodiscovery": data.Aws.AwsEnableRedshiftAutodiscovery,
@@ -521,8 +523,13 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"autodiscovery_regions":         data.Aws.AwsAutodiscoveryRegions,
 		}
 
-		// Only set the customer role ARN if it was set in the existing config
-		if existingAwsCustomerRoleArn != "" {
+		// Only mirror attributes that are set in config (same pattern as
+		// aws_customer_role_arn). AtLeastOneOf requires template_version on the
+		// CloudFormation path; the manual IAM path omits it.
+		if templateVersionInConfig {
+			awsConfig["template_version"] = data.Aws.AwsTemplateVersion
+		}
+		if customerRoleArnInConfig {
 			awsConfig["aws_customer_role_arn"] = data.Aws.AwsCustomerRoleArn
 		}
 
@@ -605,9 +612,11 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 			// Don't attempt to change a customer role ARN if it was computed from CloudFormation
 			var customerRoleArn *string
-			awsCustomerRoleArn := awsConfig["aws_customer_role_arn"].(string)
-			if awsCustomerRoleArn != "" {
-				customerRoleArn = &awsCustomerRoleArn
+			if v, ok := d.GetOk("aws.0.aws_customer_role_arn"); ok {
+				awsCustomerRoleArn := v.(string)
+				if awsCustomerRoleArn != "" {
+					customerRoleArn = &awsCustomerRoleArn
+				}
 			}
 
 			autodiscoveryRegions := expandStringList(awsConfig["autodiscovery_regions"])
@@ -615,22 +624,26 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 				autodiscoveryRegions = []string{d.Get("cloud_region").(string)}
 			}
 
+			awsUpdate := &corev1.UpdateCloudIntegrationRequest_AWS{
+				EnableEksAutodiscovery:      &enableEksAutodiscovery,
+				EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
+				EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
+				EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
+				EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
+				EnableS3Autodiscovery:       &enableS3Autodiscovery,
+				AllowS3Access:               &allowS3Access,
+				S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
+				CustomerRoleArn:             customerRoleArn,
+				AutodiscoveryRegions:        autodiscoveryRegions,
+			}
+			if templateVersion, ok := d.GetOk("aws.0.template_version"); ok {
+				awsUpdate.TemplateVersion = templateVersion.(string)
+			}
+
 			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, &corev1.UpdateCloudIntegrationRequest{
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Aws{
-					Aws: &corev1.UpdateCloudIntegrationRequest_AWS{
-						TemplateVersion:             awsConfig["template_version"].(string),
-						EnableEksAutodiscovery:      &enableEksAutodiscovery,
-						EnableRdsAutodiscovery:      &enableRdsAutodiscovery,
-						EnableRedshiftAutodiscovery: &enableRedshiftAutodiscovery,
-						EnableEcsAutodiscovery:      &enableEcsAutodiscovery,
-						EnableEc2Autodiscovery:      &enableEc2Autodiscovery,
-						EnableS3Autodiscovery:       &enableS3Autodiscovery,
-						AllowS3Access:               &allowS3Access,
-						S3BucketArn:                 awsConfig["s3_bucket_arn"].(string),
-						CustomerRoleArn:             customerRoleArn,
-						AutodiscoveryRegions:        autodiscoveryRegions,
-					},
+					Aws: awsUpdate,
 				},
 			})
 		}
