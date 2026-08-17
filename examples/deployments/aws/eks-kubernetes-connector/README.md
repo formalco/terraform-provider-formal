@@ -8,11 +8,15 @@ You can use it as-is to set up a Formal Connector in your EKS cluster, or as a s
 
 Formal general purpose documentation is available at [docs.joinformal.com](https://docs.joinformal.com).
 
+This example uses [EKS Pod Identity](https://docs.aws.amazon.com/eks/latest/userguide/pod-identities.html) to grant the Connector IAM credentials. The Kubernetes Native User is **IAM (standard)**: the Connector uses those ambient pod credentials directly, rather than assuming a second IAM role. It does not use IRSA (IAM Roles for Service Accounts) or an OIDC identity provider.
+
 ## Prerequisites
 
 On your side, you need:
 * Helm and Terraform installed
 * AWS CLI configured and authenticated. You (or your Terraform runner) need to have write access to both the AWS account and the EKS cluster
+* An EKS cluster that supports Pod Identity (Kubernetes 1.24+ on Linux EC2 nodes; Fargate is not supported)
+* The EKS Pod Identity Agent add-on. This configuration installs it; if it is already present, import the existing add-on or remove the `aws_eks_addon.pod_identity_agent` resource
 
 On the Formal side, you need:
 * A Formal API key, that you can create in the Formal Console
@@ -29,7 +33,7 @@ formal_api_key = "your-formal-api-key"
 formal_org_name = "your-formal-org-name"
 
 # Optional variables
-namespace = "your-cluster-namespace"  # default: "default"
+namespace = "your-cluster-namespace"  # default: "formal"
 helm_values = "your-values.yaml"  # default: "values.yaml"
 ```
 

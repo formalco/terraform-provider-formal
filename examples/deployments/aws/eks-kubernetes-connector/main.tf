@@ -4,15 +4,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.0"
+      version = "~> 6.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 2.0"
+      version = ">= 2.0, < 3.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.0"
+      version = ">= 2.0, < 3.0"
     }
     formal = {
       source  = "formalco/formal"
@@ -63,9 +63,11 @@ resource "formal_resource" "kubernetes_resource" {
   port       = 443
 }
 
+# IAM (standard): the Connector uses its ambient AWS credentials from Pod Identity.
+# Do not set native_user_secret to an IAM role ARN; that would AssumeRole a second time.
 resource "formal_native_user" "kubernetes_native_user" {
   resource_id        = formal_resource.kubernetes_resource.id
-  native_user_id     = "iam"
+  native_user_id     = "aws-ambient"
   native_user_secret = "iam"
   use_as_default     = true
 }
@@ -87,68 +89,111 @@ resource "formal_connector_listener_rule" "kubernetes_rule" {
   rule                  = "kubernetes"
 }
 
-# Create the IAM role for the connector and bind it to the created service account
+# EKS Pod Identity Agent is required for Pod Identity associations.
+# Skip this resource (or import the existing add-on) if the agent is already installed.
+resource "aws_eks_addon" "pod_identity_agent" {
+  cluster_name = var.cluster_name
+  addon_name   = "eks-pod-identity-agent"
+}
+
+# Pod Identity IAM role. The Connector uses this identity directly (IAM standard).
+# Scope the trust policy to this cluster, namespace, and service account so another
+# association in the account cannot reuse a cluster-admin role.
 data "aws_caller_identity" "current" {}
 
-module "connector_irsa" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "~> 5.14"
+data "aws_iam_policy_document" "connector_assume_role" {
+  statement {
+    sid    = "AllowEksAuthToAssumeRoleForPodIdentity"
+    effect = "Allow"
 
-  role_name_prefix = "formal-connector-"
+    principals {
+      type        = "Service"
+      identifiers = ["pods.eks.amazonaws.com"]
+    }
 
-  oidc_providers = {
-    main = {
-      provider_arn               = replace(data.aws_eks_cluster.cluster.identity[0].oidc[0].issuer, "https://", "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/")
-      namespace_service_accounts = ["${var.namespace}:formal-connector"]
+    actions = [
+      "sts:AssumeRole",
+      "sts:TagSession",
+    ]
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+
+    condition {
+      test     = "ArnEquals"
+      variable = "aws:SourceArn"
+      values   = [data.aws_eks_cluster.cluster.arn]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestTag/kubernetes-namespace"
+      values   = [var.namespace]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "aws:RequestTag/kubernetes-service-account"
+      values   = [kubernetes_service_account.connector.metadata[0].name]
     }
   }
+}
+
+resource "aws_iam_role" "connector" {
+  name_prefix        = "formal-connector-"
+  assume_role_policy = data.aws_iam_policy_document.connector_assume_role.json
 }
 
 resource "kubernetes_service_account" "connector" {
   metadata {
     name      = "formal-connector"
     namespace = var.namespace
-    annotations = {
-      "eks.amazonaws.com/role-arn" = module.connector_irsa.iam_role_arn
-    }
   }
 }
 
-# Allow the Connector to pull the target resource kubeconfig from AWS EKS API
-resource "aws_iam_policy" "eks_describe_policy" {
-  name        = "formal-connector-eks-describe-policy"
-  description = "Policy for Formal connector to describe EKS cluster and get caller identity"
+# Permissions the Connector needs to fetch the EKS cluster kubeconfig.
+# https://docs.formal.ai/docs/guides/core-concepts/resources/kubernetes#aws-iam-permissions
+resource "aws_iam_role_policy" "eks_describe" {
+  name = "formal-connector-eks-describe"
+  role = aws_iam_role.connector.id
 
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow",
+        Effect = "Allow"
         Action = [
           "eks:DescribeCluster",
           "sts:GetCallerIdentity"
-        ],
+        ]
         Resource = "*"
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "eks_describe_policy_attachment" {
-  role       = module.connector_irsa.iam_role_name
-  policy_arn = aws_iam_policy.eks_describe_policy.arn
+resource "aws_eks_pod_identity_association" "connector" {
+  cluster_name    = var.cluster_name
+  namespace       = var.namespace
+  service_account = kubernetes_service_account.connector.metadata[0].name
+  role_arn        = aws_iam_role.connector.arn
+
+  depends_on = [aws_eks_addon.pod_identity_agent]
 }
 
 # Give Kubernetes permissions to the pod IAM role in the target Kubernetes cluster
 resource "aws_eks_access_entry" "connector" {
   cluster_name  = var.cluster_name
-  principal_arn = module.connector_irsa.iam_role_arn
+  principal_arn = aws_iam_role.connector.arn
   type          = "STANDARD"
 }
 
 resource "aws_eks_access_policy_association" "connector" {
   cluster_name  = var.cluster_name
-  principal_arn = module.connector_irsa.iam_role_arn
+  principal_arn = aws_iam_role.connector.arn
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
   access_scope {
     type = "cluster"
@@ -172,10 +217,16 @@ resource "helm_release" "formal_connector" {
         healthCheck = 8080
       }
       serviceAccount = {
-        name = kubernetes_service_account.connector.metadata[0].name
+        create = false
+        name   = kubernetes_service_account.connector.metadata[0].name
       }
     })]
   )
+
+  depends_on = [
+    aws_eks_pod_identity_association.connector,
+    aws_eks_access_policy_association.connector,
+  ]
 }
 
 # Set the Connector hostname in Formal Control Plane according to the DNS record of the EKS service
