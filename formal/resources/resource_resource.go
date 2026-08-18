@@ -11,11 +11,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 	"github.com/samber/lo"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
+
+var resourceTechnologies = []string{
+	"aws",
+	"bigquery",
+	"clickhouse",
+	"dynamodb",
+	"gcp",
+	"grpc",
+	"http",
+	"kubernetes",
+	"llm",
+	"mariadb",
+	"mcp",
+	"mongodb",
+	"mysql",
+	"postgres",
+	"rdp",
+	"redis",
+	"redshift",
+	"s3",
+	"snowflake",
+	"ssh",
+	"web",
+}
 
 func ResourceResource() *schema.Resource {
 	return &schema.Resource{
@@ -53,10 +78,11 @@ func ResourceResource() *schema.Resource {
 			},
 			"technology": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Technology of the Resource: supported values are `snowflake`, `postgres`, `rdp`, `redshift`, `mysql`, `mariadb`, `s3`, `dynamodb`, `mongodb`, `documentdb`, `http`, `clickhouse`, `redis`, `web`, `ssh`, `grpc`, `aws`, and `gcp`.",
-				Type:        schema.TypeString,
-				Required:    true,
-				ForceNew:    true,
+				Description:  fmt.Sprintf("Technology of the Resource: supported values are `%s`.", strings.Join(resourceTechnologies, "`, `")),
+				Type:         schema.TypeString,
+				Required:     true,
+				ForceNew:     true,
+				ValidateFunc: validation.StringInSlice(resourceTechnologies, false),
 			},
 			"technology_provider": {
 				// This description is used by the documentation generator and the language server.
