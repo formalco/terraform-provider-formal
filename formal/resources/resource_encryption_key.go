@@ -50,17 +50,18 @@ func ResourceEncryptionKey() *schema.Resource {
 				Computed:    true,
 			},
 			"key_provider": {
-				Description: "The provider of the encryption key. One of 'aws-kms' or 'gcp-kms' ('aws' is a deprecated alias for 'aws-kms').",
+				Description: "The provider of the encryption key. One of 'aws-kms', 'gcp-kms', or 'azure-key-vault' ('aws' is a deprecated alias for 'aws-kms').",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"aws-kms",
 					"gcp-kms",
+					"azure-key-vault",
 					"aws",
 				}, false),
 			},
 			"key_id": {
-				Description: "The ID of the key in the provider's system (key ARN for AWS KMS, or the crypto key version resource name for GCP KMS).",
+				Description: "The ID of the key in the provider's system (key ARN for AWS KMS, crypto key version resource name for GCP KMS, or Azure Key Vault key URI).",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
