@@ -27,6 +27,7 @@ require (
 	connectrpc.com/otelconnect v0.9.0 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cloudflare/circl v1.6.4 // indirect
 	github.com/docker/docker v28.5.2+incompatible // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -92,7 +93,6 @@ require (
 	github.com/bufbuild/buf v1.57.0 // indirect
 	github.com/bufbuild/protocompile v0.14.1 // indirect
 	github.com/bufbuild/protoplugin v0.0.0-20250218205857-750e09ce93e1 // indirect
-	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/containerd/errdefs v1.0.0 // indirect
 	github.com/containerd/errdefs/pkg v0.3.0 // indirect
