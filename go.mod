@@ -13,7 +13,7 @@ require (
 	buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go v1.36.12-20260709200747-435963d16310.1
 	buf.build/go/protovalidate v1.2.0
 	connectrpc.com/connect v1.20.0
-	github.com/formalco/go-sdk/v3 v3.10.3
+	github.com/formalco/go-sdk/v3 v3.11.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
 	github.com/hashicorp/terraform-plugin-log v0.11.0
