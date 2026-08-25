@@ -2,16 +2,19 @@ package provider
 
 import (
 	"context"
-	"os"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/formalco/terraform-provider-formal/formal/datasources"
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
 )
+
+var oidcTokenSourceSchemaPaths = []string{"oidc.0.aws", "oidc.0.env"}
 
 func init() {
 	// Set descriptions to support markdown syntax, this will be used in document generation
@@ -24,8 +27,49 @@ func New(version string) func() *schema.Provider {
 		p := &schema.Provider{
 			Schema: map[string]*schema.Schema{
 				"api_key": {
-					Type:     schema.TypeString,
-					Optional: true,
+					Description:   "Formal API key. May also be set with the `FORMAL_API_KEY` environment variable. Conflicts with `oidc`.",
+					Type:          schema.TypeString,
+					Optional:      true,
+					Sensitive:     true,
+					ConflictsWith: []string{"oidc"},
+				},
+				"oidc": {
+					Description:   "OIDC authentication configuration. Conflicts with `api_key`.",
+					Type:          schema.TypeList,
+					Optional:      true,
+					MaxItems:      1,
+					ConflictsWith: []string{"api_key"},
+					Elem: &schema.Resource{
+						Schema: map[string]*schema.Schema{
+							"aws": {
+								Description:  "Mint short-lived OIDC tokens using the AWS credential chain and STS.",
+								Type:         schema.TypeList,
+								Optional:     true,
+								MaxItems:     1,
+								ExactlyOneOf: oidcTokenSourceSchemaPaths,
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{
+										"audience": {
+											Description:  "Formal OIDC integration audience requested from AWS STS.",
+											Type:         schema.TypeString,
+											Required:     true,
+											ValidateFunc: validateOIDCAudience,
+										},
+									},
+								},
+							},
+							"env": {
+								Description:  "Name of an environment variable containing a pre-minted OIDC JWT.",
+								Type:         schema.TypeString,
+								Optional:     true,
+								ExactlyOneOf: oidcTokenSourceSchemaPaths,
+								ValidateFunc: validation.StringMatch(
+									regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`),
+									"environment variable name must match ^[A-Za-z_][A-Za-z0-9_]*$",
+								),
+							},
+						},
+					},
 				},
 				"retrieve_sensitive_values": {
 					Type:     schema.TypeBool,
@@ -96,16 +140,13 @@ func New(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (any, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		apiKey := d.Get("api_key").(string)
-		if apiKey == "" {
-			apiKey = os.Getenv("FORMAL_API_KEY")
-			if apiKey == "" {
-				return nil, diag.Errorf("api_key must be set in the provider or as an environment variable")
-			}
+		authOption, err := providerAuthOption(ctx, d)
+		if err != nil {
+			return nil, diag.FromErr(err)
 		}
 		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		grpc, err := api.NewClient(apiKey, returnSensitiveValue)
+		grpc, err := api.NewClient(authOption, returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}

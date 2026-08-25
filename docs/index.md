@@ -53,7 +53,7 @@ resource "formal_resource" "postgres_resource" {
 
 ## Authentication and Configuration
 
-Configuration for the Formal Provider is derived from the API tokens you can generate via the [Formal Console](console.joinformal.app).
+The Formal Provider supports API key and OIDC authentication. Configure exactly one authentication method.
 
 ### Provider Configuration
 
@@ -61,7 +61,9 @@ Configuration for the Formal Provider is derived from the API tokens you can gen
 configuration and risks secret leakage should this file ever be committed to a
 public version control system.
 
-Credentials can be provided by adding an `api_key`.
+### API key
+
+Provide an `api_key` directly:
 
 Usage:
 
@@ -72,7 +74,7 @@ provider "formal" {
 }
 ```
 
-Credentials can be provided by using the `FORMAL_API_KEY` environment variables.
+Alternatively, set the `FORMAL_API_KEY` environment variable:
 
 For example:
 
@@ -85,6 +87,44 @@ provider "formal" {}
 ```bash
 export FORMAL_API_KEY="some_api_key"
 ```
+
+### AWS OIDC
+
+Use the `aws` token source to mint short-lived Formal-audience JWTs with the standard AWS credential chain. Set the audience to the audience of your Formal OIDC integration.
+
+```terraform
+provider "formal" {
+  oidc {
+    aws {
+      audience = "oidc.formal.ai/integrationoidc_01h..."
+    }
+  }
+}
+```
+
+The AWS token source refreshes its 300-second JWTs as needed. Configure AWS credentials and a region through the standard AWS environment variables or shared configuration.
+
+### Environment OIDC token
+
+For systems that mint an OIDC token before Terraform starts, set `env` to the name of the environment variable containing that token. Do not put the JWT in `api_key` or `FORMAL_API_KEY`.
+
+```terraform
+provider "formal" {
+  oidc {
+    env = "GITLAB_OIDC_TOKEN"
+  }
+}
+```
+
+For example, GitLab CI can mint the token with the Formal integration audience:
+
+```yaml
+id_tokens:
+  GITLAB_OIDC_TOKEN:
+    aud: oidc.formal.ai/integrationoidc_01h...
+```
+
+The provider reads the environment variable when it is configured and cannot renew a token minted by the CI system. Ensure the token remains valid for the Terraform operation.
 
 #### Retrieving Sensitive Values
 
