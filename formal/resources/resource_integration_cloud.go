@@ -65,7 +65,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Optional:     true,
 				MaxItems:     1,
 				ForceNew:     false,
-				ExactlyOneOf: []string{"aws", "gcp"},
+				ExactlyOneOf: []string{"aws", "gcp", "azure"},
 				RequiredWith: []string{"cloud_region"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -148,7 +148,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Optional:     true,
 				MaxItems:     1,
 				ForceNew:     false,
-				ExactlyOneOf: []string{"aws", "gcp"},
+				ExactlyOneOf: []string{"aws", "gcp", "azure"},
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"project_id": {
@@ -190,6 +190,60 @@ func ResourceIntegrationCloud() *schema.Resource {
 					},
 				},
 			},
+			"azure": {
+				Description:  "Configuration block for Azure integration.",
+				Type:         schema.TypeList,
+				Optional:     true,
+				MaxItems:     1,
+				ForceNew:     false,
+				ExactlyOneOf: []string{"aws", "gcp", "azure"},
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"subscription_id": {
+							Description: "The Azure subscription this integration grants Formal access to.",
+							Type:        schema.TypeString,
+							Required:    true,
+							ForceNew:    true,
+						},
+						"resource_group": {
+							Description: "Narrows discovery to a single resource group. Empty covers the whole subscription.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							ForceNew:    true,
+						},
+						"allow_blob_access": {
+							Description: "Allows the Cloud Integration to write logs to Azure Blob Storage for Log Integrations.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+						},
+						"blob_storage_accounts": {
+							Description: "Storage accounts Formal may write logs to. An empty list disables log delivery.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
+						"enable_vm_autodiscovery": {
+							Description: "Enables resource autodiscovery for Azure virtual machines.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+						"enable_aks_autodiscovery": {
+							Description: "Enables resource autodiscovery for AKS clusters.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+						"enable_db_autodiscovery": {
+							Description: "Enables resource autodiscovery for Azure managed database servers.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     true,
+						},
+					},
+				},
+			},
 			"gcp_project_id": {
 				Description: "The GCP project ID this integration grants Formal access to.",
 				Type:        schema.TypeString,
@@ -206,7 +260,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Computed:    true,
 			},
 			"aws_formal_role_arn": {
-				Description: "The AWS IAM role ARN Formal uses to federate into your GCP workload identity pool.",
+				Description: "The AWS IAM role ARN Formal presents when federating into your GCP workload identity pool or your Entra tenant.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -248,6 +302,63 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"azure_subscription_id": {
+				Description: "The Azure subscription this integration grants Formal access to.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"azure_resource_group": {
+				Description: "The resource group discovery is narrowed to. Empty covers the whole subscription.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"azure_tenant_id": {
+				Description: "The Entra tenant of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"azure_client_id": {
+				Description: "The client id of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"azure_issuer": {
+				Description: "The OIDC issuer URL of Formal's AWS account. Pass this to the Azure Terraform module, which pins it on the federated identity credential.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"azure_role_definitions": {
+				Description: "The Azure built-in roles to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"azure_allow_blob_access": {
+				Description: "Whether the Cloud Integration is allowed to write logs to Azure Blob Storage.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"azure_blob_storage_accounts": {
+				Description: "The storage accounts this Cloud Integration is allowed to write logs to.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"azure_enable_vm_autodiscovery": {
+				Description: "Whether Azure virtual machine autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"azure_enable_aks_autodiscovery": {
+				Description: "Whether AKS cluster autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"azure_enable_db_autodiscovery": {
+				Description: "Whether Azure managed database server autodiscovery is enabled or not.",
+				Type:        schema.TypeBool,
+				Computed:    true,
 			},
 			"aws_template_body": {
 				Description: "The template body of the CloudFormation stack.",
@@ -364,6 +475,36 @@ func ResourceIntegrationCloud() *schema.Resource {
 					}
 				}
 			}
+
+			if v, ok := d.GetOk("azure"); ok {
+				azureConfigs := v.([]any)
+				if len(azureConfigs) > 0 {
+					// The backend derives azure_role_definitions from the enabled
+					// capabilities, so mark it for recomputation whenever one changes.
+					rolesMayChange := false
+
+					if oldVal, newVal := d.GetChange("azure.0.allow_blob_access"); oldVal != newVal {
+						d.SetNew("azure_allow_blob_access", newVal)
+						rolesMayChange = true
+					}
+					if d.HasChange("azure.0.blob_storage_accounts") {
+						_, newAccounts := d.GetChange("azure.0.blob_storage_accounts")
+						d.SetNew("azure_blob_storage_accounts", newAccounts)
+					}
+
+					for _, key := range []string{"enable_vm_autodiscovery", "enable_aks_autodiscovery", "enable_db_autodiscovery"} {
+						oldVal, newVal := d.GetChange(fmt.Sprintf("azure.0.%s", key))
+						if oldVal != newVal {
+							d.SetNew(fmt.Sprintf("azure_%s", key), newVal)
+							rolesMayChange = true
+						}
+					}
+
+					if rolesMayChange {
+						d.SetNewComputed("azure_role_definitions")
+					}
+				}
+			}
 			return nil
 		},
 	}
@@ -475,6 +616,35 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 		}
 	}
 
+	if v, ok := d.GetOk("azure"); ok {
+		azureConfigs := v.([]any)
+		if len(azureConfigs) > 0 {
+			azureConfig := azureConfigs[0].(map[string]any)
+			enableVmAutodiscovery := azureConfig["enable_vm_autodiscovery"].(bool)
+			enableAksAutodiscovery := azureConfig["enable_aks_autodiscovery"].(bool)
+			enableDbAutodiscovery := azureConfig["enable_db_autodiscovery"].(bool)
+
+			res, err := c.Grpc.Sdk.IntegrationCloudServiceClient.CreateCloudIntegration(ctx, &corev1.CreateCloudIntegrationRequest{
+				Name: name,
+				Cloud: &corev1.CreateCloudIntegrationRequest_Azure_{
+					Azure: &corev1.CreateCloudIntegrationRequest_Azure{
+						SubscriptionId:         azureConfig["subscription_id"].(string),
+						ResourceGroup:          azureConfig["resource_group"].(string),
+						AllowBlobAccess:        azureConfig["allow_blob_access"].(bool),
+						BlobStorageAccounts:    expandStringList(azureConfig["blob_storage_accounts"]),
+						EnableVmAutodiscovery:  &enableVmAutodiscovery,
+						EnableAksAutodiscovery: &enableAksAutodiscovery,
+						EnableDbAutodiscovery:  &enableDbAutodiscovery,
+					},
+				},
+			})
+			if err != nil {
+				return diag.FromErr(err)
+			}
+			d.SetId(res.Id)
+		}
+	}
+
 	return resourceIntegrationCloudRead(ctx, d, meta)
 }
 
@@ -505,6 +675,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("gcp_roles", []string{})
 	d.Set("gcp_permissions", []string{})
 	d.Set("gcp_gcs_buckets", []string{})
+	d.Set("azure_role_definitions", []string{})
+	d.Set("azure_blob_storage_accounts", []string{})
 
 	switch data := res.Cloud.Cloud.(type) {
 	case *corev1.CloudIntegration_Aws:
@@ -577,6 +749,34 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("gcp_enable_cloudsql_instances_autodiscovery", data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery)
 		d.Set("gcp_roles", data.Gcp.GcpRoles)
 		d.Set("gcp_permissions", data.Gcp.GcpPermissions)
+	case *corev1.CloudIntegration_Azure:
+		d.Set("type", "azure")
+
+		azureConfig := map[string]any{
+			"subscription_id":          data.Azure.AzureSubscriptionId,
+			"resource_group":           data.Azure.AzureResourceGroup,
+			"allow_blob_access":        data.Azure.AzureAllowBlobAccess,
+			"blob_storage_accounts":    data.Azure.AzureBlobStorageAccounts,
+			"enable_vm_autodiscovery":  data.Azure.AzureEnableVmAutodiscovery,
+			"enable_aks_autodiscovery": data.Azure.AzureEnableAksAutodiscovery,
+			"enable_db_autodiscovery":  data.Azure.AzureEnableDbAutodiscovery,
+		}
+		if err := d.Set("azure", []any{azureConfig}); err != nil {
+			return diag.FromErr(err)
+		}
+
+		d.Set("azure_subscription_id", data.Azure.AzureSubscriptionId)
+		d.Set("azure_resource_group", data.Azure.AzureResourceGroup)
+		d.Set("azure_tenant_id", data.Azure.AzureTenantId)
+		d.Set("azure_client_id", data.Azure.AzureClientId)
+		d.Set("aws_formal_role_arn", data.Azure.AwsFormalRoleArn)
+		d.Set("azure_issuer", data.Azure.AzureIssuer)
+		d.Set("azure_role_definitions", data.Azure.AzureRoleDefinitions)
+		d.Set("azure_allow_blob_access", data.Azure.AzureAllowBlobAccess)
+		d.Set("azure_blob_storage_accounts", data.Azure.AzureBlobStorageAccounts)
+		d.Set("azure_enable_vm_autodiscovery", data.Azure.AzureEnableVmAutodiscovery)
+		d.Set("azure_enable_aks_autodiscovery", data.Azure.AzureEnableAksAutodiscovery)
+		d.Set("azure_enable_db_autodiscovery", data.Azure.AzureEnableDbAutodiscovery)
 	}
 
 	return diags
@@ -586,11 +786,11 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 	c := meta.(*clients.Clients)
 	integrationId := d.Id()
 
-	fieldsThatCanBeUpdated := []string{"aws", "gcp"}
+	fieldsThatCanBeUpdated := []string{"aws", "gcp", "azure"}
 
 	// These fields can't be updated, but they can still be changed by
-	// CustomizeDiff when their 'aws.0.' or 'gcp.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions"}...)
+	// CustomizeDiff when their 'aws.0.', 'gcp.0.' or 'azure.0.' counterpart has changes
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
@@ -669,6 +869,32 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
 						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,
 						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
+					},
+				},
+			})
+		}
+	}
+
+	if v, ok := d.GetOk("azure"); ok {
+		azureConfigs := v.([]any)
+		if len(azureConfigs) > 0 {
+			azureConfig := azureConfigs[0].(map[string]any)
+			allowBlobAccess := azureConfig["allow_blob_access"].(bool)
+			enableVmAutodiscovery := azureConfig["enable_vm_autodiscovery"].(bool)
+			enableAksAutodiscovery := azureConfig["enable_aks_autodiscovery"].(bool)
+			enableDbAutodiscovery := azureConfig["enable_db_autodiscovery"].(bool)
+
+			_, err = c.Grpc.Sdk.IntegrationCloudServiceClient.UpdateCloudIntegration(ctx, &corev1.UpdateCloudIntegrationRequest{
+				Id: integrationId,
+				Cloud: &corev1.UpdateCloudIntegrationRequest_Azure_{
+					Azure: &corev1.UpdateCloudIntegrationRequest_Azure{
+						AllowBlobAccess: &allowBlobAccess,
+						BlobStorageAccounts: &corev1.UpdateCloudIntegrationRequest_Azure_UpdateBlobStorageAccounts{
+							BlobStorageAccounts: expandStringList(azureConfig["blob_storage_accounts"]),
+						},
+						EnableVmAutodiscovery:  &enableVmAutodiscovery,
+						EnableAksAutodiscovery: &enableAksAutodiscovery,
+						EnableDbAutodiscovery:  &enableDbAutodiscovery,
 					},
 				},
 			})

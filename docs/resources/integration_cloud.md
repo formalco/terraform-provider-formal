@@ -22,6 +22,7 @@ Registering a Cloud integration.
 ### Optional
 
 - `aws` (Block List, Max: 1) Configuration block for AWS integration. (see [below for nested schema](#nestedblock--aws))
+- `azure` (Block List, Max: 1) Configuration block for Azure integration. (see [below for nested schema](#nestedblock--azure))
 - `cloud_region` (String) Region of the cloud provider. (AWS only)
 - `gcp` (Block List, Max: 1) Configuration block for GCP integration. (see [below for nested schema](#nestedblock--gcp))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -39,10 +40,21 @@ Registering a Cloud integration.
 - `aws_formal_iam_role` (String) The IAM role ID Formal will use to access your resources.
 - `aws_formal_iam_role_arn` (String) The ARN of the IAM role Formal will use to access your resources.
 - `aws_formal_pingback_arn` (String) The SNS topic ARN CloudFormation can use to send events to Formal.
-- `aws_formal_role_arn` (String) The AWS IAM role ARN Formal uses to federate into your GCP workload identity pool.
+- `aws_formal_role_arn` (String) The AWS IAM role ARN Formal presents when federating into your GCP workload identity pool or your Entra tenant.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
+- `azure_allow_blob_access` (Boolean) Whether the Cloud Integration is allowed to write logs to Azure Blob Storage.
+- `azure_blob_storage_accounts` (List of String) The storage accounts this Cloud Integration is allowed to write logs to.
+- `azure_client_id` (String) The client id of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.
+- `azure_enable_aks_autodiscovery` (Boolean) Whether AKS cluster autodiscovery is enabled or not.
+- `azure_enable_db_autodiscovery` (Boolean) Whether Azure managed database server autodiscovery is enabled or not.
+- `azure_enable_vm_autodiscovery` (Boolean) Whether Azure virtual machine autodiscovery is enabled or not.
+- `azure_issuer` (String) The OIDC issuer URL of Formal's AWS account. Pass this to the Azure Terraform module, which pins it on the federated identity credential.
+- `azure_resource_group` (String) The resource group discovery is narrowed to. Empty covers the whole subscription.
+- `azure_role_definitions` (List of String) The Azure built-in roles to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.
+- `azure_subscription_id` (String) The Azure subscription this integration grants Formal access to.
+- `azure_tenant_id` (String) The Entra tenant of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.
 - `gcp_allow_gcs_access` (Boolean) Whether the Cloud Integration is allowed to write logs to GCS.
 - `gcp_enable_cloudsql_instances_autodiscovery` (Boolean) Whether GCP Cloud SQL instances autodiscovery is enabled or not.
 - `gcp_enable_compute_instances_autodiscovery` (Boolean) Whether GCP Compute Engine instances autodiscovery is enabled or not.
@@ -71,6 +83,23 @@ Optional:
 - `enable_s3_autodiscovery` (Boolean) Enables resource autodiscovery for S3 buckets.
 - `s3_bucket_arn` (String) The S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations.
 - `template_version` (String) The CloudFormation template version to use when deploying `aws_cloudformation_stack`. Required unless `aws_customer_role_arn` is set. Use `latest` to stay in sync. See https://docs.joinformal.com/docs/changelog/cloudformation for version history.
+
+
+<a id="nestedblock--azure"></a>
+### Nested Schema for `azure`
+
+Required:
+
+- `subscription_id` (String) The Azure subscription this integration grants Formal access to.
+
+Optional:
+
+- `allow_blob_access` (Boolean) Allows the Cloud Integration to write logs to Azure Blob Storage for Log Integrations.
+- `blob_storage_accounts` (List of String) Storage accounts Formal may write logs to. An empty list disables log delivery.
+- `enable_aks_autodiscovery` (Boolean) Enables resource autodiscovery for AKS clusters.
+- `enable_db_autodiscovery` (Boolean) Enables resource autodiscovery for Azure managed database servers.
+- `enable_vm_autodiscovery` (Boolean) Enables resource autodiscovery for Azure virtual machines.
+- `resource_group` (String) Narrows discovery to a single resource group. Empty covers the whole subscription.
 
 
 <a id="nestedblock--gcp"></a>
