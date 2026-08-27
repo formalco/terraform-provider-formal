@@ -662,8 +662,10 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 				Id: integrationId,
 				Cloud: &corev1.UpdateCloudIntegrationRequest_Gcp{
 					Gcp: &corev1.UpdateCloudIntegrationRequest_GCP{
-						AllowGcsAccess:                       &allowGcsAccess,
-						GcsBuckets:                           expandStringList(gcpConfig["gcs_buckets"]),
+						AllowGcsAccess: &allowGcsAccess,
+						GcsBucketsV2: &corev1.UpdateCloudIntegrationRequest_GCP_UpdateGcsBuckets{
+							GcsBuckets: expandStringList(gcpConfig["gcs_buckets"]),
+						},
 						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
 						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,
 						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
