@@ -95,7 +95,7 @@ Required:
 Optional:
 
 - `allow_blob_access` (Boolean) Allows the Cloud Integration to write logs to Azure Blob Storage for Log Integrations.
-- `blob_storage_accounts` (List of String) Storage accounts Formal may write logs to. An empty list disables log delivery.
+- `blob_storage_accounts` (List of String) Storage accounts Formal may write logs to. An empty list allows every account in scope.
 - `enable_aks_autodiscovery` (Boolean) Enables resource autodiscovery for AKS clusters.
 - `enable_db_autodiscovery` (Boolean) Enables resource autodiscovery for Azure managed database servers.
 - `enable_vm_autodiscovery` (Boolean) Enables resource autodiscovery for Azure virtual machines.

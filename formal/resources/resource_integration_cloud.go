@@ -218,7 +218,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Default:     false,
 						},
 						"blob_storage_accounts": {
-							Description: "Storage accounts Formal may write logs to. An empty list disables log delivery.",
+							Description: "Storage accounts Formal may write logs to. An empty list allows every account in scope.",
 							Type:        schema.TypeList,
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
