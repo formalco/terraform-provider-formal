@@ -5,7 +5,7 @@ This directory contains a demonstration of how to set up a Formal Connector in G
 It contains:
 * A Terraform configuration to set up the required GCP and Formal resources
 * Deployment of the official Formal Helm chart (`formal/connector`) with GCP-specific service and Workload Identity annotations
-* The Connector image pulled from Formal's public GCP Artifact Registry (`us-docker.pkg.dev/formal-public-assets/...`)
+* The Connector image pulled from Formal's GCP Artifact Registry (`us-docker.pkg.dev/formal-public-assets/...`)
 
 You can use it as-is to set up a Formal Connector in your GKE cluster, or as a starting point to integrate the Connector in your existing deployment pipeline.
 
@@ -80,7 +80,7 @@ If you need external access from outside the VPC, you can modify the service con
 
 The connector is deployed from the public Formal Helm repository (`https://formalco.github.io/helm-charts`). GCP-specific values are set in `main.tf`:
 
-* `image.repository` set to Formal's public GCP Artifact Registry image
+* `image.repository` set to Formal's GCP Artifact Registry image
 * `serviceAccount.annotations["iam.gke.io/gcp-service-account"]` for Workload Identity (BigQuery access at runtime)
 * `service.annotations["cloud.google.com/load-balancer-type"] = "Internal"` for an internal load balancer
 
