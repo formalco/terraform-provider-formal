@@ -20,7 +20,7 @@ Registering a Resource with Formal.
 - `hostname` (String) Hostname of the Resource.
 - `name` (String) Friendly name for the Resource.
 - `port` (Number) The port your Resource is listening on.
-- `technology` (String) Technology of the Resource: supported values are `aws`, `bigquery`, `clickhouse`, `dynamodb`, `gcp`, `grpc`, `http`, `kubernetes`, `llm`, `mariadb`, `mcp`, `mongodb`, `mysql`, `postgres`, `rdp`, `redis`, `redshift`, `s3`, `snowflake`, `ssh`, `web`.
+- `technology` (String) Technology of the Resource: supported values are `aws`, `bigquery`, `clickhouse`, `dynamodb`, `gcp`, `grpc`, `http`, `kubernetes`, `llm`, `mariadb`, `mcp`, `mongodb`, `mysql`, `postgres`, `rdp`, `redis`, `redshift`, `s3`, `snowflake`, `socket`, `ssh`, `web`.
 
 ### Optional
 

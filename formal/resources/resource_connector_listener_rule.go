@@ -19,7 +19,7 @@ import (
 // connectorListenerRuleValuePattern validates the rule value: "any", a resource
 // id (resource_*/datastore_*), or a technology name. It must match the API's
 // buf.validate constraint on the rule field.
-var connectorListenerRuleValuePattern = regexp.MustCompile(`^(any|resource_.*|datastore_.*|aws|bigquery|clickhouse|dynamodb|gcp|grpc|http|kubernetes|llm|mariadb|mcp|mongodb|mysql|postgres|rdp|redis|redshift|s3|snowflake|ssh|web)$`)
+var connectorListenerRuleValuePattern = regexp.MustCompile(`^(any|resource_.*|datastore_.*|aws|bigquery|clickhouse|dynamodb|gcp|grpc|http|kubernetes|llm|mariadb|mcp|mongodb|mysql|postgres|rdp|redis|redshift|s3|snowflake|socket|ssh|web)$`)
 
 func ResourceConnectorListenerRule() *schema.Resource {
 	return &schema.Resource{
