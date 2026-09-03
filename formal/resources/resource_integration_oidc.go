@@ -37,7 +37,7 @@ func ResourceIntegrationOIDC() *schema.Resource {
 				Computed:    true,
 			},
 			"audience": {
-				Description: "The Formal audience value that tokens must present: `oidc.formal.ai/{id}`.",
+				Description: "The Formal audience value that tokens may present: `oidc.formal.ai/{id}`. Providers that cannot set a custom audience (e.g. Spacelift) can instead send `X-Formal-OIDC-Integration-Id` with this resource's `id`.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -65,7 +65,7 @@ func ResourceIntegrationOIDC() *schema.Resource {
 				Required:    true,
 			},
 			"claim_condition": {
-				Description: "CEL expression evaluated against verified token claims. Must return a boolean. Defaults to `true`.",
+				Description: "CEL expression evaluated against verified token claims. Must return a boolean. Defaults to `true`. When selecting the integration with `X-Formal-OIDC-Integration-Id`, this condition must validate the provider-native audience and identity claims.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "true",

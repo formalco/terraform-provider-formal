@@ -23,14 +23,14 @@ Registers an OIDC trust configuration used to authenticate externally signed JWT
 
 ### Optional
 
-- `claim_condition` (String) CEL expression evaluated against verified token claims. Must return a boolean. Defaults to `true`.
+- `claim_condition` (String) CEL expression evaluated against verified token claims. Must return a boolean. Defaults to `true`. When selecting the integration with `X-Formal-OIDC-Integration-Id`, this condition must validate the provider-native audience and identity claims.
 - `end_user_email_expression` (String) Optional CEL expression over verified token claims that must evaluate to a string email. When set, federation mint resolves a Formal human by case-insensitive email. Leave unset for machine-only trusts. Examples: `claims.owner_email` (Cursor); `claims.sub.split('/').last()` (AWSReservedSSO session name when the session name is an email).
 - `jwks_uri` (String) Optional JWKS URI. When unset, Formal uses OIDC Discovery from the issuer. Must be absolute HTTPS when set.
 - `status` (String) Integration status. Accepted values are `active` and `draft`. Draft disables authentication.
 
 ### Read-Only
 
-- `audience` (String) The Formal audience value that tokens must present: `oidc.formal.ai/{id}`.
+- `audience` (String) The Formal audience value that tokens may present: `oidc.formal.ai/{id}`. Providers that cannot set a custom audience (e.g. Spacelift) can instead send `X-Formal-OIDC-Integration-Id` with this resource's `id`.
 - `created_at` (String) When the integration was created.
 - `id` (String) The unique identifier of the OIDC integration.
 - `updated_at` (String) When the integration was last updated.
