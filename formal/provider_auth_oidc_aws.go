@@ -21,12 +21,10 @@ func parseAWSOIDCTokenSource(settings map[string]any) mo.Option[oidcTokenSourceC
 	if len(awsSettings) != 1 {
 		return mo.None[oidcTokenSourceConfig]()
 	}
-	config, ok := awsSettings[0].(map[string]any)
-	if !ok {
-		return mo.None[oidcTokenSourceConfig]()
-	}
-	audience, _ := config["audience"].(string)
-	return mo.Some[oidcTokenSourceConfig](awsOIDCTokenSourceConfig{audience: audience})
+	integrationID, _ := settings["integration_id"].(string)
+	return mo.Some[oidcTokenSourceConfig](awsOIDCTokenSourceConfig{
+		audience: oidc.AudiencePrefix + integrationID,
+	})
 }
 
 func (c awsOIDCTokenSourceConfig) tokenSource(ctx context.Context) (oidc.TokenSource, error) {

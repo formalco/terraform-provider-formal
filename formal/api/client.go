@@ -12,8 +12,7 @@ type GrpcClient struct {
 	Sdk                  *formal.Client
 }
 
-func NewClient(authOption formal.Option, returnSensitiveValue bool) (*GrpcClient, error) {
-	opts := []formal.Option{authOption}
+func NewClient(opts []formal.Option, returnSensitiveValue bool) (*GrpcClient, error) {
 	if os.Getenv("FORMAL_ENV") == "dev" {
 		url := os.Getenv("FORMAL_DEV_URL")
 		if url == "" {

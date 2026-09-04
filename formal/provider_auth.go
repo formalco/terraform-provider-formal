@@ -10,7 +10,7 @@ import (
 	formal "github.com/formalco/go-sdk/v3"
 )
 
-func providerAuthOption(ctx context.Context, d *schema.ResourceData) (formal.Option, error) {
+func providerAuthOptions(ctx context.Context, d *schema.ResourceData) ([]formal.Option, error) {
 	apiKey := d.Get("api_key").(string)
 	oidcConfig, hasOIDC := d.GetOk("oidc")
 
@@ -18,11 +18,7 @@ func providerAuthOption(ctx context.Context, d *schema.ResourceData) (formal.Opt
 		if apiKey != "" {
 			return nil, errors.New("api_key and oidc are mutually exclusive")
 		}
-		source, err := newOIDCTokenSource(ctx, oidcConfig.([]any))
-		if err != nil {
-			return nil, err
-		}
-		return formal.WithOIDCTokenSource(source), nil
+		return newOIDCAuthOptions(ctx, oidcConfig.([]any))
 	}
 
 	if apiKey == "" {
@@ -31,5 +27,5 @@ func providerAuthOption(ctx context.Context, d *schema.ResourceData) (formal.Opt
 	if apiKey == "" {
 		return nil, errors.New("authentication required: configure api_key, FORMAL_API_KEY, or oidc")
 	}
-	return formal.WithAPIKey(apiKey), nil
+	return []formal.Option{formal.WithAPIKey(apiKey)}, nil
 }

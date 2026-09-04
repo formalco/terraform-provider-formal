@@ -41,21 +41,21 @@ func New(version string) func() *schema.Provider {
 					ConflictsWith: []string{"api_key"},
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
+							"integration_id": {
+								Description:  "Formal OIDC integration ID. Required for `aws`; with `env`, selects the integration through `X-Formal-OIDC-Integration-Id`.",
+								Type:         schema.TypeString,
+								Optional:     true,
+								ValidateFunc: validateOIDCIntegrationID,
+							},
 							"aws": {
 								Description:  "Mint short-lived OIDC tokens using the AWS credential chain and STS.",
 								Type:         schema.TypeList,
 								Optional:     true,
 								MaxItems:     1,
 								ExactlyOneOf: oidcTokenSourceSchemaPaths,
+								RequiredWith: []string{"oidc.0.integration_id"},
 								Elem: &schema.Resource{
-									Schema: map[string]*schema.Schema{
-										"audience": {
-											Description:  "Formal OIDC integration audience requested from AWS STS.",
-											Type:         schema.TypeString,
-											Required:     true,
-											ValidateFunc: validateOIDCAudience,
-										},
-									},
+									Schema: map[string]*schema.Schema{},
 								},
 							},
 							"env": {
@@ -141,13 +141,13 @@ func New(version string) func() *schema.Provider {
 
 func configure(version string, p *schema.Provider) func(context.Context, *schema.ResourceData) (any, diag.Diagnostics) {
 	return func(ctx context.Context, d *schema.ResourceData) (any, diag.Diagnostics) {
-		authOption, err := providerAuthOption(ctx, d)
+		authOptions, err := providerAuthOptions(ctx, d)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
 		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
-		grpc, err := api.NewClient(authOption, returnSensitiveValue)
+		grpc, err := api.NewClient(authOptions, returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}

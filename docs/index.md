@@ -90,14 +90,14 @@ export FORMAL_API_KEY="some_api_key"
 
 ### AWS OIDC
 
-Use the `aws` token source to mint short-lived Formal-audience JWTs with the standard AWS credential chain. Set the audience to the audience of your Formal OIDC integration.
+Use the `aws` token source to mint short-lived Formal-audience JWTs with the standard AWS credential chain. Set the integration ID to the ID of your Formal OIDC integration.
 
 ```terraform
 provider "formal" {
   oidc {
-    aws {
-      audience = "oidc.formal.ai/integrationoidc_01h..."
-    }
+    integration_id = "integrationoidc_01h..."
+
+    aws {}
   }
 }
 ```
@@ -125,6 +125,17 @@ id_tokens:
 ```
 
 The provider reads the environment variable when it is configured and cannot renew a token minted by the CI system. Ensure the token remains valid for the Terraform operation.
+
+For providers such as Spacelift that use a fixed native audience, set `integration_id` to the Formal OIDC integration ID. The provider sends it in `X-Formal-OIDC-Integration-Id`.
+
+```terraform
+provider "formal" {
+  oidc {
+    integration_id = "integrationoidc_01h..."
+    env            = "SPACELIFT_OIDC_TOKEN"
+  }
+}
+```
 
 #### Retrieving Sensitive Values
 
