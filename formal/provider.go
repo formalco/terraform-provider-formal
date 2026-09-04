@@ -14,7 +14,7 @@ import (
 	resource "github.com/formalco/terraform-provider-formal/formal/resources"
 )
 
-var oidcTokenSourceSchemaPaths = []string{"oidc.0.aws", "oidc.0.env"}
+var oidcTokenSourceSchemaPaths = []string{"oidc.0.aws", "oidc.0.azure", "oidc.0.env"}
 
 func init() {
 	// Set descriptions to support markdown syntax, this will be used in document generation
@@ -42,13 +42,24 @@ func New(version string) func() *schema.Provider {
 					Elem: &schema.Resource{
 						Schema: map[string]*schema.Schema{
 							"integration_id": {
-								Description:  "Formal OIDC integration ID. Required for `aws`; with `env`, selects the integration through `X-Formal-OIDC-Integration-Id`.",
+								Description:  "Formal OIDC integration ID. Required for `aws` and `azure`; with `env`, selects the integration through `X-Formal-OIDC-Integration-Id`.",
 								Type:         schema.TypeString,
 								Optional:     true,
 								ValidateFunc: validateOIDCIntegrationID,
 							},
 							"aws": {
 								Description:  "Mint short-lived OIDC tokens using the AWS credential chain and STS.",
+								Type:         schema.TypeList,
+								Optional:     true,
+								MaxItems:     1,
+								ExactlyOneOf: oidcTokenSourceSchemaPaths,
+								RequiredWith: []string{"oidc.0.integration_id"},
+								Elem: &schema.Resource{
+									Schema: map[string]*schema.Schema{},
+								},
+							},
+							"azure": {
+								Description:  "Mint Microsoft Entra access tokens for Azure Resource Manager using AKS Workload Identity or managed identity through IMDS.",
 								Type:         schema.TypeList,
 								Optional:     true,
 								MaxItems:     1,

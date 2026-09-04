@@ -104,6 +104,28 @@ provider "formal" {
 
 The AWS token source refreshes its 300-second JWTs as needed. Configure AWS credentials and a region through the standard AWS environment variables or shared configuration.
 
+### Azure OIDC
+
+Use the `azure` token source on AKS with Workload Identity or on Azure compute with managed identity. Set the integration ID to the ID of your Formal OIDC integration.
+
+```terraform
+provider "formal" {
+  oidc {
+    integration_id = "integrationoidc_01h..."
+
+    azure {}
+  }
+}
+```
+
+The provider uses AKS Workload Identity when `AZURE_FEDERATED_TOKEN_FILE` is set. Otherwise, it uses managed identity through IMDS. For user-assigned managed identities, set `AZURE_CLIENT_ID`.
+
+The provider requests a Microsoft Entra access token for Azure Resource Manager. It sends the integration ID in `X-Formal-OIDC-Integration-Id` because the Azure Resource Manager audience is fixed.
+
+Configure the OIDC integration's claim condition to require the exact Azure Resource Manager audience, tenant ID, and managed identity object ID.
+
+This token source does not support Azure DevOps Pipelines.
+
 ### Environment OIDC token
 
 For systems that mint an OIDC token before Terraform starts, set `env` to the name of the environment variable containing that token. Do not put the JWT in `api_key` or `FORMAL_API_KEY`.

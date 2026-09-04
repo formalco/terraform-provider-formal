@@ -3,6 +3,7 @@ package provider
 import (
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
@@ -40,10 +41,28 @@ func TestProviderOIDCSchema(t *testing.T) {
 			},
 		},
 		{
+			name: "Azure source with integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"integration_id": integrationID,
+					"azure":          []any{map[string]any{}},
+				}},
+			},
+		},
+		{
 			name: "AWS source without integration ID",
 			config: map[string]any{
 				"oidc": []any{map[string]any{
 					"aws": []any{map[string]any{}},
+				}},
+			},
+			wantErr: true,
+		},
+		{
+			name: "Azure source without integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"azure": []any{map[string]any{}},
 				}},
 			},
 			wantErr: true,
@@ -88,6 +107,15 @@ func TestProviderAuthOption(t *testing.T) {
 			},
 		},
 		{
+			name: "Azure token source with integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"integration_id": integrationID,
+					"azure":          []any{map[string]any{}},
+				}},
+			},
+		},
+		{
 			name: "AWS token source without integration ID",
 			config: map[string]any{
 				"oidc": []any{map[string]any{
@@ -95,6 +123,15 @@ func TestProviderAuthOption(t *testing.T) {
 				}},
 			},
 			wantErr: "oidc.integration_id is required with aws",
+		},
+		{
+			name: "Azure token source without integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"azure": []any{map[string]any{}},
+				}},
+			},
+			wantErr: "oidc.integration_id is required with azure",
 		},
 		{
 			name:    "authentication missing",
@@ -122,6 +159,7 @@ func TestProviderAuthOption(t *testing.T) {
 				"oidc": []any{map[string]any{
 					"integration_id": integrationID,
 					"aws":            []any{map[string]any{}},
+					"azure":          []any{map[string]any{}},
 					"env":            "GITLAB_OIDC_TOKEN",
 				}},
 			},
@@ -224,6 +262,27 @@ func TestEnvTokenSourceRejectsEmptyToken(t *testing.T) {
 	require.ErrorContains(t, err, "token must not be empty")
 }
 
+func TestNewAzureOIDCCredentialSelectsWorkloadIdentity(t *testing.T) {
+	t.Setenv("AZURE_CLIENT_ID", "00000000-0000-0000-0000-000000000001")
+	t.Setenv("AZURE_TENANT_ID", "00000000-0000-0000-0000-000000000002")
+	t.Setenv("AZURE_FEDERATED_TOKEN_FILE", "/var/run/secrets/azure/tokens/azure-identity-token")
+
+	credential, err := newAzureOIDCCredential()
+
+	require.NoError(t, err)
+	require.IsType(t, &azidentity.WorkloadIdentityCredential{}, credential)
+}
+
+func TestNewAzureOIDCCredentialSelectsManagedIdentity(t *testing.T) {
+	t.Setenv("AZURE_CLIENT_ID", "00000000-0000-0000-0000-000000000001")
+	t.Setenv("AZURE_FEDERATED_TOKEN_FILE", "")
+
+	credential, err := newAzureOIDCCredential()
+
+	require.NoError(t, err)
+	require.IsType(t, &azidentity.ManagedIdentityCredential{}, credential)
+}
+
 func TestValidateOIDCIntegrationID(t *testing.T) {
 	warnings, errors := validateOIDCIntegrationID(
 		"integrationoidc_01h45ytscbebyvny4gc8cr8ma2",
@@ -263,6 +322,16 @@ func TestParseOIDCAuthConfig(t *testing.T) {
 			}},
 			want: oidcAuthConfig{
 				tokenSourceConfig: envOIDCTokenSourceConfig{name: "GITLAB_OIDC_TOKEN"},
+			},
+		},
+		{
+			name: "Azure",
+			raw: []any{map[string]any{
+				"integration_id": integrationID,
+				"azure":          []any{map[string]any{}},
+			}},
+			want: oidcAuthConfig{
+				tokenSourceConfig: azureOIDCTokenSourceConfig{integrationID: integrationID},
 			},
 		},
 		{

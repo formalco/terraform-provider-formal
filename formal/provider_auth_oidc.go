@@ -24,6 +24,7 @@ type oidcAuthConfig struct {
 
 var oidcTokenSourceParsers = []oidcTokenSourceParser{
 	parseAWSOIDCTokenSource,
+	parseAzureOIDCTokenSource,
 	parseEnvOIDCTokenSource,
 }
 
@@ -68,9 +69,13 @@ func parseOIDCAuthConfig(raw []any) (oidcAuthConfig, error) {
 		}
 	}
 
-	_, isAWS := configured[0].(awsOIDCTokenSourceConfig)
-	if isAWS && integrationID == "" {
-		return oidcAuthConfig{}, errors.New("oidc.integration_id is required with aws")
+	if integrationID == "" {
+		switch configured[0].(type) {
+		case awsOIDCTokenSourceConfig:
+			return oidcAuthConfig{}, errors.New("oidc.integration_id is required with aws")
+		case azureOIDCTokenSourceConfig:
+			return oidcAuthConfig{}, errors.New("oidc.integration_id is required with azure")
+		}
 	}
 	return oidcAuthConfig{
 		tokenSourceConfig: configured[0],
