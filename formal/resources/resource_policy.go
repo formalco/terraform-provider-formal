@@ -101,7 +101,15 @@ func ResourcePolicy() *schema.Resource {
 			tflog.Debug(ctx, "Validating policy code", map[string]any{
 				"id":                 d.Id(),
 				"has_module_changes": d.HasChange("module"),
+				"module_known":       d.NewValueKnown("module"),
 			})
+
+			// A module interpolating an attribute of a not-yet-created resource is
+			// unknown at plan time, and Get returns "" for it. Validating that would
+			// reject the plan for an empty code the practitioner never wrote.
+			if !d.NewValueKnown("module") {
+				return nil
+			}
 
 			if d.Id() == "" || d.HasChange("module") {
 				resp, err := c.Grpc.Sdk.PoliciesServiceClient.GetPolicyCodeValidity(ctx, &corev1.GetPolicyCodeValidityRequest{
