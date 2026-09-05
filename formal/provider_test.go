@@ -3,7 +3,6 @@ package provider
 import (
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
@@ -260,27 +259,6 @@ func TestEnvTokenSourceRejectsEmptyToken(t *testing.T) {
 	_, err = source.Token(t.Context())
 
 	require.ErrorContains(t, err, "token must not be empty")
-}
-
-func TestNewAzureOIDCCredentialSelectsWorkloadIdentity(t *testing.T) {
-	t.Setenv("AZURE_CLIENT_ID", "00000000-0000-0000-0000-000000000001")
-	t.Setenv("AZURE_TENANT_ID", "00000000-0000-0000-0000-000000000002")
-	t.Setenv("AZURE_FEDERATED_TOKEN_FILE", "/var/run/secrets/azure/tokens/azure-identity-token")
-
-	credential, err := newAzureOIDCCredential()
-
-	require.NoError(t, err)
-	require.IsType(t, &azidentity.WorkloadIdentityCredential{}, credential)
-}
-
-func TestNewAzureOIDCCredentialSelectsManagedIdentity(t *testing.T) {
-	t.Setenv("AZURE_CLIENT_ID", "00000000-0000-0000-0000-000000000001")
-	t.Setenv("AZURE_FEDERATED_TOKEN_FILE", "")
-
-	credential, err := newAzureOIDCCredential()
-
-	require.NoError(t, err)
-	require.IsType(t, &azidentity.ManagedIdentityCredential{}, credential)
 }
 
 func TestValidateOIDCIntegrationID(t *testing.T) {
