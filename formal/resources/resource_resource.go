@@ -143,6 +143,18 @@ func ResourceResource() *schema.Resource {
 					Type: schema.TypeString,
 				},
 			},
+			"native_user_selection_cel": {
+				// This description is used by the documentation generator and the language server.
+				Description: "The CEL expression that selects which Native User V3 a session connects as.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
+			"native_users_v3_enabled": {
+				Description: "Whether the Resource uses Native Users V3. When omitted, new Resources enable V3 while existing Resources preserve their current mode. Only one Native User version can be enabled at a time.",
+				Type:        schema.TypeBool,
+				Optional:    true,
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -227,9 +239,35 @@ func resourceDatastoreCreate(ctx context.Context, d *schema.ResourceData, meta a
 
 	d.SetId(res.Resource.Id)
 
+	nativeUsersV3Enabled, err := nativeUsersV3EnabledOnCreate(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if nativeUsersV3Enabled {
+		enabled := true
+		if _, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceNativeUsersV3Enabled(ctx, &corev1.UpdateResourceNativeUsersV3EnabledRequest{
+			Id:      res.Resource.Id,
+			Enabled: &enabled,
+		}); err != nil {
+			return diag.FromErr(err)
+		}
+	}
+
 	resourceDatastoreRead(ctx, d, meta)
 
 	return diags
+}
+
+func nativeUsersV3EnabledOnCreate(d *schema.ResourceData) (bool, error) {
+	value, configured := d.GetOkExists("native_users_v3_enabled")
+	if !configured {
+		return true, nil
+	}
+	enabled, ok := value.(bool)
+	if !ok {
+		return false, fmt.Errorf("native_users_v3_enabled must be a boolean")
+	}
+	return enabled, nil
 }
 
 func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
@@ -262,6 +300,8 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any
 		d.Set("space_id", res.Resource.Space.Id)
 	}
 	d.Set("aliases", res.Resource.Aliases)
+	d.Set("native_user_selection_cel", res.Resource.GetNativeUserSelectionCel())
+	d.Set("native_users_v3_enabled", res.Resource.NativeUsersV3EnabledAt != nil)
 	d.SetId(res.Resource.Id)
 
 	tags := make(map[string]string)
@@ -280,7 +320,7 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta a
 	c := meta.(*clients.Clients)
 	datastoreId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "port", "termination_protection", "space_id", "tags", "aliases"}
+	fieldsThatCanChange := []string{"name", "environment", "hostname", "port", "termination_protection", "space_id", "tags", "aliases", "native_users_v3_enabled"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
@@ -333,6 +373,16 @@ func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta a
 			return diag.FromErr(err)
 		}
 		req.Aliases = &corev1.UpdateResourceRequest_UpdateResourceAlias{Aliases: aliases}
+	}
+
+	if d.HasChange("native_users_v3_enabled") {
+		enabled := d.Get("native_users_v3_enabled").(bool)
+		if _, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceNativeUsersV3Enabled(ctx, &corev1.UpdateResourceNativeUsersV3EnabledRequest{
+			Id:      datastoreId,
+			Enabled: &enabled,
+		}); err != nil {
+			return diag.FromErr(err)
+		}
 	}
 
 	_, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResource(ctx, req)

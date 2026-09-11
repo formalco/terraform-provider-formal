@@ -26,6 +26,7 @@ Registering a Resource with Formal.
 
 - `aliases` (Set of String) Aliases to apply to the Resource.
 - `environment` (String, Deprecated) Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.
+- `native_users_v3_enabled` (Boolean) Whether the Resource uses Native Users V3. When omitted, new Resources enable V3 while existing Resources preserve their current mode. Only one Native User version can be enabled at a time.
 - `space_id` (String) The ID of the Space to create the Resource in.
 - `tags` (Map of String) Tags to apply to the Resource.
 - `technology_provider` (String) For SSH resources, if the backend connection is SSM, supported values are `aws-ec2`, and `aws-ecs`
@@ -36,6 +37,7 @@ Registering a Resource with Formal.
 
 - `created_at` (Number) Creation time of the Resource.
 - `id` (String) The ID of the Resource.
+- `native_user_selection_cel` (String) The CEL expression that selects which Native User V3 a session connects as.
 
 <a id="nestedblock--timeouts"></a>
 ### Nested Schema for `timeouts`
