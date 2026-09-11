@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/samber/lo"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -40,6 +41,18 @@ func ResourcePolicy() *schema.Resource {
 			},
 		},
 		Schema: map[string]*schema.Schema{
+			"tags": {
+				Description: "Policy metadata as string key/value pairs. Maximum 500 tags per policy.",
+				Type:        schema.TypeMap,
+				Optional:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+				ValidateFunc: func(v any, k string) ([]string, []error) {
+					if len(v.(map[string]any)) > 500 {
+						return nil, []error{fmt.Errorf("%s must contain at most 500 tags", k)}
+					}
+					return nil, nil
+				},
+			},
 			"name": {
 				// This description is used by the documentation generator and the language server.
 				Description: "Policy Name",
@@ -147,6 +160,9 @@ func resourcePolicyCreate(ctx context.Context, d *schema.ResourceData, meta any)
 		Code:                  Module,
 		Status:                Status,
 		TerminationProtection: TerminationProtection,
+		Tags: lo.MapValues(d.Get("tags").(map[string]any), func(value any, _ string) string {
+			return value.(string)
+		}),
 	}
 
 	res, err := c.Grpc.Sdk.PoliciesServiceClient.CreatePolicy(ctx, newPolicy)
@@ -184,6 +200,9 @@ func resourcePolicyRead(ctx context.Context, d *schema.ResourceData, meta any) d
 	d.Set("module", res.Policy.Code)
 	d.Set("status", res.Policy.Status)
 	d.Set("termination_protection", res.Policy.TerminationProtection)
+	if err := d.Set("tags", res.Policy.Tags); err != nil {
+		return diag.FromErr(err)
+	}
 
 	d.SetId(policyId)
 
@@ -195,7 +214,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 
 	policyId := d.Id()
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("status") || d.HasChange("termination_protection") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("module") || d.HasChange("status") || d.HasChange("termination_protection") || d.HasChange("tags") {
 		Name := d.Get("name").(string)
 		Description := d.Get("description").(string)
 		Module := d.Get("module").(string)
@@ -209,6 +228,9 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 			Code:                  Module,
 			Status:                Status,
 			TerminationProtection: TerminationProtection,
+			Tags: &corev1.PolicyTags{Values: lo.MapValues(d.Get("tags").(map[string]any), func(value any, _ string) string {
+				return value.(string)
+			})},
 		}
 
 		_, err := c.Grpc.Sdk.PoliciesServiceClient.UpdatePolicy(ctx, updatedPolicy)
@@ -218,7 +240,7 @@ func resourcePolicyUpdate(ctx context.Context, d *schema.ResourceData, meta any)
 
 		return resourcePolicyRead(ctx, d, meta)
 	}
-	return diag.Errorf("At the moment you can only update a policy's name, description, module and status. Please delete and recreate the Policy")
+	return diag.Errorf("At the moment you can only update a policy's name, description, module, status, termination_protection and tags. Please delete and recreate the Policy")
 }
 
 func resourcePolicyDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

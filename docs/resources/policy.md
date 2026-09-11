@@ -24,6 +24,7 @@ Creating a Policy in Formal.
 
 ### Optional
 
+- `tags` (Map of String) Policy metadata as string key/value pairs. Maximum 500 tags per policy.
 - `termination_protection` (Boolean) If set to true, this Policy cannot be deleted.
 
 ### Read-Only
