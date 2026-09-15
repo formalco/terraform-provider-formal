@@ -87,14 +87,14 @@ func ResourceUser() *schema.Resource {
 			},
 			"expire_at": {
 				// This description is used by the documentation generator and the language server.
-				Description: "When the Role should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970.",
+				Description: "When the user should be deleted and access revoked. Value should be provided in Unix epoch time, in seconds since midnight UTC of January 1, 1970. Cannot be set together with termination_protection.",
 				Type:        schema.TypeInt,
 				Optional:    true,
 				ForceNew:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
-				Description: "If set to true, this User cannot be deleted.",
+				Description: "If set to true, this User cannot be deleted. Cannot be set together with expire_at.",
 				Type:        schema.TypeBool,
 				Optional:    true,
 				Default:     false,
@@ -103,11 +103,23 @@ func ResourceUser() *schema.Resource {
 	}
 }
 
+func rejectTemporaryUserTerminationProtection(d *schema.ResourceData) error {
+	expireAt := int64(d.Get("expire_at").(int))
+	if expireAt != 0 && d.Get("termination_protection").(bool) {
+		return errors.New("termination protection is not supported for users with an expiry")
+	}
+	return nil
+}
+
 func resourceUserCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	// Warning or errors can be collected in a slice type
 	var diags diag.Diagnostics
+
+	if err := rejectTemporaryUserTerminationProtection(d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	userType := d.Get("type").(string)
 	var res *corev1.CreateUserResponse
@@ -241,6 +253,10 @@ func resourceUserUpdate(ctx context.Context, d *schema.ResourceData, meta any) d
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
+
+	if err := rejectTemporaryUserTerminationProtection(d); err != nil {
+		return diag.FromErr(err)
+	}
 
 	userId := d.Id()
 	name := d.Get("name").(string)
