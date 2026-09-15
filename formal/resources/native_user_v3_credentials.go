@@ -2,29 +2,61 @@ package resource
 
 import (
 	"fmt"
+	"maps"
 	"slices"
 	"strings"
 
+	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/samber/lo"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 )
 
-// expandNativeUserV3Credentials builds the credentials oneof from whichever
-// credential block the configuration set.
-func expandNativeUserV3Credentials(d *schema.ResourceData) (*corev1.NativeUserV3Credentials, error) {
-	for _, name := range nativeUserV3CredentialBlocks {
-		block, ok := singleBlock(d.Get(name))
+type rawConfigReader func(path cty.Path) (cty.Value, diag.Diagnostics)
+
+func restoreWriteOnlySecrets(read rawConfigReader, variant string, block map[string]any) (map[string]any, error) {
+	restored := maps.Clone(block)
+	for field, value := range block {
+		secret, ok := singleBlock(value)
 		if !ok {
 			continue
 		}
-		return buildNativeUserV3Credentials(name, block)
+		if _, isSecret := secret["literal_wo"]; !isSecret {
+			continue
+		}
+		secretPath := cty.GetAttrPath(variant).IndexInt(0).GetAttr(field).IndexInt(0)
+
+		literal, rawDiags := read(secretPath.GetAttr("literal_wo"))
+		if rawDiags.HasError() {
+			return nil, fmt.Errorf("%s.%s: failed to get literal_wo: %v", variant, field, rawDiags)
+		}
+		version, rawDiags := read(secretPath.GetAttr("literal_wo_version"))
+		if rawDiags.HasError() {
+			return nil, fmt.Errorf("%s.%s: failed to get literal_wo_version: %v", variant, field, rawDiags)
+		}
+
+		if literal.IsNull() {
+			if !version.IsNull() {
+				return nil, fmt.Errorf("%s.%s: literal_wo_version requires literal_wo", variant, field)
+			}
+			continue
+		}
+		if !literal.IsKnown() || literal.Type() != cty.String {
+			return nil, fmt.Errorf("%s.%s: literal_wo must be a known string", variant, field)
+		}
+		if version.IsNull() {
+			return nil, fmt.Errorf("%s.%s: literal_wo requires literal_wo_version", variant, field)
+		}
+
+		// d.Get returns maps the SDK memoizes by reference, so the secret goes
+		// into a copy rather than into the SDK's read cache.
+		restoredSecret := maps.Clone(secret)
+		restoredSecret["literal_wo"] = literal.AsString()
+		restored[field] = []any{restoredSecret}
 	}
-	return nil, fmt.Errorf(
-		"exactly one credential block must be set, one of: %s",
-		strings.Join(nativeUserV3CredentialBlocks, ", "),
-	)
+	return restored, nil
 }
 
 func buildNativeUserV3Credentials(variant string, block map[string]any) (*corev1.NativeUserV3Credentials, error) {
@@ -181,15 +213,35 @@ func buildNativeUserV3Credentials(variant string, block map[string]any) (*corev1
 	return nil, fmt.Errorf("unsupported credential block %q", variant)
 }
 
+// expandNativeUserV3Credentials builds the credentials oneof from whichever
+// credential block the configuration set.
+func expandNativeUserV3Credentials(d *schema.ResourceData) (*corev1.NativeUserV3Credentials, error) {
+	for _, name := range nativeUserV3CredentialBlocks {
+		block, ok := singleBlock(d.Get(name))
+		if !ok {
+			continue
+		}
+		restored, err := restoreWriteOnlySecrets(d.GetRawConfigAt, name, block)
+		if err != nil {
+			return nil, err
+		}
+		return buildNativeUserV3Credentials(name, restored)
+	}
+	return nil, fmt.Errorf(
+		"exactly one credential block must be set, one of: %s",
+		strings.Join(nativeUserV3CredentialBlocks, ", "),
+	)
+}
+
 // flattenNativeUserV3Credentials writes the credentials the API returned into
 // state, clearing the credential blocks that are not in use.
 func flattenNativeUserV3Credentials(d *schema.ResourceData, credentials *corev1.NativeUserV3Credentials) error {
-	priorLiteral := func(path string) string {
-		literal, _ := d.Get(path + ".0.literal").(string)
-		return literal
+	priorSecret := func(path string) map[string]any {
+		secret, _ := singleBlock(d.Get(path))
+		return secret
 	}
 
-	variant, block, err := describeNativeUserV3Credentials(priorLiteral, credentials)
+	variant, block, err := describeNativeUserV3Credentials(priorSecret, credentials)
 	if err != nil {
 		return err
 	}
@@ -208,15 +260,15 @@ func flattenNativeUserV3Credentials(d *schema.ResourceData, credentials *corev1.
 	return nil
 }
 
-// priorLiteralLookup returns the literal secret already in state at a block path.
-type priorLiteralLookup func(path string) string
+// priorSecretLookup returns the secret block already in state at a block path.
+type priorSecretLookup func(path string) map[string]any
 
-func describeNativeUserV3Credentials(priorLiteral priorLiteralLookup, credentials *corev1.NativeUserV3Credentials) (string, map[string]any, error) {
+func describeNativeUserV3Credentials(priorSecret priorSecretLookup, credentials *corev1.NativeUserV3Credentials) (string, map[string]any, error) {
 	switch value := credentials.GetValue().(type) {
 	case *corev1.NativeUserV3Credentials_Basic:
 		return "basic", map[string]any{
 			"username": value.Basic.GetUsername(),
-			"password": flattenSecretValue(priorLiteral, "basic.0.password", value.Basic.GetPassword()),
+			"password": flattenSecretValue(priorSecret, "basic.0.password", value.Basic.GetPassword()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_AwsIam:
@@ -242,53 +294,53 @@ func describeNativeUserV3Credentials(priorLiteral priorLiteralLookup, credential
 
 	case *corev1.NativeUserV3Credentials_KubernetesPath:
 		return "kubernetes_path", map[string]any{
-			"kubeconfig_path": flattenSecretValue(priorLiteral, "kubernetes_path.0.kubeconfig_path", value.KubernetesPath.GetKubeconfigPath()),
+			"kubeconfig_path": flattenSecretValue(priorSecret, "kubernetes_path.0.kubeconfig_path", value.KubernetesPath.GetKubeconfigPath()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_KubernetesInline:
 		return "kubernetes_inline", map[string]any{
-			"kubeconfig": flattenSecretValue(priorLiteral, "kubernetes_inline.0.kubeconfig", value.KubernetesInline.GetKubeconfig()),
+			"kubeconfig": flattenSecretValue(priorSecret, "kubernetes_inline.0.kubeconfig", value.KubernetesInline.GetKubeconfig()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_SshKey:
 		block := map[string]any{
 			"username": value.SshKey.GetUsername(),
-			"key":      flattenSecretValue(priorLiteral, "ssh_key.0.key", value.SshKey.GetKey()),
+			"key":      flattenSecretValue(priorSecret, "ssh_key.0.key", value.SshKey.GetKey()),
 		}
 		if value.SshKey.GetCertificate() != nil {
-			block["certificate"] = flattenSecretValue(priorLiteral, "ssh_key.0.certificate", value.SshKey.GetCertificate())
+			block["certificate"] = flattenSecretValue(priorSecret, "ssh_key.0.certificate", value.SshKey.GetCertificate())
 		}
 		return "ssh_key", block, nil
 
 	case *corev1.NativeUserV3Credentials_SnowflakeKey:
 		return "snowflake_key", map[string]any{
 			"username": value.SnowflakeKey.GetUsername(),
-			"key":      flattenSecretValue(priorLiteral, "snowflake_key.0.key", value.SnowflakeKey.GetKey()),
+			"key":      flattenSecretValue(priorSecret, "snowflake_key.0.key", value.SnowflakeKey.GetKey()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_HttpBasic:
 		return "http_basic", map[string]any{
 			"header":   value.HttpBasic.GetHeader(),
 			"username": value.HttpBasic.GetUsername(),
-			"password": flattenSecretValue(priorLiteral, "http_basic.0.password", value.HttpBasic.GetPassword()),
+			"password": flattenSecretValue(priorSecret, "http_basic.0.password", value.HttpBasic.GetPassword()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_HttpBearer:
 		return "http_bearer", map[string]any{
 			"header": value.HttpBearer.GetHeader(),
-			"token":  flattenSecretValue(priorLiteral, "http_bearer.0.token", value.HttpBearer.GetToken()),
+			"token":  flattenSecretValue(priorSecret, "http_bearer.0.token", value.HttpBearer.GetToken()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_HttpApiKeyHeader:
 		return "http_api_key_header", map[string]any{
 			"key":   value.HttpApiKeyHeader.GetKey(),
-			"value": flattenSecretValue(priorLiteral, "http_api_key_header.0.value", value.HttpApiKeyHeader.GetValue()),
+			"value": flattenSecretValue(priorSecret, "http_api_key_header.0.value", value.HttpApiKeyHeader.GetValue()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_HttpApiKeyQuery:
 		return "http_api_key_query", map[string]any{
 			"key":   value.HttpApiKeyQuery.GetKey(),
-			"value": flattenSecretValue(priorLiteral, "http_api_key_query.0.value", value.HttpApiKeyQuery.GetValue()),
+			"value": flattenSecretValue(priorSecret, "http_api_key_query.0.value", value.HttpApiKeyQuery.GetValue()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_Hook:
@@ -306,15 +358,24 @@ func describeNativeUserV3Credentials(priorLiteral priorLiteralLookup, credential
 // flattenSecretValue writes a secret back into state. The API redacts literal
 // secrets, so the value already in state is kept rather than overwritten with the
 // redaction placeholder, which would otherwise show up as permanent drift.
-func flattenSecretValue(priorLiteral priorLiteralLookup, path string, value *corev1.SecretValue) []any {
-	secret := map[string]any{"literal": "", "environment_variable": ""}
+func flattenSecretValue(priorSecret priorSecretLookup, path string, value *corev1.SecretValue) []any {
+	prior := priorSecret(path)
+
+	secret := map[string]any{
+		"literal":              "",
+		"environment_variable": "",
+		// A write-only literal never reaches state, so only its version trigger
+		// is carried forward. Dropping that would show up as drift every plan.
+		"literal_wo":         "",
+		"literal_wo_version": blockInt(prior, "literal_wo_version"),
+	}
 
 	switch source := value.GetSource().(type) {
 	case *corev1.SecretValue_EnvironmentVariable:
 		secret["environment_variable"] = source.EnvironmentVariable
 	case *corev1.SecretValue_Literal:
 		if source.Literal == nativeUserV3RedactedSecret {
-			secret["literal"] = priorLiteral(path)
+			secret["literal"] = blockString(prior, "literal")
 		} else {
 			secret["literal"] = source.Literal
 		}
@@ -330,20 +391,30 @@ func expandSecretValue(block map[string]any, field string) (*corev1.SecretValue,
 	}
 
 	literal := blockString(secret, "literal")
+	writeOnlyLiteral := blockString(secret, "literal_wo")
 	environmentVariable := blockString(secret, "environment_variable")
 
+	sources := lo.CountBy([]string{literal, writeOnlyLiteral, environmentVariable}, func(source string) bool {
+		return source != ""
+	})
+	if sources > 1 {
+		return nil, fmt.Errorf("%s: set only one of literal, literal_wo or environment_variable", field)
+	}
+
 	switch {
-	case literal != "" && environmentVariable != "":
-		return nil, fmt.Errorf("%s: set only one of literal or environment_variable", field)
 	case literal != "":
 		return &corev1.SecretValue{Source: &corev1.SecretValue_Literal{Literal: literal}}, nil
+	case writeOnlyLiteral != "":
+		// The API stores write-only literals like any other literal; the
+		// difference is only that Terraform never persists the value.
+		return &corev1.SecretValue{Source: &corev1.SecretValue_Literal{Literal: writeOnlyLiteral}}, nil
 	case environmentVariable != "":
 		return &corev1.SecretValue{Source: &corev1.SecretValue_EnvironmentVariable{
 			EnvironmentVariable: environmentVariable,
 		}}, nil
 	}
 
-	return nil, fmt.Errorf("%s: one of literal or environment_variable is required", field)
+	return nil, fmt.Errorf("%s: one of literal, literal_wo or environment_variable is required", field)
 }
 
 func expandOptionalSecretValue(block map[string]any, field string) (*corev1.SecretValue, error) {
@@ -365,6 +436,11 @@ func singleBlock(value any) (map[string]any, bool) {
 
 func blockString(block map[string]any, field string) string {
 	value, _ := block[field].(string)
+	return value
+}
+
+func blockInt(block map[string]any, field string) int {
+	value, _ := block[field].(int)
 	return value
 }
 

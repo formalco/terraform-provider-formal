@@ -1,3 +1,9 @@
+variable "analytics_admin_password" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
 resource "formal_resource" "db" {
   name       = "analytics-postgres"
   hostname   = "analytics.internal"
@@ -16,6 +22,21 @@ resource "formal_native_user_v3" "basic" {
     username = "app_admin"
     password {
       environment_variable = "ANALYTICS_ADMIN_PASSWORD"
+    }
+  }
+}
+
+# Username and password, with the password passed as a write-only value so it
+# never lands in Terraform state. Increment literal_wo_version to rotate it.
+resource "formal_native_user_v3" "basic_write_only" {
+  resource_id = formal_resource.db.id
+  label       = "admin-write-only"
+
+  basic {
+    username = "app_admin"
+    password {
+      literal_wo         = var.analytics_admin_password
+      literal_wo_version = 1
     }
   }
 }

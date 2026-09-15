@@ -18,7 +18,8 @@ import (
 )
 
 // nativeUserV3RedactedSecret is the placeholder the API returns in place of a
-// literal secret. Sending it back on update keeps the stored secret unchanged.
+// literal secret. The API stores whatever literal it receives, this one
+// included, so it must never be sent back.
 const nativeUserV3RedactedSecret = "NOT_RETURNED"
 
 // nativeUserV3CredentialBlocks lists every credential variant block, in proto
@@ -266,10 +267,10 @@ func requiredString(description string) *schema.Schema {
 	}
 }
 
-// secretBlock describes a secret sourced either from a literal value or from an
-// environment variable read on the connector. Exactly one source must be set;
-// that is enforced when the block is expanded because Terraform cannot express
-// mutual exclusion inside a nested block.
+// secretBlock describes a secret sourced from a literal value, a write-only
+// literal, or an environment variable read on the connector. Exactly one source
+// must be set; that is enforced when the block is expanded because Terraform
+// cannot express mutual exclusion inside a nested block.
 func secretBlock(description string) *schema.Schema {
 	return secretBlockSchema(description, true)
 }
@@ -280,7 +281,7 @@ func optionalSecretBlock(description string) *schema.Schema {
 
 func secretBlockSchema(description string, required bool) *schema.Schema {
 	return &schema.Schema{
-		Description: description + " Set exactly one of `literal` or `environment_variable`.",
+		Description: description + " Set exactly one of `literal`, `literal_wo` or `environment_variable`.",
 		Type:        schema.TypeList,
 		Required:    required,
 		Optional:    !required,
@@ -288,10 +289,22 @@ func secretBlockSchema(description string, required bool) *schema.Schema {
 		Elem: &schema.Resource{
 			Schema: map[string]*schema.Schema{
 				"literal": {
-					Description: "The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.",
+					Description: "The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.",
 					Type:        schema.TypeString,
 					Optional:    true,
 					Sensitive:   true,
+				},
+				"literal_wo": {
+					Description: "Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.",
+					Type:        schema.TypeString,
+					Optional:    true,
+					Sensitive:   true,
+					WriteOnly:   true,
+				},
+				"literal_wo_version": {
+					Description: "Version trigger for `literal_wo`. Increment this value to update the secret.",
+					Type:        schema.TypeInt,
+					Optional:    true,
 				},
 				"environment_variable": {
 					Description: "The name of an environment variable the connector reads the secret from.",
@@ -408,8 +421,8 @@ func resourceNativeUserV3Update(ctx context.Context, d *schema.ResourceData, met
 	}
 
 	// Credentials are replaced wholesale, so they are only sent when something in
-	// the active variant changed. Literal secrets the API redacted read back as
-	// NOT_RETURNED, which it accepts as "keep the stored value".
+	// the active variant changed. flattenSecretValue keeps the prior literal in
+	// state so a redacted one never round-trips back and overwrites the secret.
 	if d.HasChanges(nativeUserV3CredentialBlocks...) {
 		credentials, err := expandNativeUserV3Credentials(d)
 		if err != nil {

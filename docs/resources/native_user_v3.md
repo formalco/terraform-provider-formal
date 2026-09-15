@@ -13,6 +13,12 @@ A Native User the Formal connector authenticates to a Resource as. The Resource 
 ## Example Usage
 
 ```terraform
+variable "analytics_admin_password" {
+  type      = string
+  sensitive = true
+  ephemeral = true
+}
+
 resource "formal_resource" "db" {
   name       = "analytics-postgres"
   hostname   = "analytics.internal"
@@ -31,6 +37,21 @@ resource "formal_native_user_v3" "basic" {
     username = "app_admin"
     password {
       environment_variable = "ANALYTICS_ADMIN_PASSWORD"
+    }
+  }
+}
+
+# Username and password, with the password passed as a write-only value so it
+# never lands in Terraform state. Increment literal_wo_version to rotate it.
+resource "formal_native_user_v3" "basic_write_only" {
+  resource_id = formal_resource.db.id
+  label       = "admin-write-only"
+
+  basic {
+    username = "app_admin"
+    password {
+      literal_wo         = var.analytics_admin_password
+      literal_wo_version = 1
     }
   }
 }
@@ -97,6 +118,8 @@ resource "formal_native_user_v3" "from_hook" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `aws_iam` (Block List, Max: 1) AWS IAM authentication. (see [below for nested schema](#nestedblock--aws_iam))
 - `aws_iam_role` (Block List, Max: 1) AWS IAM authentication using an assumed role. (see [below for nested schema](#nestedblock--aws_iam_role))
 - `azure_iam` (Block List, Max: 1) Azure IAM authentication. (see [below for nested schema](#nestedblock--azure_iam))
@@ -149,7 +172,9 @@ Required:
 
 Required:
 
-- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--basic--password))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--basic--password))
 - `username` (String) The username to authenticate as.
 
 <a id="nestedblock--basic--password"></a>
@@ -157,8 +182,12 @@ Required:
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -189,16 +218,22 @@ Optional:
 
 Required:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `key` (String) The name of the header carrying the API key.
-- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_header--value))
+- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_header--value))
 
 <a id="nestedblock--http_api_key_header--value"></a>
 ### Nested Schema for `http_api_key_header.value`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -207,16 +242,22 @@ Optional:
 
 Required:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `key` (String) The name of the query parameter carrying the API key.
-- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_query--value))
+- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_query--value))
 
 <a id="nestedblock--http_api_key_query--value"></a>
 ### Nested Schema for `http_api_key_query.value`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -225,8 +266,10 @@ Optional:
 
 Required:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `header` (String) The header to inject the credentials on, for example `Authorization`.
-- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--http_basic--password))
+- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_basic--password))
 - `username` (String) The username to authenticate as.
 
 <a id="nestedblock--http_basic--password"></a>
@@ -234,8 +277,12 @@ Required:
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -244,16 +291,22 @@ Optional:
 
 Required:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `header` (String) The header to inject the token on, for example `Authorization`.
-- `token` (Block List, Min: 1, Max: 1) The bearer token. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--http_bearer--token))
+- `token` (Block List, Min: 1, Max: 1) The bearer token. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_bearer--token))
 
 <a id="nestedblock--http_bearer--token"></a>
 ### Nested Schema for `http_bearer.token`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -262,15 +315,21 @@ Optional:
 
 Required:
 
-- `kubeconfig` (Block List, Min: 1, Max: 1) The kubeconfig YAML document. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `kubeconfig` (Block List, Min: 1, Max: 1) The kubeconfig YAML document. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig))
 
 <a id="nestedblock--kubernetes_inline--kubeconfig"></a>
 ### Nested Schema for `kubernetes_inline.kubeconfig`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -279,15 +338,21 @@ Optional:
 
 Required:
 
-- `kubeconfig_path` (Block List, Min: 1, Max: 1) Path to the kubeconfig file on the connector. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `kubeconfig_path` (Block List, Min: 1, Max: 1) Path to the kubeconfig file on the connector. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path))
 
 <a id="nestedblock--kubernetes_path--kubeconfig_path"></a>
 ### Nested Schema for `kubernetes_path.kubeconfig_path`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -296,7 +361,9 @@ Optional:
 
 Required:
 
-- `key` (Block List, Min: 1, Max: 1) The private key. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--snowflake_key--key))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `key` (Block List, Min: 1, Max: 1) The private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--snowflake_key--key))
 - `username` (String) The Snowflake username to authenticate as.
 
 <a id="nestedblock--snowflake_key--key"></a>
@@ -304,8 +371,12 @@ Required:
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 
@@ -314,20 +385,28 @@ Optional:
 
 Required:
 
-- `key` (Block List, Min: 1, Max: 1) The SSH private key. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--key))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `key` (Block List, Min: 1, Max: 1) The SSH private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--key))
 - `username` (String) The username to authenticate as.
 
 Optional:
 
-- `certificate` (Block List, Max: 1) The optional SSH certificate paired with the private key. Set exactly one of `literal` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--certificate))
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `certificate` (Block List, Max: 1) The optional SSH certificate paired with the private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--certificate))
 
 <a id="nestedblock--ssh_key--key"></a>
 ### Nested Schema for `ssh_key.key`
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
 
 
 <a id="nestedblock--ssh_key--certificate"></a>
@@ -335,5 +414,9 @@ Optional:
 
 Optional:
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `environment_variable` (String) The name of an environment variable the connector reads the secret from.
-- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `environment_variable` where possible.
+- `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
+- `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
+- `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
