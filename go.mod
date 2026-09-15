@@ -102,7 +102,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-test/deep v1.1.1 // indirect
 	github.com/gofrs/flock v0.13.0 // indirect
-	github.com/gofrs/uuid/v5 v5.0.0 // indirect
+	github.com/gofrs/uuid/v5 v5.4.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
