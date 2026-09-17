@@ -163,6 +163,17 @@ provider "formal" {
 
 You can configure the Formal Provider to disable retrieving sensitive values from the Formal API. This is useful for resources such as `formal_control_plane_tls_certificate` and `machine_role_access_token` where the sensitive values are returned by default. To enable this feature, set the `retrieve_sensitive_values` parameter to `false`.
 
+### Control plane URL
+
+Set `url` to use on-prem or regional control planes. Only `http` and `https` are accepted.
+
+```terraform
+provider "formal" {
+  url     = "https://api.formal.ai"
+  api_key = var.formal_api_key
+}
+```
+
 ### Deploying with a Managed Cloud model
 
 Registering resources such as Keys and Datastores under the Managed Cloud model require the `cloud_account_id` parameter, which is the Formal ID of your cloud integration. You can find this information in the "Integrations" side panel in the [Formal Console](https://app.formal.ai).

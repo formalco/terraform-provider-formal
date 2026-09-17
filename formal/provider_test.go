@@ -261,6 +261,61 @@ func TestEnvTokenSourceRejectsEmptyToken(t *testing.T) {
 	require.ErrorContains(t, err, "token must not be empty")
 }
 
+func TestProviderBaseURL(t *testing.T) {
+	p := New("dev")()
+
+	tests := []struct {
+		name    string
+		config  map[string]any
+		want    string
+		wantErr string
+	}{
+		{
+			name:   "unset leaves the SDK default",
+			config: map[string]any{},
+		},
+		{
+			name:   "regional deployment",
+			config: map[string]any{"url": "https://api.alt.formal.ai"},
+			want:   "https://api.alt.formal.ai",
+		},
+		{
+			name:   "http url for a local control plane",
+			config: map[string]any{"url": "http://localhost:8089"},
+			want:   "http://localhost:8089",
+		},
+		{
+			name:    "hostname without a scheme",
+			config:  map[string]any{"url": "api.alt.formal.ai"},
+			wantErr: "must use the http or https scheme",
+		},
+		{
+			name:    "unsupported scheme",
+			config:  map[string]any{"url": "grpc://api.alt.formal.ai"},
+			wantErr: "must use the http or https scheme",
+		},
+		{
+			name:    "scheme without a hostname",
+			config:  map[string]any{"url": "https://"},
+			wantErr: "must include a hostname",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d := schema.TestResourceDataRaw(t, p.Schema, tt.config)
+			got, err := providerBaseURL(d)
+
+			if tt.wantErr != "" {
+				require.ErrorContains(t, err, tt.wantErr)
+				return
+			}
+			require.NoError(t, err)
+			require.Equal(t, tt.want, got)
+		})
+	}
+}
+
 func TestValidateOIDCIntegrationID(t *testing.T) {
 	warnings, errors := validateOIDCIntegrationID(
 		"integrationoidc_01h45ytscbebyvny4gc8cr8ma2",

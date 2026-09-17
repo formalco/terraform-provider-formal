@@ -2,12 +2,15 @@ package provider
 
 import (
 	"context"
+	"fmt"
+	"net/url"
 	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 
+	formal "github.com/formalco/go-sdk/v3"
 	"github.com/formalco/terraform-provider-formal/formal/api"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 	"github.com/formalco/terraform-provider-formal/formal/datasources"
@@ -87,6 +90,11 @@ func New(version string) func() *schema.Provider {
 					Optional: true,
 					Default:  true,
 				},
+				"url": {
+					Description: "Formal control plane URL. Defaults to `" + formal.DefaultURL + "`.",
+					Type:        schema.TypeString,
+					Optional:    true,
+				},
 			},
 			DataSourcesMap: map[string]*schema.Resource{
 				"formal_connector": datasources.Connector(),
@@ -160,6 +168,14 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 		}
 		returnSensitiveValue := d.Get("retrieve_sensitive_values").(bool)
 
+		baseURL, err := providerBaseURL(d)
+		if err != nil {
+			return nil, diag.FromErr(err)
+		}
+		if baseURL != "" {
+			authOptions = append(authOptions, formal.WithBaseURL(baseURL))
+		}
+
 		grpc, err := api.NewClient(authOptions, returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
@@ -167,4 +183,25 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 
 		return &clients.Clients{Grpc: grpc}, nil
 	}
+}
+
+// providerBaseURL validates the `url` argument. An empty result leaves the SDK on
+// formal.DefaultURL.
+func providerBaseURL(d *schema.ResourceData) (string, error) {
+	rawURL := d.Get("url").(string)
+	if rawURL == "" {
+		return "", nil
+	}
+
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return "", fmt.Errorf("url %q is not a valid URL: %w", rawURL, err)
+	}
+	if parsed.Scheme != "http" && parsed.Scheme != "https" {
+		return "", fmt.Errorf("url %q must use the http or https scheme", rawURL)
+	}
+	if parsed.Host == "" {
+		return "", fmt.Errorf("url %q must include a hostname", rawURL)
+	}
+	return rawURL, nil
 }

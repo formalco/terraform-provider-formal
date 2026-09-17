@@ -84,12 +84,7 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
-	groupLinkId := d.Id()
-	// Maps to user-defined fields
-	userId := d.Get("user_id").(string)
-	groupId := d.Get("group_id").(string)
-
-	res, err := c.Grpc.Sdk.GroupServiceClient.ListUserGroupLinks(ctx, &corev1.ListUserGroupLinksRequest{GroupId: groupId, Limit: 500})
+	res, err := c.Grpc.Sdk.GroupServiceClient.GetUserGroupLink(ctx, &corev1.GetUserGroupLinkRequest{Id: d.Id()})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
 			// Link was deleted
@@ -99,24 +94,13 @@ func resourceGroupLinkUserRead(ctx context.Context, d *schema.ResourceData, meta
 		}
 		return diag.FromErr(err)
 	}
-	found := false
-	for _, user := range res.UserGroupLinks {
-		if user.User.Id == groupLinkId {
-			found = true
-			break
-		}
-	}
+	link := res.UserGroupLink
 
-	if !found {
-		// Not found
-		return diags
-	}
-
-	// Should map to all fields of
-	d.Set("group_id", groupId)
-	d.Set("user_id", userId)
-
-	d.SetId(groupLinkId)
+	d.Set("id", link.Id)
+	d.Set("group_id", link.GetGroup().GetId())
+	d.Set("user_id", link.GetUser().GetId())
+	d.Set("termination_protection", link.TerminationProtection)
+	d.SetId(link.Id)
 
 	return diags
 }
