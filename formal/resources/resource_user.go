@@ -221,7 +221,7 @@ func resourceUserRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	d.Set("expire_at", res.User.ExpireAt.AsTime().Unix())
 	d.Set("termination_protection", res.User.TerminationProtection)
 
-	if res.User.Type == "machine" {
+	if res.User.Type == "machine" && c.Grpc.ReturnSensitiveValue {
 		res, err := c.Grpc.Sdk.UserServiceClient.GetMachineUserCredentials(ctx, &corev1.GetMachineUserCredentialsRequest{Id: userId})
 		if err != nil {
 			if connect.CodeOf(err) == connect.CodePermissionDenied {
