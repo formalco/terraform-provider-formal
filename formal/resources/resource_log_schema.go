@@ -17,7 +17,7 @@ import (
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
-func ResourceLogRewrite() *schema.Resource {
+func ResourceLogSchema() *schema.Resource {
 	pathResource := &schema.Resource{
 		Schema: map[string]*schema.Schema{
 			"name": {
@@ -70,11 +70,11 @@ func ResourceLogRewrite() *schema.Resource {
 	pathHash := schema.HashResource(pathResource)
 
 	return &schema.Resource{
-		Description:   "Manages a rule that rewrites matching Formal logs before they are exported or stored.",
-		CreateContext: resourceLogRewriteCreate,
-		ReadContext:   resourceLogRewriteRead,
-		UpdateContext: resourceLogRewriteUpdate,
-		DeleteContext: resourceLogRewriteDelete,
+		Description:   "Defines field-level actions for matching Formal logs before they are exported or stored.",
+		CreateContext: resourceLogSchemaCreate,
+		ReadContext:   resourceLogSchemaRead,
+		UpdateContext: resourceLogSchemaUpdate,
+		DeleteContext: resourceLogSchemaDelete,
 		Timeouts: &schema.ResourceTimeout{
 			Create: schema.DefaultTimeout(25 * time.Minute),
 		},
@@ -89,17 +89,17 @@ func ResourceLogRewrite() *schema.Resource {
 			if !ok {
 				return nil
 			}
-			_, err := expandLogRewritePaths(pathSet)
+			_, err := expandLogSchemaPaths(pathSet)
 			return err
 		},
 		Schema: map[string]*schema.Schema{
 			"id": {
-				Description: "The ID of this log rewrite.",
+				Description: "The ID of this log schema.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"name": {
-				Description: "The name of this log rewrite.",
+				Description: "The name of this log schema.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -109,7 +109,7 @@ func ResourceLogRewrite() *schema.Resource {
 				Optional:    true,
 			},
 			"scope_cel": {
-				Description: "A CEL expression that determines which logs this rewrite applies to.",
+				Description: "A CEL expression that determines which logs this schema applies to.",
 				Type:        schema.TypeString,
 				Required:    true,
 			},
@@ -137,12 +137,12 @@ func ResourceLogRewrite() *schema.Resource {
 				},
 			},
 			"created_at": {
-				Description: "When the log rewrite was created.",
+				Description: "When the log schema was created.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
 			"updated_at": {
-				Description: "When the log rewrite was last updated.",
+				Description: "When the log schema was last updated.",
 				Type:        schema.TypeString,
 				Computed:    true,
 			},
@@ -150,8 +150,8 @@ func ResourceLogRewrite() *schema.Resource {
 	}
 }
 
-func expandLogRewritePaths(pathSet *schema.Set) (*corev1.LogRewritePaths, error) {
-	paths := make(map[string]*corev1.LogRewritePath, pathSet.Len())
+func expandLogSchemaPaths(pathSet *schema.Set) (*corev1.LogSchemaPaths, error) {
+	paths := make(map[string]*corev1.LogSchemaPath, pathSet.Len())
 	for _, rawPath := range pathSet.List() {
 		pathData := rawPath.(map[string]any)
 		name := pathData["name"].(string)
@@ -159,7 +159,7 @@ func expandLogRewritePaths(pathSet *schema.Set) (*corev1.LogRewritePaths, error)
 			return nil, fmt.Errorf("path names must be unique: %q is repeated", name)
 		}
 
-		path := &corev1.LogRewritePath{
+		path := &corev1.LogSchemaPath{
 			Drop:       pathData["drop"].(bool),
 			Encrypt:    pathData["encrypt"].(bool),
 			StripSql:   pathData["strip_sql"].(bool),
@@ -175,10 +175,10 @@ func expandLogRewritePaths(pathSet *schema.Set) (*corev1.LogRewritePaths, error)
 		}
 		paths[name] = path
 	}
-	return &corev1.LogRewritePaths{Paths: paths}, nil
+	return &corev1.LogSchemaPaths{Paths: paths}, nil
 }
 
-func flattenLogRewritePaths(paths *corev1.LogRewritePaths) []any {
+func flattenLogSchemaPaths(paths *corev1.LogSchemaPaths) []any {
 	if paths == nil {
 		return nil
 	}
@@ -209,14 +209,14 @@ func flattenLogRewritePaths(paths *corev1.LogRewritePaths) []any {
 	return result
 }
 
-func resourceLogRewriteCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceLogSchemaCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-	paths, err := expandLogRewritePaths(d.Get("path").(*schema.Set))
+	paths, err := expandLogSchemaPaths(d.Get("path").(*schema.Set))
 	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	req := &corev1.CreateLogRewriteRequest{
+	req := &corev1.CreateLogSchemaRequest{
 		Name:     d.Get("name").(string),
 		ScopeCel: d.Get("scope_cel").(string),
 		Paths:    paths,
@@ -226,56 +226,56 @@ func resourceLogRewriteCreate(ctx context.Context, d *schema.ResourceData, meta 
 		req.EncryptionKeyId = &value
 	}
 
-	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogRewrite(ctx, req)
+	res, err := c.Grpc.Sdk.LogsServiceClient.CreateLogSchema(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
-	d.SetId(res.LogRewrite.Id)
-	return resourceLogRewriteRead(ctx, d, meta)
+	d.SetId(res.LogSchema.Id)
+	return resourceLogSchemaRead(ctx, d, meta)
 }
 
-func resourceLogRewriteRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceLogSchemaRead(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogRewrite(ctx, &corev1.GetLogRewriteRequest{Id: d.Id()})
+	res, err := c.Grpc.Sdk.LogsServiceClient.GetLogSchema(ctx, &corev1.GetLogSchemaRequest{Id: d.Id()})
 	if err != nil {
 		if connect.CodeOf(err) == connect.CodeNotFound {
-			tflog.Warn(ctx, "The Log Rewrite was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
+			tflog.Warn(ctx, "The Log Schema was not found, which means it may have been deleted without using this Terraform config.", map[string]any{"err": err})
 			d.SetId("")
 			return nil
 		}
 		return diag.FromErr(err)
 	}
 
-	rewrite := res.LogRewrite
+	schema := res.LogSchema
 	values := map[string]any{
-		"id":                rewrite.Id,
-		"name":              rewrite.Name,
-		"scope_cel":         rewrite.ScopeCel,
-		"path":              flattenLogRewritePaths(rewrite.Paths),
+		"id":                schema.Id,
+		"name":              schema.Name,
+		"scope_cel":         schema.ScopeCel,
+		"path":              flattenLogSchemaPaths(schema.Paths),
 		"encryption_key_id": "",
-		"created_at":        rewrite.CreatedAt.AsTime().String(),
-		"updated_at":        rewrite.UpdatedAt.AsTime().String(),
+		"created_at":        schema.CreatedAt.AsTime().String(),
+		"updated_at":        schema.UpdatedAt.AsTime().String(),
 	}
-	if rewrite.EncryptionKeyId != nil {
-		values["encryption_key_id"] = *rewrite.EncryptionKeyId
+	if schema.EncryptionKeyId != nil {
+		values["encryption_key_id"] = *schema.EncryptionKeyId
 	}
 	for key, value := range values {
 		if err := d.Set(key, value); err != nil {
-			return diag.Errorf("set log rewrite %s: %v", key, err)
+			return diag.Errorf("set log schema %s: %v", key, err)
 		}
 	}
-	d.SetId(rewrite.Id)
+	d.SetId(schema.Id)
 	return nil
 }
 
-func resourceLogRewriteUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceLogSchemaUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	fieldsThatCanChange := []string{"name", "encryption_key_id", "scope_cel", "path"}
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
 
-	req := &corev1.UpdateLogRewriteRequest{Id: d.Id()}
+	req := &corev1.UpdateLogSchemaRequest{Id: d.Id()}
 	if d.HasChange("name") {
 		value := d.Get("name").(string)
 		req.Name = &value
@@ -289,22 +289,22 @@ func resourceLogRewriteUpdate(ctx context.Context, d *schema.ResourceData, meta 
 		req.ScopeCel = &value
 	}
 	if d.HasChange("path") {
-		paths, err := expandLogRewritePaths(d.Get("path").(*schema.Set))
+		paths, err := expandLogSchemaPaths(d.Get("path").(*schema.Set))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 		req.Paths = paths
 	}
 
-	if _, err := c.Grpc.Sdk.LogsServiceClient.UpdateLogRewrite(ctx, req); err != nil {
+	if _, err := c.Grpc.Sdk.LogsServiceClient.UpdateLogSchema(ctx, req); err != nil {
 		return diag.FromErr(err)
 	}
-	return resourceLogRewriteRead(ctx, d, meta)
+	return resourceLogSchemaRead(ctx, d, meta)
 }
 
-func resourceLogRewriteDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+func resourceLogSchemaDelete(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-	if _, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogRewrite(ctx, &corev1.DeleteLogRewriteRequest{Id: d.Id()}); err != nil {
+	if _, err := c.Grpc.Sdk.LogsServiceClient.DeleteLogSchema(ctx, &corev1.DeleteLogSchemaRequest{Id: d.Id()}); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId("")

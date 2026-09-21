@@ -148,7 +148,7 @@ func New(version string) func() *schema.Provider {
 				"formal_resource_native_user_selection":     resource.ResourceResourceNativeUserSelection(),
 				"formal_space":                              resource.ResourceSpace(),
 				"formal_log_configuration":                  resource.ResourceLogConfiguration(),
-				"formal_log_rewrite":                        resource.ResourceLogRewrite(),
+				"formal_log_schema":                         resource.ResourceLogSchema(),
 				"formal_encryption_key":                     resource.ResourceEncryptionKey(),
 				"formal_resource_classifier_configuration":  resource.ResourceResourceClassifierConfiguration(),
 				"formal_workflow":                           resource.ResourceWorkflow(),

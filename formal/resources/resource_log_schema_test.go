@@ -9,8 +9,8 @@ import (
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 )
 
-func TestLogRewritePathsRoundTrip(t *testing.T) {
-	resource := ResourceLogRewrite()
+func TestLogSchemaPathsRoundTrip(t *testing.T) {
+	resource := ResourceLogSchema()
 	data := schema.TestResourceDataRaw(t, resource.Schema, map[string]any{
 		"path": []any{
 			map[string]any{
@@ -26,22 +26,22 @@ func TestLogRewritePathsRoundTrip(t *testing.T) {
 		},
 	})
 
-	paths, err := expandLogRewritePaths(data.Get("path").(*schema.Set))
+	paths, err := expandLogSchemaPaths(data.Get("path").(*schema.Set))
 	require.NoError(t, err)
-	require.Equal(t, &corev1.LogRewritePath{
+	require.Equal(t, &corev1.LogSchemaPath{
 		Encrypt:  true,
 		Truncate: &corev1.TruncateOperation{MaxSizeBytes: 1024},
 	}, paths.Paths["log.request.http.body.received"])
-	require.Equal(t, &corev1.LogRewritePath{Drop: true}, paths.Paths["log.response.http.body.received"])
+	require.Equal(t, &corev1.LogSchemaPath{Drop: true}, paths.Paths["log.response.http.body.received"])
 
-	require.NoError(t, data.Set("path", flattenLogRewritePaths(paths)))
-	roundTripped, err := expandLogRewritePaths(data.Get("path").(*schema.Set))
+	require.NoError(t, data.Set("path", flattenLogSchemaPaths(paths)))
+	roundTripped, err := expandLogSchemaPaths(data.Get("path").(*schema.Set))
 	require.NoError(t, err)
 	require.Equal(t, paths, roundTripped)
 }
 
-func TestLogRewritePathHashTreatsOmittedActionsAsFalse(t *testing.T) {
-	pathSchema := ResourceLogRewrite().Schema["path"]
+func TestLogSchemaPathHashTreatsOmittedActionsAsFalse(t *testing.T) {
+	pathSchema := ResourceLogSchema().Schema["path"]
 	omitted := map[string]any{
 		"name": "log.request.http.method",
 	}
@@ -56,18 +56,18 @@ func TestLogRewritePathHashTreatsOmittedActionsAsFalse(t *testing.T) {
 	require.Equal(t, pathSchema.Set(omitted), pathSchema.Set(explicit))
 }
 
-func TestLogRewritePathRequiresAnAction(t *testing.T) {
-	resource := ResourceLogRewrite()
+func TestLogSchemaPathRequiresAnAction(t *testing.T) {
+	resource := ResourceLogSchema()
 	data := schema.TestResourceDataRaw(t, resource.Schema, map[string]any{
 		"path": []any{map[string]any{"name": "log.request.http.method"}},
 	})
 
-	_, err := expandLogRewritePaths(data.Get("path").(*schema.Set))
+	_, err := expandLogSchemaPaths(data.Get("path").(*schema.Set))
 	require.ErrorContains(t, err, "must specify at least one action")
 }
 
-func TestLogRewritePathNamesMustBeUnique(t *testing.T) {
-	resource := ResourceLogRewrite()
+func TestLogSchemaPathNamesMustBeUnique(t *testing.T) {
+	resource := ResourceLogSchema()
 	data := schema.TestResourceDataRaw(t, resource.Schema, map[string]any{
 		"path": []any{
 			map[string]any{"name": "log.request.http.method", "drop": true},
@@ -75,12 +75,12 @@ func TestLogRewritePathNamesMustBeUnique(t *testing.T) {
 		},
 	})
 
-	_, err := expandLogRewritePaths(data.Get("path").(*schema.Set))
+	_, err := expandLogSchemaPaths(data.Get("path").(*schema.Set))
 	require.ErrorContains(t, err, "path names must be unique")
 }
 
-func TestLogRewriteTruncateSizeMustBePositive(t *testing.T) {
-	truncateSchema := ResourceLogRewrite().Schema["path"].Elem.(*schema.Resource).
+func TestLogSchemaTruncateSizeMustBePositive(t *testing.T) {
+	truncateSchema := ResourceLogSchema().Schema["path"].Elem.(*schema.Resource).
 		Schema["truncate"].Elem.(*schema.Resource).Schema["max_size_bytes"]
 
 	_, errors := truncateSchema.ValidateFunc(0, "max_size_bytes")
