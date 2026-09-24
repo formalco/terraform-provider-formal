@@ -102,6 +102,7 @@ func New(version string) func() *schema.Provider {
 				"formal_resource":  datasources.Resource(),
 				"formal_space":     datasources.Space(),
 				"formal_user":      datasources.User(),
+				"formal_users":     datasources.Users(),
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"formal_connector":                          resource.ResourceConnector(),

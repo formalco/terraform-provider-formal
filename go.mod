@@ -17,7 +17,7 @@ require (
 	connectrpc.com/connect v1.21.0
 	github.com/aws/aws-sdk-go-v2/config v1.32.34
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.0
-	github.com/formalco/go-sdk/v3 v3.18.0
+	github.com/formalco/go-sdk/v3 v3.18.1
 	github.com/google/cel-go v0.28.1
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.25.0

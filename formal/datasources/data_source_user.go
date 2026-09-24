@@ -14,58 +14,64 @@ import (
 )
 
 func User() *schema.Resource {
+	userSchema := commonUserSchema()
+	userSchema["id"] = &schema.Schema{
+		Description:  "The ID of the User to look up.",
+		Type:         schema.TypeString,
+		Optional:     true,
+		ExactlyOneOf: []string{"id", "db_username"},
+	}
+	userSchema["db_username"] = &schema.Schema{
+		Description:  "The identity of the User to look up, for example `idp:formal:human:jane@example.com`.",
+		Type:         schema.TypeString,
+		Optional:     true,
+		ExactlyOneOf: []string{"id", "db_username"},
+	}
+
 	return &schema.Resource{
 		Description: "Data source for looking up a User by ID or by identity. Use either `id` or `db_username`, but not both. A human user's identity is `idp:formal:human:<email>`, so this can resolve an email to a user ID, for example to add a user to a Group with `formal_group_link_user`.",
 		ReadContext: userRead,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description:  "The ID of the User to look up.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "db_username"},
-			},
-			"db_username": {
-				Description:  "The identity of the User to look up, for example `idp:formal:human:jane@example.com`.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "db_username"},
-			},
-			"type": {
-				Description: "The type of this User, either `human` or `machine`.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"first_name": {
-				Description: "The first name of this User. Only set for human users.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"last_name": {
-				Description: "The last name of this User. Only set for human users.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"email": {
-				Description: "The email of this User. Only set for human users.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"full_name": {
-				Description: "The full name of this User.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"group_ids": {
-				Description: "The IDs of the Groups this User belongs to.",
-				Type:        schema.TypeList,
-				Computed:    true,
-				Elem:        &schema.Schema{Type: schema.TypeString},
-			},
-			"termination_protection": {
-				Description: "If set to true, this User cannot be deleted.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
+		Schema:      userSchema,
+	}
+}
+
+func commonUserSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"type": {
+			Description: "The type of this User, either `human` or `machine`.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"first_name": {
+			Description: "The first name of this User. Only set for human users.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"last_name": {
+			Description: "The last name of this User. Only set for human users.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"email": {
+			Description: "The email of this User. Only set for human users.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"full_name": {
+			Description: "The full name of this User.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"group_ids": {
+			Description: "The IDs of the Groups this User belongs to.",
+			Type:        schema.TypeList,
+			Computed:    true,
+			Elem:        &schema.Schema{Type: schema.TypeString},
+		},
+		"termination_protection": {
+			Description: "If set to true, this User cannot be deleted.",
+			Type:        schema.TypeBool,
+			Computed:    true,
 		},
 	}
 }
