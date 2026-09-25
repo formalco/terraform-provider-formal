@@ -94,15 +94,15 @@ func connectorRead(ctx context.Context, d *schema.ResourceData, meta any) diag.D
 		connector = res.Connectors[0]
 	}
 
-	// Get API key separately (GetConnectorApiKey)
-	resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, &corev1.GetConnectorApiKeyRequest{Id: connector.Id})
-	if err != nil {
-		return diag.FromErr(err)
-	}
-
 	d.SetId(connector.Id)
 	d.Set("name", connector.Name)
-	d.Set("api_key", resApiKey.Secret)
+	if c.Grpc.ReturnSensitiveValue {
+		resApiKey, err := c.Grpc.Sdk.ConnectorServiceClient.GetConnectorApiKey(ctx, &corev1.GetConnectorApiKeyRequest{Id: connector.Id})
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		d.Set("api_key", resApiKey.Secret)
+	}
 	d.Set("termination_protection", connector.TerminationProtection)
 	if connector.Space != nil {
 		d.Set("space_id", connector.Space.Id)
