@@ -25,6 +25,7 @@ type oidcAuthConfig struct {
 var oidcTokenSourceParsers = []oidcTokenSourceParser{
 	parseAWSOIDCTokenSource,
 	parseAzureOIDCTokenSource,
+	parseGCPOIDCTokenSource,
 	parseEnvOIDCTokenSource,
 }
 
@@ -75,6 +76,8 @@ func parseOIDCAuthConfig(raw []any) (oidcAuthConfig, error) {
 			return oidcAuthConfig{}, errors.New("oidc.integration_id is required with aws")
 		case azureOIDCTokenSourceConfig:
 			return oidcAuthConfig{}, errors.New("oidc.integration_id is required with azure")
+		case gcpOIDCTokenSourceConfig:
+			return oidcAuthConfig{}, errors.New("oidc.integration_id is required with gcp")
 		}
 	}
 	return oidcAuthConfig{

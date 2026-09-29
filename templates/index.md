@@ -126,6 +126,26 @@ Configure the OIDC integration's claim condition to require the exact Azure Reso
 
 This token source does not support Azure DevOps Pipelines.
 
+### GCP OIDC
+
+Use the `gcp` token source on GKE, Compute Engine, Cloud Run, or anywhere Application Default Credentials resolve to a service account. Set the integration ID to the ID of your Formal OIDC integration.
+
+```terraform
+provider "formal" {
+  oidc {
+    integration_id = "integrationoidc_01h..."
+
+    gcp {}
+  }
+}
+```
+
+The provider requests a Google-signed ID token with the Formal audience. On Google Cloud it uses the metadata server. Elsewhere it uses Application Default Credentials, which must be a service account key, an impersonated service account, or a Workload Identity Federation configuration that impersonates a service account. User credentials from `gcloud auth application-default login` are not supported; add `--impersonate-service-account` instead.
+
+On GKE, link the Kubernetes ServiceAccount to an IAM service account with the `iam.gke.io/gcp-service-account` annotation. Google only issues ID tokens for IAM service accounts.
+
+Configure the OIDC integration with issuer `https://accounts.google.com`, and use a claim condition on the service account's `sub` or `email`.
+
 ### Environment OIDC token
 
 For systems that mint an OIDC token before Terraform starts, set `env` to the name of the environment variable containing that token. Do not put the JWT in `api_key` or `FORMAL_API_KEY`.

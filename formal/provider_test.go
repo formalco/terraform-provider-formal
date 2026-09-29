@@ -49,6 +49,24 @@ func TestProviderOIDCSchema(t *testing.T) {
 			},
 		},
 		{
+			name: "GCP source with integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"integration_id": integrationID,
+					"gcp":            []any{map[string]any{}},
+				}},
+			},
+		},
+		{
+			name: "GCP source without integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"gcp": []any{map[string]any{}},
+				}},
+			},
+			wantErr: true,
+		},
+		{
 			name: "AWS source without integration ID",
 			config: map[string]any{
 				"oidc": []any{map[string]any{
@@ -131,6 +149,15 @@ func TestProviderAuthOption(t *testing.T) {
 				}},
 			},
 			wantErr: "oidc.integration_id is required with azure",
+		},
+		{
+			name: "GCP token source without integration ID",
+			config: map[string]any{
+				"oidc": []any{map[string]any{
+					"gcp": []any{map[string]any{}},
+				}},
+			},
+			wantErr: "oidc.integration_id is required with gcp",
 		},
 		{
 			name:    "authentication missing",
@@ -365,6 +392,16 @@ func TestParseOIDCAuthConfig(t *testing.T) {
 			}},
 			want: oidcAuthConfig{
 				tokenSourceConfig: azureOIDCTokenSourceConfig{integrationID: integrationID},
+			},
+		},
+		{
+			name: "GCP",
+			raw: []any{map[string]any{
+				"integration_id": integrationID,
+				"gcp":            []any{map[string]any{}},
+			}},
+			want: oidcAuthConfig{
+				tokenSourceConfig: gcpOIDCTokenSourceConfig{audience: audience},
 			},
 		},
 		{
