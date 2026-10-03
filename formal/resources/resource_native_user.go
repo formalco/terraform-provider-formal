@@ -16,7 +16,8 @@ import (
 func ResourceNativeUser() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "This resource creates a Native User.",
+		Description:        "This resource creates a Native User.",
+		DeprecationMessage: "formal_native_user is deprecated. Use formal_native_user_v3 and formal_resource_native_user_selection instead.",
 
 		CreateContext: resourceNativeUserCreate,
 		ReadContext:   resourceNativeUserRead,
