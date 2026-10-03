@@ -200,7 +200,7 @@ resource "helm_release" "formal_connector" {
   name       = "formal-connector"
   repository = "https://formalco.github.io/helm-charts"
   chart      = "connector"
-  version    = "0.16.0"
+  version    = "0.18.0"
   namespace  = var.namespace
 
   values = [yamlencode({

@@ -220,6 +220,13 @@ resource "helm_release" "formal_connector" {
         create = false
         name   = kubernetes_service_account.connector.metadata[0].name
       }
+      service = {
+        annotations = {
+          # The load balancer replaces the client source IP. The Connector
+          # reads the original one from the PROXY protocol header.
+          "service.beta.kubernetes.io/aws-load-balancer-proxy-protocol" = "*"
+        }
+      }
     })]
   )
 

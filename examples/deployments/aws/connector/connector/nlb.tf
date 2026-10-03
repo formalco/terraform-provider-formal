@@ -22,6 +22,10 @@ resource "aws_lb_target_group" "connector" {
   vpc_id      = var.vpc_id
   target_type = "ip"
 
+  # NLBs replace the client source IP for IP targets. The Connector reads the
+  # original one from the PROXY protocol header.
+  proxy_protocol_v2 = true
+
   health_check {
     enabled             = true
     healthy_threshold   = 2
