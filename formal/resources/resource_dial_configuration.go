@@ -54,17 +54,18 @@ func ResourceDialConfiguration() *schema.Resource {
 				ForceNew:    true,
 			},
 			"dial_method": {
-				Description: "How the connector dials this resource's upstream. Supported values: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library; set `dial_target` to the `project:region:instance` connection name), `aws_ssm` (dial via AWS Systems Manager; set `dial_target` to the target instance or cluster ARN).",
+				Description: "How the connector dials this resource's upstream. Supported values: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library; set `dial_target` to the `project:region:instance` connection name), `gcp_connectgateway` (reach a Kubernetes cluster through GKE Connect Gateway; set `dial_target` to the `projects/<project>/locations/<location>/memberships/<membership>` fleet membership name), `aws_ssm` (dial via AWS Systems Manager; set `dial_target` to the target instance or cluster ARN).",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"tcp",
 					"gcp_cloudsql",
+					"gcp_connectgateway",
 					"aws_ssm",
 				}, false),
 			},
 			"dial_target": {
-				Description: "Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. For `aws_ssm`, the target instance or cluster ARN. Leave empty for `tcp`.",
+				Description: "Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. For `gcp_connectgateway`, the `projects/<project>/locations/<location>/memberships/<membership>` fleet membership name. For `aws_ssm`, the target instance or cluster ARN. Leave empty for `tcp`.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				Default:     "",

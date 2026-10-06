@@ -17,12 +17,12 @@ Creating a Dial Configuration of a Resource in Formal.
 
 ### Required
 
-- `dial_method` (String) How the connector dials this resource's upstream. Supported values: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library; set `dial_target` to the `project:region:instance` connection name), `aws_ssm` (dial via AWS Systems Manager; set `dial_target` to the target instance or cluster ARN).
+- `dial_method` (String) How the connector dials this resource's upstream. Supported values: `tcp` (direct TCP via the resource's hostname and port), `gcp_cloudsql` (dial via the GCP Cloud SQL connector library; set `dial_target` to the `project:region:instance` connection name), `gcp_connectgateway` (reach a Kubernetes cluster through GKE Connect Gateway; set `dial_target` to the `projects/<project>/locations/<location>/memberships/<membership>` fleet membership name), `aws_ssm` (dial via AWS Systems Manager; set `dial_target` to the target instance or cluster ARN).
 - `resource_id` (String) Resource ID for which the dial configuration is applied to.
 
 ### Optional
 
-- `dial_target` (String) Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. For `aws_ssm`, the target instance or cluster ARN. Leave empty for `tcp`.
+- `dial_target` (String) Method-specific dial target. For `gcp_cloudsql`, the `project:region:instance` connection name. For `gcp_connectgateway`, the `projects/<project>/locations/<location>/memberships/<membership>` fleet membership name. For `aws_ssm`, the target instance or cluster ARN. Leave empty for `tcp`.
 
 ### Read-Only
 
