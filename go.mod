@@ -7,7 +7,7 @@ toolchain go1.27.0
 replace (
 	github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
 	github.com/caddyserver/certmagic => github.com/formalco/certmagic v0.0.0-20260702195037-87834bbe3cc4
-	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20260728005734-3560c83b605d
+	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20261007024300-b47f700e3572
 	github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0.0.0-20241219203747-6409e4292f34
 )
 
