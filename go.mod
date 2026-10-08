@@ -142,6 +142,7 @@ require (
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jdx/go-netrc v1.0.0 // indirect
+	github.com/jdx/jactionlint v1.8.2 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/compress v1.19.1 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
@@ -168,7 +169,6 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.63.0 // indirect
-	github.com/rhysd/actionlint v1.7.12 // indirect
 	github.com/rogpeppe/go-internal v1.15.0 // indirect
 	github.com/rs/cors v1.11.1 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -210,7 +210,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	go.yaml.in/yaml/v4 v4.0.0-rc.3 // indirect
+	go.yaml.in/yaml/v4 v4.0.0-rc.6 // indirect
 	golang.org/x/crypto v0.57.0 // indirect
 	golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f // indirect
 	golang.org/x/mod v0.41.0 // indirect
@@ -238,7 +238,7 @@ tool (
 	github.com/bazelbuild/bazelisk
 	github.com/bufbuild/buf/cmd/buf
 	github.com/envoyproxy/protoc-gen-validate
-	github.com/rhysd/actionlint/cmd/actionlint
+	github.com/jdx/jactionlint/cmd/jactionlint
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	google.golang.org/protobuf/cmd/protoc-gen-go
 	gotest.tools/gotestsum
