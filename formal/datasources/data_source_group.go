@@ -14,32 +14,38 @@ import (
 )
 
 func Group() *schema.Resource {
+	groupSchema := commonGroupSchema()
+	groupSchema["id"] = &schema.Schema{
+		Description:  "The ID of this Group.",
+		Type:         schema.TypeString,
+		Optional:     true,
+		ExactlyOneOf: []string{"id", "name"},
+	}
+	groupSchema["name"] = &schema.Schema{
+		Description:  "The name of the Group to look up. Use this to fetch a group by name.",
+		Type:         schema.TypeString,
+		Optional:     true,
+		ExactlyOneOf: []string{"id", "name"},
+	}
+
 	return &schema.Resource{
 		Description: "Data source for looking up a Group by ID or by name. Use either `id` or `name`, but not both.",
 		ReadContext: groupRead,
-		Schema: map[string]*schema.Schema{
-			"id": {
-				Description:  "The ID of this Group.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
-			},
-			"name": {
-				Description:  "The name of the Group to look up. Use this to fetch a group by name.",
-				Type:         schema.TypeString,
-				Optional:     true,
-				ExactlyOneOf: []string{"id", "name"},
-			},
-			"description": {
-				Description: "Description for this Group.",
-				Type:        schema.TypeString,
-				Computed:    true,
-			},
-			"termination_protection": {
-				Description: "If set to true, this Group cannot be deleted.",
-				Type:        schema.TypeBool,
-				Computed:    true,
-			},
+		Schema:      groupSchema,
+	}
+}
+
+func commonGroupSchema() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"description": {
+			Description: "Description for this Group.",
+			Type:        schema.TypeString,
+			Computed:    true,
+		},
+		"termination_protection": {
+			Description: "If set to true, this Group cannot be deleted.",
+			Type:        schema.TypeBool,
+			Computed:    true,
 		},
 	}
 }
