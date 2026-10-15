@@ -44,15 +44,17 @@ Registering a Cloud integration.
 - `aws_formal_stack_name` (String) A generated name for your CloudFormation stack.
 - `aws_s3_bucket_arn` (String) The AWS S3 bucket ARN this Cloud Integration is allowed to use for Log Integrations, if it is allowed to access S3.
 - `aws_template_body` (String) The template body of the CloudFormation stack.
+- `azure_actions` (List of String) The Azure control-plane actions to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.
 - `azure_allow_blob_access` (Boolean) Whether the Cloud Integration is allowed to write logs to Azure Blob Storage.
 - `azure_blob_storage_accounts` (List of String) The storage accounts this Cloud Integration is allowed to write logs to.
 - `azure_client_id` (String) The client id of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.
+- `azure_data_actions` (List of String) The Azure data-plane actions to grant Formal's managed identity, derived from the enabled capabilities. Empty when blob_storage_accounts names specific accounts, because blob writes are then granted per account. Pass these to the Azure Terraform module.
 - `azure_enable_aks_autodiscovery` (Boolean) Whether AKS cluster autodiscovery is enabled or not.
 - `azure_enable_db_autodiscovery` (Boolean) Whether Azure managed database server autodiscovery is enabled or not.
 - `azure_enable_vm_autodiscovery` (Boolean) Whether Azure virtual machine autodiscovery is enabled or not.
 - `azure_issuer` (String) The OIDC issuer URL of Formal's AWS account. Pass this to the Azure Terraform module, which pins it on the federated identity credential.
 - `azure_resource_group` (String) The resource group discovery is narrowed to. Empty covers the whole subscription.
-- `azure_role_definitions` (List of String) The Azure built-in roles to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.
+- `azure_role_definitions` (List of String, Deprecated) Deprecated: superseded by azure_actions and azure_data_actions, which the Azure Terraform module grants through a single custom role.
 - `azure_subscription_id` (String) The Azure subscription this integration grants Formal access to.
 - `azure_tenant_id` (String) The Entra tenant of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.
 - `gcp_allow_gcs_access` (Boolean) Whether the Cloud Integration is allowed to write logs to GCS.

@@ -329,7 +329,20 @@ func ResourceIntegrationCloud() *schema.Resource {
 				Computed:    true,
 			},
 			"azure_role_definitions": {
-				Description: "The Azure built-in roles to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.",
+				Description: "Deprecated: superseded by azure_actions and azure_data_actions, which the Azure Terraform module grants through a single custom role.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Deprecated:  "Use azure_actions and azure_data_actions instead.",
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"azure_actions": {
+				Description: "The Azure control-plane actions to grant Formal's managed identity, derived from the enabled capabilities. Pass these to the Azure Terraform module.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"azure_data_actions": {
+				Description: "The Azure data-plane actions to grant Formal's managed identity, derived from the enabled capabilities. Empty when blob_storage_accounts names specific accounts, because blob writes are then granted per account. Pass these to the Azure Terraform module.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -490,6 +503,7 @@ func ResourceIntegrationCloud() *schema.Resource {
 					if d.HasChange("azure.0.blob_storage_accounts") {
 						_, newAccounts := d.GetChange("azure.0.blob_storage_accounts")
 						d.SetNew("azure_blob_storage_accounts", newAccounts)
+						rolesMayChange = true
 					}
 
 					for _, key := range []string{"enable_vm_autodiscovery", "enable_aks_autodiscovery", "enable_db_autodiscovery"} {
@@ -502,6 +516,8 @@ func ResourceIntegrationCloud() *schema.Resource {
 
 					if rolesMayChange {
 						d.SetNewComputed("azure_role_definitions")
+						d.SetNewComputed("azure_actions")
+						d.SetNewComputed("azure_data_actions")
 					}
 				}
 			}
@@ -676,6 +692,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("gcp_permissions", []string{})
 	d.Set("gcp_gcs_buckets", []string{})
 	d.Set("azure_role_definitions", []string{})
+	d.Set("azure_actions", []string{})
+	d.Set("azure_data_actions", []string{})
 	d.Set("azure_blob_storage_accounts", []string{})
 
 	switch data := res.Cloud.Cloud.(type) {
@@ -772,6 +790,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_role_arn", data.Azure.AwsFormalRoleArn)
 		d.Set("azure_issuer", data.Azure.AzureIssuer)
 		d.Set("azure_role_definitions", data.Azure.AzureRoleDefinitions)
+		d.Set("azure_actions", data.Azure.AzureActions)
+		d.Set("azure_data_actions", data.Azure.AzureDataActions)
 		d.Set("azure_allow_blob_access", data.Azure.AzureAllowBlobAccess)
 		d.Set("azure_blob_storage_accounts", data.Azure.AzureBlobStorageAccounts)
 		d.Set("azure_enable_vm_autodiscovery", data.Azure.AzureEnableVmAutodiscovery)
@@ -790,7 +810,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.', 'gcp.0.' or 'azure.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions"}...)
+	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions", "azure_actions", "azure_data_actions"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
