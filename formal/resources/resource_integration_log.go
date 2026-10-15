@@ -59,7 +59,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "aws_s3", "gcs"},
+				ConflictsWith: []string{"splunk", "aws_s3", "gcs", "azure_blob"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -86,7 +86,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"datadog", "aws_s3", "gcs"},
+				ConflictsWith: []string{"datadog", "aws_s3", "gcs", "azure_blob"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -113,7 +113,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog", "gcs"},
+				ConflictsWith: []string{"splunk", "datadog", "gcs", "azure_blob"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -155,7 +155,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog", "aws_s3"},
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "azure_blob"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -166,6 +166,48 @@ func ResourceIntegrationLogs() *schema.Resource {
 						},
 						"gcs_bucket_prefix": {
 							Description: "GCS bucket prefix to write logs under. Defaults to the bucket root.",
+							Type:        schema.TypeString,
+							Optional:    true,
+							Default:     "",
+							ForceNew:    true,
+						},
+						"compression": {
+							Description:  "Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).",
+							Type:         schema.TypeString,
+							Optional:     true,
+							Default:      "none",
+							ForceNew:     true,
+							ValidateFunc: validation.StringInSlice(logCompressions, false),
+						},
+						"cloud_integration_id": {
+							Description: "Cloud Integration ID.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
+			"azure_blob": {
+				Description:   "Configuration block for Azure Blob Storage integration.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "gcs"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"storage_account": {
+							Description: "Azure storage account name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"container_name": {
+							Description: "Azure Blob Storage container name.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"blob_prefix": {
+							Description: "Blob name prefix to write logs under. Defaults to the container root.",
 							Type:        schema.TypeString,
 							Optional:    true,
 							Default:     "",
@@ -282,6 +324,27 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if v, ok := d.GetOk("azure_blob"); ok {
+		azureConfigs := v.(*schema.Set).List()
+		if len(azureConfigs) > 0 {
+			azureConfig := azureConfigs[0].(map[string]any)
+
+			integration := &corev1.CreateIntegrationLogRequest_AzureBlob_{
+				AzureBlob: &corev1.CreateIntegrationLogRequest_AzureBlob{
+					CloudIntegrationId: azureConfig["cloud_integration_id"].(string),
+					StorageAccount:     azureConfig["storage_account"].(string),
+					ContainerName:      azureConfig["container_name"].(string),
+					BlobPrefix:         azureConfig["blob_prefix"].(string),
+					Compression:        logCompressionValues[azureConfig["compression"].(string)],
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			})
+		}
+	}
+
 	// Handle error if any
 	if err != nil {
 		return diag.FromErr(err)
@@ -334,6 +397,17 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 				"gcs_bucket_name":      gcs.BucketName,
 				"gcs_bucket_prefix":    gcs.BucketPrefix,
 				"compression":          logCompressionNames[gcs.Compression],
+			},
+		})
+	}
+	if azureBlob := res.Integration.GetAzureBlob(); azureBlob != nil {
+		d.Set("azure_blob", []map[string]any{
+			{
+				"cloud_integration_id": azureBlob.CloudIntegrationId,
+				"storage_account":      azureBlob.StorageAccount,
+				"container_name":       azureBlob.ContainerName,
+				"blob_prefix":          azureBlob.BlobPrefix,
+				"compression":          logCompressionNames[azureBlob.Compression],
 			},
 		})
 	}

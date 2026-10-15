@@ -22,6 +22,7 @@ Registering a Integration Logs app.
 ### Optional
 
 - `aws_s3` (Block Set, Max: 1) Configuration block for AWS S3 integration. (see [below for nested schema](#nestedblock--aws_s3))
+- `azure_blob` (Block Set, Max: 1) Configuration block for Azure Blob Storage integration. (see [below for nested schema](#nestedblock--azure_blob))
 - `datadog` (Block Set, Max: 1) Configuration block for Datadog integration. (see [below for nested schema](#nestedblock--datadog))
 - `gcs` (Block Set, Max: 1) Configuration block for Google Cloud Storage integration. (see [below for nested schema](#nestedblock--gcs))
 - `splunk` (Block Set, Max: 1) Configuration block for Splunk integration. (see [below for nested schema](#nestedblock--splunk))
@@ -47,6 +48,21 @@ Optional:
 Read-Only:
 
 - `region` (String) AWS Region.
+
+
+<a id="nestedblock--azure_blob"></a>
+### Nested Schema for `azure_blob`
+
+Required:
+
+- `cloud_integration_id` (String) Cloud Integration ID.
+- `container_name` (String) Azure Blob Storage container name.
+- `storage_account` (String) Azure storage account name.
+
+Optional:
+
+- `blob_prefix` (String) Blob name prefix to write logs under. Defaults to the container root.
+- `compression` (String) Codec each log object is compressed with, which also sets its file extension: `none` (`.json`), `gzip` (`.json.gz`) or `zstd` (`.json.zst`).
 
 
 <a id="nestedblock--datadog"></a>
