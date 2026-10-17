@@ -18,7 +18,7 @@ Registering a Data Discovery with Formal.
 ### Required
 
 - `deletion_policy` (String) Deletion policy of the Data Discovery. Possible values: `delete`, `mark_for_deletion`.
-- `native_user_id` (String) Native user ID linked to this Data Discovery.
+- `native_user_id` (String) Native user ID linked to this Data Discovery. Must be a `formal_native_user_v3` ID if the resource has native users v3 enabled, and a `formal_native_user` ID otherwise.
 - `resource_id` (String) Resource ID linked to this Data Discovery.
 - `schedule` (String) Schedule at which the Data Discovery will be executed. Possible values: `6h`, `12h`, `18h`, `24h` or a valid cron expression, for example `0 4,16 * * *` to run daily at 04:00 and 16:00 UTC.
 

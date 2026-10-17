@@ -46,10 +46,9 @@ func ResourceDataDiscovery() *schema.Resource {
 			},
 			"native_user_id": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Native user ID linked to this Data Discovery.",
+				Description: "Native user ID linked to this Data Discovery. Must be a `formal_native_user_v3` ID if the resource has native users v3 enabled, and a `formal_native_user` ID otherwise.",
 				Type:        schema.TypeString,
 				Required:    true,
-				ForceNew:    true,
 			},
 			"created_at": {
 				// This description is used by the documentation generator and the language server.
