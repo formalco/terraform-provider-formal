@@ -3,12 +3,12 @@
 page_title: "formal_resource_oauth_settings Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see formal_oauth_client) can then connect to the Resource through the Connector and, unless upstream_oauth_mode is none, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. Every argument forces replacement, and replacing or destroying this resource deletes every user's linked account and every OAuth client's authorization for the Resource.
+  Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see formal_oauth_client) can then connect to the Resource through the Connector and, unless upstream_oauth_mode is none, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. requested_scopes and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. requested_scopes apply to future links. Changing resource_id, upstream_oauth_mode, client_id, or issuer, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.
 ---
 
 # formal_resource_oauth_settings (Resource)
 
-Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. Every argument forces replacement, and replacing or destroying this resource deletes every user's linked account and every OAuth client's authorization for the Resource.
+Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.
 
 ## Example Usage
 
@@ -36,14 +36,16 @@ resource "formal_resource" "github" {
 }
 
 # Users link their GitHub accounts with your own GitHub OAuth app. GitHub
-# publishes no protected resource metadata, so set its issuer.
+# publishes no protected resource metadata, so set its issuer. Increment
+# client_secret_wo_version to rotate the secret; it is not stored in state.
 resource "formal_resource_oauth_settings" "github" {
-  resource_id         = formal_resource.github.id
-  upstream_oauth_mode = "pre_registered"
-  client_id           = var.github_oauth_app_client_id
-  client_secret       = var.github_oauth_app_client_secret
-  issuer              = "https://github.com/login/oauth"
-  requested_scopes    = ["repo", "read:org"]
+  resource_id              = formal_resource.github.id
+  upstream_oauth_mode      = "pre_registered"
+  client_id                = var.github_oauth_app_client_id
+  client_secret_wo         = var.github_oauth_app_client_secret
+  client_secret_wo_version = 1
+  issuer                   = "https://github.com/login/oauth"
+  requested_scopes         = ["repo", "read:org"]
 }
 
 variable "github_oauth_app_client_id" {
@@ -65,11 +67,15 @@ variable "github_oauth_app_client_secret" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `client_id` (String) The client ID of your OAuth app. Required when `upstream_oauth_mode` is `pre_registered`, and not allowed otherwise. Register the Formal redirect URI shown in the console with the authorization server.
-- `client_secret` (String, Sensitive) The client secret of your OAuth app. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. The API never returns it, so it is not read back after creation, and setting it on imported settings that already have a secret does not replace them.
+- `client_secret` (String, Sensitive) The client secret of your OAuth app. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. The API never returns it, so it is not read back, and Terraform only sends it when it changes. Rotating or removing it keeps linked accounts. Prefer `client_secret_wo` to keep the secret out of Terraform state.
+- `client_secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only client secret of your OAuth app. This value is not stored in Terraform state, so it must stay in the configuration. Requires Terraform 1.11+ and `client_secret_wo_version`. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. Set it to an empty string and increment `client_secret_wo_version` to make the client public. Rotating or removing the secret keeps linked accounts.
+- `client_secret_wo_version` (Number) Version trigger for `client_secret_wo`. Increment this value to update the secret.
 - `issuer` (String) The upstream authorization server's issuer, such as `https://github.com/login/oauth` for the GitHub REST API. Set it when the upstream publishes no protected resource metadata (RFC 9728): Formal then reads the issuer's authorization server metadata directly. It must use https, have no query or fragment, and exactly match the issuer the metadata reports. When unset, the authorization server is discovered from the upstream itself. Not allowed when `upstream_oauth_mode` is `none`.
-- `requested_scopes` (Set of String) Scopes to request from the upstream authorization server. When empty, the scope parameter is omitted and the provider's defaults apply. Must be empty when `upstream_oauth_mode` is `none`.
-- `upstream_oauth_mode` (String) How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.
+- `requested_scopes` (Set of String) Scopes to request from the upstream authorization server. When empty, the scope parameter is omitted and the provider's defaults apply. Must be empty when `upstream_oauth_mode` is `none`. Existing linked accounts keep the scopes they were granted; users get these scopes the next time they link.
+- `upstream_oauth_mode` (String) How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.
 
 ### Read-Only
 
@@ -86,7 +92,8 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# OAuth settings are imported by the ID of their Resource. client_secret is
-# never returned; keeping it in config after import doesn't replace the settings.
+# OAuth settings are imported by the ID of their Resource. The client secret is
+# never returned. client_secret_wo stays out of state; increment
+# client_secret_wo_version to send it.
 terraform import formal_resource_oauth_settings.github <resource_id>
 ```

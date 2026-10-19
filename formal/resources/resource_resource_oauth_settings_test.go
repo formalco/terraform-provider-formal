@@ -3,12 +3,14 @@ package resource
 import (
 	"context"
 	"errors"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"connectrpc.com/connect"
 	"github.com/hashicorp/go-cty/cty"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
@@ -26,7 +28,16 @@ type resourceOAuthSettingsTestServer struct {
 	corev1connect.UnimplementedResourceServiceHandler
 	create func(*corev1.CreateResourceOAuthSettingsRequest) (*corev1.CreateResourceOAuthSettingsResponse, error)
 	get    func(*corev1.GetResourceOAuthSettingsRequest) (*corev1.GetResourceOAuthSettingsResponse, error)
+	update func(*corev1.UpdateResourceOAuthSettingsRequest) (*corev1.UpdateResourceOAuthSettingsResponse, error)
 	delete func(*corev1.DeleteResourceOAuthSettingsRequest) (*corev1.DeleteResourceOAuthSettingsResponse, error)
+}
+
+func (s resourceOAuthSettingsTestServer) UpdateResourceOAuthSettings(_ context.Context, req *connect.Request[corev1.UpdateResourceOAuthSettingsRequest]) (*connect.Response[corev1.UpdateResourceOAuthSettingsResponse], error) {
+	res, err := s.update(req.Msg)
+	if err != nil {
+		return nil, err
+	}
+	return connect.NewResponse(res), nil
 }
 
 func (s resourceOAuthSettingsTestServer) CreateResourceOAuthSettings(_ context.Context, req *connect.Request[corev1.CreateResourceOAuthSettingsRequest]) (*connect.Response[corev1.CreateResourceOAuthSettingsResponse], error) {
@@ -71,11 +82,19 @@ func TestResourceOAuthSettingsSchema(t *testing.T) {
 	t.Parallel()
 	r := ResourceResourceOAuthSettings()
 	require.NoError(t, r.InternalValidate(r.Schema, true))
-	require.Nil(t, r.UpdateContext)
+	require.NotNil(t, r.UpdateContext)
 	require.Equal(t, upstreamOAuthModeFormal, r.Schema["upstream_oauth_mode"].Default)
 	require.True(t, r.Schema["client_secret"].Sensitive)
-	for _, key := range []string{"resource_id", "upstream_oauth_mode", "requested_scopes", "client_id", "client_secret", "issuer"} {
+	require.True(t, r.Schema["client_secret_wo"].WriteOnly)
+	require.Equal(t, []string{"client_secret_wo"}, r.Schema["client_secret"].ConflictsWith)
+	require.Equal(t, []string{"client_secret"}, r.Schema["client_secret_wo"].ConflictsWith)
+	require.Equal(t, []string{"client_secret_wo_version"}, r.Schema["client_secret_wo"].RequiredWith)
+	require.Equal(t, []string{"client_secret_wo"}, r.Schema["client_secret_wo_version"].RequiredWith)
+	for _, key := range []string{"resource_id", "upstream_oauth_mode", "client_id", "issuer"} {
 		require.True(t, r.Schema[key].ForceNew, key)
+	}
+	for _, key := range []string{"requested_scopes", "client_secret", "client_secret_wo", "client_secret_wo_version"} {
+		require.False(t, r.Schema[key].ForceNew, key)
 	}
 }
 
@@ -147,6 +166,15 @@ func TestResourceOAuthSettingsPlanRejectsInvalidCombination(t *testing.T) {
 		"upstream_oauth_mode": "pre_registered",
 	}), nil)
 	require.ErrorContains(t, err, "client_id is required")
+
+	_, err = r.Diff(t.Context(), &terraform.InstanceState{
+		RawConfig: cty.ObjectVal(map[string]cty.Value{"client_secret_wo": cty.StringVal("s3cret")}),
+	}, terraform.NewResourceConfigRaw(map[string]any{
+		"resource_id":              "resource_mcp",
+		"upstream_oauth_mode":      upstreamOAuthModeFormal,
+		"client_secret_wo_version": 1,
+	}), nil)
+	require.ErrorContains(t, err, "only allowed when upstream_oauth_mode is pre_registered")
 }
 
 func TestResourceOAuthSettingsPlanSkipsUnknownValues(t *testing.T) {
@@ -166,31 +194,135 @@ func TestResourceOAuthSettingsPlanSkipsUnknownValues(t *testing.T) {
 	require.NoError(t, err)
 }
 
-func TestResourceOAuthSettingsPlanKeepsImportedSecret(t *testing.T) {
-	t.Parallel()
+// applyResourceOAuthSettings plans next against the state prior would have
+// been created with, then applies the plan.
+func applyResourceOAuthSettings(t *testing.T, meta *clients.Clients, prior, next map[string]any) diag.Diagnostics {
+	t.Helper()
+	return applyResourceOAuthSettingsRaw(t, meta, prior, next, cty.NullVal(cty.EmptyObject))
+}
+
+// applyResourceOAuthSettingsRaw plans next against prior, with raw as the
+// configuration Terraform keeps for write-only attributes.
+func applyResourceOAuthSettingsRaw(t *testing.T, meta *clients.Clients, prior, next map[string]any, raw cty.Value) diag.Diagnostics {
+	t.Helper()
 	r := ResourceResourceOAuthSettings()
-	config := map[string]any{
+	d := schema.TestResourceDataRaw(t, r.Schema, prior)
+	d.SetId(prior["resource_id"].(string))
+	state := d.State()
+	if !raw.IsNull() {
+		state.RawConfig = raw
+	}
+	diff, err := r.Diff(t.Context(), state, terraform.NewResourceConfigRaw(next), meta)
+	require.NoError(t, err)
+	if !raw.IsNull() {
+		diff.RawConfig = raw
+	}
+	_, diags := r.Apply(t.Context(), state, diff, meta)
+	return diags
+}
+
+func TestResourceOAuthSettingsUpdate(t *testing.T) {
+	t.Parallel()
+
+	var updates []*corev1.UpdateResourceOAuthSettingsRequest
+	meta := newResourceOAuthSettingsTestClients(t, resourceOAuthSettingsTestServer{
+		update: func(req *corev1.UpdateResourceOAuthSettingsRequest) (*corev1.UpdateResourceOAuthSettingsResponse, error) {
+			updates = append(updates, req)
+			return &corev1.UpdateResourceOAuthSettingsResponse{ResourceOauthSettings: &corev1.ResourceOAuthSettings{
+				Id:                "resourceoauthsetting_1",
+				ResourceId:        req.ResourceId,
+				UpstreamOauthMode: upstreamOAuthModePreRegistered,
+				RequestedScopes:   req.RequestedScopes,
+				ClientId:          "Iv1.abc",
+				ClientSecretSet:   req.ClientSecret == nil || req.GetClientSecret() != "",
+				Issuer:            new("https://github.com/login/oauth"),
+			}}, nil
+		},
+	})
+	prior := map[string]any{
 		"resource_id":         "resource_github",
 		"upstream_oauth_mode": upstreamOAuthModePreRegistered,
 		"client_id":           "Iv1.abc",
 		"client_secret":       "shhh",
+		"issuer":              "https://github.com/login/oauth",
+		"requested_scopes":    []any{"repo", "read:org"},
 	}
-	state := map[string]string{
-		"id":                  "resource_github",
-		"resource_id":         "resource_github",
-		"upstream_oauth_mode": upstreamOAuthModePreRegistered,
-		"client_id":           "Iv1.abc",
-		"client_secret_set":   "true",
+	with := func(changes map[string]any) map[string]any {
+		next := maps.Clone(prior)
+		maps.Copy(next, changes)
+		return next
 	}
 
-	diff, err := r.Diff(t.Context(), &terraform.InstanceState{ID: "resource_github", Attributes: state}, terraform.NewResourceConfigRaw(config), nil)
-	require.NoError(t, err)
-	require.True(t, diff.Empty() || !diff.RequiresNew(), "imported secret must not replace the settings: %v", diff)
+	diags := applyResourceOAuthSettings(t, meta, prior, with(map[string]any{"requested_scopes": []any{"repo"}}))
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 1)
+	require.Equal(t, []string{"repo"}, updates[0].RequestedScopes)
+	require.Nil(t, updates[0].ClientSecret, "an unchanged secret is kept rather than resent")
 
-	state["client_secret"] = "old"
-	diff, err = r.Diff(t.Context(), &terraform.InstanceState{ID: "resource_github", Attributes: state}, terraform.NewResourceConfigRaw(config), nil)
-	require.NoError(t, err)
-	require.True(t, diff.RequiresNew(), "a changed secret must replace the settings")
+	diags = applyResourceOAuthSettings(t, meta, prior, with(map[string]any{"client_secret": "rotated"}))
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 2)
+	require.Equal(t, "rotated", updates[1].GetClientSecret())
+
+	public := maps.Clone(prior)
+	delete(public, "client_secret")
+	diags = applyResourceOAuthSettings(t, meta, prior, public)
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 3)
+	require.NotNil(t, updates[2].ClientSecret, "removing the secret makes the client public")
+	require.Empty(t, updates[2].GetClientSecret())
+}
+
+func TestResourceOAuthSettingsWriteOnlySecret(t *testing.T) {
+	t.Parallel()
+
+	var updates []*corev1.UpdateResourceOAuthSettingsRequest
+	meta := newResourceOAuthSettingsTestClients(t, resourceOAuthSettingsTestServer{
+		update: func(req *corev1.UpdateResourceOAuthSettingsRequest) (*corev1.UpdateResourceOAuthSettingsResponse, error) {
+			updates = append(updates, req)
+			return &corev1.UpdateResourceOAuthSettingsResponse{ResourceOauthSettings: &corev1.ResourceOAuthSettings{
+				Id:                "resourceoauthsetting_1",
+				ResourceId:        req.ResourceId,
+				UpstreamOauthMode: upstreamOAuthModePreRegistered,
+				RequestedScopes:   req.RequestedScopes,
+				ClientId:          "Iv1.abc",
+				ClientSecretSet:   req.ClientSecret == nil || req.GetClientSecret() != "",
+				Issuer:            new("https://github.com/login/oauth"),
+			}}, nil
+		},
+	})
+	prior := map[string]any{
+		"resource_id":              "resource_github",
+		"upstream_oauth_mode":      upstreamOAuthModePreRegistered,
+		"client_id":                "Iv1.abc",
+		"issuer":                   "https://github.com/login/oauth",
+		"client_secret_wo_version": 1,
+		"requested_scopes":         []any{"repo", "read:org"},
+	}
+	raw := cty.ObjectVal(map[string]cty.Value{"client_secret_wo": cty.StringVal("s3cret")})
+	with := func(changes map[string]any) map[string]any {
+		next := maps.Clone(prior)
+		maps.Copy(next, changes)
+		return next
+	}
+
+	diags := applyResourceOAuthSettingsRaw(t, meta, prior, with(map[string]any{"requested_scopes": []any{"repo"}}), raw)
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 1)
+	require.Nil(t, updates[0].ClientSecret, "an unchanged write-only secret is kept rather than resent")
+
+	diags = applyResourceOAuthSettingsRaw(t, meta, prior, with(map[string]any{"client_secret_wo_version": 2}), raw)
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 2)
+	require.Equal(t, "s3cret", updates[1].GetClientSecret())
+
+	diags = applyResourceOAuthSettingsRaw(t, meta, prior, with(map[string]any{"client_secret_wo_version": 3}), cty.ObjectVal(map[string]cty.Value{
+		"client_secret_wo": cty.StringVal(""),
+	}))
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Len(t, updates, 3)
+	require.NotNil(t, updates[2].ClientSecret, "an empty write-only secret makes the client public")
+	require.Empty(t, updates[2].GetClientSecret())
 }
 
 func TestResourceOAuthSettingsCreateAndRead(t *testing.T) {
@@ -248,6 +380,40 @@ func TestResourceOAuthSettingsCreateAndRead(t *testing.T) {
 	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 	require.Equal(t, "resource_github", readResourceID)
 	require.Equal(t, "shhh", d.Get("client_secret"))
+}
+
+func TestResourceOAuthSettingsCreateWriteOnlySecret(t *testing.T) {
+	t.Parallel()
+
+	var created *corev1.CreateResourceOAuthSettingsRequest
+	meta := newResourceOAuthSettingsTestClients(t, resourceOAuthSettingsTestServer{
+		create: func(req *corev1.CreateResourceOAuthSettingsRequest) (*corev1.CreateResourceOAuthSettingsResponse, error) {
+			created = req
+			return &corev1.CreateResourceOAuthSettingsResponse{ResourceOauthSettings: &corev1.ResourceOAuthSettings{
+				Id:                "resourceoauthsetting_1",
+				ResourceId:        req.ResourceId,
+				UpstreamOauthMode: upstreamOAuthModePreRegistered,
+				ClientId:          req.GetClientId(),
+				ClientSecretSet:   req.ClientSecret != "",
+			}}, nil
+		},
+	})
+	r := ResourceResourceOAuthSettings()
+	diff, err := r.Diff(t.Context(), nil, terraform.NewResourceConfigRaw(map[string]any{
+		"resource_id":              "resource_github",
+		"upstream_oauth_mode":      upstreamOAuthModePreRegistered,
+		"client_id":                "Iv1.abc",
+		"client_secret_wo_version": 1,
+	}), meta)
+	require.NoError(t, err)
+	diff.RawConfig = cty.ObjectVal(map[string]cty.Value{"client_secret_wo": cty.StringVal("s3cret")})
+
+	state, diags := r.Apply(t.Context(), nil, diff, meta)
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Equal(t, "s3cret", created.ClientSecret)
+	require.NotContains(t, state.Attributes, "client_secret_wo")
+	require.Empty(t, state.Attributes["client_secret"])
+	require.Equal(t, "1", state.Attributes["client_secret_wo_version"])
 }
 
 func TestResourceOAuthSettingsCreateOmitsUnsetOptionalFields(t *testing.T) {

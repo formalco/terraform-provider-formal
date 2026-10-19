@@ -3,10 +3,12 @@ package resource
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"buf.build/go/protovalidate"
 	"connectrpc.com/connect"
+	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -23,15 +25,13 @@ const (
 	upstreamOAuthModeNone          = "none"
 )
 
-// The API has no update RPC for OAuth settings, so every argument forces
-// replacement. Replacing deletes every user's linked account and every OAuth
-// client's authorization for the resource.
 func ResourceResourceOAuthSettings() *schema.Resource {
 	return &schema.Resource{
-		Description: "Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. Every argument forces replacement, and replacing or destroying this resource deletes every user's linked account and every OAuth client's authorization for the Resource.",
+		Description: "Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.",
 
 		CreateContext: resourceResourceOAuthSettingsCreate,
 		ReadContext:   resourceResourceOAuthSettingsRead,
+		UpdateContext: resourceResourceOAuthSettingsUpdate,
 		DeleteContext: resourceResourceOAuthSettingsDelete,
 		CustomizeDiff: resourceResourceOAuthSettingsCustomizeDiff,
 		Importer: &schema.ResourceImporter{
@@ -55,7 +55,7 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				ForceNew:    true,
 			},
 			"upstream_oauth_mode": {
-				Description: "How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.",
+				Description: "How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
@@ -67,10 +67,9 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				}, false),
 			},
 			"requested_scopes": {
-				Description: "Scopes to request from the upstream authorization server. When empty, the scope parameter is omitted and the provider's defaults apply. Must be empty when `upstream_oauth_mode` is `none`.",
+				Description: "Scopes to request from the upstream authorization server. When empty, the scope parameter is omitted and the provider's defaults apply. Must be empty when `upstream_oauth_mode` is `none`. Existing linked accounts keep the scopes they were granted; users get these scopes the next time they link.",
 				Type:        schema.TypeSet,
 				Optional:    true,
-				ForceNew:    true,
 				MaxItems:    50,
 				Elem: &schema.Schema{
 					Type:         schema.TypeString,
@@ -84,16 +83,25 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				ForceNew:    true,
 			},
 			"client_secret": {
-				Description: "The client secret of your OAuth app. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. The API never returns it, so it is not read back after creation, and setting it on imported settings that already have a secret does not replace them.",
-				Type:        schema.TypeString,
-				Optional:    true,
-				ForceNew:    true,
-				Sensitive:   true,
-				// Imported state has no secret, and replacing the settings to
-				// record it would delete every linked account.
-				DiffSuppressFunc: func(_, oldValue, newValue string, d *schema.ResourceData) bool {
-					return d.Id() != "" && oldValue == "" && newValue != "" && d.Get("client_secret_set").(bool)
-				},
+				Description:   "The client secret of your OAuth app. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. The API never returns it, so it is not read back, and Terraform only sends it when it changes. Rotating or removing it keeps linked accounts. Prefer `client_secret_wo` to keep the secret out of Terraform state.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				Sensitive:     true,
+				ConflictsWith: []string{"client_secret_wo"},
+			},
+			"client_secret_wo": {
+				Description:   "Write-only client secret of your OAuth app. This value is not stored in Terraform state, so it must stay in the configuration. Requires Terraform 1.11+ and `client_secret_wo_version`. Leave unset for a public client, which authenticates with PKCE alone. Only allowed when `upstream_oauth_mode` is `pre_registered`. Set it to an empty string and increment `client_secret_wo_version` to make the client public. Rotating or removing the secret keeps linked accounts.",
+				Type:          schema.TypeString,
+				Optional:      true,
+				WriteOnly:     true,
+				ConflictsWith: []string{"client_secret"},
+				RequiredWith:  []string{"client_secret_wo_version"},
+			},
+			"client_secret_wo_version": {
+				Description:  "Version trigger for `client_secret_wo`. Increment this value to update the secret.",
+				Type:         schema.TypeInt,
+				Optional:     true,
+				RequiredWith: []string{"client_secret_wo"},
 			},
 			"client_secret_set": {
 				Description: "Whether the OAuth app has a client secret.",
@@ -154,6 +162,16 @@ func resourceResourceOAuthSettingsCustomizeDiff(_ context.Context, d *schema.Res
 	_, hasClientID := d.GetOk("client_id")
 	_, hasClientSecret := d.GetOk("client_secret")
 	_, hasIssuer := d.GetOk("issuer")
+	writeOnlySecret, configured, unknown, err := writeOnlyClientSecret(d)
+	if err != nil {
+		return err
+	}
+	if unknown {
+		return nil
+	}
+	if configured && writeOnlySecret != "" {
+		hasClientSecret = true
+	}
 	return validateResourceOAuthSettingsArgs(resourceOAuthSettingsArgs{
 		mode:            d.Get("upstream_oauth_mode").(string),
 		hasScopes:       d.Get("requested_scopes").(*schema.Set).Len() > 0,
@@ -163,14 +181,53 @@ func resourceResourceOAuthSettingsCustomizeDiff(_ context.Context, d *schema.Res
 	})
 }
 
+// writeOnlyClientSecret reads client_secret_wo from the raw configuration.
+// Write-only values are absent from state, so Get never returns them. A null
+// raw configuration means this plan was built without one, and the secret is
+// unset. An empty string is configured: it makes the client public.
+func writeOnlyClientSecret(d interface {
+	GetRawConfig() cty.Value
+	GetRawConfigAt(cty.Path) (cty.Value, diag.Diagnostics)
+},
+) (secret string, configured, unknown bool, err error) {
+	if d.GetRawConfig().IsNull() {
+		return "", false, false, nil
+	}
+	value, diags := d.GetRawConfigAt(cty.GetAttrPath("client_secret_wo"))
+	if diags.HasError() {
+		return "", false, false, fmt.Errorf("failed to get client_secret_wo: %v", diags)
+	}
+	if value.IsNull() {
+		return "", false, false, nil
+	}
+	if !value.IsKnown() {
+		return "", false, true, nil
+	}
+	if value.Type() != cty.String {
+		return "", false, false, errors.New("client_secret_wo must be a known string")
+	}
+	return value.AsString(), true, false, nil
+}
+
 func resourceResourceOAuthSettingsCreate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
+	secret := d.Get("client_secret").(string)
+	writeOnlySecret, configured, unknown, err := writeOnlyClientSecret(d)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if unknown {
+		return diag.Errorf("client_secret_wo must be a known string")
+	}
+	if configured {
+		secret = writeOnlySecret
+	}
 	req := &corev1.CreateResourceOAuthSettingsRequest{
 		ResourceId:        d.Get("resource_id").(string),
 		UpstreamOauthMode: d.Get("upstream_oauth_mode").(string),
 		RequestedScopes:   lo.Map(d.Get("requested_scopes").(*schema.Set).List(), func(v any, _ int) string { return v.(string) }),
-		ClientSecret:      d.Get("client_secret").(string),
+		ClientSecret:      secret,
 	}
 	if v, ok := d.GetOk("client_id"); ok {
 		clientID := v.(string)
@@ -212,6 +269,42 @@ func resourceResourceOAuthSettingsRead(ctx context.Context, d *schema.ResourceDa
 		return diag.FromErr(err)
 	}
 
+	return flattenResourceOAuthSettings(d, res.ResourceOauthSettings)
+}
+
+func resourceResourceOAuthSettingsUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
+	c := meta.(*clients.Clients)
+
+	req := &corev1.UpdateResourceOAuthSettingsRequest{
+		ResourceId:      d.Id(),
+		RequestedScopes: lo.Map(d.Get("requested_scopes").(*schema.Set).List(), func(v any, _ int) string { return v.(string) }),
+	}
+	if d.HasChange("client_secret_wo_version") {
+		secret, configured, unknown, err := writeOnlyClientSecret(d)
+		if err != nil {
+			return diag.FromErr(err)
+		}
+		if unknown || !configured {
+			return diag.Errorf("client_secret_wo_version requires client_secret_wo")
+		}
+		req.ClientSecret = &secret
+	} else if d.HasChange("client_secret") {
+		secret := d.Get("client_secret").(string)
+		req.ClientSecret = &secret
+	}
+
+	v, err := protovalidate.New()
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if err := v.Validate(req); err != nil {
+		return diag.FromErr(err)
+	}
+
+	res, err := c.Grpc.Sdk.ResourceServiceClient.UpdateResourceOAuthSettings(ctx, req)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 	return flattenResourceOAuthSettings(d, res.ResourceOauthSettings)
 }
 
