@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   goreleaser:
-    runs-on: ubuntu-latest
+    runs-on: depot-ubuntu-24.04-16
     steps:
       -
         name: Checkout
