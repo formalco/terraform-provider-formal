@@ -18,7 +18,7 @@ Managing Log Configuration with Formal.
 ### Required
 
 - `name` (String) The name of this log configuration.
-- `request` (Block Set, Min: 1, Max: 1) Request logging configuration. (see [below for nested schema](#nestedblock--request))
+- `request` (Block List, Min: 1, Max: 1) Request logging configuration. (see [below for nested schema](#nestedblock--request))
 - `response` (Block Set, Min: 1, Max: 1) Response logging configuration. (see [below for nested schema](#nestedblock--response))
 - `scope` (Block Set, Min: 1, Max: 1) The scope configuration for this log configuration. (see [below for nested schema](#nestedblock--scope))
 

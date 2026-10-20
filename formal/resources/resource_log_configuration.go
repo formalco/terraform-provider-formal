@@ -87,7 +87,7 @@ func ResourceLogConfiguration() *schema.Resource {
 			},
 			"request": {
 				Description: "Request logging configuration.",
-				Type:        schema.TypeSet,
+				Type:        schema.TypeList,
 				Required:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{
@@ -107,6 +107,7 @@ func ResourceLogConfiguration() *schema.Resource {
 							Description: "SQL logging configuration for requests.",
 							Type:        schema.TypeSet,
 							Optional:    true,
+							Computed:    true,
 							MaxItems:    1,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -161,6 +162,7 @@ func ResourceLogConfiguration() *schema.Resource {
 				Description: "Stream logging configuration.",
 				Type:        schema.TypeSet,
 				Optional:    true,
+				Computed:    true,
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -292,8 +294,8 @@ func resourceLogConfigurationCreate(ctx context.Context, d *schema.ResourceData,
 	}
 
 	// Handle request
-	if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
-		requestData := requestSet.List()[0].(map[string]any)
+	if requestList := d.Get("request").([]any); len(requestList) > 0 {
+		requestData := requestList[0].(map[string]any)
 		req.Request = &corev1.LogConfigurationRequest{
 			Encrypt:        requestData["encrypt"].(bool),
 			MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
@@ -509,8 +511,8 @@ func resourceLogConfigurationUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// Handle request changes
 	if d.HasChange("request") {
-		if requestSet := d.Get("request").(*schema.Set); requestSet.Len() > 0 {
-			requestData := requestSet.List()[0].(map[string]any)
+		if requestList := d.Get("request").([]any); len(requestList) > 0 {
+			requestData := requestList[0].(map[string]any)
 			req.Request = &corev1.LogConfigurationRequest{
 				Encrypt:        requestData["encrypt"].(bool),
 				MaxPayloadSize: int64(requestData["max_payload_size"].(int)),
