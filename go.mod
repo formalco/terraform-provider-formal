@@ -2,7 +2,7 @@ module github.com/formalco/terraform-provider-formal
 
 go 1.27
 
-toolchain go1.27.0
+toolchain go1.27.3
 
 replace (
 	github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
