@@ -58,12 +58,12 @@ func ResourcePolicyDataLoader() *schema.Resource {
 			},
 			"worker_runtime": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The execution environment for the code. It can be one of the following: 'python3.11' or 'nodejs18.x'.",
+				Description: "The execution environment for the code. It can be one of the following: 'python3.11' or 'nodejs24.x'.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ValidateFunc: validation.StringInSlice([]string{
 					"python3.11",
-					"nodejs18.x",
+					"nodejs24.x",
 				}, false),
 			},
 			"worker_code": {

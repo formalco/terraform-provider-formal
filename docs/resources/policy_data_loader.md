@@ -22,7 +22,7 @@ Registering a policy data loader with Formal.
 - `name` (String) Friendly name for this policy data loader.
 - `status` (String) Defines the current status of the policy data loader. It can be one of the following: 'draft' or 'active'.
 - `worker_code` (String) The code that will be executed to fetch and output the data.
-- `worker_runtime` (String) The execution environment for the code. It can be one of the following: 'python3.11' or 'nodejs18.x'.
+- `worker_runtime` (String) The execution environment for the code. It can be one of the following: 'python3.11' or 'nodejs24.x'.
 - `worker_schedule` (String) Second-based 'cron' expression specifying when the data should be fetched. For example, use '*/10 * * * * *' to run the code every 10 seconds.
 
 ### Optional

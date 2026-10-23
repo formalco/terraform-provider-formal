@@ -114,7 +114,7 @@ resource "formal_policy_data_loader" "name" {
   key                    = "test"
   status                 = "draft"
   worker_code            = "console.log({})"
-  worker_runtime         = "nodejs18.x"
+  worker_runtime         = "nodejs24.x"
   worker_schedule        = "0 0 * * * *"
   termination_protection = false
 }
