@@ -24,9 +24,9 @@ Managing Log Configuration with Formal.
 
 ### Optional
 
-- `encryption_key_id` (String) The ID of the encryption key to use for this log configuration.
+- `encryption_key_id` (String, Deprecated) The ID of the encryption key to use for this log configuration.
 - `session` (Block Set, Max: 1) Session logging configuration. (see [below for nested schema](#nestedblock--session))
-- `stream` (Block Set, Max: 1) Stream logging configuration. (see [below for nested schema](#nestedblock--stream))
+- `stream` (Block Set, Max: 1, Deprecated) Stream logging configuration. (see [below for nested schema](#nestedblock--stream))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
@@ -38,36 +38,30 @@ Managing Log Configuration with Formal.
 <a id="nestedblock--request"></a>
 ### Nested Schema for `request`
 
-Required:
-
-- `encrypt` (Boolean) Whether to encrypt request payloads.
-
 Optional:
 
-- `max_payload_size` (Number) Maximum size of request payloads to log.
+- `encrypt` (Boolean, Deprecated) Whether to encrypt request payloads.
+- `max_payload_size` (Number, Deprecated) Maximum size of request payloads to log.
 - `policy_eval_input_retention` (String) Duration to retain policy evaluation inputs for requests. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.
-- `sql` (Block Set, Max: 1) SQL logging configuration for requests. (see [below for nested schema](#nestedblock--request--sql))
+- `sql` (Block Set, Max: 1, Deprecated) SQL logging configuration for requests. (see [below for nested schema](#nestedblock--request--sql))
 
 <a id="nestedblock--request--sql"></a>
 ### Nested Schema for `request.sql`
 
-Required:
+Optional:
 
-- `encrypt` (Boolean) Whether to encrypt SQL queries in logs.
-- `strip_values` (Boolean) Whether to obfuscate SQL queries in logs.
+- `encrypt` (Boolean, Deprecated) Whether to encrypt SQL queries in logs.
+- `strip_values` (Boolean, Deprecated) Whether to obfuscate SQL queries in logs.
 
 
 
 <a id="nestedblock--response"></a>
 ### Nested Schema for `response`
 
-Required:
-
-- `encrypt` (Boolean) Whether to encrypt response payloads.
-
 Optional:
 
-- `max_payload_size` (Number) Maximum size of response payloads to log.
+- `encrypt` (Boolean, Deprecated) Whether to encrypt response payloads.
+- `max_payload_size` (Number, Deprecated) Maximum size of response payloads to log.
 - `policy_eval_input_retention` (String) Duration to retain policy evaluation inputs for responses. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.
 
 

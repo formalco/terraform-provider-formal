@@ -17,6 +17,10 @@ import (
 	"github.com/formalco/terraform-provider-formal/formal/clients"
 )
 
+const logConfigurationEncryptionDeprecation = "Log configuration encryption is deprecated. Use formal_log_schema to encrypt log fields instead."
+
+const logConfigurationPayloadDeprecation = "Log configuration payload truncation and SQL value stripping are deprecated. Use formal_log_schema to truncate payloads or strip SQL values instead."
+
 func ResourceLogConfiguration() *schema.Resource {
 	return &schema.Resource{
 		Description:   "Managing Log Configuration with Formal.",
@@ -45,6 +49,7 @@ func ResourceLogConfiguration() *schema.Resource {
 				Description: "The ID of the encryption key to use for this log configuration.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Deprecated:  logConfigurationEncryptionDeprecation,
 			},
 			"scope": {
 				Description: "The scope configuration for this log configuration.",
@@ -95,13 +100,16 @@ func ResourceLogConfiguration() *schema.Resource {
 						"encrypt": {
 							Description: "Whether to encrypt request payloads.",
 							Type:        schema.TypeBool,
-							Required:    true,
+							Optional:    true,
+							Default:     false,
+							Deprecated:  logConfigurationEncryptionDeprecation,
 						},
 						"max_payload_size": {
 							Description: "Maximum size of request payloads to log.",
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     -1,
+							Deprecated:  logConfigurationPayloadDeprecation,
 						},
 						"sql": {
 							Description: "SQL logging configuration for requests.",
@@ -109,17 +117,22 @@ func ResourceLogConfiguration() *schema.Resource {
 							Optional:    true,
 							Computed:    true,
 							MaxItems:    1,
+							Deprecated:  logConfigurationPayloadDeprecation,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"strip_values": {
 										Description: "Whether to obfuscate SQL queries in logs.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
+										Deprecated:  logConfigurationPayloadDeprecation,
 									},
 									"encrypt": {
 										Description: "Whether to encrypt SQL queries in logs.",
 										Type:        schema.TypeBool,
-										Required:    true,
+										Optional:    true,
+										Default:     false,
+										Deprecated:  logConfigurationEncryptionDeprecation,
 									},
 								},
 							},
@@ -142,13 +155,16 @@ func ResourceLogConfiguration() *schema.Resource {
 						"encrypt": {
 							Description: "Whether to encrypt response payloads.",
 							Type:        schema.TypeBool,
-							Required:    true,
+							Optional:    true,
+							Default:     false,
+							Deprecated:  logConfigurationEncryptionDeprecation,
 						},
 						"max_payload_size": {
 							Description: "Maximum size of response payloads to log.",
 							Type:        schema.TypeInt,
 							Optional:    true,
 							Default:     -1,
+							Deprecated:  logConfigurationPayloadDeprecation,
 						},
 						"policy_eval_input_retention": {
 							Description: "Duration to retain policy evaluation inputs for responses. Valid values: 1d, 2d, 3d, 7d, 14d, 21d, 30d.",
@@ -163,6 +179,7 @@ func ResourceLogConfiguration() *schema.Resource {
 				Type:        schema.TypeSet,
 				Optional:    true,
 				Computed:    true,
+				Deprecated:  logConfigurationEncryptionDeprecation,
 				MaxItems:    1,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
