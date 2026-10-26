@@ -42,6 +42,9 @@ Required:
 Optional:
 
 - `config` (Block List, Max: 1) Optional field configuration for select-like field types. (see [below for nested schema](#nestedblock--field--config))
+- `optional` (Boolean) Whether the field can be left empty.
+- `validation` (Block List, Max: 1) Rule checked when the form is submitted. (see [below for nested schema](#nestedblock--field--validation))
+- `visible_if` (String) CEL condition on earlier choice fields (e.g. `field_env == "prod"`). The field is shown only when true.
 
 <a id="nestedblock--field--config"></a>
 ### Nested Schema for `field.config`
@@ -59,6 +62,10 @@ Required:
 - `label` (String) Option label.
 - `value` (String) Option value.
 
+Optional:
+
+- `visible_if` (String) CEL condition on earlier choice fields. The option is offered only when true.
+
 
 <a id="nestedblock--field--config--options_source"></a>
 ### Nested Schema for `field.config.options_source`
@@ -72,7 +79,7 @@ Required:
 
 Optional:
 
-- `input` (Map of String) Optional payload for options retrieval.
+- `input` (Map of String) Optional payload for options retrieval. Supports `${{ query }}` and `${{ field_<id> }}`.
 - `input_json` (String) Optional payload for options retrieval as a JSON object string. Use this when the payload contains non-string JSON values such as numbers, booleans, arrays, or nested objects. Mutually exclusive with input.
 
 <a id="nestedblock--field--config--options_source--command"></a>
@@ -81,3 +88,17 @@ Optional:
 Required:
 
 - `name` (String) Command name.
+
+
+
+
+<a id="nestedblock--field--validation"></a>
+### Nested Schema for `field.validation`
+
+Required:
+
+- `rule` (String) CEL expression that must be true (e.g. `field_ticket.matches("^INC-[0-9]+$")`).
+
+Optional:
+
+- `message` (String) Error shown when the rule does not hold.

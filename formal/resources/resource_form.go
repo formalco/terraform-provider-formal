@@ -84,6 +84,38 @@ func ResourceForm() *schema.Resource {
 								false,
 							),
 						},
+						"optional": {
+							Description: "Whether the field can be left empty.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+						},
+						"visible_if": {
+							Description: "CEL condition on earlier choice fields (e.g. `field_env == \"prod\"`). The field is shown only when true.",
+							Type:        schema.TypeString,
+							Optional:    true,
+						},
+						"validation": {
+							Description: "Rule checked when the form is submitted.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							MaxItems:    1,
+							Elem: &schema.Resource{
+								Schema: map[string]*schema.Schema{
+									"rule": {
+										Description: "CEL expression that must be true (e.g. `field_ticket.matches(\"^INC-[0-9]+$\")`).",
+										Type:        schema.TypeString,
+										Required:    true,
+									},
+									"message": {
+										Description:  "Error shown when the rule does not hold.",
+										Type:         schema.TypeString,
+										Optional:     true,
+										ValidateFunc: validation.StringLenBetween(0, 100),
+									},
+								},
+							},
+						},
 						"config": {
 							Description: "Optional field configuration for select-like field types.",
 							Type:        schema.TypeList,
@@ -106,6 +138,11 @@ func ResourceForm() *schema.Resource {
 													Description: "Option value.",
 													Type:        schema.TypeString,
 													Required:    true,
+												},
+												"visible_if": {
+													Description: "CEL condition on earlier choice fields. The option is offered only when true.",
+													Type:        schema.TypeString,
+													Optional:    true,
 												},
 											},
 										},
@@ -143,7 +180,7 @@ func ResourceForm() *schema.Resource {
 													Required:    true,
 												},
 												"input": {
-													Description: "Optional payload for options retrieval.",
+													Description: "Optional payload for options retrieval. Supports `${{ query }}` and `${{ field_<id> }}`.",
 													Type:        schema.TypeMap,
 													Optional:    true,
 												},
@@ -297,6 +334,20 @@ func expandTerraformFormFields(tfFields []any) ([]*corev1.FormField, error) {
 			Name: fieldMap["name"].(string),
 			Type: fieldMap["type"].(string),
 		}
+		field.Optional, _ = fieldMap["optional"].(bool)
+		field.VisibleIf, _ = fieldMap["visible_if"].(string)
+
+		if validationList, _ := fieldMap["validation"].([]any); len(validationList) > 0 {
+			validationMap, ok := validationList[0].(map[string]any)
+			if !ok {
+				return nil, fmt.Errorf("field[%d].validation has invalid structure", idx)
+			}
+			message, _ := validationMap["message"].(string)
+			field.Validation = &corev1.FormFieldValidation{
+				Rule:    validationMap["rule"].(string),
+				Message: message,
+			}
+		}
 
 		rawConfig, hasConfig := fieldMap["config"]
 		if hasConfig {
@@ -332,9 +383,11 @@ func expandTerraformFormFieldConfig(configMap map[string]any, fieldIndex int) (*
 			if !ok {
 				return nil, fmt.Errorf("field[%d].config.option[%d] has invalid structure", fieldIndex, optionIndex)
 			}
+			visibleIf, _ := optionMap["visible_if"].(string)
 			config.Options = append(config.Options, &corev1.FormFieldOption{
-				Label: optionMap["label"].(string),
-				Value: optionMap["value"].(string),
+				Label:     optionMap["label"].(string),
+				Value:     optionMap["value"].(string),
+				VisibleIf: visibleIf,
 			})
 		}
 	}
@@ -429,9 +482,18 @@ func normalizeProtoFormFields(protoFields []*corev1.FormField, currentFields []a
 
 	for _, protoField := range protoFields {
 		field := map[string]any{
-			"id":   protoField.Id,
-			"name": protoField.Name,
-			"type": protoField.Type,
+			"id":         protoField.Id,
+			"name":       protoField.Name,
+			"type":       protoField.Type,
+			"optional":   protoField.Optional,
+			"visible_if": protoField.VisibleIf,
+		}
+
+		if protoField.GetValidation().GetRule() != "" {
+			field["validation"] = []any{map[string]any{
+				"rule":    protoField.Validation.Rule,
+				"message": protoField.Validation.Message,
+			}}
 		}
 
 		if protoField.Config != nil {
@@ -458,8 +520,9 @@ func normalizeProtoFormFieldConfig(protoConfig *corev1.FormFieldConfig, currentC
 		options := make([]any, 0, len(protoConfig.Options))
 		for _, protoOption := range protoConfig.Options {
 			options = append(options, map[string]any{
-				"label": protoOption.Label,
-				"value": protoOption.Value,
+				"label":      protoOption.Label,
+				"value":      protoOption.Value,
+				"visible_if": protoOption.VisibleIf,
 			})
 		}
 		config["option"] = options

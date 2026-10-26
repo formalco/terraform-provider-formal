@@ -170,6 +170,84 @@ func TestNormalizeProtoFormFieldConfigPreservesAllStringInputJSON(t *testing.T) 
 	}
 }
 
+func TestFormFieldRulesRoundTrip(t *testing.T) {
+	tfFields := []any{
+		map[string]any{
+			"id":   "field_env",
+			"name": "Environment",
+			"type": "radio",
+			"config": []any{map[string]any{
+				"option": []any{
+					map[string]any{"label": "Dev", "value": "dev"},
+					map[string]any{"label": "Prod", "value": "prod"},
+				},
+			}},
+		},
+		map[string]any{
+			"id":         "field_ticket",
+			"name":       "Ticket",
+			"type":       "string",
+			"visible_if": `field_env == "prod"`,
+			"validation": []any{map[string]any{
+				"rule":    `field_ticket.matches("^INC-[0-9]+$")`,
+				"message": "Use an INC- ticket",
+			}},
+		},
+		map[string]any{
+			"id":       "field_duration",
+			"name":     "Duration",
+			"type":     "select",
+			"optional": true,
+			"config": []any{map[string]any{
+				"option": []any{
+					map[string]any{"label": "1 hour", "value": "1h"},
+					map[string]any{"label": "24 hours", "value": "24h", "visible_if": `field_env == "dev"`},
+				},
+			}},
+		},
+	}
+
+	fields, err := expandTerraformFormFields(tfFields)
+	if err != nil {
+		t.Fatalf("unexpected expand error: %v", err)
+	}
+
+	if fields[0].Optional || fields[0].VisibleIf != "" || fields[0].Validation != nil {
+		t.Fatalf("expected field_env to have no rules, got %#v", fields[0])
+	}
+	if got := fields[1].VisibleIf; got != `field_env == "prod"` {
+		t.Fatalf("expected field_ticket visible_if, got %q", got)
+	}
+	if got := fields[1].GetValidation().GetMessage(); got != "Use an INC- ticket" {
+		t.Fatalf("expected field_ticket validation message, got %q", got)
+	}
+	if !fields[2].Optional {
+		t.Fatalf("expected field_duration to be optional")
+	}
+	if got := fields[2].Config.Options[1].VisibleIf; got != `field_env == "dev"` {
+		t.Fatalf("expected 24h option visible_if, got %q", got)
+	}
+
+	normalized := normalizeProtoFormFields(fields, tfFields)
+
+	ticket := normalized[1].(map[string]any)
+	if got := ticket["validation"].([]any)[0].(map[string]any)["rule"]; got != `field_ticket.matches("^INC-[0-9]+$")` {
+		t.Fatalf("expected field_ticket rule to round-trip, got %#v", got)
+	}
+	if _, exists := normalized[0].(map[string]any)["validation"]; exists {
+		t.Fatalf("expected no validation block for field_env")
+	}
+
+	duration := normalized[2].(map[string]any)
+	if duration["optional"] != true {
+		t.Fatalf("expected field_duration optional to round-trip")
+	}
+	option := duration["config"].([]any)[0].(map[string]any)["option"].([]any)[1].(map[string]any)
+	if got := option["visible_if"]; got != `field_env == "dev"` {
+		t.Fatalf("expected 24h option visible_if to round-trip, got %#v", got)
+	}
+}
+
 func formFieldConfigWithOptionsSource(optionsSource map[string]any) map[string]any {
 	baseOptionsSource := map[string]any{
 		"app":             "Resource",
