@@ -161,6 +161,7 @@ func New(version string) func() *schema.Provider {
 				"formal_resource_dial_configuration":        resource.ResourceDialConfiguration(),
 				"formal_resource_native_user_selection":     resource.ResourceResourceNativeUserSelection(),
 				"formal_resource_oauth_settings":            resource.ResourceResourceOAuthSettings(),
+				"formal_skill":                              resource.ResourceSkill(),
 				"formal_space":                              resource.ResourceSpace(),
 				"formal_log_configuration":                  resource.ResourceLogConfiguration(),
 				"formal_log_schema":                         resource.ResourceLogSchema(),
