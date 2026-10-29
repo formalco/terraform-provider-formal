@@ -18,7 +18,7 @@ Registering a BI App.
 ### Required
 
 - `name` (String) Friendly name for this app.
-- `sync` (Boolean) Auto synchronize users from Metabase to Formal (occurs every hour). When disabled, a worker will need to be deployed in your infrastructure to synchronise users.
+- `sync` (Boolean) Whether to store the Metabase hostname and admin credentials with this integration. Formal doesn't sync Metabase users itself: run the Metabase sync worker (https://github.com/formalco/formal-metabase-sync-worker) in your infrastructure with this integration's ID to map Metabase users to Formal users.
 
 ### Optional
 

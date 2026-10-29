@@ -41,7 +41,7 @@ func ResourceIntegrationBI() *schema.Resource {
 			},
 			"sync": {
 				// This description is used by the documentation generator and the language server.
-				Description: "Auto synchronize users from Metabase to Formal (occurs every hour). When disabled, a worker will need to be deployed in your infrastructure to synchronise users.",
+				Description: "Whether to store the Metabase hostname and admin credentials with this integration. Formal doesn't sync Metabase users itself: run the Metabase sync worker (https://github.com/formalco/formal-metabase-sync-worker) in your infrastructure with this integration's ID to map Metabase users to Formal users.",
 				Type:        schema.TypeBool,
 				Required:    true,
 				ForceNew:    true,
