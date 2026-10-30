@@ -1,0 +1,2 @@
+# Examples are terraform import snippets rendered into the provider docs, so they have no shebang.
+shell=bash
