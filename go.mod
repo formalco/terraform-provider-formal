@@ -4,6 +4,9 @@ go 1.27
 
 toolchain go1.27.3
 
+// CVE-2026-98432: Go enables MPTCP on Linux listeners by default, exposing a kernel UAF (RCE).
+godebug multipathtcp=0
+
 replace (
 	github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
 	github.com/caddyserver/certmagic => github.com/formalco/certmagic v0.0.0-20260702195037-87834bbe3cc4
