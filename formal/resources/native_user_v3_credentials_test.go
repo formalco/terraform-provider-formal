@@ -182,6 +182,22 @@ func TestBuildNativeUserV3CredentialsCoversEveryVariant(t *testing.T) {
 				require.Equal(t, []string{"vault.internal"}, hook.GetAllowlistedNetworkHosts())
 			},
 		},
+		{
+			variant: "linked_http_basic",
+			block:   map[string]any{"header": "Authorization", "username": "api"},
+			assert: func(t *testing.T, credentials *corev1.NativeUserV3Credentials) {
+				linkedHttpBasic := credentials.GetLinkedHttpBasic()
+				require.Equal(t, "Authorization", linkedHttpBasic.GetHeader())
+				require.Equal(t, "api", linkedHttpBasic.GetUsername())
+			},
+		},
+		{
+			variant: "linked_http_bearer",
+			block:   map[string]any{"header": "Authorization"},
+			assert: func(t *testing.T, credentials *corev1.NativeUserV3Credentials) {
+				require.Equal(t, "Authorization", credentials.GetLinkedHttpBearer().GetHeader())
+			},
+		},
 	}
 
 	require.Len(t, tests, len(nativeUserV3CredentialBlocks), "every credential variant must be covered")

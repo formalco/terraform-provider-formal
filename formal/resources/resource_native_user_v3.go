@@ -39,6 +39,8 @@ var nativeUserV3CredentialBlocks = []string{
 	"http_api_key_header",
 	"http_api_key_query",
 	"hook",
+	"linked_http_basic",
+	"linked_http_bearer",
 }
 
 var nativeUserV3TypeNames = []string{
@@ -239,6 +241,19 @@ func nativeUserV3Schema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 				},
+			},
+		),
+		"linked_http_basic": credentialBlock(
+			"HTTP Basic authentication using the requesting user's linked upstream account token as the password, injected on a named header. The Resource must have linked accounts enabled through `formal_resource_oauth_settings`.",
+			map[string]*schema.Schema{
+				"header":   requiredString("The header to inject the credentials on, for example `Authorization`."),
+				"username": requiredString("The username to authenticate as."),
+			},
+		),
+		"linked_http_bearer": credentialBlock(
+			"HTTP Bearer authentication using the requesting user's linked upstream account token, injected on a named header. The Resource must have linked accounts enabled through `formal_resource_oauth_settings`.",
+			map[string]*schema.Schema{
+				"header": requiredString("The header to inject the token on, for example `Authorization`."),
 			},
 		),
 	}

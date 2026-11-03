@@ -91,3 +91,18 @@ resource "formal_native_user_v3" "from_hook" {
     TYPESCRIPT
   }
 }
+
+# The requesting user's linked upstream account token, sent as a bearer token.
+# The Resource must link upstream accounts through formal_resource_oauth_settings.
+resource "formal_resource_oauth_settings" "api" {
+  resource_id = formal_resource.api.id
+}
+
+resource "formal_native_user_v3" "linked_account" {
+  resource_id = formal_resource_oauth_settings.api.resource_id
+  label       = "linked-account"
+
+  linked_http_bearer {
+    header = "Authorization"
+  }
+}

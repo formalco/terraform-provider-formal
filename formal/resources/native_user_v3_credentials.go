@@ -208,6 +208,21 @@ func buildNativeUserV3Credentials(variant string, block map[string]any) (*corev1
 				AllowlistedNetworkHosts: blockStringList(block, "allowlisted_network_hosts"),
 			},
 		}}, nil
+
+	case "linked_http_basic":
+		return &corev1.NativeUserV3Credentials{Value: &corev1.NativeUserV3Credentials_LinkedHttpBasic{
+			LinkedHttpBasic: &corev1.LinkedAccountHTTPBasicNativeUserV3{
+				Header:   blockString(block, "header"),
+				Username: blockString(block, "username"),
+			},
+		}}, nil
+
+	case "linked_http_bearer":
+		return &corev1.NativeUserV3Credentials{Value: &corev1.NativeUserV3Credentials_LinkedHttpBearer{
+			LinkedHttpBearer: &corev1.LinkedAccountHTTPBearerNativeUserV3{
+				Header: blockString(block, "header"),
+			},
+		}}, nil
 	}
 
 	return nil, fmt.Errorf("unsupported credential block %q", variant)
@@ -349,6 +364,17 @@ func describeNativeUserV3Credentials(priorSecret priorSecretLookup, credentials 
 			"output_type":               value.Hook.GetOutputType(),
 			"allowlisted_env_variables": value.Hook.GetAllowlistedEnvVariables(),
 			"allowlisted_network_hosts": value.Hook.GetAllowlistedNetworkHosts(),
+		}, nil
+
+	case *corev1.NativeUserV3Credentials_LinkedHttpBasic:
+		return "linked_http_basic", map[string]any{
+			"header":   value.LinkedHttpBasic.GetHeader(),
+			"username": value.LinkedHttpBasic.GetUsername(),
+		}, nil
+
+	case *corev1.NativeUserV3Credentials_LinkedHttpBearer:
+		return "linked_http_bearer", map[string]any{
+			"header": value.LinkedHttpBearer.GetHeader(),
 		}, nil
 	}
 
