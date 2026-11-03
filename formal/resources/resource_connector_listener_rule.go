@@ -143,6 +143,8 @@ func resourceConnectorListenerRuleRead(ctx context.Context, d *schema.ResourceDa
 	return diags
 }
 
+var connectorListenerRuleFieldsThatCanChange = []string{"termination_protection"}
+
 func resourceConnectorListenerRuleUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
@@ -152,7 +154,7 @@ func resourceConnectorListenerRuleUpdate(ctx context.Context, d *schema.Resource
 
 	connectorListenerRuleId := d.Id()
 
-	fieldsThatCanChange := []string{"termination_protection"}
+	fieldsThatCanChange := connectorListenerRuleFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

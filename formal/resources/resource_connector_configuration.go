@@ -148,6 +148,8 @@ func resourceConnectorConfigurationRead(ctx context.Context, d *schema.ResourceD
 	return diags
 }
 
+var connectorConfigurationFieldsThatCanChange = []string{"log_level", "otel_endpoint_hostname", "otel_endpoint_port", "resources_health_checks_frequency"}
+
 func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
@@ -157,7 +159,7 @@ func resourceConnectorConfigurationUpdate(ctx context.Context, d *schema.Resourc
 
 	connectorConfigurationId := d.Id()
 
-	fieldsThatCanChange := []string{"log_level", "otel_endpoint_hostname", "otel_endpoint_port", "resources_health_checks_frequency"}
+	fieldsThatCanChange := connectorConfigurationFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		err := fmt.Sprintf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 		return diag.FromErr(errors.New(err))

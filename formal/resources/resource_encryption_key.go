@@ -159,11 +159,13 @@ func resourceEncryptionKeyRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
+var encryptionKeyFieldsThatCanChange = []string{"key_provider", "key_id", "algorithm", "decryptor_uri", "public_key_pem"}
+
 func resourceEncryptionKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	keyId := d.Id()
 
-	fieldsThatCanChange := []string{"key_provider", "key_id", "algorithm", "decryptor_uri", "public_key_pem"}
+	fieldsThatCanChange := encryptionKeyFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

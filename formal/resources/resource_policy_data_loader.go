@@ -170,12 +170,14 @@ func resourcePolicyDataLoaderRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
+var policyDataLoaderFieldsThatCanChange = []string{"name", "description", "key", "worker_runtime", "worker_code", "worker_schedule", "status", "termination_protection"}
+
 func resourcePolicyDataLoaderUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	loaderId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "description", "key", "worker_runtime", "worker_code", "worker_schedule", "status", "termination_protection"}
+	fieldsThatCanChange := policyDataLoaderFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

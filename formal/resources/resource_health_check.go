@@ -122,13 +122,15 @@ func resourceHealthCheckRead(ctx context.Context, d *schema.ResourceData, meta a
 	return diags
 }
 
+var healthCheckFieldsThatCanChange = []string{"database_name"}
+
 func resourceHealthCheckUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	resourceHealthCheckId := d.Id()
 
-	fieldsThatCanChange := []string{"database_name"}
+	fieldsThatCanChange := healthCheckFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

@@ -94,10 +94,12 @@ func resourceSshHostKeyRead(ctx context.Context, d *schema.ResourceData, meta an
 	return diags
 }
 
+var sshHostKeyFieldsThatCanChange = []string{"public_key"}
+
 func resourceSshHostKeyUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	fieldsThatCanChange := []string{"public_key"}
+	fieldsThatCanChange := sshHostKeyFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

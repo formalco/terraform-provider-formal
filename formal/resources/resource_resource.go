@@ -109,6 +109,7 @@ func ResourceResource() *schema.Resource {
 				Description: "Environment for the Resource, options: DEV, TEST, QA, UAT, EI, PRE, STG, NON_PROD, PROD, CORP.",
 				Type:        schema.TypeString,
 				Optional:    true,
+				Computed:    true,
 				Deprecated:  "This field is deprecated and will be removed in a future release.",
 			},
 			"termination_protection": {
@@ -316,11 +317,13 @@ func resourceDatastoreRead(ctx context.Context, d *schema.ResourceData, meta any
 	return diags
 }
 
+var resourceFieldsThatCanChange = []string{"name", "hostname", "port", "termination_protection", "space_id", "tags", "aliases", "native_users_v3_enabled"}
+
 func resourceDatastoreUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	datastoreId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "environment", "hostname", "port", "termination_protection", "space_id", "tags", "aliases", "native_users_v3_enabled"}
+	fieldsThatCanChange := resourceFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

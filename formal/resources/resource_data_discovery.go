@@ -149,6 +149,8 @@ func resourceDataDiscoveryRead(ctx context.Context, d *schema.ResourceData, meta
 	return diags
 }
 
+var dataDiscoveryFieldsThatCanChange = []string{"native_user_id", "schedule", "deletion_policy", "path"}
+
 func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
@@ -157,7 +159,7 @@ func resourceDataDiscoveryUpdate(ctx context.Context, d *schema.ResourceData, me
 
 	// Only enable updates to these fields, err otherwise
 
-	fieldsThatCanChange := []string{"native_user_id", "schedule", "deletion_policy", "path"}
+	fieldsThatCanChange := dataDiscoveryFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

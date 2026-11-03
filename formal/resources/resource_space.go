@@ -122,6 +122,8 @@ func resourceSpaceRead(ctx context.Context, d *schema.ResourceData, meta any) di
 	return diags
 }
 
+var spaceFieldsThatCanChange = []string{"name", "description", "termination_protection"}
+
 func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
@@ -129,7 +131,7 @@ func resourceSpaceUpdate(ctx context.Context, d *schema.ResourceData, meta any) 
 
 	spaceId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "description", "termination_protection"}
+	fieldsThatCanChange := spaceFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

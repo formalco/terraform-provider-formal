@@ -119,12 +119,14 @@ func resourceInventoryObjectDataLabelLinkRead(ctx context.Context, d *schema.Res
 	return diags
 }
 
+var inventoryObjectDataLabelLinkFieldsThatCanChange = []string{"data_label", "locked"}
+
 func resourceInventoryObjectDataLabelLinkUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	fieldsThatCanChange := []string{"data_label", "locked"}
+	fieldsThatCanChange := inventoryObjectDataLabelLinkFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

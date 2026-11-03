@@ -122,12 +122,14 @@ func resourceSatelliteHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
+var satelliteHostnameFieldsThatCanChange = []string{"termination_protection"}
+
 func resourceSatelliteHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
 	var diags diag.Diagnostics
 
-	fieldsThatCanChange := []string{"termination_protection"}
+	fieldsThatCanChange := satelliteHostnameFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

@@ -225,6 +225,8 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
+var connectorHostnameFieldsThatCanChange = []string{"termination_protection", "dns_record", "certificate", "private_key"}
+
 func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	// use the meta value to retrieve your client from the provider configure method
 	c := meta.(*clients.Clients)
@@ -234,7 +236,7 @@ func resourceConnectorHostnameUpdate(ctx context.Context, d *schema.ResourceData
 
 	connectorHostnameId := d.Id()
 
-	fieldsThatCanChange := []string{"termination_protection", "dns_record", "certificate", "private_key"}
+	fieldsThatCanChange := connectorHostnameFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

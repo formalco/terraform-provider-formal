@@ -268,9 +268,11 @@ func resourceLogSchemaRead(ctx context.Context, d *schema.ResourceData, meta any
 	return nil
 }
 
+var logSchemaFieldsThatCanChange = []string{"name", "encryption_key_id", "scope_cel", "path"}
+
 func resourceLogSchemaUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
-	fieldsThatCanChange := []string{"name", "encryption_key_id", "scope_cel", "path"}
+	fieldsThatCanChange := logSchemaFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

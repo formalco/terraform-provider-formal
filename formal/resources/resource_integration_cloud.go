@@ -3,6 +3,7 @@ package resource
 import (
 	"context"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -802,18 +803,18 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
+var integrationCloudFieldsThatCanBeUpdated = []string{"aws", "gcp", "azure"}
+
 func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	integrationId := d.Id()
 
-	fieldsThatCanBeUpdated := []string{"aws", "gcp", "azure"}
-
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.', 'gcp.0.' or 'azure.0.' counterpart has changes
-	fieldsThatCanChange := append(fieldsThatCanBeUpdated, []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions", "azure_actions", "azure_data_actions"}...)
+	fieldsThatCanChange := append(slices.Clone(integrationCloudFieldsThatCanBeUpdated), []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions", "azure_actions", "azure_data_actions"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
-		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanBeUpdated, ", "))
+		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(integrationCloudFieldsThatCanBeUpdated, ", "))
 	}
 
 	var err error

@@ -131,6 +131,8 @@ func resourceConnectorRead(ctx context.Context, d *schema.ResourceData, meta any
 	return diags
 }
 
+var connectorFieldsThatCanChange = []string{"termination_protection", "space_id"}
+
 func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
@@ -138,7 +140,7 @@ func resourceConnectorUpdate(ctx context.Context, d *schema.ResourceData, meta a
 
 	connectorId := d.Id()
 
-	fieldsThatCanChange := []string{"name", "termination_protection", "space_id"}
+	fieldsThatCanChange := connectorFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}

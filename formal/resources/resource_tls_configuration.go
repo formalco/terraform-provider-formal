@@ -176,13 +176,15 @@ func resourceTlsConfigurationRead(ctx context.Context, d *schema.ResourceData, m
 	return diags
 }
 
+var tlsConfigurationFieldsThatCanChange = []string{"tls_config", "tls_min_version", "tls_ca_truststore", "tls_client_cert", "tls_client_key", "tls_client_cert_is_env", "tls_client_key_is_env"}
+
 func resourceTlsConfigurationUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 	var diags diag.Diagnostics
 
 	resourceTlsConfig := d.Id()
 
-	fieldsThatCanChange := []string{"tls_config", "tls_min_version", "tls_ca_truststore", "tls_client_cert", "tls_client_key", "tls_client_cert_is_env", "tls_client_key_is_env"}
+	fieldsThatCanChange := tlsConfigurationFieldsThatCanChange
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(fieldsThatCanChange, ", "))
 	}
