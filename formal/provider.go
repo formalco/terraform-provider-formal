@@ -195,7 +195,7 @@ func configure(version string, p *schema.Provider) func(context.Context, *schema
 			authOptions = append(authOptions, formal.WithBaseURL(baseURL))
 		}
 
-		grpc, err := api.NewClient(authOptions, returnSensitiveValue)
+		grpc, err := api.NewClient(authOptions, p.UserAgent("terraform-provider-formal", version), returnSensitiveValue)
 		if err != nil {
 			return nil, diag.FromErr(err)
 		}
