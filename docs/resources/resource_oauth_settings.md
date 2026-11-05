@@ -3,12 +3,12 @@
 page_title: "formal_resource_oauth_settings Resource - terraform-provider-formal"
 subcategory: ""
 description: |-
-  Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see formal_oauth_client) can then connect to the Resource through the Connector and, unless upstream_oauth_mode is none, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. requested_scopes and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. requested_scopes apply to future links. Changing resource_id, upstream_oauth_mode, client_id, or issuer, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.
+  Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see formal_oauth_client) can then connect to the Resource through the Connector and, unless upstream_oauth_mode is none, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. requested_scopes and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. requested_scopes apply to future links. Changing resource_id, upstream_oauth_mode, client_id, or issuer, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource. In dcr mode, Formal registers its client once, on create; to register a new one, for example after the authorization server forgot the registration, replace this resource with terraform apply -replace.
 ---
 
 # formal_resource_oauth_settings (Resource)
 
-Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.
+Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource. In `dcr` mode, Formal registers its client once, on create; to register a new one, for example after the authorization server forgot the registration, replace this resource with `terraform apply -replace`.
 
 ## Example Usage
 
@@ -75,14 +75,15 @@ variable "github_oauth_app_client_secret" {
 - `client_secret_wo_version` (Number) Version trigger for `client_secret_wo`. Increment this value to update the secret.
 - `issuer` (String) The upstream authorization server's issuer, such as `https://github.com/login/oauth` for the GitHub REST API. Set it when the upstream publishes no protected resource metadata (RFC 9728): Formal then reads the issuer's authorization server metadata directly. It must use https, have no query or fragment, and exactly match the issuer the metadata reports. When unset, the authorization server is discovered from the upstream itself. Not allowed when `upstream_oauth_mode` is `none`.
 - `requested_scopes` (Set of String) Scopes to request from the upstream authorization server. When empty, the scope parameter is omitted and the provider's defaults apply. Must be empty when `upstream_oauth_mode` is `none`. Existing linked accounts keep the scopes they were granted; users get these scopes the next time they link.
-- `upstream_oauth_mode` (String) How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.
+- `upstream_oauth_mode` (String) How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `dcr` registers a client for these settings with the authorization server's dynamic client registration endpoint (RFC 7591) on create, and fails if the server offers none or rejects the registration; its ID is `registered_client_id`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.
 
 ### Read-Only
 
-- `client_secret_set` (Boolean) Whether the OAuth app has a client secret.
+- `client_secret_set` (Boolean) Whether the OAuth app, or the dynamically registered client, has a client secret.
 - `created_at` (String) When the OAuth settings were created.
 - `id` (String) The ID of the Resource the OAuth settings belong to. Import with the Resource ID.
 - `oauth_settings_id` (String) The ID of the OAuth settings.
+- `registered_client_id` (String) The client ID the authorization server issued when `upstream_oauth_mode` is `dcr`; empty otherwise.
 - `updated_at` (String) When the OAuth settings were last updated.
 
 ## Import

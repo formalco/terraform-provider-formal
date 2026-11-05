@@ -22,12 +22,13 @@ import (
 const (
 	upstreamOAuthModeFormal        = "formal"
 	upstreamOAuthModePreRegistered = "pre_registered"
+	upstreamOAuthModeDCR           = "dcr"
 	upstreamOAuthModeNone          = "none"
 )
 
 func ResourceResourceOAuthSettings() *schema.Resource {
 	return &schema.Resource{
-		Description: "Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource.",
+		Description: "Enables OAuth on an MCP, HTTP, gRPC or LLM Resource. OAuth clients (see `formal_oauth_client`) can then connect to the Resource through the Connector and, unless `upstream_oauth_mode` is `none`, users link their own upstream accounts, whose access tokens the Connector sends upstream in place of native user credentials. `requested_scopes` and the client secret update in place and leave linked accounts and OAuth clients' authorizations as they are. `requested_scopes` apply to future links. Changing `resource_id`, `upstream_oauth_mode`, `client_id`, or `issuer`, or destroying this resource, deletes every user's linked account and every OAuth client's authorization for the Resource. In `dcr` mode, Formal registers its client once, on create; to register a new one, for example after the authorization server forgot the registration, replace this resource with `terraform apply -replace`.",
 
 		CreateContext: resourceResourceOAuthSettingsCreate,
 		ReadContext:   resourceResourceOAuthSettingsRead,
@@ -55,7 +56,7 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				ForceNew:    true,
 			},
 			"upstream_oauth_mode": {
-				Description: "How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.",
+				Description: "How Formal identifies itself to the upstream authorization server when users link their accounts. `formal` (the default) uses Formal's OAuth app: a client Formal registered with the authorization server when there is one, and otherwise its Client ID Metadata Document client. `pre_registered` uses an OAuth app your organization registered with the authorization server, set with `client_id` and `client_secret` or `client_secret_wo`. `dcr` registers a client for these settings with the authorization server's dynamic client registration endpoint (RFC 7591) on create, and fails if the server offers none or rejects the registration; its ID is `registered_client_id`. `none` links no upstream account: the Connector authenticates upstream with the user's native user.",
 				Type:        schema.TypeString,
 				Optional:    true,
 				ForceNew:    true,
@@ -63,6 +64,7 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				ValidateFunc: validation.StringInSlice([]string{
 					upstreamOAuthModeFormal,
 					upstreamOAuthModePreRegistered,
+					upstreamOAuthModeDCR,
 					upstreamOAuthModeNone,
 				}, false),
 			},
@@ -103,8 +105,13 @@ func ResourceResourceOAuthSettings() *schema.Resource {
 				Optional:     true,
 				RequiredWith: []string{"client_secret_wo"},
 			},
+			"registered_client_id": {
+				Description: "The client ID the authorization server issued when `upstream_oauth_mode` is `dcr`; empty otherwise.",
+				Type:        schema.TypeString,
+				Computed:    true,
+			},
 			"client_secret_set": {
-				Description: "Whether the OAuth app has a client secret.",
+				Description: "Whether the OAuth app, or the dynamically registered client, has a client secret.",
 				Type:        schema.TypeBool,
 				Computed:    true,
 			},
@@ -324,7 +331,15 @@ func flattenResourceOAuthSettings(d *schema.ResourceData, settings *corev1.Resou
 	d.Set("resource_id", settings.ResourceId)
 	d.Set("upstream_oauth_mode", settings.UpstreamOauthMode)
 	d.Set("requested_scopes", settings.RequestedScopes)
-	d.Set("client_id", settings.ClientId)
+	// A dynamically registered client's ID is not configuration, so it is kept
+	// out of client_id, which would otherwise plan a replacement.
+	if settings.UpstreamOauthMode == upstreamOAuthModeDCR {
+		d.Set("client_id", "")
+		d.Set("registered_client_id", settings.ClientId)
+	} else {
+		d.Set("client_id", settings.ClientId)
+		d.Set("registered_client_id", "")
+	}
 	d.Set("client_secret_set", settings.ClientSecretSet)
 	d.Set("issuer", settings.GetIssuer())
 	if settings.CreatedAt != nil {

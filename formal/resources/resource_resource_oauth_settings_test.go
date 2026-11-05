@@ -121,6 +121,13 @@ func TestValidateResourceOAuthSettingsArgs(t *testing.T) {
 			args:    resourceOAuthSettingsArgs{mode: upstreamOAuthModePreRegistered, hasClientSecret: true},
 			wantErr: "client_id is required",
 		},
+		"dcr with scopes and issuer": {
+			args: resourceOAuthSettingsArgs{mode: upstreamOAuthModeDCR, hasScopes: true, hasIssuer: true},
+		},
+		"dcr with client_id": {
+			args:    resourceOAuthSettingsArgs{mode: upstreamOAuthModeDCR, hasClientID: true},
+			wantErr: "only allowed when upstream_oauth_mode is pre_registered",
+		},
 		"none": {
 			args: resourceOAuthSettingsArgs{mode: upstreamOAuthModeNone},
 		},
@@ -479,4 +486,35 @@ func TestResourceOAuthSettingsDeleteIgnoresMissingSettings(t *testing.T) {
 	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
 	require.Equal(t, "resource_mcp", deletedResourceID)
 	require.Empty(t, d.Id())
+}
+
+func TestResourceOAuthSettingsDCRReadsRegisteredClientID(t *testing.T) {
+	t.Parallel()
+
+	settings := &corev1.ResourceOAuthSettings{
+		Id:                "resourceoauthsetting_1",
+		ResourceId:        "resource_mcp",
+		UpstreamOauthMode: upstreamOAuthModeDCR,
+		ClientId:          "registered-client",
+		CreatedAt:         timestamppb.Now(),
+		UpdatedAt:         timestamppb.Now(),
+	}
+	meta := newResourceOAuthSettingsTestClients(t, resourceOAuthSettingsTestServer{
+		create: func(*corev1.CreateResourceOAuthSettingsRequest) (*corev1.CreateResourceOAuthSettingsResponse, error) {
+			return &corev1.CreateResourceOAuthSettingsResponse{ResourceOauthSettings: settings}, nil
+		},
+		get: func(*corev1.GetResourceOAuthSettingsRequest) (*corev1.GetResourceOAuthSettingsResponse, error) {
+			return &corev1.GetResourceOAuthSettingsResponse{ResourceOauthSettings: settings}, nil
+		},
+	})
+
+	r := ResourceResourceOAuthSettings()
+	d := schema.TestResourceDataRaw(t, r.Schema, map[string]any{
+		"resource_id":         "resource_mcp",
+		"upstream_oauth_mode": upstreamOAuthModeDCR,
+	})
+	diags := r.CreateContext(t.Context(), d, meta)
+	require.False(t, diags.HasError(), "unexpected diagnostics: %v", diags)
+	require.Empty(t, d.Get("client_id"), "a registered client ID would plan a replacement as client_id")
+	require.Equal(t, "registered-client", d.Get("registered_client_id"))
 }
