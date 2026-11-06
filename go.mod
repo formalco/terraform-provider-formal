@@ -150,7 +150,7 @@ require (
 	github.com/jdx/go-netrc v1.0.0 // indirect
 	github.com/jdx/jactionlint v1.8.2 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
-	github.com/klauspost/compress v1.20.0 // indirect
+	github.com/klauspost/compress v1.20.2 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/lyft/protoc-gen-star/v2 v2.0.4 // indirect
