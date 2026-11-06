@@ -94,6 +94,7 @@ require (
 	github.com/containerd/stargz-snapshotter/estargz v0.17.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/creack/pty v1.1.24 // indirect
+	github.com/dave/jennifer v1.6.0 // indirect
 	github.com/distribution/reference v0.6.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/dnephin/pflag v1.0.7 // indirect
@@ -149,6 +150,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jdx/go-netrc v1.0.0 // indirect
 	github.com/jdx/jactionlint v1.8.2 // indirect
+	github.com/jmattheis/goverter v1.11.1 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/compress v1.20.2 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
@@ -250,6 +252,7 @@ tool (
 	github.com/bufbuild/buf/cmd/buf
 	github.com/envoyproxy/protoc-gen-validate
 	github.com/jdx/jactionlint/cmd/jactionlint
+	github.com/jmattheis/goverter/cmd/goverter
 	github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc
 	google.golang.org/protobuf/cmd/protoc-gen-go
