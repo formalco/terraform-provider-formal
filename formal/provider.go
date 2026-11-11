@@ -139,6 +139,7 @@ func New(version string) func() *schema.Provider {
 				"formal_native_user_v3":                     resource.ResourceNativeUserV3(),
 				"formal_network_rule":                       resource.ResourceNetworkRule(),
 				"formal_oauth_client":                       resource.ResourceOAuthClient(),
+				"formal_dashboard":                          resource.ResourceDashboard(),
 				"formal_org_theme":                          resource.ResourceOrgTheme(),
 				"formal_user":                               resource.ResourceUser(),
 				"formal_integration_log":                    resource.ResourceIntegrationLogs(),
