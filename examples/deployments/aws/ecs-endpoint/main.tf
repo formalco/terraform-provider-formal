@@ -32,10 +32,11 @@ locals {
     "{ printf 'auth_mode = \"oidc\"\\n\\n'; cat ${local.config_path} 2>/dev/null; printf '\\n[oidc]\\nprovider = \"aws\"\\nintegration_id = \"${var.oidc_integration_id}\"\\n'; } > ${local.config_path}.new",
     "mv ${local.config_path}.new ${local.config_path}",
   ]
-  setup = concat(local.ca_setup, local.oidc_setup)
-  entry_point = length(local.setup) == 0 ? ["/usr/local/bin/formal"] : ["/bin/sh", "-c", join(" && ", concat(
-    ["umask 077"],
-    local.setup,
+  machine_id_setup = ["{ [ -s /etc/machine-id ] || tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id; }"]
+  setup            = concat(local.ca_setup, local.oidc_setup)
+  entry_point = ["/bin/sh", "-c", join(" && ", concat(
+    local.machine_id_setup,
+    length(local.setup) == 0 ? [] : concat(["umask 077"], local.setup),
     ["exec /usr/local/bin/formal \"$@\""],
   )), "formal"]
 

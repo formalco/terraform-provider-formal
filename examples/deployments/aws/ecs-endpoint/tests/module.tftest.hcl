@@ -35,7 +35,9 @@ run "adds_endpoint_sidecar" {
       length(output.container_definitions[0].secrets) == 1 &&
       output.container_definitions[0].secrets[0].name == "FORMAL_API_KEY" &&
       output.container_definitions[0].secrets[0].valueFrom == var.api_key_secret_arn &&
-      tolist(output.container_definitions[0].entryPoint) == tolist(["/usr/local/bin/formal"])
+      output.container_definitions[0].entryPoint[0] == "/bin/sh" &&
+      strcontains(output.container_definitions[0].entryPoint[2], "[ -s /etc/machine-id ] || tr -d '-' < /proc/sys/kernel/random/uuid > /etc/machine-id") &&
+      strcontains(output.container_definitions[0].entryPoint[2], "exec /usr/local/bin/formal \"$@\"")
     )
     error_message = "endpoint container is misconfigured"
   }
