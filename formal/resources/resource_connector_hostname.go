@@ -187,7 +187,6 @@ func resourceConnectorHostnameRead(ctx context.Context, d *schema.ResourceData, 
 			return res, "ready", nil
 		},
 		Timeout:                   10 * time.Minute, // Set a timeout for the wait
-		Delay:                     10 * time.Second, // Poll every 10 seconds
 		MinTimeout:                5 * time.Second,
 		ContinuousTargetOccurence: 1,
 	}
