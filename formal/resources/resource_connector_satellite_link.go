@@ -46,7 +46,7 @@ func ResourceConnectorSatelliteLink() *schema.Resource {
 				ForceNew:    true,
 			},
 			"satellite_type": {
-				Description: "The type of satellite being linked. Must be one of: `ai`, `data_classifier` or `policy_data_loader`.",
+				Description: "The type of satellite being linked. For new links, use `ai` or `policy_data_loader`. `data_classifier` is deprecated and cannot be used for new links.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,

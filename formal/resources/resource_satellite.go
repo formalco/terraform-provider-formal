@@ -43,7 +43,7 @@ func ResourceSatellite() *schema.Resource {
 			},
 			"satellite_type": {
 				// This description is used by the documentation generator and the language server.
-				Description: "The type of satellite. Must be one of: `ai`, `data_discovery`, `data_classifier` (deprecated), or `policy_data_loader`.",
+				Description: "The type of satellite. Must be one of: `ai`, `data_discovery`, or `policy_data_loader`.",
 				Type:        schema.TypeString,
 				Required:    true,
 				ForceNew:    true,
