@@ -56,6 +56,14 @@ resource "formal_native_user_v3" "basic_write_only" {
   }
 }
 
+# The client's own credentials, sent as is to the Resource.
+resource "formal_native_user_v3" "passthrough" {
+  resource_id = formal_resource.db.id
+  label       = "passthrough"
+
+  passthrough {}
+}
+
 # AWS IAM, inheriting the role from the connector's environment.
 resource "formal_native_user_v3" "aws_iam" {
   resource_id = formal_resource.db.id
@@ -149,6 +157,7 @@ resource "formal_native_user_v3" "linked_account" {
 - `kubernetes_path` (Block List, Max: 1) Kubernetes authentication using a kubeconfig file path on the connector. (see [below for nested schema](#nestedblock--kubernetes_path))
 - `linked_http_basic` (Block List, Max: 1) HTTP Basic authentication using the requesting user's linked upstream account token as the password, injected on a named header. The Resource must have linked accounts enabled through `formal_resource_oauth_settings`. (see [below for nested schema](#nestedblock--linked_http_basic))
 - `linked_http_bearer` (Block List, Max: 1) HTTP Bearer authentication using the requesting user's linked upstream account token, injected on a named header. The Resource must have linked accounts enabled through `formal_resource_oauth_settings`. (see [below for nested schema](#nestedblock--linked_http_bearer))
+- `passthrough` (Block List, Max: 1) Sends the credentials the client sent to the Resource, instead of credentials held by the connector. (see [below for nested schema](#nestedblock--passthrough))
 - `snowflake_key` (Block List, Max: 1) Snowflake key-pair authentication. (see [below for nested schema](#nestedblock--snowflake_key))
 - `ssh_key` (Block List, Max: 1) SSH private key authentication. (see [below for nested schema](#nestedblock--ssh_key))
 - `termination_protection` (Boolean) If set to true, this Native User cannot be deleted.
@@ -388,6 +397,10 @@ Required:
 Required:
 
 - `header` (String) The header to inject the token on, for example `Authorization`.
+
+
+<a id="nestedblock--passthrough"></a>
+### Nested Schema for `passthrough`
 
 
 <a id="nestedblock--snowflake_key"></a>

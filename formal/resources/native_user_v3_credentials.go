@@ -223,6 +223,11 @@ func buildNativeUserV3Credentials(variant string, block map[string]any) (*corev1
 				Header: blockString(block, "header"),
 			},
 		}}, nil
+
+	case "passthrough":
+		return &corev1.NativeUserV3Credentials{Value: &corev1.NativeUserV3Credentials_Passthrough{
+			Passthrough: &corev1.PassthroughNativeUserV3{},
+		}}, nil
 	}
 
 	return nil, fmt.Errorf("unsupported credential block %q", variant)
@@ -376,6 +381,9 @@ func describeNativeUserV3Credentials(priorSecret priorSecretLookup, credentials 
 		return "linked_http_bearer", map[string]any{
 			"header": value.LinkedHttpBearer.GetHeader(),
 		}, nil
+
+	case *corev1.NativeUserV3Credentials_Passthrough:
+		return "passthrough", map[string]any{}, nil
 	}
 
 	return "", nil, fmt.Errorf("the API returned credentials this provider version does not support; please upgrade the Formal provider")
@@ -453,11 +461,13 @@ func expandOptionalSecretValue(block map[string]any, field string) (*corev1.Secr
 // singleBlock reads a MaxItems-1 block into its attribute map.
 func singleBlock(value any) (map[string]any, bool) {
 	list, ok := value.([]any)
-	if !ok || len(list) == 0 || list[0] == nil {
+	if !ok || len(list) == 0 {
 		return nil, false
 	}
-	block, ok := list[0].(map[string]any)
-	return block, ok
+	// The SDK reads a block without any attribute set, such as `passthrough {}`,
+	// as a nil element.
+	block, _ := list[0].(map[string]any)
+	return block, true
 }
 
 func blockString(block map[string]any, field string) string {

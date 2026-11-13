@@ -41,6 +41,7 @@ var nativeUserV3CredentialBlocks = []string{
 	"hook",
 	"linked_http_basic",
 	"linked_http_bearer",
+	"passthrough",
 }
 
 var nativeUserV3TypeNames = []string{
@@ -256,6 +257,10 @@ func nativeUserV3Schema() map[string]*schema.Schema {
 				"header": requiredString("The header to inject the token on, for example `Authorization`."),
 			},
 		),
+		"passthrough": credentialBlock(
+			"Sends the credentials the client sent to the Resource, instead of credentials held by the connector.",
+			map[string]*schema.Schema{},
+		),
 	}
 
 	return s
@@ -341,10 +346,10 @@ func resourceNativeUserV3ForceNewOnVariantChange(ctx context.Context, d *schema.
 	var before, after string
 	for _, name := range nativeUserV3CredentialBlocks {
 		oldValue, newValue := d.GetChange(name)
-		if blockIsSet(oldValue) {
+		if _, ok := singleBlock(oldValue); ok {
 			before = name
 		}
-		if blockIsSet(newValue) {
+		if _, ok := singleBlock(newValue); ok {
 			after = name
 		}
 	}
@@ -353,11 +358,6 @@ func resourceNativeUserV3ForceNewOnVariantChange(ctx context.Context, d *schema.
 		return d.ForceNew(after)
 	}
 	return nil
-}
-
-func blockIsSet(value any) bool {
-	list, ok := value.([]any)
-	return ok && len(list) > 0 && list[0] != nil
 }
 
 func resourceNativeUserV3Create(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {

@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
@@ -198,6 +199,12 @@ func TestBuildNativeUserV3CredentialsCoversEveryVariant(t *testing.T) {
 				require.Equal(t, "Authorization", credentials.GetLinkedHttpBearer().GetHeader())
 			},
 		},
+		{
+			variant: "passthrough",
+			assert: func(t *testing.T, credentials *corev1.NativeUserV3Credentials) {
+				require.NotNil(t, credentials.GetPassthrough())
+			},
+		},
 	}
 
 	require.Len(t, tests, len(nativeUserV3CredentialBlocks), "every credential variant must be covered")
@@ -209,6 +216,28 @@ func TestBuildNativeUserV3CredentialsCoversEveryVariant(t *testing.T) {
 			test.assert(t, credentials)
 		})
 	}
+}
+
+func TestExpandNativeUserV3CredentialsReadsEmptyPassthroughBlock(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, nativeUserV3Schema(), map[string]any{
+		"resource_id": "resource_1",
+		"label":       "passthrough",
+		"passthrough": []any{map[string]any{}},
+	})
+
+	credentials, err := expandNativeUserV3Credentials(d)
+	require.NoError(t, err)
+	require.NotNil(t, credentials.GetPassthrough())
+}
+
+func TestFlattenNativeUserV3CredentialsKeepsEmptyPassthroughBlock(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, nativeUserV3Schema(), map[string]any{})
+
+	err := flattenNativeUserV3Credentials(d, &corev1.NativeUserV3Credentials{
+		Value: &corev1.NativeUserV3Credentials_Passthrough{Passthrough: &corev1.PassthroughNativeUserV3{}},
+	})
+	require.NoError(t, err)
+	require.Len(t, d.Get("passthrough"), 1)
 }
 
 func TestBuildNativeUserV3CredentialsRejectsUnknownHookOutputType(t *testing.T) {

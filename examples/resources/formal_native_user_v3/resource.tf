@@ -41,6 +41,14 @@ resource "formal_native_user_v3" "basic_write_only" {
   }
 }
 
+# The client's own credentials, sent as is to the Resource.
+resource "formal_native_user_v3" "passthrough" {
+  resource_id = formal_resource.db.id
+  label       = "passthrough"
+
+  passthrough {}
+}
+
 # AWS IAM, inheriting the role from the connector's environment.
 resource "formal_native_user_v3" "aws_iam" {
   resource_id = formal_resource.db.id
