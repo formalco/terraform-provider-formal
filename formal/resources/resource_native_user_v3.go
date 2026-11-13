@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
+	"github.com/samber/lo"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 	"github.com/formalco/terraform-provider-formal/formal/clients"
@@ -242,6 +243,27 @@ func nativeUserV3Schema() map[string]*schema.Schema {
 						ValidateFunc: validation.StringIsNotEmpty,
 					},
 				},
+				"secret": {
+					Description: "A secret manager reference the connector resolves and passes to the hook as its fourth argument, `secrets`, keyed by `name`.",
+					Type:        schema.TypeSet,
+					Optional:    true,
+					Elem: &schema.Resource{
+						Schema: lo.Assign(
+							map[string]*schema.Schema{
+								"name": {
+									Description: "The key the resolved value has in the hook's `secrets` argument.",
+									Type:        schema.TypeString,
+									Required:    true,
+									ValidateFunc: validation.StringMatch(
+										regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`),
+										"secret name must match ^[A-Za-z_][A-Za-z0-9_]*$",
+									),
+								},
+							},
+							secretManagerReferenceFields(),
+						),
+					},
+				},
 			},
 		),
 		"linked_http_basic": credentialBlock(
@@ -301,7 +323,7 @@ func optionalSecretBlock(description string) *schema.Schema {
 
 func secretBlockSchema(description string, required bool) *schema.Schema {
 	return &schema.Schema{
-		Description: description + " Set exactly one of `literal`, `literal_wo` or `environment_variable`.",
+		Description: description + " Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`.",
 		Type:        schema.TypeList,
 		Required:    required,
 		Optional:    !required,
@@ -331,8 +353,54 @@ func secretBlockSchema(description string, required bool) *schema.Schema {
 					Type:        schema.TypeString,
 					Optional:    true,
 				},
+				"secret_manager": {
+					Description: "A secret held in a cloud secret manager, fetched by the connector using its own cloud identity.",
+					Type:        schema.TypeList,
+					Optional:    true,
+					MaxItems:    1,
+					Elem:        &schema.Resource{Schema: secretManagerReferenceFields()},
+				},
 			},
 		},
+	}
+}
+
+// secretManagerReferenceFields mirrors the SecretManagerReference oneof.
+// Exactly one block must be set; that is enforced when the block is expanded.
+func secretManagerReferenceFields() map[string]*schema.Schema {
+	return map[string]*schema.Schema{
+		"aws_secret": secretManagerProviderBlock(
+			"An AWS Secrets Manager secret.",
+			"arn",
+			"The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.",
+		),
+		"gcp_secret": secretManagerProviderBlock(
+			"A GCP Secret Manager secret version.",
+			"name",
+			"The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.",
+		),
+		"azure_secret": secretManagerProviderBlock(
+			"An Azure Key Vault secret.",
+			"url",
+			"The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.",
+		),
+	}
+}
+
+func secretManagerProviderBlock(description, field, fieldDescription string) *schema.Schema {
+	return &schema.Schema{
+		Description: description + " Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`.",
+		Type:        schema.TypeList,
+		Optional:    true,
+		MaxItems:    1,
+		Elem: &schema.Resource{Schema: map[string]*schema.Schema{
+			field: {
+				Description:  fieldDescription,
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringIsNotEmpty,
+			},
+		}},
 	}
 }
 

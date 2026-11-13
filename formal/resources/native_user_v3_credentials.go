@@ -200,12 +200,17 @@ func buildNativeUserV3Credentials(variant string, block map[string]any) (*corev1
 				outputTypeName, strings.Join(nativeUserV3TypeNames, ", "),
 			)
 		}
+		secrets, err := expandHookSecrets(block)
+		if err != nil {
+			return nil, fmt.Errorf("hook: %w", err)
+		}
 		return &corev1.NativeUserV3Credentials{Value: &corev1.NativeUserV3Credentials_Hook{
 			Hook: &corev1.HookNativeUserV3{
 				Hook:                    blockString(block, "code"),
 				OutputType:              outputTypeName,
 				AllowlistedEnvVariables: blockStringList(block, "allowlisted_env_variables"),
 				AllowlistedNetworkHosts: blockStringList(block, "allowlisted_network_hosts"),
+				Secrets:                 secrets,
 			},
 		}}, nil
 
@@ -369,6 +374,7 @@ func describeNativeUserV3Credentials(priorSecret priorSecretLookup, credentials 
 			"output_type":               value.Hook.GetOutputType(),
 			"allowlisted_env_variables": value.Hook.GetAllowlistedEnvVariables(),
 			"allowlisted_network_hosts": value.Hook.GetAllowlistedNetworkHosts(),
+			"secret":                    flattenHookSecrets(value.Hook.GetSecrets()),
 		}, nil
 
 	case *corev1.NativeUserV3Credentials_LinkedHttpBasic:
@@ -402,11 +408,14 @@ func flattenSecretValue(priorSecret priorSecretLookup, path string, value *corev
 		// is carried forward. Dropping that would show up as drift every plan.
 		"literal_wo":         "",
 		"literal_wo_version": blockInt(prior, "literal_wo_version"),
+		"secret_manager":     []any{},
 	}
 
 	switch source := value.GetSource().(type) {
 	case *corev1.SecretValue_EnvironmentVariable:
 		secret["environment_variable"] = source.EnvironmentVariable
+	case *corev1.SecretValue_SecretManager:
+		secret["secret_manager"] = []any{flattenSecretManagerReference(source.SecretManager)}
 	case *corev1.SecretValue_Literal:
 		if source.Literal == nativeUserV3RedactedSecret {
 			secret["literal"] = blockString(prior, "literal")
@@ -427,12 +436,13 @@ func expandSecretValue(block map[string]any, field string) (*corev1.SecretValue,
 	literal := blockString(secret, "literal")
 	writeOnlyLiteral := blockString(secret, "literal_wo")
 	environmentVariable := blockString(secret, "environment_variable")
+	secretManager, hasSecretManager := singleBlock(secret["secret_manager"])
 
-	sources := lo.CountBy([]string{literal, writeOnlyLiteral, environmentVariable}, func(source string) bool {
-		return source != ""
+	sources := lo.CountBy([]bool{literal != "", writeOnlyLiteral != "", environmentVariable != "", hasSecretManager}, func(set bool) bool {
+		return set
 	})
 	if sources > 1 {
-		return nil, fmt.Errorf("%s: set only one of literal, literal_wo or environment_variable", field)
+		return nil, fmt.Errorf("%s: set only one of literal, literal_wo, environment_variable or secret_manager", field)
 	}
 
 	switch {
@@ -446,9 +456,77 @@ func expandSecretValue(block map[string]any, field string) (*corev1.SecretValue,
 		return &corev1.SecretValue{Source: &corev1.SecretValue_EnvironmentVariable{
 			EnvironmentVariable: environmentVariable,
 		}}, nil
+	case hasSecretManager:
+		reference, err := expandSecretManagerReference(secretManager)
+		if err != nil {
+			return nil, fmt.Errorf("%s.secret_manager: %w", field, err)
+		}
+		return &corev1.SecretValue{Source: &corev1.SecretValue_SecretManager{SecretManager: reference}}, nil
 	}
 
-	return nil, fmt.Errorf("%s: one of literal, literal_wo or environment_variable is required", field)
+	return nil, fmt.Errorf("%s: one of literal, literal_wo, environment_variable or secret_manager is required", field)
+}
+
+func expandSecretManagerReference(block map[string]any) (*corev1.SecretManagerReference, error) {
+	awsSecret, hasAWS := singleBlock(block["aws_secret"])
+	gcpSecret, hasGCP := singleBlock(block["gcp_secret"])
+	azureSecret, hasAzure := singleBlock(block["azure_secret"])
+
+	if lo.Count([]bool{hasAWS, hasGCP, hasAzure}, true) != 1 {
+		return nil, fmt.Errorf("set exactly one of aws_secret, gcp_secret or azure_secret")
+	}
+
+	switch {
+	case hasAWS:
+		return &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_AwsSecret{
+			AwsSecret: &corev1.AWSSecretsManagerSecret{Arn: blockString(awsSecret, "arn")},
+		}}, nil
+	case hasGCP:
+		return &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_GcpSecret{
+			GcpSecret: &corev1.GCPSecretManagerSecret{Name: blockString(gcpSecret, "name")},
+		}}, nil
+	default:
+		return &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_AzureSecret{
+			AzureSecret: &corev1.AzureKeyVaultSecret{Url: blockString(azureSecret, "url")},
+		}}, nil
+	}
+}
+
+func flattenSecretManagerReference(reference *corev1.SecretManagerReference) map[string]any {
+	block := map[string]any{"aws_secret": []any{}, "gcp_secret": []any{}, "azure_secret": []any{}}
+	switch secret := reference.GetSecret().(type) {
+	case *corev1.SecretManagerReference_AwsSecret:
+		block["aws_secret"] = []any{map[string]any{"arn": secret.AwsSecret.GetArn()}}
+	case *corev1.SecretManagerReference_GcpSecret:
+		block["gcp_secret"] = []any{map[string]any{"name": secret.GcpSecret.GetName()}}
+	case *corev1.SecretManagerReference_AzureSecret:
+		block["azure_secret"] = []any{map[string]any{"url": secret.AzureSecret.GetUrl()}}
+	}
+	return block
+}
+
+func expandHookSecrets(block map[string]any) (map[string]*corev1.SecretManagerReference, error) {
+	secrets := map[string]*corev1.SecretManagerReference{}
+	for _, secret := range blockObjects(block, "secret") {
+		name := blockString(secret, "name")
+		if _, exists := secrets[name]; exists {
+			return nil, fmt.Errorf("secret %q is set more than once", name)
+		}
+		reference, err := expandSecretManagerReference(secret)
+		if err != nil {
+			return nil, fmt.Errorf("secret %q: %w", name, err)
+		}
+		secrets[name] = reference
+	}
+	return secrets, nil
+}
+
+func flattenHookSecrets(secrets map[string]*corev1.SecretManagerReference) []any {
+	return lo.Map(slices.Sorted(maps.Keys(secrets)), func(name string, _ int) any {
+		secret := flattenSecretManagerReference(secrets[name])
+		secret["name"] = name
+		return secret
+	})
 }
 
 func expandOptionalSecretValue(block map[string]any, field string) (*corev1.SecretValue, error) {
@@ -478,6 +556,21 @@ func blockString(block map[string]any, field string) string {
 func blockInt(block map[string]any, field string) int {
 	value, _ := block[field].(int)
 	return value
+}
+
+// blockObjects reads a block list or set into its elements' attribute maps.
+func blockObjects(block map[string]any, field string) []map[string]any {
+	var items []any
+	switch value := block[field].(type) {
+	case *schema.Set:
+		items = value.List()
+	case []any:
+		items = value
+	}
+	return lo.FilterMap(items, func(item any, _ int) (map[string]any, bool) {
+		object, ok := item.(map[string]any)
+		return object, ok
+	})
 }
 
 func blockStringList(block map[string]any, field string) []string {

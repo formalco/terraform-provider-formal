@@ -41,6 +41,25 @@ resource "formal_native_user_v3" "basic" {
   }
 }
 
+# Username and password, with the password read from AWS Secrets Manager by the
+# connector using its own IAM role. gcp_secret { name = ... } and
+# azure_secret { url = ... } work the same way for GCP Secret Manager and Azure Key Vault.
+resource "formal_native_user_v3" "basic_secret_manager" {
+  resource_id = formal_resource.db.id
+  label       = "admin-secret-manager"
+
+  basic {
+    username = "app_admin"
+    password {
+      secret_manager {
+        aws_secret {
+          arn = "arn:aws:secretsmanager:us-east-1:123456789012:secret:analytics-admin-AbCdEf:password::"
+        }
+      }
+    }
+  }
+}
+
 # Username and password, with the password passed as a write-only value so it
 # never lands in Terraform state. Increment literal_wo_version to rotate it.
 resource "formal_native_user_v3" "basic_write_only" {
@@ -109,6 +128,33 @@ resource "formal_native_user_v3" "from_hook" {
         return {
           username: env.FORMAL_ENV_USER,
           password: env.FORMAL_ENV_PASSWORD,
+        };
+      }
+    TYPESCRIPT
+  }
+}
+
+# A hook that receives secret manager references as its fourth argument,
+# resolved by the connector before the hook runs.
+resource "formal_native_user_v3" "from_hook_with_secrets" {
+  resource_id = formal_resource.db.id
+  label       = "dynamic-with-secrets"
+
+  hook {
+    output_type = "basic"
+
+    secret {
+      name = "DB_PASSWORD"
+      gcp_secret {
+        name = "projects/analytics/secrets/db-password/versions/latest"
+      }
+    }
+
+    code = <<-TYPESCRIPT
+      export default async function (_input, _env, _cache, secrets) {
+        return {
+          username: "app_admin",
+          password: secrets.DB_PASSWORD,
         };
       }
     TYPESCRIPT
@@ -200,7 +246,7 @@ Required:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--basic--password))
+- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--basic--password))
 - `username` (String) The username to authenticate as.
 
 <a id="nestedblock--basic--password"></a>
@@ -214,6 +260,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--basic--password--secret_manager))
+
+<a id="nestedblock--basic--password--secret_manager"></a>
+### Nested Schema for `basic.password.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--basic--password--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--basic--password--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--basic--password--secret_manager--gcp_secret))
+
+<a id="nestedblock--basic--password--secret_manager--aws_secret"></a>
+### Nested Schema for `basic.password.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--basic--password--secret_manager--azure_secret"></a>
+### Nested Schema for `basic.password.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--basic--password--secret_manager--gcp_secret"></a>
+### Nested Schema for `basic.password.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -237,6 +318,45 @@ Optional:
 
 - `allowlisted_env_variables` (List of String) Environment variables the hook may read.
 - `allowlisted_network_hosts` (List of String) Network hosts the hook may access.
+- `secret` (Block Set) A secret manager reference the connector resolves and passes to the hook as its fourth argument, `secrets`, keyed by `name`. (see [below for nested schema](#nestedblock--hook--secret))
+
+<a id="nestedblock--hook--secret"></a>
+### Nested Schema for `hook.secret`
+
+Required:
+
+- `name` (String) The key the resolved value has in the hook's `secrets` argument.
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--hook--secret--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--hook--secret--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--hook--secret--gcp_secret))
+
+<a id="nestedblock--hook--secret--aws_secret"></a>
+### Nested Schema for `hook.secret.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--hook--secret--azure_secret"></a>
+### Nested Schema for `hook.secret.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--hook--secret--gcp_secret"></a>
+### Nested Schema for `hook.secret.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 <a id="nestedblock--http_api_key_header"></a>
@@ -247,7 +367,7 @@ Required:
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `key` (String) The name of the header carrying the API key.
-- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_header--value))
+- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--http_api_key_header--value))
 
 <a id="nestedblock--http_api_key_header--value"></a>
 ### Nested Schema for `http_api_key_header.value`
@@ -260,6 +380,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--http_api_key_header--value--secret_manager))
+
+<a id="nestedblock--http_api_key_header--value--secret_manager"></a>
+### Nested Schema for `http_api_key_header.value.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_header--value--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_header--value--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_header--value--secret_manager--gcp_secret))
+
+<a id="nestedblock--http_api_key_header--value--secret_manager--aws_secret"></a>
+### Nested Schema for `http_api_key_header.value.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--http_api_key_header--value--secret_manager--azure_secret"></a>
+### Nested Schema for `http_api_key_header.value.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--http_api_key_header--value--secret_manager--gcp_secret"></a>
+### Nested Schema for `http_api_key_header.value.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -271,7 +426,7 @@ Required:
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `key` (String) The name of the query parameter carrying the API key.
-- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_api_key_query--value))
+- `value` (Block List, Min: 1, Max: 1) The API key. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--http_api_key_query--value))
 
 <a id="nestedblock--http_api_key_query--value"></a>
 ### Nested Schema for `http_api_key_query.value`
@@ -284,6 +439,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--http_api_key_query--value--secret_manager))
+
+<a id="nestedblock--http_api_key_query--value--secret_manager"></a>
+### Nested Schema for `http_api_key_query.value.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_query--value--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_query--value--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_api_key_query--value--secret_manager--gcp_secret))
+
+<a id="nestedblock--http_api_key_query--value--secret_manager--aws_secret"></a>
+### Nested Schema for `http_api_key_query.value.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--http_api_key_query--value--secret_manager--azure_secret"></a>
+### Nested Schema for `http_api_key_query.value.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--http_api_key_query--value--secret_manager--gcp_secret"></a>
+### Nested Schema for `http_api_key_query.value.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -295,7 +485,7 @@ Required:
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `header` (String) The header to inject the credentials on, for example `Authorization`.
-- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_basic--password))
+- `password` (Block List, Min: 1, Max: 1) The password to authenticate with. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--http_basic--password))
 - `username` (String) The username to authenticate as.
 
 <a id="nestedblock--http_basic--password"></a>
@@ -309,6 +499,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--http_basic--password--secret_manager))
+
+<a id="nestedblock--http_basic--password--secret_manager"></a>
+### Nested Schema for `http_basic.password.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_basic--password--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_basic--password--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_basic--password--secret_manager--gcp_secret))
+
+<a id="nestedblock--http_basic--password--secret_manager--aws_secret"></a>
+### Nested Schema for `http_basic.password.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--http_basic--password--secret_manager--azure_secret"></a>
+### Nested Schema for `http_basic.password.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--http_basic--password--secret_manager--gcp_secret"></a>
+### Nested Schema for `http_basic.password.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -320,7 +545,7 @@ Required:
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `header` (String) The header to inject the token on, for example `Authorization`.
-- `token` (Block List, Min: 1, Max: 1) The bearer token. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--http_bearer--token))
+- `token` (Block List, Min: 1, Max: 1) The bearer token. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--http_bearer--token))
 
 <a id="nestedblock--http_bearer--token"></a>
 ### Nested Schema for `http_bearer.token`
@@ -333,6 +558,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--http_bearer--token--secret_manager))
+
+<a id="nestedblock--http_bearer--token--secret_manager"></a>
+### Nested Schema for `http_bearer.token.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_bearer--token--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_bearer--token--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--http_bearer--token--secret_manager--gcp_secret))
+
+<a id="nestedblock--http_bearer--token--secret_manager--aws_secret"></a>
+### Nested Schema for `http_bearer.token.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--http_bearer--token--secret_manager--azure_secret"></a>
+### Nested Schema for `http_bearer.token.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--http_bearer--token--secret_manager--gcp_secret"></a>
+### Nested Schema for `http_bearer.token.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -343,7 +603,7 @@ Required:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `kubeconfig` (Block List, Min: 1, Max: 1) The kubeconfig YAML document. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig))
+- `kubeconfig` (Block List, Min: 1, Max: 1) The kubeconfig YAML document. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig))
 
 <a id="nestedblock--kubernetes_inline--kubeconfig"></a>
 ### Nested Schema for `kubernetes_inline.kubeconfig`
@@ -356,6 +616,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig--secret_manager))
+
+<a id="nestedblock--kubernetes_inline--kubeconfig--secret_manager"></a>
+### Nested Schema for `kubernetes_inline.kubeconfig.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_inline--kubeconfig--secret_manager--gcp_secret))
+
+<a id="nestedblock--kubernetes_inline--kubeconfig--secret_manager--aws_secret"></a>
+### Nested Schema for `kubernetes_inline.kubeconfig.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--kubernetes_inline--kubeconfig--secret_manager--azure_secret"></a>
+### Nested Schema for `kubernetes_inline.kubeconfig.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--kubernetes_inline--kubeconfig--secret_manager--gcp_secret"></a>
+### Nested Schema for `kubernetes_inline.kubeconfig.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -366,7 +661,7 @@ Required:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `kubeconfig_path` (Block List, Min: 1, Max: 1) Path to the kubeconfig file on the connector. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path))
+- `kubeconfig_path` (Block List, Min: 1, Max: 1) Path to the kubeconfig file on the connector. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path))
 
 <a id="nestedblock--kubernetes_path--kubeconfig_path"></a>
 ### Nested Schema for `kubernetes_path.kubeconfig_path`
@@ -379,6 +674,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path--secret_manager))
+
+<a id="nestedblock--kubernetes_path--kubeconfig_path--secret_manager"></a>
+### Nested Schema for `kubernetes_path.kubeconfig_path.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--kubernetes_path--kubeconfig_path--secret_manager--gcp_secret))
+
+<a id="nestedblock--kubernetes_path--kubeconfig_path--secret_manager--aws_secret"></a>
+### Nested Schema for `kubernetes_path.kubeconfig_path.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--kubernetes_path--kubeconfig_path--secret_manager--azure_secret"></a>
+### Nested Schema for `kubernetes_path.kubeconfig_path.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--kubernetes_path--kubeconfig_path--secret_manager--gcp_secret"></a>
+### Nested Schema for `kubernetes_path.kubeconfig_path.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -410,7 +740,7 @@ Required:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `key` (Block List, Min: 1, Max: 1) The private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--snowflake_key--key))
+- `key` (Block List, Min: 1, Max: 1) The private key. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--snowflake_key--key))
 - `username` (String) The Snowflake username to authenticate as.
 
 <a id="nestedblock--snowflake_key--key"></a>
@@ -424,6 +754,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--snowflake_key--key--secret_manager))
+
+<a id="nestedblock--snowflake_key--key--secret_manager"></a>
+### Nested Schema for `snowflake_key.key.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--snowflake_key--key--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--snowflake_key--key--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--snowflake_key--key--secret_manager--gcp_secret))
+
+<a id="nestedblock--snowflake_key--key--secret_manager--aws_secret"></a>
+### Nested Schema for `snowflake_key.key.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--snowflake_key--key--secret_manager--azure_secret"></a>
+### Nested Schema for `snowflake_key.key.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--snowflake_key--key--secret_manager--gcp_secret"></a>
+### Nested Schema for `snowflake_key.key.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 
@@ -434,14 +799,14 @@ Required:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `key` (Block List, Min: 1, Max: 1) The SSH private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--key))
+- `key` (Block List, Min: 1, Max: 1) The SSH private key. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--ssh_key--key))
 - `username` (String) The username to authenticate as.
 
 Optional:
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `certificate` (Block List, Max: 1) The optional SSH certificate paired with the private key. Set exactly one of `literal`, `literal_wo` or `environment_variable`. (see [below for nested schema](#nestedblock--ssh_key--certificate))
+- `certificate` (Block List, Max: 1) The optional SSH certificate paired with the private key. Set exactly one of `literal`, `literal_wo`, `environment_variable` or `secret_manager`. (see [below for nested schema](#nestedblock--ssh_key--certificate))
 
 <a id="nestedblock--ssh_key--key"></a>
 ### Nested Schema for `ssh_key.key`
@@ -454,6 +819,41 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--ssh_key--key--secret_manager))
+
+<a id="nestedblock--ssh_key--key--secret_manager"></a>
+### Nested Schema for `ssh_key.key.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--key--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--key--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--key--secret_manager--gcp_secret))
+
+<a id="nestedblock--ssh_key--key--secret_manager--aws_secret"></a>
+### Nested Schema for `ssh_key.key.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--ssh_key--key--secret_manager--azure_secret"></a>
+### Nested Schema for `ssh_key.key.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--ssh_key--key--secret_manager--gcp_secret"></a>
+### Nested Schema for `ssh_key.key.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.
+
+
 
 
 <a id="nestedblock--ssh_key--certificate"></a>
@@ -467,3 +867,36 @@ Optional:
 - `literal` (String, Sensitive) The secret value itself. Stored in Terraform state; prefer `literal_wo` or `environment_variable` where possible.
 - `literal_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Write-only secret value. This value is not stored in Terraform state, so it must stay in the configuration: any later change to this credential resends it. Requires Terraform 1.11+ and `literal_wo_version`.
 - `literal_wo_version` (Number) Version trigger for `literal_wo`. Increment this value to update the secret.
+- `secret_manager` (Block List, Max: 1) A secret held in a cloud secret manager, fetched by the connector using its own cloud identity. (see [below for nested schema](#nestedblock--ssh_key--certificate--secret_manager))
+
+<a id="nestedblock--ssh_key--certificate--secret_manager"></a>
+### Nested Schema for `ssh_key.certificate.secret_manager`
+
+Optional:
+
+- `aws_secret` (Block List, Max: 1) An AWS Secrets Manager secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--certificate--secret_manager--aws_secret))
+- `azure_secret` (Block List, Max: 1) An Azure Key Vault secret. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--certificate--secret_manager--azure_secret))
+- `gcp_secret` (Block List, Max: 1) A GCP Secret Manager secret version. Set exactly one of `aws_secret`, `gcp_secret` or `azure_secret`. (see [below for nested schema](#nestedblock--ssh_key--certificate--secret_manager--gcp_secret))
+
+<a id="nestedblock--ssh_key--certificate--secret_manager--aws_secret"></a>
+### Nested Schema for `ssh_key.certificate.secret_manager.aws_secret`
+
+Required:
+
+- `arn` (String) The ARN of the secret. Use the extended form `<arn>:<json-key>:<version-stage>:<version-id>`, as in ECS task definitions, to select a JSON key or a version.
+
+
+<a id="nestedblock--ssh_key--certificate--secret_manager--azure_secret"></a>
+### Nested Schema for `ssh_key.certificate.secret_manager.azure_secret`
+
+Required:
+
+- `url` (String) The secret identifier, as `https://<vault-name>.vault.azure.net/secrets/<name>[/<version>]`. Omitting the version reads the latest version.
+
+
+<a id="nestedblock--ssh_key--certificate--secret_manager--gcp_secret"></a>
+### Nested Schema for `ssh_key.certificate.secret_manager.gcp_secret`
+
+Required:
+
+- `name` (String) The resource name of the secret version, as `projects/*/secrets/*/versions/*` or `projects/*/locations/*/secrets/*/versions/*`.

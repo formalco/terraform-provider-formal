@@ -1,12 +1,16 @@
 package resource
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-cty/cty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
+	"github.com/samber/lo"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 )
@@ -19,15 +23,35 @@ type secretFixture struct {
 	literalWO           string
 	literalWOVersion    int
 	environmentVariable string
+	secretManager       map[string]any
 }
 
 func (s secretFixture) attrs() []any {
+	secretManager := []any{}
+	if s.secretManager != nil {
+		secretManager = []any{s.secretManager}
+	}
 	return []any{map[string]any{
 		"literal":              s.literal,
 		"literal_wo":           s.literalWO,
 		"literal_wo_version":   s.literalWOVersion,
 		"environment_variable": s.environmentVariable,
+		"secret_manager":       secretManager,
 	}}
+}
+
+func secretManagerReference(awsARN, gcpName, azureURL string) map[string]any {
+	provider := func(field, value string) []any {
+		if value == "" {
+			return []any{}
+		}
+		return []any{map[string]any{field: value}}
+	}
+	return map[string]any{
+		"aws_secret":   provider("arn", awsARN),
+		"gcp_secret":   provider("name", gcpName),
+		"azure_secret": provider("url", azureURL),
+	}
 }
 
 func noPriorSecret(string) map[string]any { return nil }
@@ -252,18 +276,169 @@ func TestExpandSecretValueRequiresExactlyOneSource(t *testing.T) {
 	_, err := expandSecretValue(map[string]any{
 		"password": secretFixture{literal: "pw", environmentVariable: "PGPASSWORD"}.attrs(),
 	}, "password")
-	require.ErrorContains(t, err, "set only one of literal, literal_wo or environment_variable")
+	require.ErrorContains(t, err, "set only one of literal, literal_wo, environment_variable or secret_manager")
 
 	_, err = expandSecretValue(map[string]any{
 		"password": secretFixture{literal: "pw", literalWO: "pw", literalWOVersion: 1}.attrs(),
 	}, "password")
-	require.ErrorContains(t, err, "set only one of literal, literal_wo or environment_variable")
+	require.ErrorContains(t, err, "set only one of literal, literal_wo, environment_variable or secret_manager")
 
 	_, err = expandSecretValue(map[string]any{"password": secretFixture{}.attrs()}, "password")
-	require.ErrorContains(t, err, "one of literal, literal_wo or environment_variable is required")
+	require.ErrorContains(t, err, "one of literal, literal_wo, environment_variable or secret_manager is required")
 
 	_, err = expandSecretValue(map[string]any{}, "password")
 	require.ErrorContains(t, err, "password is required")
+}
+
+func TestExpandSecretValueReadsSecretManagerReference(t *testing.T) {
+	const (
+		awsARN   = "arn:aws:secretsmanager:us-east-1:123456789012:secret:db-AbCdEf:password::"
+		gcpName  = "projects/p/secrets/db/versions/latest"
+		azureURL = "https://formal.vault.azure.net/secrets/db"
+	)
+	tests := []struct {
+		name      string
+		reference map[string]any
+		want      *corev1.SecretManagerReference
+	}{
+		{
+			name:      "aws",
+			reference: secretManagerReference(awsARN, "", ""),
+			want: &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_AwsSecret{
+				AwsSecret: &corev1.AWSSecretsManagerSecret{Arn: awsARN},
+			}},
+		},
+		{
+			name:      "gcp",
+			reference: secretManagerReference("", gcpName, ""),
+			want: &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_GcpSecret{
+				GcpSecret: &corev1.GCPSecretManagerSecret{Name: gcpName},
+			}},
+		},
+		{
+			name:      "azure",
+			reference: secretManagerReference("", "", azureURL),
+			want: &corev1.SecretManagerReference{Secret: &corev1.SecretManagerReference_AzureSecret{
+				AzureSecret: &corev1.AzureKeyVaultSecret{Url: azureURL},
+			}},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			value, err := expandSecretValue(map[string]any{
+				"password": secretFixture{secretManager: test.reference}.attrs(),
+			}, "password")
+			require.NoError(t, err)
+			require.True(t, proto.Equal(test.want, value.GetSecretManager()))
+
+			_, block, err := describeNativeUserV3Credentials(noPriorSecret, &corev1.NativeUserV3Credentials{
+				Value: &corev1.NativeUserV3Credentials_Basic{Basic: &corev1.BasicNativeUserV3{Password: value}},
+			})
+			require.NoError(t, err)
+			require.Equal(t, secretFixture{secretManager: test.reference}.attrs(), block["password"])
+		})
+	}
+}
+
+func TestExpandSecretValueRequiresExactlyOneSecretManagerProvider(t *testing.T) {
+	_, err := expandSecretValue(map[string]any{
+		"password": secretFixture{secretManager: secretManagerReference("arn:aws:secretsmanager:x", "projects/p/secrets/s/versions/1", "")}.attrs(),
+	}, "password")
+	require.ErrorContains(t, err, "password.secret_manager: set exactly one of")
+
+	_, err = expandSecretValue(map[string]any{
+		"password": secretFixture{secretManager: secretManagerReference("", "", "")}.attrs(),
+	}, "password")
+	require.ErrorContains(t, err, "password.secret_manager: set exactly one of")
+
+	_, err = expandSecretValue(map[string]any{
+		"password": secretFixture{literal: "pw", secretManager: secretManagerReference("arn:aws:secretsmanager:x", "", "")}.attrs(),
+	}, "password")
+	require.ErrorContains(t, err, "set only one of literal, literal_wo, environment_variable or secret_manager")
+}
+
+func TestExpandNativeUserV3CredentialsReadsHookSecrets(t *testing.T) {
+	d := schema.TestResourceDataRaw(t, nativeUserV3Schema(), map[string]any{
+		"resource_id": "resource_1",
+		"label":       "hook",
+		"hook": []any{map[string]any{
+			"code":        "export default (input, env, cache, secrets) => ({})",
+			"output_type": "basic",
+			"secret": []any{
+				lo.Assign(secretManagerReference("arn:aws:secretsmanager:us-east-1:1:secret:db", "", ""), map[string]any{"name": "DB_PASSWORD"}),
+				lo.Assign(secretManagerReference("", "", "https://formal.vault.azure.net/secrets/api"), map[string]any{"name": "API_KEY"}),
+			},
+		}},
+	})
+
+	credentials, err := expandNativeUserV3Credentials(d)
+	require.NoError(t, err)
+	secrets := credentials.GetHook().GetSecrets()
+	require.Len(t, secrets, 2)
+	require.Equal(t, "arn:aws:secretsmanager:us-east-1:1:secret:db", secrets["DB_PASSWORD"].GetAwsSecret().GetArn())
+	require.Equal(t, "https://formal.vault.azure.net/secrets/api", secrets["API_KEY"].GetAzureSecret().GetUrl())
+
+	require.NoError(t, flattenNativeUserV3Credentials(d, credentials))
+	require.Equal(t, 2, d.Get("hook.0.secret").(*schema.Set).Len())
+}
+
+func TestFlattenHookSecretsDoesNotDriftFromConfig(t *testing.T) {
+	resource := ResourceNativeUserV3()
+	config := map[string]any{
+		"resource_id": "resource_1",
+		"label":       "hook",
+		"hook": []any{map[string]any{
+			"code":        "export default (input, env, cache, secrets) => ({})",
+			"output_type": "basic",
+			"secret": []any{
+				map[string]any{"name": "A", "aws_secret": []any{map[string]any{"arn": "arn:aws:secretsmanager:us-east-1:1:secret:a"}}},
+				map[string]any{"name": "B", "gcp_secret": []any{map[string]any{"name": "projects/p/secrets/b/versions/1"}}},
+				map[string]any{"name": "C", "azure_secret": []any{map[string]any{"url": "https://formal.vault.azure.net/secrets/c"}}},
+			},
+		}},
+	}
+
+	d := schema.TestResourceDataRaw(t, nativeUserV3Schema(), config)
+	credentials, err := expandNativeUserV3Credentials(d)
+	require.NoError(t, err)
+
+	applied := resource.Data(nil)
+	applied.SetId("native_user_1")
+	require.NoError(t, applied.Set("resource_id", "resource_1"))
+	require.NoError(t, applied.Set("label", "hook"))
+	require.NoError(t, flattenNativeUserV3Credentials(applied, credentials))
+
+	diff, err := resource.SimpleDiff(t.Context(), applied.State(), terraform.NewResourceConfigRaw(config), nil)
+	require.NoError(t, err)
+	require.Empty(t, lo.PickBy(diff.Attributes, func(key string, _ *terraform.ResourceAttrDiff) bool {
+		return strings.HasPrefix(key, "hook.")
+	}))
+}
+
+func TestBuildNativeUserV3CredentialsRejectsDuplicateHookSecretNames(t *testing.T) {
+	_, err := buildNativeUserV3Credentials("hook", map[string]any{
+		"code":        "export default () => ({})",
+		"output_type": "basic",
+		"secret": []any{
+			lo.Assign(secretManagerReference("arn:aws:secretsmanager:us-east-1:1:secret:a", "", ""), map[string]any{"name": "DB_PASSWORD"}),
+			lo.Assign(secretManagerReference("arn:aws:secretsmanager:us-east-1:1:secret:b", "", ""), map[string]any{"name": "DB_PASSWORD"}),
+		},
+	})
+	require.ErrorContains(t, err, `hook: secret "DB_PASSWORD" is set more than once`)
+}
+
+func TestFlattenHookSecretsSortsByName(t *testing.T) {
+	flattened := flattenHookSecrets(map[string]*corev1.SecretManagerReference{
+		"B": {Secret: &corev1.SecretManagerReference_GcpSecret{GcpSecret: &corev1.GCPSecretManagerSecret{Name: "projects/p/secrets/b/versions/1"}}},
+		"A": {Secret: &corev1.SecretManagerReference_AwsSecret{AwsSecret: &corev1.AWSSecretsManagerSecret{Arn: "arn:aws:secretsmanager:us-east-1:1:secret:a"}}},
+	})
+
+	want := []any{
+		lo.Assign(secretManagerReference("arn:aws:secretsmanager:us-east-1:1:secret:a", "", ""), map[string]any{"name": "A"}),
+		lo.Assign(secretManagerReference("", "projects/p/secrets/b/versions/1", ""), map[string]any{"name": "B"}),
+	}
+	require.Equal(t, want, flattened)
 }
 
 func TestExpandSecretValueReadsWriteOnlyLiteral(t *testing.T) {

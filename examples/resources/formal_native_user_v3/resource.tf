@@ -26,6 +26,25 @@ resource "formal_native_user_v3" "basic" {
   }
 }
 
+# Username and password, with the password read from AWS Secrets Manager by the
+# connector using its own IAM role. gcp_secret { name = ... } and
+# azure_secret { url = ... } work the same way for GCP Secret Manager and Azure Key Vault.
+resource "formal_native_user_v3" "basic_secret_manager" {
+  resource_id = formal_resource.db.id
+  label       = "admin-secret-manager"
+
+  basic {
+    username = "app_admin"
+    password {
+      secret_manager {
+        aws_secret {
+          arn = "arn:aws:secretsmanager:us-east-1:123456789012:secret:analytics-admin-AbCdEf:password::"
+        }
+      }
+    }
+  }
+}
+
 # Username and password, with the password passed as a write-only value so it
 # never lands in Terraform state. Increment literal_wo_version to rotate it.
 resource "formal_native_user_v3" "basic_write_only" {
@@ -94,6 +113,33 @@ resource "formal_native_user_v3" "from_hook" {
         return {
           username: env.FORMAL_ENV_USER,
           password: env.FORMAL_ENV_PASSWORD,
+        };
+      }
+    TYPESCRIPT
+  }
+}
+
+# A hook that receives secret manager references as its fourth argument,
+# resolved by the connector before the hook runs.
+resource "formal_native_user_v3" "from_hook_with_secrets" {
+  resource_id = formal_resource.db.id
+  label       = "dynamic-with-secrets"
+
+  hook {
+    output_type = "basic"
+
+    secret {
+      name = "DB_PASSWORD"
+      gcp_secret {
+        name = "projects/analytics/secrets/db-password/versions/latest"
+      }
+    }
+
+    code = <<-TYPESCRIPT
+      export default async function (_input, _env, _cache, secrets) {
+        return {
+          username: "app_admin",
+          password: secrets.DB_PASSWORD,
         };
       }
     TYPESCRIPT
