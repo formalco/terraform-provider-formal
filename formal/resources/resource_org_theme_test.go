@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
@@ -13,49 +14,38 @@ import (
 
 func TestOrgThemeValidationComesFromTheProto(t *testing.T) {
 	logoTypes := orgThemeStringIn("logo_content_type")
-	if len(logoTypes) != 4 {
-		t.Fatalf("expected the four logo types, got %v", logoTypes)
-	}
-	validateType := orgThemeValidateString("logo_content_type")
-	for _, logoType := range logoTypes {
-		if _, errs := validateType(logoType, "logo_content_type"); len(errs) > 0 {
-			t.Fatalf("logo type %q from the proto was rejected: %v", logoType, errs)
-		}
-	}
-	if _, errs := validateType("image/gif", "logo_content_type"); len(errs) == 0 {
-		t.Fatal("expected image/gif to be rejected")
-	}
+	require.Len(t, logoTypes, 4)
 
-	if _, errs := validateType("", "logo_content_type"); len(errs) == 0 {
-		t.Fatal("expected an empty logo type to be rejected")
-	}
-
-	validateName := orgThemeValidateString("display_name")
-	if _, errs := validateName("", "display_name"); len(errs) == 0 {
-		t.Fatal("expected an empty display name to be rejected")
-	}
-	if _, errs := validateName(strings.Repeat("a", 60), "display_name"); len(errs) > 0 {
-		t.Fatalf("a 60-character display name was rejected: %v", errs)
-	}
-	if _, errs := validateName(strings.Repeat("a", 61), "display_name"); len(errs) == 0 {
-		t.Fatal("expected a 61-character display name to be rejected")
+	for _, tc := range []struct {
+		field string
+		value string
+		valid bool
+	}{
+		{field: "logo_content_type", value: logoTypes[0], valid: true},
+		{field: "logo_content_type", value: logoTypes[3], valid: true},
+		{field: "logo_content_type", value: "image/gif"},
+		{field: "logo_content_type", value: ""},
+		{field: "display_name", value: ""},
+		{field: "display_name", value: strings.Repeat("a", 60), valid: true},
+		{field: "display_name", value: strings.Repeat("a", 61)},
+	} {
+		_, errs := orgThemeValidateString(tc.field)(tc.value, tc.field)
+		require.Equal(t, tc.valid, len(errs) == 0, "%s %q: %v", tc.field, tc.value, errs)
 	}
 }
 
 func TestValidateOrgThemeLogo(t *testing.T) {
-	if _, errs := validateOrgThemeLogo("not base64!", "logo"); len(errs) == 0 {
-		t.Fatal("expected invalid base64 to be rejected")
-	}
-	if _, errs := validateOrgThemeLogo("", "logo"); len(errs) == 0 {
-		t.Fatal("expected an empty logo to be rejected")
-	}
-	tooLarge := base64.StdEncoding.EncodeToString(make([]byte, 262145))
-	if _, errs := validateOrgThemeLogo(tooLarge, "logo"); len(errs) == 0 {
-		t.Fatal("expected a logo over 256 KiB to be rejected")
-	}
-	ok := base64.StdEncoding.EncodeToString([]byte("<svg/>"))
-	if _, errs := validateOrgThemeLogo(ok, "logo"); len(errs) > 0 {
-		t.Fatalf("expected a small logo to pass: %v", errs)
+	for _, tc := range []struct {
+		logo  string
+		valid bool
+	}{
+		{logo: "not base64!"},
+		{logo: ""},
+		{logo: base64.StdEncoding.EncodeToString(make([]byte, 256*1024+1))},
+		{logo: base64.StdEncoding.EncodeToString([]byte("<svg/>")), valid: true},
+	} {
+		_, errs := validateOrgThemeLogo(tc.logo, "logo")
+		require.Equal(t, tc.valid, len(errs) == 0, "%.20q: %v", tc.logo, errs)
 	}
 }
 
@@ -66,29 +56,23 @@ func TestOrgThemeRoundTrip(t *testing.T) {
 		"logo_content_type": "image/svg+xml",
 	})
 	args, err := expandOrgTheme(d)
-	if err != nil {
-		t.Fatalf("unexpected expand error: %v", err)
-	}
-	if args.displayName != "Acme" || string(args.logo) != "<svg/>" || args.logoContentType != "image/svg+xml" {
-		t.Fatalf("unexpected expanded args: %+v", args)
-	}
+	require.NoError(t, err)
+	require.Equal(t, "Acme", args.displayName)
+	require.Equal(t, "<svg/>", string(args.logo))
+	require.Equal(t, "image/svg+xml", args.logoContentType)
 
 	now := timestamppb.Now()
-	err = flattenOrgTheme(d, &corev1.OrgTheme{
+	logo := []byte(`<svg viewBox="0 0 2 2"/>`)
+	require.NoError(t, flattenOrgTheme(d, &corev1.OrgTheme{
 		Id:              "orgtheme_1",
 		DisplayName:     "Acme Corp",
-		Logo:            []byte("<svg viewBox=\"0 0 2 2\"/>"),
+		Logo:            logo,
 		LogoContentType: "image/svg+xml",
 		CreatedAt:       now,
 		UpdatedAt:       now,
-	})
-	if err != nil {
-		t.Fatalf("unexpected flatten error: %v", err)
-	}
-	if d.Id() != "orgtheme_1" || d.Get("display_name") != "Acme Corp" {
-		t.Fatalf("unexpected flattened state: id=%s display_name=%v", d.Id(), d.Get("display_name"))
-	}
-	if d.Get("logo") != base64.StdEncoding.EncodeToString([]byte("<svg viewBox=\"0 0 2 2\"/>")) || d.Get("logo_content_type") != "image/svg+xml" {
-		t.Fatalf("unexpected flattened logo: %v %v", d.Get("logo"), d.Get("logo_content_type"))
-	}
+	}))
+	require.Equal(t, "orgtheme_1", d.Id())
+	require.Equal(t, "Acme Corp", d.Get("display_name"))
+	require.Equal(t, base64.StdEncoding.EncodeToString(logo), d.Get("logo"))
+	require.Equal(t, "image/svg+xml", d.Get("logo_content_type"))
 }

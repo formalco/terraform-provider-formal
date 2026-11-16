@@ -1,6 +1,8 @@
 package resource
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestResourceConnectorConfigurationSchemaIncludesRenameUpgrader(t *testing.T) {
 	r := ResourceConnectorConfiguration()

@@ -341,6 +341,46 @@ func TestExpandSecretValueReadsSecretManagerReference(t *testing.T) {
 	}
 }
 
+func TestRestoreWriteOnlySecretsRequiresVersionTrigger(t *testing.T) {
+	block := map[string]any{"username": "app", "password": writeOnlySecret("", 0)}
+
+	read := fakeRawConfig(t,
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.StringVal("s3cret")},
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NullVal(cty.Number)},
+	)
+
+	_, err := restoreWriteOnlySecrets(read, "basic", block)
+	require.ErrorContains(t, err, "basic.password: literal_wo requires literal_wo_version")
+}
+
+func TestRestoreWriteOnlySecretsRejectsVersionTriggerWithoutLiteral(t *testing.T) {
+	// Bumping the trigger with no literal_wo would resend the unchanged
+	// credential and report a rotation that never happened.
+	block := map[string]any{"username": "app", "password": environmentSecret("PGPASSWORD")}
+
+	read := fakeRawConfig(t,
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.NullVal(cty.String)},
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NumberIntVal(2)},
+	)
+
+	_, err := restoreWriteOnlySecrets(read, "basic", block)
+	require.ErrorContains(t, err, "basic.password: literal_wo_version requires literal_wo")
+}
+
+// An unknown value is neither null nor a type mismatch, so without the
+// knownness check it would reach AsString and panic the plugin.
+func TestRestoreWriteOnlySecretsRejectsUnknownLiteral(t *testing.T) {
+	block := map[string]any{"username": "app", "password": writeOnlySecret("", 1)}
+
+	read := fakeRawConfig(t,
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.UnknownVal(cty.String)},
+		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NumberIntVal(1)},
+	)
+
+	_, err := restoreWriteOnlySecrets(read, "basic", block)
+	require.ErrorContains(t, err, "basic.password: literal_wo must be a known string")
+}
+
 func TestExpandSecretValueRequiresExactlyOneSecretManagerProvider(t *testing.T) {
 	_, err := expandSecretValue(map[string]any{
 		"password": secretFixture{secretManager: secretManagerReference("arn:aws:secretsmanager:x", "projects/p/secrets/s/versions/1", "")}.attrs(),
@@ -508,18 +548,6 @@ func TestRestoreWriteOnlySecretsReadsEveryConfiguredSecretBlock(t *testing.T) {
 	require.Empty(t, blockString(mustSingleBlock(t, block["key"]), "literal_wo"))
 }
 
-func TestRestoreWriteOnlySecretsRequiresVersionTrigger(t *testing.T) {
-	block := map[string]any{"username": "app", "password": writeOnlySecret("", 0)}
-
-	read := fakeRawConfig(t,
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.StringVal("s3cret")},
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NullVal(cty.Number)},
-	)
-
-	_, err := restoreWriteOnlySecrets(read, "basic", block)
-	require.ErrorContains(t, err, "basic.password: literal_wo requires literal_wo_version")
-}
-
 func TestRestoreWriteOnlySecretsAcceptsZeroVersion(t *testing.T) {
 	// 0 is a configured version, matching the schema-level RequiredWith that
 	// formal_native_user gets. Only an unset trigger is an error.
@@ -532,20 +560,6 @@ func TestRestoreWriteOnlySecretsAcceptsZeroVersion(t *testing.T) {
 	credentials, err := buildNativeUserV3Credentials("basic", restored)
 	require.NoError(t, err)
 	require.Equal(t, "s3cret", credentials.GetBasic().GetPassword().GetLiteral())
-}
-
-func TestRestoreWriteOnlySecretsRejectsVersionTriggerWithoutLiteral(t *testing.T) {
-	// Bumping the trigger with no literal_wo would resend the unchanged
-	// credential and report a rotation that never happened.
-	block := map[string]any{"username": "app", "password": environmentSecret("PGPASSWORD")}
-
-	read := fakeRawConfig(t,
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.NullVal(cty.String)},
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NumberIntVal(2)},
-	)
-
-	_, err := restoreWriteOnlySecrets(read, "basic", block)
-	require.ErrorContains(t, err, "basic.password: literal_wo_version requires literal_wo")
 }
 
 func TestRestoreWriteOnlySecretsSkipsNonSecretFields(t *testing.T) {
@@ -586,20 +600,6 @@ func TestRestoreWriteOnlySecretsLeavesOtherSourcesAlone(t *testing.T) {
 	credentials, err := buildNativeUserV3Credentials("basic", restored)
 	require.NoError(t, err)
 	require.Equal(t, "PGPASSWORD", credentials.GetBasic().GetPassword().GetEnvironmentVariable())
-}
-
-// An unknown value is neither null nor a type mismatch, so without the
-// knownness check it would reach AsString and panic the plugin.
-func TestRestoreWriteOnlySecretsRejectsUnknownLiteral(t *testing.T) {
-	block := map[string]any{"username": "app", "password": writeOnlySecret("", 1)}
-
-	read := fakeRawConfig(t,
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo"), cty.UnknownVal(cty.String)},
-		rawConfigEntry{secretAttrPath("basic", "password", "literal_wo_version"), cty.NumberIntVal(1)},
-	)
-
-	_, err := restoreWriteOnlySecrets(read, "basic", block)
-	require.ErrorContains(t, err, "basic.password: literal_wo must be a known string")
 }
 
 // A read failure has to abort rather than leave the secret blank.

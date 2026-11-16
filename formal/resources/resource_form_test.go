@@ -5,6 +5,7 @@ import (
 	"maps"
 	"testing"
 
+	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/types/known/structpb"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
@@ -44,14 +45,10 @@ func TestExpandTerraformFormFieldConfigOptionsSourceInputJSON(t *testing.T) {
 
 func TestExpandTerraformFormFieldConfigRejectsInputAndInputJSON(t *testing.T) {
 	_, err := expandTerraformFormFieldConfig(formFieldConfigWithOptionsSource(map[string]any{
-		"input": map[string]any{
-			"limit": "500",
-		},
+		"input":      map[string]any{"limit": "500"},
 		"input_json": `{"limit":500}`,
 	}), 0)
-	if err == nil {
-		t.Fatalf("expected error when input and input_json are both configured")
-	}
+	require.Error(t, err)
 }
 
 func TestNormalizeProtoFormFieldConfigUsesInputJSONForNativeValues(t *testing.T) {
@@ -208,44 +205,23 @@ func TestFormFieldRulesRoundTrip(t *testing.T) {
 	}
 
 	fields, err := expandTerraformFormFields(tfFields)
-	if err != nil {
-		t.Fatalf("unexpected expand error: %v", err)
-	}
-
-	if fields[0].Optional || fields[0].VisibleIf != "" || fields[0].Validation != nil {
-		t.Fatalf("expected field_env to have no rules, got %#v", fields[0])
-	}
-	if got := fields[1].VisibleIf; got != `field_env == "prod"` {
-		t.Fatalf("expected field_ticket visible_if, got %q", got)
-	}
-	if got := fields[1].GetValidation().GetMessage(); got != "Use an INC- ticket" {
-		t.Fatalf("expected field_ticket validation message, got %q", got)
-	}
-	if !fields[2].Optional {
-		t.Fatalf("expected field_duration to be optional")
-	}
-	if got := fields[2].Config.Options[1].VisibleIf; got != `field_env == "dev"` {
-		t.Fatalf("expected 24h option visible_if, got %q", got)
-	}
+	require.NoError(t, err)
+	require.False(t, fields[0].Optional)
+	require.Empty(t, fields[0].VisibleIf)
+	require.Nil(t, fields[0].Validation)
+	require.Equal(t, `field_env == "prod"`, fields[1].VisibleIf)
+	require.Equal(t, "Use an INC- ticket", fields[1].GetValidation().GetMessage())
+	require.True(t, fields[2].Optional)
+	require.Equal(t, `field_env == "dev"`, fields[2].Config.Options[1].VisibleIf)
 
 	normalized := normalizeProtoFormFields(fields, tfFields)
-
+	require.NotContains(t, normalized[0], "validation")
 	ticket := normalized[1].(map[string]any)
-	if got := ticket["validation"].([]any)[0].(map[string]any)["rule"]; got != `field_ticket.matches("^INC-[0-9]+$")` {
-		t.Fatalf("expected field_ticket rule to round-trip, got %#v", got)
-	}
-	if _, exists := normalized[0].(map[string]any)["validation"]; exists {
-		t.Fatalf("expected no validation block for field_env")
-	}
-
+	require.Equal(t, `field_ticket.matches("^INC-[0-9]+$")`, ticket["validation"].([]any)[0].(map[string]any)["rule"])
 	duration := normalized[2].(map[string]any)
-	if duration["optional"] != true {
-		t.Fatalf("expected field_duration optional to round-trip")
-	}
+	require.Equal(t, true, duration["optional"])
 	option := duration["config"].([]any)[0].(map[string]any)["option"].([]any)[1].(map[string]any)
-	if got := option["visible_if"]; got != `field_env == "dev"` {
-		t.Fatalf("expected 24h option visible_if to round-trip, got %#v", got)
-	}
+	require.Equal(t, `field_env == "dev"`, option["visible_if"])
 }
 
 func formFieldConfigWithOptionsSource(optionsSource map[string]any) map[string]any {
