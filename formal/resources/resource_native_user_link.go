@@ -15,7 +15,8 @@ import (
 func ResourceNativeUserLink() *schema.Resource {
 	return &schema.Resource{
 		// This description is used by the documentation generator and the language server.
-		Description: "This resource creates assigns a Native User to a Formal Identity.",
+		Description:        "This resource creates assigns a Native User to a Formal Identity.",
+		DeprecationMessage: "formal_native_user_link is deprecated. Use formal_native_user_v3 and formal_resource_native_user_selection instead.",
 
 		CreateContext: resourceNativeUserLinkCreate,
 		ReadContext:   resourceNativeUserLinkRead,
