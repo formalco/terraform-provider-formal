@@ -10,7 +10,7 @@ godebug multipathtcp=0
 replace (
 	github.com/aws/session-manager-plugin => github.com/formalco/session-manager-plugin v0.0.0-20250219013505-109cabb6df48
 	github.com/caddyserver/certmagic => github.com/formalco/certmagic v0.0.0-20260702195037-87834bbe3cc4
-	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20261007024300-b47f700e3572
+	github.com/go-mysql-org/go-mysql => github.com/formalco/go-mysql v1.7.1-0.20261105193509-b3cc99e333dd
 	github.com/kevinburke/ssh_config => github.com/wavetermdev/ssh_config v0.0.0-20241219203747-6409e4292f34
 )
 
