@@ -8,6 +8,7 @@ import (
 	"connectrpc.com/connect"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/customdiff"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
@@ -29,6 +30,10 @@ func ResourceConnectorListener() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
 		},
+		// The API sets connector_id once on a listener that has none, but rejects reassigning it.
+		CustomizeDiff: customdiff.ForceNewIfChange("connector_id", func(_ context.Context, oldValue, newValue, _ any) bool {
+			return oldValue.(string) != "" && oldValue.(string) != newValue.(string)
+		}),
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.
@@ -54,7 +59,7 @@ func ResourceConnectorListener() *schema.Resource {
 				Description: "The ID of the connector this listener is associated with.",
 				Type:        schema.TypeString,
 				Optional:    true,
-				ForceNew:    true,
+				Computed:    true,
 			},
 			"termination_protection": {
 				// This description is used by the documentation generator and the language server.
@@ -133,7 +138,7 @@ func resourceConnectorListenerRead(ctx context.Context, d *schema.ResourceData, 
 	return diags
 }
 
-var connectorListenerFieldsThatCanChange = []string{"port", "termination_protection"}
+var connectorListenerFieldsThatCanChange = []string{"port", "termination_protection", "connector_id"}
 
 func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
@@ -150,11 +155,16 @@ func resourceConnectorListenerUpdate(ctx context.Context, d *schema.ResourceData
 	port := int32(d.Get("port").(int))
 	terminationProtection := d.Get("termination_protection").(bool)
 
-	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListener(ctx, &corev1.UpdateConnectorListenerRequest{
+	req := &corev1.UpdateConnectorListenerRequest{
 		Id:                    connectorListenerId,
 		Port:                  &port,
 		TerminationProtection: &terminationProtection,
-	})
+	}
+	if connectorID := d.Get("connector_id").(string); d.HasChange("connector_id") && connectorID != "" {
+		req.ConnectorId = &connectorID
+	}
+
+	_, err := c.Grpc.Sdk.ConnectorServiceClient.UpdateConnectorListener(ctx, req)
 	if err != nil {
 		return diag.FromErr(err)
 	}
