@@ -59,6 +59,16 @@ func ResourceForm() *schema.Resource {
 				Optional:    true,
 				Default:     "",
 			},
+			"status": {
+				Description: "The form status. Accepted values are `active` and `draft`. Draft forms can't be selected or submitted from Slack or the Formal Endpoint.",
+				Type:        schema.TypeString,
+				Optional:    true,
+				Default:     "active",
+				ValidateFunc: validation.StringInSlice([]string{
+					"active",
+					"draft",
+				}, false),
+			},
 			"field": {
 				Description: "List of fields that define the form schema.",
 				Type:        schema.TypeList,
@@ -227,10 +237,12 @@ func resourceFormCreate(ctx context.Context, d *schema.ResourceData, meta any) d
 		return diag.FromErr(err)
 	}
 
+	status := d.Get("status").(string)
 	res, err := c.Grpc.Sdk.WorkflowServiceClient.CreateForm(ctx, &corev1.CreateFormRequest{
 		Name:        d.Get("name").(string),
 		Description: d.Get("description").(string),
 		Fields:      fields,
+		Status:      &status,
 	})
 	if err != nil {
 		return diag.FromErr(err)
@@ -267,6 +279,9 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 	if err := d.Set("description", form.Description); err != nil {
 		return diag.FromErr(err)
 	}
+	if err := d.Set("status", form.Status); err != nil {
+		return diag.FromErr(err)
+	}
 	currentFields, _ := d.Get("field").([]any)
 	if err := d.Set("field", normalizeProtoFormFields(form.Fields, currentFields)); err != nil {
 		return diag.FromErr(err)
@@ -288,17 +303,19 @@ func resourceFormRead(ctx context.Context, d *schema.ResourceData, meta any) dia
 func resourceFormUpdate(ctx context.Context, d *schema.ResourceData, meta any) diag.Diagnostics {
 	c := meta.(*clients.Clients)
 
-	if d.HasChange("name") || d.HasChange("description") || d.HasChange("field") {
+	if d.HasChange("name") || d.HasChange("description") || d.HasChange("field") || d.HasChange("status") {
 		fields, err := expandTerraformFormFields(d.Get("field").([]any))
 		if err != nil {
 			return diag.FromErr(err)
 		}
 
+		status := d.Get("status").(string)
 		_, err = c.Grpc.Sdk.WorkflowServiceClient.UpdateForm(ctx, &corev1.UpdateFormRequest{
 			Id:          d.Id(),
 			Name:        d.Get("name").(string),
 			Description: d.Get("description").(string),
 			Fields:      fields,
+			Status:      &status,
 		})
 		if err != nil {
 			return diag.FromErr(err)

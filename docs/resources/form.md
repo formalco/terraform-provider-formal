@@ -23,6 +23,7 @@ Forms define reusable input schemas for workflows.
 ### Optional
 
 - `description` (String) The form description.
+- `status` (String) The form status. Accepted values are `active` and `draft`. Draft forms can't be selected or submitted from Slack or the Formal Endpoint.
 
 ### Read-Only
 

@@ -20,7 +20,7 @@ require (
 	connectrpc.com/connect v1.21.1
 	github.com/aws/aws-sdk-go-v2/config v1.33.12
 	github.com/aws/aws-sdk-go-v2/service/sts v1.52.0
-	github.com/formalco/go-sdk/v3 v3.29.0
+	github.com/formalco/go-sdk/v3 v3.30.0
 	github.com/google/cel-go v0.31.0
 	github.com/hashicorp/go-cty v1.5.0
 	github.com/hashicorp/terraform-plugin-docs v0.25.0
@@ -215,10 +215,10 @@ require (
 	github.com/spf13/pflag v1.0.10 // indirect
 	github.com/tailscale/go-cache-plugin v0.1.1 // indirect
 	github.com/tetratelabs/wazero v1.12.0 // indirect
-	github.com/tidwall/gjson v1.20.2 // indirect
+	github.com/tidwall/gjson v1.20.4 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.3.0 // indirect
-	github.com/tidwall/sjson v1.2.9 // indirect
+	github.com/tidwall/sjson v1.2.10 // indirect
 	github.com/vbatts/tar-split v0.12.1 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
@@ -255,8 +255,8 @@ require (
 	golang.org/x/tools v0.51.0 // indirect
 	google.golang.org/api v0.304.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20261110000943-09e21b237f2c // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20261104224025-d1e00e9f33ab // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20261012220534-4341edf3f941 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20261012220534-4341edf3f941 // indirect
 	google.golang.org/grpc v1.84.0 // indirect
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.6.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
