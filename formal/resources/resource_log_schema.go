@@ -166,9 +166,12 @@ func expandLogSchemaPaths(pathSet *schema.Set) (*corev1.LogSchemaPaths, error) {
 			EncryptSql: pathData["encrypt_sql"].(bool),
 		}
 		if truncateData := pathData["truncate"].([]any); len(truncateData) > 0 {
-			path.Truncate = &corev1.TruncateOperation{
-				MaxSizeBytes: uint32(truncateData[0].(map[string]any)["max_size_bytes"].(int)),
-			}
+			// ResourceDiff.Get returns nil for a block nested in a set element, so in
+			// CustomizeDiff the block only counts as an action. Create reads the value
+			// from ResourceData, and ValidateFunc checks max_size_bytes.
+			truncate, _ := truncateData[0].(map[string]any)
+			maxSizeBytes, _ := truncate["max_size_bytes"].(int)
+			path.Truncate = &corev1.TruncateOperation{MaxSizeBytes: uint32(maxSizeBytes)}
 		}
 		if !path.Drop && !path.Encrypt && path.Truncate == nil && !path.StripSql && !path.EncryptSql {
 			return nil, fmt.Errorf("path %q must specify at least one action", name)

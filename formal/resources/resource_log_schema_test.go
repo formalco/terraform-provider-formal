@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/terraform"
 	"github.com/stretchr/testify/require"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
@@ -87,4 +88,36 @@ func TestLogSchemaTruncateSizeMustBePositive(t *testing.T) {
 	require.NotEmpty(t, errors)
 	_, errors = truncateSchema.ValidateFunc(1, "max_size_bytes")
 	require.Empty(t, errors)
+}
+
+func TestLogSchemaPlanAcceptsTruncate(t *testing.T) {
+	r := ResourceLogSchema()
+	raw := map[string]any{
+		"name":      "truncate-bodies",
+		"scope_cel": "true",
+		"path": []any{map[string]any{
+			"name":     "log.request.http.body.received",
+			"truncate": []any{map[string]any{"max_size_bytes": 1024}},
+		}},
+	}
+	diff, err := r.Diff(t.Context(), nil, terraform.NewResourceConfigRaw(raw), nil)
+	require.NoError(t, err)
+
+	d, err := schema.InternalMap(r.SchemaMap()).Data(nil, diff)
+	require.NoError(t, err)
+	paths, err := expandLogSchemaPaths(d.Get("path").(*schema.Set))
+	require.NoError(t, err)
+	require.Equal(t, &corev1.LogSchemaPath{
+		Truncate: &corev1.TruncateOperation{MaxSizeBytes: 1024},
+	}, paths.Paths["log.request.http.body.received"])
+}
+
+func TestLogSchemaPlanRequiresAnAction(t *testing.T) {
+	raw := map[string]any{
+		"name":      "no-action",
+		"scope_cel": "true",
+		"path":      []any{map[string]any{"name": "log.request.http.body.received"}},
+	}
+	_, err := ResourceLogSchema().Diff(t.Context(), nil, terraform.NewResourceConfigRaw(raw), nil)
+	require.ErrorContains(t, err, "must specify at least one action")
 }

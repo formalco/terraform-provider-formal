@@ -27,13 +27,6 @@ func ResourceTlsConfiguration() *schema.Resource {
 			StateContext: schema.ImportStatePassthroughContext,
 		},
 		SchemaVersion: 1,
-		StateUpgraders: []schema.StateUpgrader{
-			{
-				Version: 0,
-				Type:    resourcePolicyInstanceResourceV0().CoreConfigSchema().ImpliedType(),
-				Upgrade: resourcePolicyStateUpgradeV0,
-			},
-		},
 		Schema: map[string]*schema.Schema{
 			"id": {
 				// This description is used by the documentation generator and the language server.

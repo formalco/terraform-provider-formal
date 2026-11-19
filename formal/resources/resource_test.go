@@ -5,12 +5,47 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/hashicorp/go-cty/cty/msgpack"
+	"github.com/hashicorp/terraform-plugin-go/tfprotov5"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
 	corev1 "github.com/formalco/go-sdk/v3/core/v1"
 )
+
+func TestHealthCheckAndTLSConfigurationReadUnversionedState(t *testing.T) {
+	for _, tt := range []struct {
+		name     string
+		resource *schema.Resource
+		state    map[string]string
+	}{
+		{"formal_resource_health_check", ResourceHealthCheck(), map[string]string{
+			"id": "check-1", "resource_id": "resource-1", "database_name": "postgres",
+		}},
+		{"formal_resource_tls_configuration", ResourceTlsConfiguration(), map[string]string{
+			"id": "tls-1", "resource_id": "resource-1", "tls_config": "verify-full",
+		}},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			provider := &schema.Provider{ResourcesMap: map[string]*schema.Resource{tt.name: tt.resource}}
+			resp, err := provider.GRPCProvider().UpgradeResourceState(t.Context(), &tfprotov5.UpgradeResourceStateRequest{
+				TypeName: tt.name,
+				Version:  0,
+				RawState: &tfprotov5.RawState{Flatmap: tt.state},
+			})
+			require.NoError(t, err)
+			require.Empty(t, resp.Diagnostics)
+			require.NotNil(t, resp.UpgradedState)
+			state, err := msgpack.Unmarshal(resp.UpgradedState.MsgPack, tt.resource.CoreConfigSchema().ImpliedType())
+			require.NoError(t, err)
+			for field, want := range tt.state {
+				require.Equal(t, want, state.GetAttr(field).AsString(), field)
+			}
+		})
+	}
+}
 
 func protoHasFieldPath(md protoreflect.MessageDescriptor, path string) bool {
 	parts := strings.Split(path, ".")
