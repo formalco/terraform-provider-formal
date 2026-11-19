@@ -38,7 +38,6 @@ var resourceTechnologies = []string{
 	"redshift",
 	"s3",
 	"snowflake",
-	"socket",
 	"ssh",
 	"web",
 }
