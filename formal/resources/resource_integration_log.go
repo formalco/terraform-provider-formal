@@ -59,7 +59,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "aws_s3", "gcs", "azure_blob"},
+				ConflictsWith: []string{"splunk", "aws_s3", "gcs", "azure_blob", "gcp_pubsub"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -86,7 +86,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"datadog", "aws_s3", "gcs", "azure_blob"},
+				ConflictsWith: []string{"datadog", "aws_s3", "gcs", "azure_blob", "gcp_pubsub"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -113,7 +113,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog", "gcs", "azure_blob"},
+				ConflictsWith: []string{"splunk", "datadog", "gcs", "azure_blob", "gcp_pubsub"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -155,7 +155,7 @@ func ResourceIntegrationLogs() *schema.Resource {
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "azure_blob"},
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "azure_blob", "gcp_pubsub"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -187,12 +187,34 @@ func ResourceIntegrationLogs() *schema.Resource {
 					},
 				},
 			},
+			"gcp_pubsub": {
+				Description:   "Configuration block for Google Cloud Pub/Sub integration. Each log is published as one raw JSON message, e.g. for a BigQuery subscription.",
+				Type:          schema.TypeSet,
+				Optional:      true,
+				MaxItems:      1,
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "gcs", "azure_blob"},
+				ForceNew:      true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"topic": {
+							Description: "Full Pub/Sub topic name: projects/<project>/topics/<topic>.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+						"cloud_integration_id": {
+							Description: "Cloud Integration ID.",
+							Type:        schema.TypeString,
+							Required:    true,
+						},
+					},
+				},
+			},
 			"azure_blob": {
 				Description:   "Configuration block for Azure Blob Storage integration.",
 				Type:          schema.TypeSet,
 				Optional:      true,
 				MaxItems:      1,
-				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "gcs"},
+				ConflictsWith: []string{"splunk", "datadog", "aws_s3", "gcs", "gcp_pubsub"},
 				ForceNew:      true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
@@ -324,6 +346,24 @@ func resourceIntegrationLogsCreate(ctx context.Context, d *schema.ResourceData, 
 		}
 	}
 
+	if v, ok := d.GetOk("gcp_pubsub"); ok {
+		pubsubConfigs := v.(*schema.Set).List()
+		if len(pubsubConfigs) > 0 {
+			pubsubConfig := pubsubConfigs[0].(map[string]any)
+
+			integration := &corev1.CreateIntegrationLogRequest_GcpPubsub_{
+				GcpPubsub: &corev1.CreateIntegrationLogRequest_GcpPubsub{
+					CloudIntegrationId: pubsubConfig["cloud_integration_id"].(string),
+					Topic:              pubsubConfig["topic"].(string),
+				},
+			}
+			res, err = c.Grpc.Sdk.IntegrationsLogServiceClient.CreateIntegrationLog(ctx, &corev1.CreateIntegrationLogRequest{
+				Name:        name,
+				Integration: integration,
+			})
+		}
+	}
+
 	if v, ok := d.GetOk("azure_blob"); ok {
 		azureConfigs := v.(*schema.Set).List()
 		if len(azureConfigs) > 0 {
@@ -397,6 +437,14 @@ func resourceIntegrationLogsRead(ctx context.Context, d *schema.ResourceData, m 
 				"gcs_bucket_name":      gcs.BucketName,
 				"gcs_bucket_prefix":    gcs.BucketPrefix,
 				"compression":          logCompressionNames[gcs.Compression],
+			},
+		})
+	}
+	if pubsub := res.Integration.GetGcpPubsub(); pubsub != nil {
+		d.Set("gcp_pubsub", []map[string]any{
+			{
+				"cloud_integration_id": pubsub.CloudIntegrationId,
+				"topic":                pubsub.Topic,
 			},
 		})
 	}

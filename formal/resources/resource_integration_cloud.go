@@ -170,6 +170,18 @@ func ResourceIntegrationCloud() *schema.Resource {
 							Optional:    true,
 							Elem:        &schema.Schema{Type: schema.TypeString},
 						},
+						"allow_pubsub_access": {
+							Description: "Allows the Cloud Integration to publish logs to Pub/Sub topics for Log Integrations.",
+							Type:        schema.TypeBool,
+							Optional:    true,
+							Default:     false,
+						},
+						"pubsub_topics": {
+							Description: "Pub/Sub topics Formal may publish logs to, as full names (projects/<project>/topics/<topic>). An empty list with access allowed grants all topics in the project; a non-empty list restricts publishing to those topics, which may live in other projects.",
+							Type:        schema.TypeList,
+							Optional:    true,
+							Elem:        &schema.Schema{Type: schema.TypeString},
+						},
 						"enable_compute_instances_autodiscovery": {
 							Description: "Enables resource autodiscovery for Compute Engine instances.",
 							Type:        schema.TypeBool,
@@ -272,6 +284,17 @@ func ResourceIntegrationCloud() *schema.Resource {
 			},
 			"gcp_gcs_buckets": {
 				Description: "The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.",
+				Type:        schema.TypeList,
+				Computed:    true,
+				Elem:        &schema.Schema{Type: schema.TypeString},
+			},
+			"gcp_allow_pubsub_access": {
+				Description: "Whether the Cloud Integration is allowed to publish logs to Pub/Sub.",
+				Type:        schema.TypeBool,
+				Computed:    true,
+			},
+			"gcp_pubsub_topics": {
+				Description: "The Pub/Sub topics this Cloud Integration is allowed to publish logs to. Empty with access allowed means all topics in the project.",
 				Type:        schema.TypeList,
 				Computed:    true,
 				Elem:        &schema.Schema{Type: schema.TypeString},
@@ -474,6 +497,15 @@ func ResourceIntegrationCloud() *schema.Resource {
 						d.SetNew("gcp_gcs_buckets", newBuckets)
 						rolesMayChange = true
 					}
+					if oldVal, newVal := d.GetChange("gcp.0.allow_pubsub_access"); oldVal != newVal {
+						d.SetNew("gcp_allow_pubsub_access", newVal)
+						rolesMayChange = true
+					}
+					if d.HasChange("gcp.0.pubsub_topics") {
+						_, newTopics := d.GetChange("gcp.0.pubsub_topics")
+						d.SetNew("gcp_pubsub_topics", newTopics)
+						rolesMayChange = true
+					}
 
 					for _, key := range []string{"enable_compute_instances_autodiscovery", "enable_gke_clusters_autodiscovery", "enable_cloudsql_instances_autodiscovery"} {
 						oldVal, newVal := d.GetChange(fmt.Sprintf("gcp.0.%s", key))
@@ -620,6 +652,8 @@ func resourceIntegrationCloudCreate(ctx context.Context, d *schema.ResourceData,
 						ProjectId:                            gcpConfig["project_id"].(string),
 						AllowGcsAccess:                       gcpConfig["allow_gcs_access"].(bool),
 						GcsBuckets:                           expandStringList(gcpConfig["gcs_buckets"]),
+						AllowPubsubAccess:                    gcpConfig["allow_pubsub_access"].(bool),
+						PubsubTopics:                         expandStringList(gcpConfig["pubsub_topics"]),
 						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
 						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,
 						EnableCloudsqlInstancesAutodiscovery: &enableCloudsqlInstancesAutodiscovery,
@@ -692,6 +726,7 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 	d.Set("gcp_roles", []string{})
 	d.Set("gcp_permissions", []string{})
 	d.Set("gcp_gcs_buckets", []string{})
+	d.Set("gcp_pubsub_topics", []string{})
 	d.Set("azure_role_definitions", []string{})
 	d.Set("azure_actions", []string{})
 	d.Set("azure_data_actions", []string{})
@@ -749,6 +784,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 			"project_id":                              data.Gcp.GcpProjectId,
 			"allow_gcs_access":                        data.Gcp.GcpAllowGcsAccess,
 			"gcs_buckets":                             data.Gcp.GcpGcsBuckets,
+			"allow_pubsub_access":                     data.Gcp.GcpAllowPubsubAccess,
+			"pubsub_topics":                           data.Gcp.GcpPubsubTopics,
 			"enable_compute_instances_autodiscovery":  data.Gcp.GcpEnableComputeInstancesAutodiscovery,
 			"enable_gke_clusters_autodiscovery":       data.Gcp.GcpEnableGkeClustersAutodiscovery,
 			"enable_cloudsql_instances_autodiscovery": data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery,
@@ -763,6 +800,8 @@ func resourceIntegrationCloudRead(ctx context.Context, d *schema.ResourceData, m
 		d.Set("aws_formal_role_arn", data.Gcp.AwsFormalRoleArn)
 		d.Set("gcp_allow_gcs_access", data.Gcp.GcpAllowGcsAccess)
 		d.Set("gcp_gcs_buckets", data.Gcp.GcpGcsBuckets)
+		d.Set("gcp_allow_pubsub_access", data.Gcp.GcpAllowPubsubAccess)
+		d.Set("gcp_pubsub_topics", data.Gcp.GcpPubsubTopics)
 		d.Set("gcp_enable_compute_instances_autodiscovery", data.Gcp.GcpEnableComputeInstancesAutodiscovery)
 		d.Set("gcp_enable_gke_clusters_autodiscovery", data.Gcp.GcpEnableGkeClustersAutodiscovery)
 		d.Set("gcp_enable_cloudsql_instances_autodiscovery", data.Gcp.GcpEnableCloudsqlInstancesAutodiscovery)
@@ -811,7 +850,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 
 	// These fields can't be updated, but they can still be changed by
 	// CustomizeDiff when their 'aws.0.', 'gcp.0.' or 'azure.0.' counterpart has changes
-	fieldsThatCanChange := append(slices.Clone(integrationCloudFieldsThatCanBeUpdated), []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions", "azure_actions", "azure_data_actions"}...)
+	fieldsThatCanChange := append(slices.Clone(integrationCloudFieldsThatCanBeUpdated), []string{"aws_enable_eks_autodiscovery", "aws_enable_rds_autodiscovery", "aws_enable_redshift_autodiscovery", "aws_enable_ecs_autodiscovery", "aws_enable_ec2_autodiscovery", "aws_enable_s3_autodiscovery", "aws_allow_s3_access", "aws_s3_bucket_arn", "gcp_allow_gcs_access", "gcp_gcs_buckets", "gcp_allow_pubsub_access", "gcp_pubsub_topics", "gcp_enable_compute_instances_autodiscovery", "gcp_enable_gke_clusters_autodiscovery", "gcp_enable_cloudsql_instances_autodiscovery", "gcp_roles", "gcp_permissions", "azure_allow_blob_access", "azure_blob_storage_accounts", "azure_enable_vm_autodiscovery", "azure_enable_aks_autodiscovery", "azure_enable_db_autodiscovery", "azure_role_definitions", "azure_actions", "azure_data_actions"}...)
 
 	if d.HasChangesExcept(fieldsThatCanChange...) {
 		return diag.Errorf("At the moment you can only update the following fields: %s. If you'd like to update other fields, please message the Formal team and we're happy to help.", strings.Join(integrationCloudFieldsThatCanBeUpdated, ", "))
@@ -875,6 +914,7 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 		if len(gcpConfigs) > 0 {
 			gcpConfig := gcpConfigs[0].(map[string]any)
 			allowGcsAccess := gcpConfig["allow_gcs_access"].(bool)
+			allowPubsubAccess := gcpConfig["allow_pubsub_access"].(bool)
 			enableComputeInstancesAutodiscovery := gcpConfig["enable_compute_instances_autodiscovery"].(bool)
 			enableGkeClustersAutodiscovery := gcpConfig["enable_gke_clusters_autodiscovery"].(bool)
 			enableCloudsqlInstancesAutodiscovery := gcpConfig["enable_cloudsql_instances_autodiscovery"].(bool)
@@ -886,6 +926,10 @@ func resourceIntegrationCloudUpdate(ctx context.Context, d *schema.ResourceData,
 						AllowGcsAccess: &allowGcsAccess,
 						GcsBucketsV2: &corev1.UpdateCloudIntegrationRequest_GCP_UpdateGcsBuckets{
 							GcsBuckets: expandStringList(gcpConfig["gcs_buckets"]),
+						},
+						AllowPubsubAccess: &allowPubsubAccess,
+						PubsubTopics: &corev1.UpdateCloudIntegrationRequest_GCP_UpdatePubsubTopics{
+							PubsubTopics: expandStringList(gcpConfig["pubsub_topics"]),
 						},
 						EnableComputeInstancesAutodiscovery:  &enableComputeInstancesAutodiscovery,
 						EnableGkeClustersAutodiscovery:       &enableGkeClustersAutodiscovery,

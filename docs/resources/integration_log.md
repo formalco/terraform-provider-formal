@@ -24,6 +24,7 @@ Registering a Integration Logs app.
 - `aws_s3` (Block Set, Max: 1) Configuration block for AWS S3 integration. (see [below for nested schema](#nestedblock--aws_s3))
 - `azure_blob` (Block Set, Max: 1) Configuration block for Azure Blob Storage integration. (see [below for nested schema](#nestedblock--azure_blob))
 - `datadog` (Block Set, Max: 1) Configuration block for Datadog integration. (see [below for nested schema](#nestedblock--datadog))
+- `gcp_pubsub` (Block Set, Max: 1) Configuration block for Google Cloud Pub/Sub integration. Each log is published as one raw JSON message, e.g. for a BigQuery subscription. (see [below for nested schema](#nestedblock--gcp_pubsub))
 - `gcs` (Block Set, Max: 1) Configuration block for Google Cloud Storage integration. (see [below for nested schema](#nestedblock--gcs))
 - `splunk` (Block Set, Max: 1) Configuration block for Splunk integration. (see [below for nested schema](#nestedblock--splunk))
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
@@ -73,6 +74,15 @@ Required:
 - `account_id` (String) Account ID of Datadog.
 - `api_key` (String) API Key of Datadog.
 - `site` (String) URL of your Datadog app.
+
+
+<a id="nestedblock--gcp_pubsub"></a>
+### Nested Schema for `gcp_pubsub`
+
+Required:
+
+- `cloud_integration_id` (String) Cloud Integration ID.
+- `topic` (String) Full Pub/Sub topic name: projects/<project>/topics/<topic>.
 
 
 <a id="nestedblock--gcs"></a>

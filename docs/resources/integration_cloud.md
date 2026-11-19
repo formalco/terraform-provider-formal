@@ -58,12 +58,14 @@ Registering a Cloud integration.
 - `azure_subscription_id` (String) The Azure subscription this integration grants Formal access to.
 - `azure_tenant_id` (String) The Entra tenant of the managed identity Formal authenticates as, reported back by `formal_integration_cloud_azure_activation`.
 - `gcp_allow_gcs_access` (Boolean) Whether the Cloud Integration is allowed to write logs to GCS.
+- `gcp_allow_pubsub_access` (Boolean) Whether the Cloud Integration is allowed to publish logs to Pub/Sub.
 - `gcp_enable_cloudsql_instances_autodiscovery` (Boolean) Whether GCP Cloud SQL instances autodiscovery is enabled or not.
 - `gcp_enable_compute_instances_autodiscovery` (Boolean) Whether GCP Compute Engine instances autodiscovery is enabled or not.
 - `gcp_enable_gke_clusters_autodiscovery` (Boolean) Whether GCP GKE clusters autodiscovery is enabled or not.
 - `gcp_gcs_buckets` (List of String) The GCS buckets this Cloud Integration is allowed to write logs to. Empty with access allowed means all buckets in the project.
 - `gcp_permissions` (List of String) The IAM permissions to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module, which grants them through a single custom role.
 - `gcp_project_id` (String) The GCP project ID this integration grants Formal access to.
+- `gcp_pubsub_topics` (List of String) The Pub/Sub topics this Cloud Integration is allowed to publish logs to. Empty with access allowed means all topics in the project.
 - `gcp_roles` (List of String, Deprecated) The project-level IAM roles to grant Formal's service account, derived from the enabled capabilities. Pass these to the GCP Terraform module.
 - `gcp_service_account_email` (String) The GCP service account email created for this integration.
 - `gcp_workload_identity_pool_provider` (String) The GCP workload identity pool provider created for this integration.
@@ -114,10 +116,12 @@ Required:
 Optional:
 
 - `allow_gcs_access` (Boolean) Allows the Cloud Integration to write logs to GCS buckets for Log Integrations.
+- `allow_pubsub_access` (Boolean) Allows the Cloud Integration to publish logs to Pub/Sub topics for Log Integrations.
 - `enable_cloudsql_instances_autodiscovery` (Boolean) Enables resource autodiscovery for Cloud SQL instances.
 - `enable_compute_instances_autodiscovery` (Boolean) Enables resource autodiscovery for Compute Engine instances.
 - `enable_gke_clusters_autodiscovery` (Boolean) Enables resource autodiscovery for GKE clusters.
 - `gcs_buckets` (List of String) GCS buckets Formal may write logs to. An empty list with access allowed grants all buckets in the project; a non-empty list restricts writes to those buckets.
+- `pubsub_topics` (List of String) Pub/Sub topics Formal may publish logs to, as full names (projects/<project>/topics/<topic>). An empty list with access allowed grants all topics in the project; a non-empty list restricts publishing to those topics, which may live in other projects.
 
 
 <a id="nestedblock--timeouts"></a>
